@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "networkcore", "networkcore\networkcore.vcxproj", "{9423E8F2-70B8-4862-B741-D689A5AD3851}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testexe", "testexe\testexe.vcxproj", "{6843078F-E363-4630-A573-60B44FCAB943}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9423E8F2-70B8-4862-B741-D689A5AD3851}.Debug|Win32.ActiveCfg = Debug|Win32
+		{9423E8F2-70B8-4862-B741-D689A5AD3851}.Debug|Win32.Build.0 = Debug|Win32
+		{9423E8F2-70B8-4862-B741-D689A5AD3851}.Release|Win32.ActiveCfg = Release|Win32
+		{9423E8F2-70B8-4862-B741-D689A5AD3851}.Release|Win32.Build.0 = Release|Win32
+		{6843078F-E363-4630-A573-60B44FCAB943}.Debug|Win32.ActiveCfg = Debug|Win32
+		{6843078F-E363-4630-A573-60B44FCAB943}.Debug|Win32.Build.0 = Debug|Win32
+		{6843078F-E363-4630-A573-60B44FCAB943}.Release|Win32.ActiveCfg = Release|Win32
+		{6843078F-E363-4630-A573-60B44FCAB943}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
