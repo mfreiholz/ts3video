@@ -231,4 +231,34 @@ bool VideoFrameRecoveryDatagram::read(FILE *f)
   return true;
 }
 
+///////////////////////////////////////////////////////////////////////
+// Audio
+///////////////////////////////////////////////////////////////////////
+
+bool AudioFrameDatagram::write(FILE *f) const
+{
+  Datagram::write(f);
+
+#ifdef UDP_USE_HOSTBYTEORDER
+
+#else
+
+#endif
+
+  return true;
+}
+
+bool AudioFrameDatagram::read(FILE *f)
+{
+  Datagram::read(f);
+
+#ifdef UDP_USE_HOSTBYTEORDER
+
+#else
+
+#endif
+
+  return true;
+}
+
 } // End of namespace.

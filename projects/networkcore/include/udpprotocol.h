@@ -144,6 +144,8 @@ public:
 // Audio
 ///////////////////////////////////////////////////////////////////////
 
+/*!
+*/
 class AudioFrameDatagram : public Datagram
 {
 public:
@@ -155,6 +157,8 @@ public:
   const static dg_size_t MAXSIZE = Datagram::MAXSIZE - (sizeof(dg_frame_id_t) + sizeof(dg_data_index_t) + sizeof(dg_data_count_t) + sizeof(dg_size_t));
 
   AudioFrameDatagram() : Datagram(TYPE) {}
+  bool write(FILE *f) const;
+  bool read(FILE *f);
 
   dg_frame_id_t frameId;
   dg_data_index_t index;
