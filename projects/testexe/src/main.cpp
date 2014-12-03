@@ -139,13 +139,14 @@ void test2()
 
 int main(int argc, char **argv)
 {
+  test2();
   return 0;
 }
 
-int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd)
+/*int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd)
 {
   while (true) {
     test2();
   }
   return 0;
-}
+}*/

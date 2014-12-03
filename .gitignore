@@ -1,5 +1,7 @@
 *.sdf
+*.opensdf
 *.user
+*.v11.suo
 projects/Debug
 projects/Release
 projects/*/Debug
