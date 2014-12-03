@@ -9,7 +9,7 @@
 
 using namespace UDP;
 
-int testEncoder()
+int test1()
 {
   auto frameDataLen = 6096;
   dg_byte_t *frameData = new dg_byte_t[frameDataLen];
@@ -23,7 +23,7 @@ int testEncoder()
     frameData[i] = val;
   }
 
-  /*while (true) */{
+  for (int z = 0; z < 500000; ++z) {
     // Encode.
     VideoFrameDatagram **datagrams = 0;
     VideoFrameDatagram::dg_data_count_t datagramsLength;
@@ -33,17 +33,6 @@ int testEncoder()
     auto completeSize = 0;
     for (int i = 0; i < datagramsLength; ++i) {
       completeSize += datagrams[i]->size;
-
-      // Serialize datagram to disk.
-      std::stringstream ss;
-      ss << "C:\\Temp\\datagram-" << i << ".bin";
-      std::string filePath = ss.str();
-
-      FILE *fp;
-      errno_t err = fopen_s(&fp, filePath.c_str(), "wb");
-      if (err == 0)
-        datagrams[i]->write(fp);
-      fclose(fp);
     }
 
     // Clean up.
@@ -139,7 +128,8 @@ void test2()
 
 int main(int argc, char **argv)
 {
-  test2();
+  test1();
+  //test2();
   return 0;
 }
 
