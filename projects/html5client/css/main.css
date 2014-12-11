@@ -1,0 +1,91 @@
+@import url(http://fonts.googleapis.com/css?family=Roboto);
+
+/* Basics */
+
+/* ----------------------------- */
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-size: 1em;
+  line-height: 1em;
+  font-family: "RobotoDraft", "Roboto", sans-serif;
+  color: #212121;
+  background: #f7f7f7;
+}
+
+html, body, div, span, p, h1, h2, h3, h4 {
+  line-height: 1em;
+}
+
+img {
+  border: 0;
+}
+
+/* MainView */
+
+/* ----------------------------- */
+
+.MainView .header {
+  position: fixed;
+  display: block;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  width: 100%;
+  height: 48px;
+  padding: 0px 16px 0px 16px;
+  background: #03a9f4;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.26);
+}
+
+.MainView .header h1 {
+  color: #ffffff;
+  font-weight: 400;
+  font-size: 1.2em;
+}
+
+.MainView .contentarea {
+  margin-top: 48px;
+}
+
+/* ContactListView */
+
+/* ----------------------------- */
+
+.ContactListView .contact {
+  height: 48px;
+  padding: 6px 16px;
+  margin-top: 1px;
+  cursor: pointer;
+  border: 0px solid #cccccc;
+  background: #ffffff;
+}
+
+.ContactListView .contact:active {
+  box-shadow: 0 2px 5px rgba(0,0,0,0.26);
+}
+
+.ContactListView .contact .thumbnail {
+  width: 48px;
+  height: 48px;
+  float: left;
+  border: 1px solid #cccccc;
+  border-radius: 25px;
+}
+
+.ContactListView .contact .text {
+  margin-top: 4px;
+  margin-left: 64px;
+}
+
+.ContactListView .contact .subtext {
+  margin-left: 64px;
+  margin-top: 6px;
+  font-weight: 0.9em;
+  color: #cccccc;
+}
+
+.ContactListView .contactmenu {
+  
+}

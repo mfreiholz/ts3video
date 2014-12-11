@@ -6,3 +6,4 @@ projects/Debug
 projects/Release
 projects/*/Debug
 projects/*/Release
+projects/*/GeneratedFiles

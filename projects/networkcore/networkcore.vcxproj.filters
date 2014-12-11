@@ -18,6 +18,9 @@
     <ClInclude Include="include\udpprotocol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\tcpprotocol.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\udpprotocol.cpp">
