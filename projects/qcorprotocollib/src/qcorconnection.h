@@ -2,8 +2,9 @@
 #define QCORCONNECTION_HEADER
 
 #include <QObject>
+#include <QByteArray>
 #include <QTcpSocket>
-class QCorRequest;
+class QCorFrame;
 
 class QCorConnection : public QObject
 {
@@ -11,18 +12,25 @@ class QCorConnection : public QObject
 
 public:
   QCorConnection(QTcpSocket *socket, QObject *parent);
-  QTcpSocket* socket() const;
+  virtual ~QCorConnection();
+  void write(const QByteArray &data);
 
 private slots:
   void onSocketReadyRead();
   void onSocketStateChanged(QAbstractSocket::SocketState state);
 
 signals:
-  void newRequest(QCorRequest *request);
+  /* Emits for every new frame.
+   * Note: The frame has to be deleted by receiver with deleteLater().
+   */
+  void newFrame(QCorFrame *frame);
 
 private:
+  class Private;
+  Private *d;
   QTcpSocket *_socket;
-  QCorRequest *_currentRequest;
+  QByteArray _buffer;
+  QCorFrame *_frame;
 };
 
 #endif

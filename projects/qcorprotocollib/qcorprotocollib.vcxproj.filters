@@ -53,23 +53,14 @@
     <ClCompile Include="GeneratedFiles\Release\moc_qcorconnection.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="src\qcorrequest.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_qcorrequest.cpp">
+    <ClCompile Include="GeneratedFiles\Debug\moc_qcorframe.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_qcorrequest.cpp">
+    <ClCompile Include="GeneratedFiles\Release\moc_qcorframe.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="src\qcorresponse.cpp">
+    <ClCompile Include="src\qcorframe.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_qcorresponse.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_qcorresponse.cpp">
-      <Filter>Generated Files\Release</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -79,10 +70,7 @@
     <CustomBuild Include="src\qcorconnection.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
-    <CustomBuild Include="src\qcorrequest.h">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="src\qcorresponse.h">
+    <CustomBuild Include="src\qcorframe.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>

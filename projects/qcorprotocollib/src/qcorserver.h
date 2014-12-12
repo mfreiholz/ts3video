@@ -3,8 +3,7 @@
 
 #include <QTcpServer>
 class QCorConnection;
-class QCorRequest;
-class QCorResponse;
+class QCorFrame;
 
 class QCorServer : public QTcpServer
 {
@@ -18,7 +17,7 @@ protected:
 
 signals:
   void newConnection(QCorConnection *connection);
-  void newRequest(QCorRequest *request, QCorResponse *response);
+  void newFrame(QCorFrame *frame);
 };
 
 #endif

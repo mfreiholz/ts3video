@@ -16,5 +16,6 @@ void QCorServer::incomingConnection(qintptr socketDescriptor)
   socket->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
 
   QCorConnection *conn = new QCorConnection(socket, this);
+  connect(conn, SIGNAL(newFrame(QCorFrame*)), SIGNAL(newFrame(QCorFrame*)));
   emit newConnection(conn);
 }
