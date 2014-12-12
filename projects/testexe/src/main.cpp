@@ -165,7 +165,7 @@ void test3()
     p += req->length;
 
     // Parse.
-    cor_parser_settings_t sett;
+    cor_parser_settings sett;
     sett.on_frame_begin = [] (cor_parser *parser) -> int {
       return 0;
     };

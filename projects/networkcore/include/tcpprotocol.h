@@ -36,7 +36,7 @@ typedef struct
 ///////////////////////////////////////////////////////////////////////
 
 typedef struct cor_parser cor_parser;
-typedef struct cor_parser_settings_t cor_parser_settings_t;
+typedef struct cor_parser_settings cor_parser_settings;
 
 // Callback declarations.
 typedef int (*cor_parser_cb) (cor_parser *parser);
@@ -55,7 +55,7 @@ struct cor_parser
   void *object; ///< Pointer to the custom caller object.
 };
 
-struct cor_parser_settings_t
+struct cor_parser_settings
 {
   // CALLBACKS
   cor_parser_cb on_frame_begin;
@@ -70,7 +70,7 @@ void cor_parser_init(cor_parser *parser);
 /* Executes parsing.
  * @return Number of parsed bytes.
  */
-size_t cor_parser_parse(cor_parser *parser, const cor_parser_settings_t &settings, const uint8_t *data, size_t len);
+size_t cor_parser_parse(cor_parser *parser, const cor_parser_settings &settings, const uint8_t *data, size_t len);
 
 #ifdef __cplusplus
 }

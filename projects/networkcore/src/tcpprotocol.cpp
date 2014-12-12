@@ -36,7 +36,7 @@ void cor_parser_init(cor_parser *parser)
   parser->request = 0;
 }
 
-size_t cor_parser_parse(cor_parser *parser, const cor_parser_settings_t &settings, const uint8_t *data, size_t length)
+size_t cor_parser_parse(cor_parser *parser, const cor_parser_settings &settings, const uint8_t *data, size_t length)
 {
   const uint8_t *p = data;
   size_t readBytes = 0;
