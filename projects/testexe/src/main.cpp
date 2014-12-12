@@ -136,9 +136,9 @@ void test3()
 {
   while (true) {
     // Create request.
-    cor_request_t *req = cor_create_request();
+    cor_frame *req = (cor_frame*)malloc(sizeof(cor_frame));
     req->version = 1;
-    req->type = cor_request_t::TYPE_REQUEST;
+    req->type = cor_frame::TYPE_REQUEST;
     req->flags = 0;
     req->correlation_id = 234;
     req->length = 1024;
@@ -148,35 +148,35 @@ void test3()
     }
 
     // Serialize into a single buffer.
-    size_t bufferlen = cor_request_t::MINSIZE + req->length;
+    size_t bufferlen = cor_frame::MINSIZE + req->length;
     uint8_t *buffer = (uint8_t*)malloc(bufferlen);
     uint8_t *p = buffer;
-    memcpy(p, &req->version, sizeof(cor_request_t::version_t));
-    p += sizeof(cor_request_t::version_t);
-    memcpy(p, &req->type, sizeof(cor_request_t::type_t));
-    p += sizeof(cor_request_t::type_t);
-    memcpy(p, &req->flags, sizeof(cor_request_t::flags_t));
-    p += sizeof(cor_request_t::flags_t);
-    memcpy(p, &req->correlation_id, sizeof(cor_request_t::correlation_t));
-    p += sizeof(cor_request_t::correlation_t);
-    memcpy(p, &req->length, sizeof(cor_request_t::data_length_t));
-    p += sizeof(cor_request_t::data_length_t);
+    memcpy(p, &req->version, sizeof(cor_frame::version_t));
+    p += sizeof(cor_frame::version_t);
+    memcpy(p, &req->type, sizeof(cor_frame::type_t));
+    p += sizeof(cor_frame::type_t);
+    memcpy(p, &req->flags, sizeof(cor_frame::flags_t));
+    p += sizeof(cor_frame::flags_t);
+    memcpy(p, &req->correlation_id, sizeof(cor_frame::correlation_t));
+    p += sizeof(cor_frame::correlation_t);
+    memcpy(p, &req->length, sizeof(cor_frame::data_length_t));
+    p += sizeof(cor_frame::data_length_t);
     memcpy(p, req->data, req->length);
     p += req->length;
 
     // Parse.
     cor_parser_settings_t sett;
-    sett.on_request_begin = [] (cor_parser_t *parser, const uint8_t *data, size_t len) -> int {
+    sett.on_frame_begin = [] (cor_parser *parser) -> int {
       return 0;
     };
-    sett.on_request_body_data = [] (cor_parser_t *parser, const uint8_t *data, size_t len) -> int {
+    sett.on_frame_body_data = [] (cor_parser *parser, const uint8_t *data, size_t len) -> int {
       return 0;
     };
-    sett.on_request_end = [] (cor_parser_t *parser, const uint8_t *data, size_t len) -> int {
+    sett.on_frame_end = [] (cor_parser *parser) -> int {
       return 0;
     };
 
-    cor_parser_t *parser = (cor_parser_t*)malloc(sizeof(cor_parser_t));
+    cor_parser *parser = (cor_parser*)malloc(sizeof(cor_parser));
     cor_parser_init(parser);
     cor_parser_parse(parser, sett, buffer, bufferlen);
     free(parser);
@@ -184,7 +184,7 @@ void test3()
     // Free resources.
     free(buffer);
     free(req->data);
-    cor_free_request(req);
+    free(req);
   }
 }
 
