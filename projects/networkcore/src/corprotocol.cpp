@@ -1,6 +1,6 @@
 #include <cstdlib>
 #include <cstring>
-#include "tcpprotocol.h"
+#include "corprotocol.h"
 
 ///////////////////////////////////////////////////////////////////////
 // COR FRAME

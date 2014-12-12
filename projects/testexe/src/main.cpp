@@ -6,7 +6,7 @@
 #include <cstdio>
 #include <sstream>
 #include "udpprotocol.h"
-#include "tcpprotocol.h"
+#include "corprotocol.h"
 
 using namespace UDP;
 

@@ -72,11 +72,11 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="include\tcpprotocol.h" />
+    <ClInclude Include="include\corprotocol.h" />
     <ClInclude Include="include\udpprotocol.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\tcpprotocol.cpp" />
+    <ClCompile Include="src\corprotocol.cpp" />
     <ClCompile Include="src\udpprotocol.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
