@@ -19,7 +19,7 @@ typedef struct
   typedef uint32_t  correlation_t;
   typedef uint32_t  data_length_t;
 
-  static const size_t MINSIZE = 16 + 16 + 8 + 32 + 32;
+  static const size_t MINSIZE = sizeof(version_t) + sizeof(type_t) + sizeof(flags_t) + sizeof(correlation_t) + sizeof(data_length_t);
   static const type_t TYPE_REQUEST = 0;
   static const type_t TYPE_RESPONSE = 1;
 
@@ -30,6 +30,50 @@ typedef struct
   data_length_t length;          ///< (32-bit) Length of the upcoming data block.
   uint8_t *data;
 } cor_request_t;
+
+cor_request_t* cor_create_request();
+void cor_free_request(cor_request_t *p);
+
+///////////////////////////////////////////////////////////////////////
+// PARSER
+///////////////////////////////////////////////////////////////////////
+
+typedef struct cor_parser_t cor_parser_t;
+typedef struct cor_parser_settings_t cor_parser_settings_t;
+typedef int (*data_cb) (cor_parser_t *parser, const uint8_t *data, size_t length);
+
+struct cor_parser_t
+{
+  // PRIVATE
+  uint32_t state; ///< Current parser state from *.cpp
+  size_t request_body_bytes_read; ///< Number of bytes that has been read of the current request body.
+
+  // READ ONLY
+  cor_request_t *request; ///< Current request being parsed.
+
+  // PUBLIC
+  void *object; ///< Pointer to the custom caller object.
+};
+
+struct cor_parser_settings_t
+{
+  // CALLBACKS
+  data_cb on_request_begin;
+  data_cb on_request_body_data;
+  data_cb on_request_end;
+};
+
+/* Initializes/resets an parser object.
+ */
+void cor_parser_init(cor_parser_t *parser);
+
+/* Executes parsing.
+ * @return Number of parsed bytes.
+ */
+size_t cor_parser_parse(cor_parser_t *parser, const cor_parser_settings_t &settings, const uint8_t *data, size_t len);
+
+
+
 
 
 /*!
