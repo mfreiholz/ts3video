@@ -39,15 +39,18 @@ public:
     }
     return 0;
   }
+
+  
 };
 
 ///////////////////////////////////////////////////////////////////////
 
-QCorConnection::QCorConnection(QTcpSocket *socket, QObject *parent) :
+QCorConnection::QCorConnection(QObject *parent) :
   QObject(parent),
   d(new Private()),
-  _socket(socket),
-  _frame(0)
+  _socket(0),
+  _frame(0),
+  _sendFrame(0)
 {
   d->corSettings.on_frame_begin = &(Private::onParserFrameBegin);
   d->corSettings.on_frame_body_data = &(Private::onParserFrameBodyData);
@@ -56,9 +59,6 @@ QCorConnection::QCorConnection(QTcpSocket *socket, QObject *parent) :
   d->corParser = (cor_parser *)malloc(sizeof(cor_parser));
   cor_parser_init(d->corParser);
   d->corParser->object = this;
-
-  connect(socket, SIGNAL(readyRead()), SLOT(onSocketReadyRead()));
-  connect(socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), SLOT(onSocketStateChanged(QAbstractSocket::SocketState)));
 }
 
 QCorConnection::~QCorConnection()
@@ -66,11 +66,44 @@ QCorConnection::~QCorConnection()
   free(d->corParser);
   delete d;
   delete _socket;
+  while (!_sendQueue.isEmpty()) {
+    delete _sendQueue.dequeue();
+  }
+  delete _sendFrame;
 }
 
-void QCorConnection::write(const QByteArray &data)
+void QCorConnection::connectWith(quintptr descriptor)
 {
-  _socket->write(data);
+  if (_socket) {
+    _socket->abort();
+    delete _socket;
+  }
+  _socket = new QTcpSocket(this);
+  _socket->setSocketDescriptor(descriptor);
+  _socket->setSocketOption(QAbstractSocket::LowDelayOption, 1);
+  _socket->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
+  connect(_socket, SIGNAL(readyRead()), SLOT(onSocketReadyRead()));
+  connect(_socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), SLOT(onSocketStateChanged(QAbstractSocket::SocketState)));
+}
+
+void QCorConnection::connectTo(const QHostAddress &address, quint16 port)
+{
+  if (_socket) {
+    _socket->abort();
+    delete _socket;
+  }
+  _socket = new QTcpSocket(this);
+  _socket->connectToHost(address, port);
+  _socket->setSocketOption(QAbstractSocket::LowDelayOption, 1);
+  _socket->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
+  connect(_socket, SIGNAL(readyRead()), SLOT(onSocketReadyRead()));
+  connect(_socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), SLOT(onSocketStateChanged(QAbstractSocket::SocketState)));
+}
+
+void QCorConnection::send(QCorFrame *frame)
+{
+  _sendQueue.append(frame);
+  sendNext();
 }
 
 void QCorConnection::onSocketReadyRead()
@@ -100,4 +133,21 @@ void QCorConnection::onSocketStateChanged(QAbstractSocket::SocketState state)
     }
     break;
   }
+}
+
+void QCorConnection::sendNext()
+{
+  if (_sendFrame) {
+    return;
+  }
+  _sendFrame = _sendQueue.dequeue();
+  connect(_sendFrame, SIGNAL(newBodyData(const QByteArray &)), _socket, SLOT(write(const QByteArray &)));
+  connect(_sendFrame, SIGNAL(end()), SLOT(onSendNextDone()));
+}
+
+void QCorConnection::onSendNextDone()
+{
+  _sendFrame->deleteLater();
+  _sendFrame = 0;
+  sendNext();
 }

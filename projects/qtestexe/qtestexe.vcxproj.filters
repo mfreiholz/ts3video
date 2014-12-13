@@ -40,12 +40,12 @@
     <ClCompile Include="GeneratedFiles\Release\moc_mycorserver.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="src\mycorserver.cpp">
+    <ClCompile Include="src\mytestobject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="src\mycorserver.h">
+    <CustomBuild Include="src\mytestobject.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>

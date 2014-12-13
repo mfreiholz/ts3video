@@ -18,7 +18,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\mycorserver.cpp" />
+    <ClCompile Include="src\mytestobject.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\qcorprotocollib\qcorprotocollib.vcxproj">
@@ -26,7 +26,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="src\mycorserver.h">
+    <CustomBuild Include="src\mytestobject.h">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing mycorserver.h...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>

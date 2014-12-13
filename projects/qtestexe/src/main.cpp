@@ -1,9 +1,9 @@
 #include <QCoreApplication>
-#include "mycorserver.h"
+#include "mytestobject.h"
 
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
-    MyCorServer server(0);
+    MyTestObject o(0);
     return a.exec();
 }
