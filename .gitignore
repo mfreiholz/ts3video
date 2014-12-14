@@ -2,6 +2,7 @@
 *.opensdf
 *.user
 *.v11.suo
+build/
 projects/Debug
 projects/Release
 projects/*/Debug
