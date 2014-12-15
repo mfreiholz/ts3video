@@ -134,6 +134,21 @@ void test2()
  */
 void test3()
 {
+  // Parse.
+  cor_parser_settings sett;
+  sett.on_frame_begin = [] (cor_parser *parser) -> int {
+    return 0;
+  };
+  sett.on_frame_body_data = [] (cor_parser *parser, const uint8_t *data, size_t len) -> int {
+    return 0;
+  };
+  sett.on_frame_end = [] (cor_parser *parser) -> int {
+    return 0;
+  };
+
+  cor_parser *parser = (cor_parser*)malloc(sizeof(cor_parser));
+  cor_parser_init(parser);
+
   while (true) {
     // Create request.
     cor_frame *req = (cor_frame*)malloc(sizeof(cor_frame));
@@ -164,28 +179,15 @@ void test3()
     memcpy(p, req->data, req->length);
     p += req->length;
 
-    // Parse.
-    cor_parser_settings sett;
-    sett.on_frame_begin = [] (cor_parser *parser) -> int {
-      return 0;
-    };
-    sett.on_frame_body_data = [] (cor_parser *parser, const uint8_t *data, size_t len) -> int {
-      return 0;
-    };
-    sett.on_frame_end = [] (cor_parser *parser) -> int {
-      return 0;
-    };
-
-    cor_parser *parser = (cor_parser*)malloc(sizeof(cor_parser));
-    cor_parser_init(parser);
     cor_parser_parse(parser, sett, buffer, bufferlen);
-    free(parser);
 
     // Free resources.
     free(buffer);
     free(req->data);
     free(req);
   }
+
+  free(parser);
 }
 
 int main(int argc, char **argv)

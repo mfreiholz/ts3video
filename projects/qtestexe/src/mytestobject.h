@@ -2,8 +2,11 @@
 #define MYCORSERVER_HEADER
 
 #include <QObject>
+#include <QList>
+#include <QAbstractSocket>
 class QCorServer;
 class QCorConnection;
+class QCorFrame;
 
 class MyTestObject : public QObject
 {
@@ -13,18 +16,21 @@ public:
   MyTestObject(QObject *parent);
 
 public slots:
+  // Server based slots.
   void onNewConnection(QCorConnection *conn);
+  void onConnectionStateChanged(QAbstractSocket::SocketState state);
+  void onNewFrame(QCorFrame *frame);
 
   // Client connection based methods.
   void clientConnect();
-  void clientSendFrame();
+
+  // Common
+  void printStatistics();
 
 private:
   // Server
   QCorServer *_server;
-
-  // Client
-  QCorConnection *_clientConn;
+  QList<QCorConnection*> _serverConnections;
 };
 
 

@@ -59,9 +59,17 @@ struct cor_parser_settings
 {
   // CALLBACKS
   cor_parser_cb on_frame_begin;
+  cor_parser_cb on_frame_header_begin;
+  cor_parser_cb on_frame_header_end;
+  cor_parser_cb on_frame_body_data_begin;
   cor_parser_data_cb on_frame_body_data;
+  cor_parser_cb on_frame_body_data_end;
   cor_parser_cb on_frame_end;
 };
+
+/* Initializes parser settings.
+ */
+void cor_parser_settings_init(cor_parser_settings &sett);
 
 /* Initializes/resets an parser object.
  */

@@ -8,19 +8,22 @@ endif()
 
 # Sources
 set(headers
-
 )
 
 set(qheaders
   src/qcorconnection.h
   src/qcorframe.h
   src/qcorserver.h
+  src/qcorrequest.h
+  src/qcorresponse.h
 )
 
 set(sources
   src/qcorconnection.cpp
   src/qcorframe.cpp
   src/qcorserver.cpp
+  src/qcorrequest.cpp
+  src/qcorresponse.cpp
 )
 
 set (qforms
