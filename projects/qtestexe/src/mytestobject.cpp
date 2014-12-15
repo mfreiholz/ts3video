@@ -26,5 +26,5 @@ void MyTestObject::clientConnect()
 
 void MyTestObject::clientSendFrame()
 {
-
+  
 }
