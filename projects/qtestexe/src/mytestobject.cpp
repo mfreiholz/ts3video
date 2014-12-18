@@ -3,27 +3,32 @@
 #include "mytestobject.h"
 #include "qcorserver.h"
 #include "qcorconnection.h"
-#include "qcorframe.h"
 
 
 MyTestObject::MyTestObject(QObject *parent) :
   QObject(parent),
-  _server(new QCorServer(this))
+  _server(0),
+  _receivedFrames(0),
+  _receivedFrameBytes(0)
 {
+}
+
+void MyTestObject::startServer()
+{
+  _server = new QCorServer(this);
   _server->listen(QHostAddress::Any, 5005);
   connect(_server, SIGNAL(newConnection(QCorConnection *)), SLOT(onNewConnection(QCorConnection *)));
 
   QTimer *t = new QTimer(this);
-  connect(t, SIGNAL(timeout()), SLOT(printStatistics()));
+  connect(t, SIGNAL(timeout()), SLOT(printServerStatistics()));
   t->start(1000);
 }
 
 void MyTestObject::onNewConnection(QCorConnection *conn)
 {
-  //qDebug() << QString("%1 new connection").arg(QDateTime::currentDateTime().toString());
   _serverConnections.append(conn);
   connect(conn, SIGNAL(stateChanged(QAbstractSocket::SocketState)), SLOT(onConnectionStateChanged(QAbstractSocket::SocketState)));
-  connect(conn, SIGNAL(newFrame(QCorFrame *)), SLOT(onNewFrame(QCorFrame *)));
+  connect(conn, SIGNAL(newFrame(QCorFrameRefPtr)), SLOT(onNewFrame(QCorFrameRefPtr)));
 }
 
 void MyTestObject::onConnectionStateChanged(QAbstractSocket::SocketState state)
@@ -35,23 +40,35 @@ void MyTestObject::onConnectionStateChanged(QAbstractSocket::SocketState state)
   }
 }
 
-void MyTestObject::onNewFrame(QCorFrame *frame)
+void MyTestObject::printServerStatistics()
 {
-  //qDebug() << QString("%1 new frame").arg(QDateTime::currentDateTime().toString());
-  QObject::connect(frame, SIGNAL(end()), frame, SLOT(deleteLater()));
+  qDebug() << QString("[%1] connections: %2; rec-frames: %3; rec-frame-bytes: %4")
+    .arg(QDateTime::currentDateTime().toString("m"))
+    .arg(_serverConnections.count())
+    .arg(_receivedFrames)
+    .arg(_receivedFrameBytes);
 }
 
-void MyTestObject::clientConnect()
+void MyTestObject::onNewFrame(QCorFrameRefPtr frame)
 {
+  _receivedFrames++;
+  _receivedFrameBytes += frame->data().size();
+}
+
+// Client based from here...
+
+void MyTestObject::clientConnect(int testRequestInterval)
+{
+  if (_clientConnections.count() >= 200) {
+    return;
+  }
+
   QCorConnection *conn = new QCorConnection(this);
-  conn->connectTo(QHostAddress::LocalHost, 5005);
+  conn->connectTo(QHostAddress("85.214.204.236"), 5005);
+  _clientConnections.append(conn);
 
   QTimer *timer = new QTimer(this);
   QObject::connect(timer, SIGNAL(timeout()), conn, SLOT(sendTestRequest()));
-  timer->start(100);
-}
-
-void MyTestObject::printStatistics()
-{
-  qDebug() << QString("[%1] connections: %2").arg(QDateTime::currentDateTime().toString()).arg(_serverConnections.count());
+  timer->setSingleShot(false);
+  timer->start(testRequestInterval);
 }

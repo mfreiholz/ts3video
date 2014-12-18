@@ -5,15 +5,24 @@
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
-    MyTestObject o(0);
-    
-    //o.clientConnect();
-    //o.clientConnect();
-    //o.clientConnect();
+    const QStringList args = a.arguments();
 
-    QTimer t;
-    QObject::connect(&t, SIGNAL(timeout()), &o, SLOT(clientConnect()));
-    t.start(50);
+    // Server test.
+    MyTestObject *server = 0;
+    if (args.contains("--server")) {
+      server = new MyTestObject(0);
+      server->startServer();
+    }
+
+    // Client test.
+    MyTestObject *client = 0;
+    QTimer clientTimer;
+    if (args.contains("--client")) {
+      client = new MyTestObject(0);
+      QObject::connect(&clientTimer, SIGNAL(timeout()), client, SLOT(clientConnect()));
+      clientTimer.setSingleShot(false);
+      clientTimer.start(250);
+    }
 
     return a.exec();
 }

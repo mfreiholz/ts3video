@@ -1,8 +1,21 @@
-#include <QTcpSocket>
 #include <QByteArray>
+#include <QBuffer>
+#include <QQueue>
+#include <QTcpSocket>
 #include "qcorconnection.h"
-#include "qcorframe.h"
 #include "corprotocol.h"
+
+///////////////////////////////////////////////////////////////////////
+// Helper Objects
+///////////////////////////////////////////////////////////////////////
+
+class SendQueueItem
+{
+public:
+  SendQueueItem() : frame(0), device(0) {}
+  QCorFrame *frame;
+  QIODevice *device;
+};
 
 ///////////////////////////////////////////////////////////////////////
 // Private class
@@ -11,9 +24,14 @@
 class QCorConnection::Private
 {
 public:
+  QCorConnection *owner;
   QTcpSocket *socket;
-  QByteArray buffer;
-  QCorFrame *frame;
+
+  QByteArray buffer; ///< Incoming data buffer.
+  QCorFrameRefPtr frame; ///< Current incoming frame.
+
+  QQueue<SendQueueItem*> sendQueue;
+  SendQueueItem *sendQueueCurrent;
 
   cor_parser_settings corSettings;
   cor_parser *corParser;
@@ -22,7 +40,8 @@ public:
   static int onParserFrameBegin(cor_parser *parser)
   {
     QCorConnection *conn = static_cast<QCorConnection*>(parser->object);
-    conn->d->frame = new QCorFrame(conn, 0);
+    conn->d->frame.reset(new QCorFrame(conn));
+    conn->d->frame->_state = QCorFrame::TransferingState;
     return 0;
   }
 
@@ -35,7 +54,15 @@ public:
   {
     QCorConnection *conn = static_cast<QCorConnection*>(parser->object);
     if (conn->d->frame) {
-      emit conn->newFrame(conn->d->frame);
+      switch (parser->request->type) {
+        case cor_frame::TYPE_REQUEST:
+          conn->d->frame->_type = QCorFrame::RequestType;
+          break;
+        case cor_frame::TYPE_RESPONSE:
+          conn->d->frame->_type = QCorFrame::ResponseType;
+          break;
+      }
+      //emit conn->newFrame(conn->d->frame);
     }
     return 0;
   }
@@ -44,7 +71,9 @@ public:
   {
     QCorConnection *conn = static_cast<QCorConnection*>(parser->object);
     if (conn->d->frame) {
-      emit conn->d->frame->newBodyData(QByteArray((const char*)data, length));
+      conn->d->frame->_data.append(QByteArray((const char*)data, length));
+      //conn->d->frame->device()->write((const char *)data, length);
+      //emit conn->d->frame->newBodyData(QByteArray((const char*)data, length));
     }
     return 0;
   }
@@ -52,11 +81,10 @@ public:
   static int onParserFrameEnd(cor_parser *parser)
   {
     QCorConnection *conn = static_cast<QCorConnection*>(parser->object);
-    if (conn->d->frame) {
-      conn->d->frame->setState(QCorFrame::FinishedState);
-      emit conn->d->frame->end();
-      conn->d->frame = 0;
-    }
+    QCorFrameRefPtr f = conn->d->frame;
+    conn->d->frame.clear();
+    emit conn->newFrame(f);
+    //emit conn->d->frame->end();
     return 0;
   }
 };
@@ -67,9 +95,12 @@ QCorConnection::QCorConnection(QObject *parent) :
   QObject(parent),
   d(new Private())
 {
+  d->owner = this;
   d->socket = 0;
-  d->frame = 0;
+  d->frame.clear();
   d->nextCorrelationId = 0;
+
+  qRegisterMetaType<QCorFrameRefPtr>("QCorFrameRefPtr");
 
   cor_parser_settings_init(d->corSettings);
   d->corSettings.on_frame_begin = &(Private::onParserFrameBegin);
@@ -86,7 +117,7 @@ QCorConnection::QCorConnection(QObject *parent) :
 QCorConnection::~QCorConnection()
 {
   delete d->socket;
-  delete d->frame;
+  d->frame.clear();
   free(d->corParser);
   delete d;
 }
@@ -134,7 +165,7 @@ void QCorConnection::sendTestRequest()
   frame.type = cor_frame::TYPE_REQUEST;
   frame.flags = 0;
   frame.correlation_id = 0;
-  frame.length = 256;
+  frame.length = 1024 * 4;
   frame.data = new uint8_t[frame.length];
   for (cor_frame::data_length_t i = 0; i < frame.length; ++i) {
     frame.data[i] = 8;
@@ -146,6 +177,11 @@ void QCorConnection::sendTestRequest()
   d->socket->write((const char *)&frame.length, sizeof(frame.length));
   d->socket->write((const char *)&frame.data, frame.length);
   delete frame.data;
+}
+
+void QCorConnection::sendResponse(QCorResponse *res, QIODevice *dev)
+{
+
 }
 
 void QCorConnection::onSocketReadyRead()
@@ -170,9 +206,25 @@ void QCorConnection::onSocketStateChanged(QAbstractSocket::SocketState state)
   case QAbstractSocket::UnconnectedState:
     deleteLater();
     if (d->frame && !d->frame->state() != QCorFrame::FinishedState) {
-      d->frame->setState(QCorFrame::ErrorState);
-      emit d->frame->end();
+      d->frame->_state = QCorFrame::ErrorState;
+      //emit d->frame->end();
     }
     break;
   }
+}
+
+void QCorConnection::doNextSendItem()
+{
+  if (d->sendQueueCurrent || d->sendQueue.count() == 0) {
+    return;
+  }
+  d->sendQueueCurrent = d->sendQueue.dequeue();
+  QObject::connect(d->sendQueueCurrent->device, SIGNAL(aboutToClose()), this, SLOT(onCurrentSendItemDone()));
+}
+
+void QCorConnection::onCurrentSendItemDone()
+{
+  delete d->sendQueueCurrent;
+  d->sendQueueCurrent = 0;
+  doNextSendItem();
 }

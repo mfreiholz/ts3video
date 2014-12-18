@@ -2,34 +2,33 @@
 #define QCORFRAME_HEADER
 
 #include <QObject>
+#include <QSharedPointer>
 class QCorConnection;
 
-class QCorFrame : public QObject
+class QCorFrame
 {
-  Q_OBJECT
-  friend class QCorConnection;
-
 public:
   enum Type { RequestType, ResponseType };
   enum State { TransferingState, FinishedState, ErrorState };
 
-  QCorFrame(QCorConnection *connection, QObject *parent);
+  QCorFrame(QCorConnection *connection);
+  virtual ~QCorFrame();
+
   QCorConnection* connection() const;
   State state() const;
   Type type() const;
-
-private:
-  void setState(State s);
-  void setType(Type t);
-
-signals:
-  void newBodyData(const QByteArray &data);
-  void end();
+  QByteArray data() const;
 
 private:
   QCorConnection *_connection;
-  State _state; ///< Indicates the state of this frame. Managed by QCorConnection, before end() signal.
+  State _state;
   Type _type;
+  QByteArray _data; // TODO Instead of keeping the entire data, use a QIODevice-buffer or signal with new data.
+
+  friend class QCorConnection;
 };
+
+typedef QSharedPointer<QCorFrame> QCorFrameRefPtr;
+Q_DECLARE_METATYPE(QCorFrameRefPtr);
 
 #endif

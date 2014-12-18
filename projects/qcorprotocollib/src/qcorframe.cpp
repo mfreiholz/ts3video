@@ -1,12 +1,15 @@
 #include "qcorframe.h"
 
-QCorFrame::QCorFrame(QCorConnection *connection, QObject *parent) :
-  QObject(parent),
+QCorFrame::QCorFrame(QCorConnection *connection) :
   _connection(connection),
   _state(TransferingState),
   _type(RequestType)
 {
 
+}
+
+QCorFrame::~QCorFrame()
+{
 }
 
 QCorConnection* QCorFrame::connection() const
@@ -19,12 +22,12 @@ QCorFrame::State QCorFrame::state() const
   return _state;
 }
 
-void QCorFrame::setState(State s)
+QCorFrame::Type QCorFrame::type() const
 {
-  _state = s;
+  return _type;
 }
 
-void QCorFrame::setType(Type t)
+QByteArray QCorFrame::data() const
 {
-  _type = t;
+  return _data;
 }

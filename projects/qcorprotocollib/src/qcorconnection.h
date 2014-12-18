@@ -3,7 +3,8 @@
 
 #include <QObject>
 #include <QAbstractSocket>
-class QCorFrame;
+#include "qcorframe.h"
+class QCorResponse;
 
 class QCorConnection : public QObject
 {
@@ -20,10 +21,14 @@ public slots:
   void connectWith(quintptr descriptor);
   void connectTo(const QHostAddress &address, quint16 port);
   void sendTestRequest();
+  void sendResponse(QCorResponse *res, QIODevice *dev);
 
 private slots:
   void onSocketReadyRead();
   void onSocketStateChanged(QAbstractSocket::SocketState state);
+
+  void doNextSendItem();
+  void onCurrentSendItemDone();
 
 signals:
   /* Emits every time the underlying socket connection changes its state.
@@ -34,7 +39,7 @@ signals:
    * Note: The frame has to be deleted by receiver with deleteLater().
    * It doesn't have a parent object.
    */
-  void newFrame(QCorFrame *frame);
+  void newFrame(QCorFrameRefPtr frame);
 };
 
 #endif
