@@ -1,7 +1,6 @@
 #include "qcorframe.h"
 
-QCorFrame::QCorFrame(QCorConnection *connection) :
-  _connection(connection),
+QCorFrame::QCorFrame() :
   _state(TransferingState),
   _type(RequestType)
 {
@@ -10,11 +9,6 @@ QCorFrame::QCorFrame(QCorConnection *connection) :
 
 QCorFrame::~QCorFrame()
 {
-}
-
-QCorConnection* QCorFrame::connection() const
-{
-  return _connection;
 }
 
 QCorFrame::State QCorFrame::state() const

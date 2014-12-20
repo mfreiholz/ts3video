@@ -4,13 +4,12 @@
 #include <QObject>
 #include <QAbstractSocket>
 #include "qcorframe.h"
+class QCorRequest;
 class QCorResponse;
 
 class QCorConnection : public QObject
 {
   Q_OBJECT
-  class Private;
-  Private *d;
 
 public:
   QCorConnection(QObject *parent);
@@ -18,28 +17,47 @@ public:
   QAbstractSocket::SocketState state() const;
 
 public slots:
+  /* Accepts the already connected socket by it's descriptor.
+   */
   void connectWith(quintptr descriptor);
+
+  /* Connects to a remote host.
+   * The stateChanged() signal will be emitted with every state change.
+   */
   void connectTo(const QHostAddress &address, quint16 port);
+  
+  /* Sends an request to the remote host.
+   * The returning QCorReply* emits it's finished() signal,
+   * as soon as the remote host responds.
+   */
+  QCorResponse* sendRequest(const QCorFrame &frame);
+
+  /* Sends an response of an previously income request to the
+   * remote host. The remote host will not answer to this frame.
+   */
+  void sendResponse(const QCorFrame &frame);
+  
   void sendTestRequest();
-  void sendResponse(QCorResponse *res, QIODevice *dev);
-
-private slots:
-  void onSocketReadyRead();
-  void onSocketStateChanged(QAbstractSocket::SocketState state);
-
-  void doNextSendItem();
-  void onCurrentSendItemDone();
 
 signals:
   /* Emits every time the underlying socket connection changes its state.
    */
   void stateChanged(QAbstractSocket::SocketState state);
 
-  /* Emits for every new frame, independent of the frame's type.
-   * Note: The frame has to be deleted by receiver with deleteLater().
-   * It doesn't have a parent object.
+  /* Emits for every new incoming request, which must be handled.
+   * The ownership goes over to the receiver.
    */
-  void newFrame(QCorFrameRefPtr frame);
+  void newIncomingRequest(QCorFrameRefPtr frame);
+
+private slots:
+  void onSocketReadyRead();
+  void onSocketStateChanged(QAbstractSocket::SocketState state);
+  void doNextSendItem();
+  void onCurrentSendItemDone();
+
+private:
+  friend class QCorConnectionPrivate;
+  QCorConnectionPrivate *d;
 };
 
 #endif

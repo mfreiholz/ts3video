@@ -1,6 +1,8 @@
 #include <QCoreApplication>
 #include <QTimer>
+#include <QHostAddress>
 #include "mytestobject.h"
+#include "qtestclient.h"
 
 int main(int argc, char *argv[])
 {
@@ -18,10 +20,13 @@ int main(int argc, char *argv[])
     MyTestObject *client = 0;
     QTimer clientTimer;
     if (args.contains("--client")) {
-      client = new MyTestObject(0);
-      QObject::connect(&clientTimer, SIGNAL(timeout()), client, SLOT(clientConnect()));
-      clientTimer.setSingleShot(false);
-      clientTimer.start(250);
+      //client = new MyTestObject(0);
+      //QObject::connect(&clientTimer, SIGNAL(timeout()), client, SLOT(clientConnect()));
+      //clientTimer.setSingleShot(false);
+      //clientTimer.start(250);
+
+      QTestClient *testClient = new QTestClient(&a);
+      testClient->connectToHost(QHostAddress("85.214.204.236"), 5005);
     }
 
     return a.exec();

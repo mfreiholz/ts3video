@@ -1,117 +1,32 @@
-#include <QByteArray>
-#include <QBuffer>
-#include <QQueue>
 #include <QTcpSocket>
 #include "qcorconnection.h"
-#include "corprotocol.h"
-
-///////////////////////////////////////////////////////////////////////
-// Helper Objects
-///////////////////////////////////////////////////////////////////////
-
-class SendQueueItem
-{
-public:
-  SendQueueItem() : frame(0), device(0) {}
-  QCorFrame *frame;
-  QIODevice *device;
-};
-
-///////////////////////////////////////////////////////////////////////
-// Private class
-///////////////////////////////////////////////////////////////////////
-
-class QCorConnection::Private
-{
-public:
-  QCorConnection *owner;
-  QTcpSocket *socket;
-
-  QByteArray buffer; ///< Incoming data buffer.
-  QCorFrameRefPtr frame; ///< Current incoming frame.
-
-  QQueue<SendQueueItem*> sendQueue;
-  SendQueueItem *sendQueueCurrent;
-
-  cor_parser_settings corSettings;
-  cor_parser *corParser;
-  cor_frame::correlation_t nextCorrelationId;
-
-  static int onParserFrameBegin(cor_parser *parser)
-  {
-    QCorConnection *conn = static_cast<QCorConnection*>(parser->object);
-    conn->d->frame.reset(new QCorFrame(conn));
-    conn->d->frame->_state = QCorFrame::TransferingState;
-    return 0;
-  }
-
-  static int onParserFrameHeaderBegin(cor_parser *parser)
-  {
-    return 0;
-  }
-
-  static int onParserFrameHeaderEnd(cor_parser *parser)
-  {
-    QCorConnection *conn = static_cast<QCorConnection*>(parser->object);
-    if (conn->d->frame) {
-      switch (parser->request->type) {
-        case cor_frame::TYPE_REQUEST:
-          conn->d->frame->_type = QCorFrame::RequestType;
-          break;
-        case cor_frame::TYPE_RESPONSE:
-          conn->d->frame->_type = QCorFrame::ResponseType;
-          break;
-      }
-      //emit conn->newFrame(conn->d->frame);
-    }
-    return 0;
-  }
-
-  static int onParserFrameBodyData(cor_parser *parser, const uint8_t *data, size_t length) // TODO Do we need to delete "data"?
-  {
-    QCorConnection *conn = static_cast<QCorConnection*>(parser->object);
-    if (conn->d->frame) {
-      conn->d->frame->_data.append(QByteArray((const char*)data, length));
-      //conn->d->frame->device()->write((const char *)data, length);
-      //emit conn->d->frame->newBodyData(QByteArray((const char*)data, length));
-    }
-    return 0;
-  }
-
-  static int onParserFrameEnd(cor_parser *parser)
-  {
-    QCorConnection *conn = static_cast<QCorConnection*>(parser->object);
-    QCorFrameRefPtr f = conn->d->frame;
-    conn->d->frame.clear();
-    emit conn->newFrame(f);
-    //emit conn->d->frame->end();
-    return 0;
-  }
-};
+#include "qcorconnection_p.h"
+#include "qcorresponse.h"
 
 ///////////////////////////////////////////////////////////////////////
 
 QCorConnection::QCorConnection(QObject *parent) :
   QObject(parent),
-  d(new Private())
+  d(new QCorConnectionPrivate(this))
 {
   d->owner = this;
   d->socket = 0;
   d->frame.clear();
   d->nextCorrelationId = 0;
+  d->sendQueueCurrent = 0;
 
   qRegisterMetaType<QCorFrameRefPtr>("QCorFrameRefPtr");
 
   cor_parser_settings_init(d->corSettings);
-  d->corSettings.on_frame_begin = &(Private::onParserFrameBegin);
-  d->corSettings.on_frame_header_begin = &(Private::onParserFrameHeaderBegin);
-  d->corSettings.on_frame_header_end = &(Private::onParserFrameHeaderEnd);
-  d->corSettings.on_frame_body_data = &(Private::onParserFrameBodyData);
-  d->corSettings.on_frame_end = &(Private::onParserFrameEnd);
+  d->corSettings.on_frame_begin = &(QCorConnectionPrivate::onParserFrameBegin);
+  d->corSettings.on_frame_header_begin = &(QCorConnectionPrivate::onParserFrameHeaderBegin);
+  d->corSettings.on_frame_header_end = &(QCorConnectionPrivate::onParserFrameHeaderEnd);
+  d->corSettings.on_frame_body_data = &(QCorConnectionPrivate::onParserFrameBodyData);
+  d->corSettings.on_frame_end = &(QCorConnectionPrivate::onParserFrameEnd);
 
   d->corParser = (cor_parser *)malloc(sizeof(cor_parser));
   cor_parser_init(d->corParser);
-  d->corParser->object = this;
+  d->corParser->object = d;
 }
 
 QCorConnection::~QCorConnection()
@@ -119,6 +34,9 @@ QCorConnection::~QCorConnection()
   delete d->socket;
   d->frame.clear();
   free(d->corParser);
+  qDeleteAll(d->sendQueue);
+  delete d->sendQueueCurrent;
+  qDeleteAll(d->responseMap);
   delete d;
 }
 
@@ -158,6 +76,35 @@ void QCorConnection::connectTo(const QHostAddress &address, quint16 port)
   connect(d->socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), SIGNAL(stateChanged(QAbstractSocket::SocketState)));
 }
 
+QCorResponse* QCorConnection::sendRequest(const QCorFrame &frame)
+{
+  SendQueueItem *item = new SendQueueItem();
+  item->frame.type = cor_frame::TYPE_REQUEST;
+  item->frame.correlation_id = ++d->nextCorrelationId;
+  item->frame.length = frame.data().size();
+  item->data = frame.data();
+  d->sendQueue.enqueue(item);
+
+  ReplyItem *rep = new ReplyItem();
+  rep->res = new QCorResponse(this);
+  rep->dtEnqueued = QDateTime::currentDateTimeUtc();
+  d->responseMap[item->frame.correlation_id] = rep;
+
+  doNextSendItem();
+  return rep->res;
+}
+
+void QCorConnection::sendResponse(const QCorFrame &frame)
+{
+  SendQueueItem *item = new SendQueueItem();
+  item->frame.type = cor_frame::TYPE_RESPONSE;
+  item->frame.correlation_id = frame.correlationId();
+  item->frame.length = frame.data().size();
+  item->data = frame.data();
+  d->sendQueue.enqueue(item);
+  doNextSendItem();
+}
+
 void QCorConnection::sendTestRequest()
 {
   cor_frame frame;
@@ -179,11 +126,6 @@ void QCorConnection::sendTestRequest()
   delete frame.data;
 }
 
-void QCorConnection::sendResponse(QCorResponse *res, QIODevice *dev)
-{
-
-}
-
 void QCorConnection::onSocketReadyRead()
 {
   quint64 available = 0;
@@ -203,13 +145,12 @@ void QCorConnection::onSocketReadyRead()
 void QCorConnection::onSocketStateChanged(QAbstractSocket::SocketState state)
 {
   switch (state) {
-  case QAbstractSocket::UnconnectedState:
-    deleteLater();
-    if (d->frame && !d->frame->state() != QCorFrame::FinishedState) {
-      d->frame->_state = QCorFrame::ErrorState;
-      //emit d->frame->end();
-    }
-    break;
+    case QAbstractSocket::UnconnectedState:
+      deleteLater();
+      if (d->frame && !d->frame->state() != QCorFrame::FinishedState) {
+        d->frame->setState(QCorFrame::ErrorState);
+      }
+      break;
   }
 }
 
@@ -219,7 +160,18 @@ void QCorConnection::doNextSendItem()
     return;
   }
   d->sendQueueCurrent = d->sendQueue.dequeue();
-  QObject::connect(d->sendQueueCurrent->device, SIGNAL(aboutToClose()), this, SLOT(onCurrentSendItemDone()));
+  
+  // Write the actual request here now...
+  // TODO Write frame in network byte order.
+  const cor_frame frame = d->sendQueueCurrent->frame;
+  d->socket->write((const char *)&frame.version, sizeof(frame.version));
+  d->socket->write((const char *)&frame.type, sizeof(frame.type));
+  d->socket->write((const char *)&frame.flags, sizeof(frame.flags));
+  d->socket->write((const char *)&frame.correlation_id, sizeof(frame.correlation_id));
+  d->socket->write((const char *)&frame.length, sizeof(frame.length));
+  d->socket->write(d->sendQueueCurrent->data);
+
+  QMetaObject::invokeMethod(this, "onCurrentSendItemDone", Qt::QueuedConnection);
 }
 
 void QCorConnection::onCurrentSendItemDone()
@@ -227,4 +179,77 @@ void QCorConnection::onCurrentSendItemDone()
   delete d->sendQueueCurrent;
   d->sendQueueCurrent = 0;
   doNextSendItem();
+}
+
+///////////////////////////////////////////////////////////////////////
+// Private class
+///////////////////////////////////////////////////////////////////////
+
+QCorConnectionPrivate::QCorConnectionPrivate(QCorConnection *owner) :
+  owner(owner)
+{
+}
+
+int QCorConnectionPrivate::onParserFrameBegin(cor_parser *parser)
+{
+  QCorConnectionPrivate *d = static_cast<QCorConnectionPrivate*>(parser->object);
+  d->frame.reset(new QCorFrame());
+  d->frame->setState(QCorFrame::TransferingState);
+  return 0;
+}
+
+int QCorConnectionPrivate::onParserFrameHeaderBegin(cor_parser *parser)
+{
+  return 0;
+}
+
+int QCorConnectionPrivate::onParserFrameHeaderEnd(cor_parser *parser)
+{
+  QCorConnectionPrivate *d = static_cast<QCorConnectionPrivate*>(parser->object);
+  if (d->frame) {
+    switch (parser->request->type) {
+      case cor_frame::TYPE_REQUEST:
+        d->frame->setType(QCorFrame::RequestType);
+        break;
+      case cor_frame::TYPE_RESPONSE:
+        d->frame->setType(QCorFrame::ResponseType);
+        break;
+    }
+    d->frame->setCorrelationId(parser->request->correlation_id);
+  }
+  return 0;
+}
+
+int QCorConnectionPrivate::onParserFrameBodyData(cor_parser *parser, const uint8_t *data, size_t length) // TODO Do we need to delete "data"?
+{
+  QCorConnectionPrivate *d = static_cast<QCorConnectionPrivate*>(parser->object);
+  if (d->frame) {
+    d->frame->appendData(QByteArray((const char*)data, length));
+  }
+  return 0;
+}
+
+int QCorConnectionPrivate::onParserFrameEnd(cor_parser *parser)
+{
+  QCorConnectionPrivate *d = static_cast<QCorConnectionPrivate*>(parser->object);
+  QCorFrameRefPtr f = d->frame;
+  d->frame.clear();
+  emit d->owner->newIncomingRequest(f);
+
+  // Check "responseMap" and notify associated QCorResponse object.
+  switch (parser->request->type) {
+  case cor_frame::TYPE_REQUEST:
+    break;
+  case cor_frame::TYPE_RESPONSE:
+    ReplyItem *rep = d->responseMap.take(parser->request->correlation_id);
+    if (rep) {
+      rep->dtReceived = QDateTime::currentDateTimeUtc();
+      rep->res->setFrame(f);
+      rep->res->setElapsedMillis(rep->dtEnqueued.msecsTo(rep->dtReceived));
+      emit rep->res->finished();
+      delete rep;
+    }
+    break;
+  }
+  return 0;
 }

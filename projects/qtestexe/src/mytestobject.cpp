@@ -3,6 +3,7 @@
 #include "mytestobject.h"
 #include "qcorserver.h"
 #include "qcorconnection.h"
+#include "qcorrequest.h"
 
 
 MyTestObject::MyTestObject(QObject *parent) :
@@ -28,12 +29,11 @@ void MyTestObject::onNewConnection(QCorConnection *conn)
 {
   _serverConnections.append(conn);
   connect(conn, SIGNAL(stateChanged(QAbstractSocket::SocketState)), SLOT(onConnectionStateChanged(QAbstractSocket::SocketState)));
-  connect(conn, SIGNAL(newFrame(QCorFrameRefPtr)), SLOT(onNewFrame(QCorFrameRefPtr)));
+  connect(conn, SIGNAL(newIncomingRequest(QCorFrameRefPtr)), SLOT(onNewFrame(QCorFrameRefPtr)));
 }
 
 void MyTestObject::onConnectionStateChanged(QAbstractSocket::SocketState state)
 {
-  qDebug() << QString("%1 connection state changed").arg(QDateTime::currentDateTime().toString());
   QCorConnection *conn = static_cast<QCorConnection*>(sender());
   if (state == QAbstractSocket::UnconnectedState) {
     _serverConnections.removeAll(conn);
@@ -51,8 +51,16 @@ void MyTestObject::printServerStatistics()
 
 void MyTestObject::onNewFrame(QCorFrameRefPtr frame)
 {
+  QCorConnection *conn = qobject_cast<QCorConnection*>(sender());
+
   _receivedFrames++;
   _receivedFrameBytes += frame->data().size();
+
+  // Respond with echo.
+  QCorFrame res;
+  res.setCorrelationId(frame->correlationId());
+  res.setData(frame->data());
+  conn->sendResponse(res);
 }
 
 // Client based from here...

@@ -1,18 +1,27 @@
 #ifndef QCORRESPONSE_HEADER
 #define QCORRESPONSE_HEADER
 
-#include <QIODevice>
+#include <QObject>
+#include "qcorframe.h"
 
-class QCorResponse : public QIODevice
+class QCorResponse : public QObject
 {
   Q_OBJECT
 
 public:
   QCorResponse(QObject *parent = 0);
+  QCorFrameRefPtr frame() const;
+  int elapsedMillis() const { return _elapsedMillis; }
 
-protected:
-  virtual qint64 readData(char *data, qint64 maxSize);
-  virtual qint64 writeData(const char *data, qint64 maxSize);
+  void setFrame(QCorFrameRefPtr frame) { _frame = frame; }
+  void setElapsedMillis(int ms) { _elapsedMillis = ms; }
+
+signals:
+  void finished();
+
+private:
+  QCorFrameRefPtr _frame;
+  int _elapsedMillis;
 };
 
 #endif

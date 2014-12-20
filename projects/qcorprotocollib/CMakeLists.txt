@@ -12,6 +12,7 @@ set(headers
 
 set(qheaders
   src/qcorconnection.h
+  src/qcorconnection_p.h
   src/qcorframe.h
   src/qcorserver.h
   src/qcorrequest.h

@@ -13,10 +13,12 @@ set(headers
 
 set(qheaders
   src/mytestobject.h
+  src/qtestclient.h
 )
 
 set(sources
   src/mytestobject.cpp
+  src/qtestclient.cpp
   src/main.cpp
 )
 
