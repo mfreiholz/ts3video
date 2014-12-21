@@ -8,15 +8,15 @@ endif()
 
 # Sources
 set(headers
+  src/qcorframe.h
+  src/qcorrequest.h
 )
 
 set(qheaders
   src/qcorconnection.h
   src/qcorconnection_p.h
-  src/qcorframe.h
   src/qcorserver.h
   src/qcorserver_p.h
-  src/qcorrequest.h
   src/qcorreply.h
 )
 

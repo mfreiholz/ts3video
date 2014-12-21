@@ -3,6 +3,7 @@
 
 #include <QTcpServer>
 class QCorConnection;
+class QCorServerPrivate;
 
 class QCorServer : public QTcpServer
 {

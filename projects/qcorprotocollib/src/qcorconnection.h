@@ -6,6 +6,7 @@
 #include "qcorframe.h"
 class QCorRequest;
 class QCorReply;
+class QCorConnectionPrivate;
 
 class QCorConnection : public QObject
 {

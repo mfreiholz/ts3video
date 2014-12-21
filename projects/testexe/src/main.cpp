@@ -2,7 +2,8 @@
 #include <Windows.h>
 #include <Shlobj.h>
 #endif
-#include <string>
+#include <stdlib.h>
+#include <string.h>
 #include <cstdio>
 #include <sstream>
 #include "udpprotocol.h"
@@ -12,10 +13,10 @@ using namespace UDP;
 
 int test1()
 {
-  auto frameDataLen = 6096;
+  const int frameDataLen = 6096;
   dg_byte_t *frameData = new dg_byte_t[frameDataLen];
   dg_byte_t val = 0;
-  for (auto i = 0; i < frameDataLen; ++i) {
+  for (int i = 0; i < frameDataLen; ++i) {
     if (i % VideoFrameDatagram::MAXSIZE == 0) {
       val += 1;
     } else if (i == frameDataLen - 1) {
@@ -31,7 +32,7 @@ int test1()
     VideoFrameDatagram::split(frameData, frameDataLen, 0, 0, &datagrams, datagramsLength);
 
     // Decode.
-    auto completeSize = 0;
+    int completeSize = 0;
     for (int i = 0; i < datagramsLength; ++i) {
       completeSize += datagrams[i]->size;
     }
@@ -74,8 +75,12 @@ void test2()
 #endif
 
   // Read file from disk into buffer.
+#if defined(_WIN32)
   FILE *file;
   fopen_s(&file, inputFilePath, "rb");
+#elif defined(__linux__)
+  FILE *file = fopen(inputFilePath, "rb");
+#endif
   fseek(file, 0, SEEK_END);
   long fileSize = ftell(file);
   rewind(file);
@@ -91,27 +96,38 @@ void test2()
   }
 
   // Write datagrams to disk.
-  for (auto i = 0; i < datagramsLength; ++i) {
+  for (int i = 0; i < datagramsLength; ++i) {
     std::stringstream ss;
     ss << datagramsDir << "/datagram-" << i << ".bin";
     std::string filePath = ss.str();
+#if defined(_WIN32)
     errno_t err = fopen_s(&file, filePath.c_str(), "wb");
-    if (err == 0)
-      datagrams[i]->write(file);
+    if (err != 0) {
+      fclose(file);
+      continue;
+    }
+#elif defined(__linux__)
+    file = fopen(filePath.c_str(), "wb");
+#endif
+    datagrams[i]->write(file);
     fclose(file);
   }
   VideoFrameDatagram::freeData(datagrams, datagramsLength);
   delete[] fileData;
 
   // Read datagrams from disk.
-  auto writtenDatagrams = datagramsLength;
+  int writtenDatagrams = datagramsLength;
   dg_size_t readSize = 0;
   datagrams = new VideoFrameDatagram*[writtenDatagrams];
-  for (auto i = 0; i < writtenDatagrams; ++i) {
+  for (int i = 0; i < writtenDatagrams; ++i) {
     std::stringstream ss;
     ss << datagramsDir << "/datagram-" << i << ".bin";
     std::string filePath = ss.str();
+#if defined(_WIN32)
     fopen_s(&file, filePath.c_str(), "rb");
+#elif defined(__linux__)
+    file = fopen(filePath.c_str(), "rb");
+#endif
     datagrams[i] = new VideoFrameDatagram();
     datagrams[i]->read(file);
     fclose(file);
@@ -119,8 +135,12 @@ void test2()
   }
 
   // Write back to another file.
+#if defined(_WIN32)
   fopen_s(&file, outputFile, "wb");
-  for (auto i = 0; i < writtenDatagrams; ++i) {
+#elif defined(__linux__)
+  fopen(outputFile, "wb");
+#endif
+  for (int i = 0; i < writtenDatagrams; ++i) {
     fwrite(datagrams[i]->data, sizeof(dg_byte_t), datagrams[i]->size, file);
   }
   fclose(file);
