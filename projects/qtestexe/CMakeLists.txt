@@ -34,6 +34,8 @@ qt5_wrap_cpp(qheaders_wrap ${qheaders})
 #qt5_wrap_ui(qforms_wrap ${qforms})
 qt5_add_resources(qresources_wrap ${qresources})
 
+source_group(QtWrap FILES ${qheaders_wrap} ${qforms_wrap} ${qresources_wrap})
+
 # Defines
 add_definitions(
 )

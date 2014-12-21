@@ -1,6 +1,8 @@
+#if defined(_WIN32)
+#include <WinSock2.h>
+#endif
 #include <math.h>
 #include <cstring>
-#include <WinSock2.h>
 #include "udpprotocol.h"
 
 namespace UDP {

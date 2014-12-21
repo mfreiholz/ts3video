@@ -158,7 +158,7 @@ void QCorConnection::doNextSendItem()
   d->sendQueueCurrent = d->sendQueue.dequeue();
   
   // Write the actual request here now...
-  // TODO Write frame in network byte order.
+  // Write frame in network byte order.
   const cor_frame frame = d->sendQueueCurrent->frame;
 
   //d->socket->write((const char *)&frame.version, sizeof(frame.version));

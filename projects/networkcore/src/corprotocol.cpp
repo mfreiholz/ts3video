@@ -1,5 +1,7 @@
-#ifdef _WIN32
+#if defined(_WIN32)
 #include <WinSock2.h>
+#elif defined(__linux__)
+#include <netinet/in.h>
 #endif
 #include <cstdlib>
 #include <cstring>
