@@ -5,7 +5,7 @@
 #include <QAbstractSocket>
 #include "qcorframe.h"
 class QCorRequest;
-class QCorResponse;
+class QCorReply;
 
 class QCorConnection : public QObject
 {
@@ -30,14 +30,12 @@ public slots:
    * The returning QCorReply* emits it's finished() signal,
    * as soon as the remote host responds.
    */
-  QCorResponse* sendRequest(const QCorFrame &frame);
+  QCorReply* sendRequest(const QCorFrame &frame);
 
   /* Sends an response of an previously income request to the
    * remote host. The remote host will not answer to this frame.
    */
   void sendResponse(const QCorFrame &frame);
-  
-  void sendTestRequest();
 
 signals:
   /* Emits every time the underlying socket connection changes its state.

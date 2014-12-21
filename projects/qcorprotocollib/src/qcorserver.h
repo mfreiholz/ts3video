@@ -10,12 +10,20 @@ class QCorServer : public QTcpServer
 
 public:
   QCorServer(QObject *parent);
+  virtual ~QCorServer();
+
+signals:
+  /* Emits for every new connection.
+   * The ownership goes over to the receiver.
+   */
+  void newConnection(QCorConnection *connection);
 
 protected:
   virtual void incomingConnection(qintptr socketDescriptor);
 
-signals:
-  void newConnection(QCorConnection *connection);
+private:
+  friend class QCorServerPrivate;
+  QCorServerPrivate *d;
 };
 
 #endif

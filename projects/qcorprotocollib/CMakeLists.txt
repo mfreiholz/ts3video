@@ -15,8 +15,9 @@ set(qheaders
   src/qcorconnection_p.h
   src/qcorframe.h
   src/qcorserver.h
+  src/qcorserver_p.h
   src/qcorrequest.h
-  src/qcorresponse.h
+  src/qcorreply.h
 )
 
 set(sources
@@ -24,7 +25,7 @@ set(sources
   src/qcorframe.cpp
   src/qcorserver.cpp
   src/qcorrequest.cpp
-  src/qcorresponse.cpp
+  src/qcorreply.cpp
 )
 
 set (qforms
@@ -38,6 +39,8 @@ set (qresources
 qt5_wrap_cpp(qheaders_wrap ${qheaders})
 #qt5_wrap_ui(qforms_wrap ${qforms})
 qt5_add_resources(qresources_wrap ${qresources})
+
+source_group(QtWrap FILES ${qheaders_wrap} ${qforms_wrap} ${qresources_wrap})
 
 # Defines
 add_definitions(

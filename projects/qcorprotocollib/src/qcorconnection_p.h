@@ -9,7 +9,7 @@
 #include "qcorframe.h"
 class QTcpSocket;
 class QCorConnection;
-class QCorResponse;
+class QCorReply;
 class SendQueueItem;
 class ReplyItem;
 
@@ -41,7 +41,7 @@ public:
   QQueue<SendQueueItem*> sendQueue; ///< Outgoing item queue.
   SendQueueItem *sendQueueCurrent; ///< Current outgoing item.
 
-  QHash<cor_frame::correlation_t, ReplyItem*> responseMap; ///< Holds response objects of outstanding replies from servers.
+  QHash<cor_frame::correlation_t, ReplyItem*> replies; ///< Holds response objects of pending replies from servers.
 };
 
 /*
@@ -61,7 +61,7 @@ public:
 class ReplyItem
 {
 public:
-  QCorResponse *res;
+  QCorReply *res;
   QDateTime dtEnqueued;
   QDateTime dtReceived;
 };

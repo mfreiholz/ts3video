@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
       //clientTimer.start(250);
 
       QTestClient *testClient = new QTestClient(&a);
-      testClient->connectToHost(QHostAddress("85.214.204.236"), 5005);
+      testClient->connectToHost(QHostAddress("127.0.0.1"), 5005);
     }
 
     return a.exec();

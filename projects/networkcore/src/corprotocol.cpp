@@ -106,28 +106,31 @@ size_t cor_parser_parse(cor_parser *parser, const cor_parser_settings &settings,
         return readBytes;
       }
 
-      //if (fieldSize == 2) {
-      //  uint16_t val = 0;
-      //  memcpy(&val, p, fieldSize);
-      //  val = ntohs(val);
-      //  memcpy(fieldValueDst, &val, fieldSize);
-      //} else if (fieldSize == 4) {
-      //  uint32_t val = 0;
-      //  memcpy(&val, p, fieldSize);
-      //  val = ntohl(val);
-      //  memcpy(fieldValueDst, &val, fieldSize);
-      //} else if (fieldSize == 8) {
-      //  uint64_t val = 0;
-      //  memcpy(&val, p, fieldSize);
-      //  val = ntohll(val);
-      //  memcpy(fieldValueDst, &val, fieldSize);
-      //}
-
-      // TODO Convert byte order.
-      memcpy(fieldValueDst, p, fieldSize);
+      if (fieldSize == 2) {
+        uint16_t val;
+        memcpy(&val, p, fieldSize);
+        val = ntohs(val);
+        memcpy(fieldValueDst, &val, fieldSize);
+      } else if (fieldSize == 4) {
+        uint32_t val = 0;
+        memcpy(&val, p, fieldSize);
+        val = ntohl(val);
+        memcpy(fieldValueDst, &val, fieldSize);
+      } else if (fieldSize == 8) {
+        uint64_t val = 0;
+        memcpy(&val, p, fieldSize);
+        val = ntohll(val);
+        memcpy(fieldValueDst, &val, fieldSize);
+      }
       parser->state = nextState;
       p += fieldSize;
       readBytes += fieldSize;
+
+      // TODO Convert byte order.
+      //memcpy(fieldValueDst, p, fieldSize);
+      //parser->state = nextState;
+      //p += fieldSize;
+      //readBytes += fieldSize;
       
       EXECUTE_CALLBACK_1_COND(parser->state > s_header_end, settings.on_frame_header_end, parser);
       continue;

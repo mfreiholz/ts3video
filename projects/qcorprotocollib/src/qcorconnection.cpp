@@ -1,7 +1,7 @@
 #include <QTcpSocket>
 #include "qcorconnection.h"
 #include "qcorconnection_p.h"
-#include "qcorresponse.h"
+#include "qcorreply.h"
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -31,12 +31,15 @@ QCorConnection::QCorConnection(QObject *parent) :
 
 QCorConnection::~QCorConnection()
 {
+  d->owner = 0;
   delete d->socket;
+  d->buffer.clear();
   d->frame.clear();
   free(d->corParser);
+  d->nextCorrelationId = 0;
   qDeleteAll(d->sendQueue);
   delete d->sendQueueCurrent;
-  qDeleteAll(d->responseMap);
+  qDeleteAll(d->replies);
   delete d;
 }
 
@@ -76,9 +79,14 @@ void QCorConnection::connectTo(const QHostAddress &address, quint16 port)
   connect(d->socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), SIGNAL(stateChanged(QAbstractSocket::SocketState)));
 }
 
-QCorResponse* QCorConnection::sendRequest(const QCorFrame &frame)
+QCorReply* QCorConnection::sendRequest(const QCorFrame &frame)
 {
+  if (d->socket->state() != QAbstractSocket::ConnectedState) {
+    return 0;
+  }
+
   SendQueueItem *item = new SendQueueItem();
+  item->frame.version = 1;
   item->frame.type = cor_frame::TYPE_REQUEST;
   item->frame.correlation_id = ++d->nextCorrelationId;
   item->frame.length = frame.data().size();
@@ -86,9 +94,9 @@ QCorResponse* QCorConnection::sendRequest(const QCorFrame &frame)
   d->sendQueue.enqueue(item);
 
   ReplyItem *rep = new ReplyItem();
-  rep->res = new QCorResponse(this);
+  rep->res = new QCorReply(this);
   rep->dtEnqueued = QDateTime::currentDateTimeUtc();
-  d->responseMap[item->frame.correlation_id] = rep;
+  d->replies[item->frame.correlation_id] = rep;
 
   doNextSendItem();
   return rep->res;
@@ -96,34 +104,18 @@ QCorResponse* QCorConnection::sendRequest(const QCorFrame &frame)
 
 void QCorConnection::sendResponse(const QCorFrame &frame)
 {
+  if (d->socket->state() != QAbstractSocket::ConnectedState) {
+    return;
+  }
+
   SendQueueItem *item = new SendQueueItem();
+  item->frame.version = 1;
   item->frame.type = cor_frame::TYPE_RESPONSE;
   item->frame.correlation_id = frame.correlationId();
   item->frame.length = frame.data().size();
   item->data = frame.data();
   d->sendQueue.enqueue(item);
   doNextSendItem();
-}
-
-void QCorConnection::sendTestRequest()
-{
-  cor_frame frame;
-  frame.version = 1;
-  frame.type = cor_frame::TYPE_REQUEST;
-  frame.flags = 0;
-  frame.correlation_id = 0;
-  frame.length = 1024 * 4;
-  frame.data = new uint8_t[frame.length];
-  for (cor_frame::data_length_t i = 0; i < frame.length; ++i) {
-    frame.data[i] = 8;
-  }
-  d->socket->write((const char *)&frame.version, sizeof(frame.version));
-  d->socket->write((const char *)&frame.type, sizeof(frame.type));
-  d->socket->write((const char *)&frame.flags, sizeof(frame.flags));
-  d->socket->write((const char *)&frame.correlation_id, sizeof(frame.correlation_id));
-  d->socket->write((const char *)&frame.length, sizeof(frame.length));
-  d->socket->write((const char *)&frame.data, frame.length);
-  delete frame.data;
 }
 
 void QCorConnection::onSocketReadyRead()
@@ -156,6 +148,10 @@ void QCorConnection::onSocketStateChanged(QAbstractSocket::SocketState state)
 
 void QCorConnection::doNextSendItem()
 {
+  if (d->socket->state() != QAbstractSocket::ConnectedState) {
+    return;
+  }
+
   if (d->sendQueueCurrent || d->sendQueue.count() == 0) {
     return;
   }
@@ -164,12 +160,22 @@ void QCorConnection::doNextSendItem()
   // Write the actual request here now...
   // TODO Write frame in network byte order.
   const cor_frame frame = d->sendQueueCurrent->frame;
-  d->socket->write((const char *)&frame.version, sizeof(frame.version));
-  d->socket->write((const char *)&frame.type, sizeof(frame.type));
-  d->socket->write((const char *)&frame.flags, sizeof(frame.flags));
-  d->socket->write((const char *)&frame.correlation_id, sizeof(frame.correlation_id));
-  d->socket->write((const char *)&frame.length, sizeof(frame.length));
-  d->socket->write(d->sendQueueCurrent->data);
+
+  //d->socket->write((const char *)&frame.version, sizeof(frame.version));
+  //d->socket->write((const char *)&frame.type, sizeof(frame.type));
+  //d->socket->write((const char *)&frame.flags, sizeof(frame.flags));
+  //d->socket->write((const char *)&frame.correlation_id, sizeof(frame.correlation_id));
+  //d->socket->write((const char *)&frame.length, sizeof(frame.length));
+  //d->socket->write(d->sendQueueCurrent->data);
+
+  QDataStream out(d->socket);
+  out.setByteOrder(QDataStream::BigEndian);
+  out << frame.version;
+  out << frame.type;
+  out << frame.flags;
+  out << frame.correlation_id;
+  out << frame.length;
+  out.writeRawData(d->sendQueueCurrent->data.constData(), frame.length);
 
   QMetaObject::invokeMethod(this, "onCurrentSendItemDone", Qt::QueuedConnection);
 }
@@ -236,12 +242,12 @@ int QCorConnectionPrivate::onParserFrameEnd(cor_parser *parser)
   d->frame.clear();
   emit d->owner->newIncomingRequest(f);
 
-  // Check "responseMap" and notify associated QCorResponse object.
+  // Check "replies" and notify associated QCorResponse object.
   switch (parser->request->type) {
   case cor_frame::TYPE_REQUEST:
     break;
   case cor_frame::TYPE_RESPONSE:
-    ReplyItem *rep = d->responseMap.take(parser->request->correlation_id);
+    ReplyItem *rep = d->replies.take(parser->request->correlation_id);
     if (rep) {
       rep->dtReceived = QDateTime::currentDateTimeUtc();
       rep->res->setFrame(f);

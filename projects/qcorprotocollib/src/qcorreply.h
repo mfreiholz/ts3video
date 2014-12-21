@@ -4,12 +4,13 @@
 #include <QObject>
 #include "qcorframe.h"
 
-class QCorResponse : public QObject
+class QCorReply : public QObject
 {
   Q_OBJECT
 
 public:
-  QCorResponse(QObject *parent = 0);
+  QCorReply(QObject *parent = 0);
+
   QCorFrameRefPtr frame() const;
   int elapsedMillis() const { return _elapsedMillis; }
 
