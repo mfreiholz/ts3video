@@ -18,25 +18,25 @@ public:
 
 public slots:
   // Server based slots.
-  void startServer();
+  void startServer(const QHostAddress &address, quint16 port);
   void onNewConnection(QCorConnection *conn);
   void onConnectionStateChanged(QAbstractSocket::SocketState state);
-  void onNewFrame(QCorFrameRefPtr frame);
+  void onIncomingRequest(QCorFrameRefPtr frame);
   void printServerStatistics();
 
   // Client connection based methods.
-  void clientConnect(int testRequestInterval = 500);
+  void startClient(const QHostAddress &address, quint16 port);
 
 private:
   // Server
   QCorServer *_server;
   QList<QCorConnection*> _serverConnections;
 
-  // Stats.
+  // Stats
   quint64 _receivedFrames;
   quint64 _receivedFrameBytes;
 
-  // Client.
+  // Client
   QList<QCorConnection*> _clientConnections;
 };
 

@@ -4,29 +4,27 @@
 #include "mytestobject.h"
 #include "qtestclient.h"
 
+QString getArgument(const QStringList &arguments, const QString &key, const QString &defaultValue)
+{
+  const int pos = arguments.indexOf(key);
+  if (pos < 0) {
+    return defaultValue;
+  }
+  return arguments.at(pos + 1);
+}
+
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
     const QStringList args = a.arguments();
+    MyTestObject obj(0);
 
-    // Server test.
-    MyTestObject *server = 0;
     if (args.contains("--server")) {
-      server = new MyTestObject(0);
-      server->startServer();
+      obj.startServer(QHostAddress::Any, getArgument(args, "--server-port", "5005").toUInt());
     }
 
-    // Client test.
-    MyTestObject *client = 0;
-    QTimer clientTimer;
     if (args.contains("--client")) {
-      //client = new MyTestObject(0);
-      //QObject::connect(&clientTimer, SIGNAL(timeout()), client, SLOT(clientConnect()));
-      //clientTimer.setSingleShot(false);
-      //clientTimer.start(250);
-
-      QTestClient *testClient = new QTestClient(&a);
-      testClient->connectToHost(QHostAddress("127.0.0.1"), 5005);
+      obj.startClient(QHostAddress(getArgument(args, "--address", "127.0.0.1")), getArgument(args, "--port", "5005").toUInt());
     }
 
     return a.exec();

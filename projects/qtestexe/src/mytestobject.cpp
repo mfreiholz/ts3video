@@ -4,6 +4,7 @@
 #include "qcorserver.h"
 #include "qcorconnection.h"
 #include "qcorrequest.h"
+#include "qtestclient.h"
 
 
 MyTestObject::MyTestObject(QObject *parent) :
@@ -14,10 +15,10 @@ MyTestObject::MyTestObject(QObject *parent) :
 {
 }
 
-void MyTestObject::startServer()
+void MyTestObject::startServer(const QHostAddress &address, quint16 port)
 {
   _server = new QCorServer(this);
-  _server->listen(QHostAddress::Any, 5005);
+  _server->listen(address, port);
   connect(_server, SIGNAL(newConnection(QCorConnection *)), SLOT(onNewConnection(QCorConnection *)));
 
   QTimer *t = new QTimer(this);
@@ -29,7 +30,7 @@ void MyTestObject::onNewConnection(QCorConnection *conn)
 {
   _serverConnections.append(conn);
   connect(conn, SIGNAL(stateChanged(QAbstractSocket::SocketState)), SLOT(onConnectionStateChanged(QAbstractSocket::SocketState)));
-  connect(conn, SIGNAL(newIncomingRequest(QCorFrameRefPtr)), SLOT(onNewFrame(QCorFrameRefPtr)));
+  connect(conn, SIGNAL(newIncomingRequest(QCorFrameRefPtr)), SLOT(onIncomingRequest(QCorFrameRefPtr)));
 }
 
 void MyTestObject::onConnectionStateChanged(QAbstractSocket::SocketState state)
@@ -37,6 +38,7 @@ void MyTestObject::onConnectionStateChanged(QAbstractSocket::SocketState state)
   QCorConnection *conn = static_cast<QCorConnection*>(sender());
   if (state == QAbstractSocket::UnconnectedState) {
     _serverConnections.removeAll(conn);
+    conn->deleteLater();
   }
 }
 
@@ -49,7 +51,7 @@ void MyTestObject::printServerStatistics()
     .arg(_receivedFrameBytes);
 }
 
-void MyTestObject::onNewFrame(QCorFrameRefPtr frame)
+void MyTestObject::onIncomingRequest(QCorFrameRefPtr frame)
 {
   QCorConnection *conn = qobject_cast<QCorConnection*>(sender());
 
@@ -65,18 +67,8 @@ void MyTestObject::onNewFrame(QCorFrameRefPtr frame)
 
 // Client based from here...
 
-void MyTestObject::clientConnect(int testRequestInterval)
+void MyTestObject::startClient(const QHostAddress &address, quint16 port)
 {
-  if (_clientConnections.count() >= 200) {
-    return;
-  }
-
-  QCorConnection *conn = new QCorConnection(this);
-  conn->connectTo(QHostAddress("85.214.204.236"), 5005);
-  _clientConnections.append(conn);
-
-  QTimer *timer = new QTimer(this);
-  QObject::connect(timer, SIGNAL(timeout()), conn, SLOT(sendTestRequest()));
-  timer->setSingleShot(false);
-  timer->start(testRequestInterval);
+  QTestClient *testClient = new QTestClient(this);
+  testClient->connectToHost(address, port);
 }
