@@ -48,6 +48,11 @@ QAbstractSocket::SocketState QCorConnection::state() const
   return d->socket ? d->socket->state() : QAbstractSocket::UnconnectedState;
 }
 
+QTcpSocket *QCorConnection::socket() const
+{
+  return d->socket;
+}
+
 void QCorConnection::connectWith(quintptr descriptor)
 {
   if (d->socket) {
@@ -56,6 +61,21 @@ void QCorConnection::connectWith(quintptr descriptor)
   }
   d->socket = new QTcpSocket(this);
   d->socket->setSocketDescriptor(descriptor);
+  d->socket->setSocketOption(QAbstractSocket::LowDelayOption, 1);
+  d->socket->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
+  onSocketStateChanged(QAbstractSocket::ConnectedState);
+  connect(d->socket, SIGNAL(readyRead()), SLOT(onSocketReadyRead()));
+  connect(d->socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), SLOT(onSocketStateChanged(QAbstractSocket::SocketState)));
+  connect(d->socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), SIGNAL(stateChanged(QAbstractSocket::SocketState)));
+}
+
+void QCorConnection::connectWith(QTcpSocket *socket)
+{
+  if (d->socket) {
+    d->socket->abort();
+    delete d->socket;
+  }
+  d->socket = socket;
   d->socket->setSocketOption(QAbstractSocket::LowDelayOption, 1);
   d->socket->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
   onSocketStateChanged(QAbstractSocket::ConnectedState);
@@ -77,6 +97,14 @@ void QCorConnection::connectTo(const QHostAddress &address, quint16 port)
   connect(d->socket, SIGNAL(readyRead()), SLOT(onSocketReadyRead()));
   connect(d->socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), SLOT(onSocketStateChanged(QAbstractSocket::SocketState)));
   connect(d->socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), SIGNAL(stateChanged(QAbstractSocket::SocketState)));
+}
+
+void QCorConnection::disconnectFromHost()
+{
+  if (!d->socket) {
+    return;
+  }
+  d->socket->disconnectFromHost();
 }
 
 QCorReply* QCorConnection::sendRequest(const QCorFrame &frame)

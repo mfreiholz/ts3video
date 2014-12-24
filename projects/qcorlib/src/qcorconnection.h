@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QAbstractSocket>
 #include "qcorframe.h"
+class QTcpSocket;
 class QCorRequest;
 class QCorReply;
 class QCorConnectionPrivate;
@@ -16,16 +17,20 @@ public:
   QCorConnection(QObject *parent);
   virtual ~QCorConnection();
   QAbstractSocket::SocketState state() const;
+  QTcpSocket *socket() const;
 
 public slots:
   /* Accepts the already connected socket by it's descriptor.
    */
   void connectWith(quintptr descriptor);
+  void connectWith(QTcpSocket *socket);
 
   /* Connects to a remote host.
    * The stateChanged() signal will be emitted with every state change.
    */
   void connectTo(const QHostAddress &address, quint16 port);
+
+  void disconnectFromHost();
   
   /* Sends an request to the remote host.
    * The returning QCorReply* emits it's finished() signal,

@@ -6,7 +6,7 @@
 #include <string.h>
 #include <cstdio>
 #include <sstream>
-#include "udpprotocol.h"
+#include "medprotocol.h"
 #include "corprotocol.h"
 
 using namespace UDP;

@@ -7,7 +7,7 @@
 #endif
 #include <math.h>
 #include <cstring>
-#include "udpprotocol.h"
+#include "medprotocol.h"
 
 namespace UDP {
 

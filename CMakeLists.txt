@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 2.8)
 project(source)
 
+# Third party projects.
+add_subdirectory(thirdparty/humblelogging)
+set(HumbleLogging_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/thirdparty/humblelogging/include)
+
+# Local projects.
 add_subdirectory(projects/corlib) # TCP protocol lib
 add_subdirectory(projects/medlib) # UDP protocol lib
 add_subdirectory(projects/testexe)
@@ -11,4 +16,5 @@ if(QTDIR)
     list(APPEND CMAKE_PREFIX_PATH ${QTDIR})
 endif()
 add_subdirectory(projects/qcorlib)
+add_subdirectory(projects/qswserverlib)
 add_subdirectory(projects/qtestexe)

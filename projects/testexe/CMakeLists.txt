@@ -16,6 +16,7 @@ include_directories(
   include
   src
   ../corlib/include
+  ../medlib/include
 )
 
 # Target
@@ -28,4 +29,5 @@ add_executable(
 target_link_libraries(
   testexe
   corlib
+  medlib
 )

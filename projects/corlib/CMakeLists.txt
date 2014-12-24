@@ -2,12 +2,10 @@
 # Sources
 set(headers
   include/corprotocol.h
-  include/udpprotocol.h
 )
 
 set(sources
   src/corprotocol.cpp
-  src/udpprotocol.cpp
 )
 
 # Defines
