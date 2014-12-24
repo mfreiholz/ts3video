@@ -22,7 +22,7 @@ include_directories(
 
 # Target
 add_library(
-  networkcore
+  corlib
   STATIC
   ${headers}
   ${sources}
@@ -30,7 +30,7 @@ add_library(
 
 if(WIN32)
   target_link_libraries(
-    networkcore
+    corlib
     Ws2_32.dll
   )
 endif()

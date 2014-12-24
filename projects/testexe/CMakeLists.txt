@@ -1,7 +1,6 @@
 
 # Sources
 set(headers
-
 )
 
 set(sources
@@ -16,7 +15,7 @@ add_definitions(
 include_directories(
   include
   src
-  ../networkcore/include
+  ../corlib/include
 )
 
 # Target
@@ -28,5 +27,5 @@ add_executable(
 
 target_link_libraries(
   testexe
-  networkcore
+  corlib
 )

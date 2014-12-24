@@ -8,7 +8,6 @@ endif()
 
 # Sources
 set(headers
-
 )
 
 set(qheaders
@@ -22,18 +21,15 @@ set(sources
   src/main.cpp
 )
 
-set (qforms
-
+set(qforms
 )
 
-set (qresources
-
+set(qresources
 )
 
 qt5_wrap_cpp(qheaders_wrap ${qheaders})
 #qt5_wrap_ui(qforms_wrap ${qforms})
 qt5_add_resources(qresources_wrap ${qresources})
-
 source_group(QtWrap FILES ${qheaders_wrap} ${qforms_wrap} ${qresources_wrap})
 
 # Defines
@@ -44,7 +40,7 @@ add_definitions(
 include_directories(
   include
   src
-  ../qcorprotocollib/src
+  ../qcorlib/src
 )
 
 # Target
@@ -60,7 +56,7 @@ add_executable(
 
 target_link_libraries(
   qtestexe
-  qcorprotocollib
+  qcorlib
   Qt5::Core
   Qt5::Network
 )
