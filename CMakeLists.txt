@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
 project(source)
 
-add_subdirectory(projects/corlib)
+add_subdirectory(projects/corlib) # TCP protocol lib
+add_subdirectory(projects/medlib) # UDP protocol lib
 add_subdirectory(projects/testexe)
 
 # Qt based projects.
