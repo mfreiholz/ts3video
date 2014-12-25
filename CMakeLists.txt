@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
 project(source)
 
+set(CMAKE_CXX_FLAGS "-std=c++11")
+
 # Third party projects.
 add_subdirectory(thirdparty/humblelogging)
 set(humblelogging_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/thirdparty/humblelogging/include)
