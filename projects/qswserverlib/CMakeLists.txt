@@ -71,17 +71,14 @@ source_group(QtWrap FILES ${qheaders_wrap} ${qresources_wrap})
 
 # Defines
 add_definitions(
-  -DUNICODE
-  -D_UNICODE
   -DNOMINMAX
-  -DSERVERCORE_EXPORT
 )
 
 # Includes
 include_directories(
   src
   include
-  ${HumbleLogging_INCLUDE_DIRS}
+  ${humblelogging_INCLUDE_DIRS}
   ../qcorlib/src
   ../qcorlib/include
 )
@@ -103,7 +100,7 @@ target_link_libraries(
   Qt5::Network
   Qt5::Sql
   Qt5::WebSockets
-  HumbleLogging
+  humblelogging
   qcorlib
 )
 
@@ -117,4 +114,5 @@ endif()
 add_dependencies(
   qswserverlib
   HumbleLogging
+  qcorlib
 )

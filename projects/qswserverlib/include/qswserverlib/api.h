@@ -7,7 +7,7 @@
 #ifdef SERVERCORE_EXPORT
 #  define SERVERCORE_API Q_DECL_EXPORT
 #else
-#  define SERVERCORE_API Q_DECL_IMPORT
+#  define SERVERCORE_API
 #endif
 
 #endif

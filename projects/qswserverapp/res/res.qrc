@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>users.sqlite.sql</file>
+        <file>messages.sqlite.sql</file>
+    </qresource>
+</RCC>

@@ -3,18 +3,23 @@ project(source)
 
 # Third party projects.
 add_subdirectory(thirdparty/humblelogging)
-set(HumbleLogging_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/thirdparty/humblelogging/include)
+set(humblelogging_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/thirdparty/humblelogging/include)
+#set(humblelogging_LIBRARIES humblelogging)
+
+# Third party (external projects)
+#include(CMakeThirdParty.txt)
 
 # Local projects.
 add_subdirectory(projects/corlib) # TCP protocol lib
 add_subdirectory(projects/medlib) # UDP protocol lib
 add_subdirectory(projects/testexe)
 
-# Qt based projects.
+# Local Qt based projects.
 if(QTDIR)
     message("Qt found")
     list(APPEND CMAKE_PREFIX_PATH ${QTDIR})
 endif()
 add_subdirectory(projects/qcorlib)
 add_subdirectory(projects/qswserverlib)
+add_subdirectory(projects/qswserverapp)
 add_subdirectory(projects/qtestexe)
