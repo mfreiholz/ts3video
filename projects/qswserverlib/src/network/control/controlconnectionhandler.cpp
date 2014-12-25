@@ -1,5 +1,5 @@
-#include "QTcpSocket"
-#include "QHostAddress"
+#include <QTcpSocket>
+#include <QHostAddress>
 #include "humblelogging/api.h"
 #include "controlconnectionhandler_p.h"
 #include "controlserver_p.h"

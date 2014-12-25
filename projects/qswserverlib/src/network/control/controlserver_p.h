@@ -1,10 +1,10 @@
 #ifndef CONTROLSERVERPRIVATE_HEADER
 #define CONTROLSERVERPRIVATE_HEADER
 
-#include "QObject"
-#include "QList"
-#include "QHash"
-#include "QTcpServer"
+#include <QObject>
+#include <QList>
+#include <QHash>
+#include <QTcpServer>
 #include "controlserver.h"
 #include "controltomasterconnectionhandler.h"
 class ControlConnectionHandler;

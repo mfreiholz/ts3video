@@ -1,4 +1,3 @@
-#include "QHostAddress"
 #include "humblelogging/api.h"
 #include "controlserver_p.h"
 #include "controlconnectionhandler.h"
@@ -33,16 +32,16 @@ bool ControlServer::startup(const Options &opts)
   }
 
   // Listen for client connections.
-  if (!d->_clientListener.listen(QHostAddress::Any, d->_opts.clientPort)) {
-    HL_ERROR(HL, QString("Can not listen for client connections (port=%1)").arg(d->_opts.clientPort).toStdString());
+  if (!d->_clientListener.listen(d->_opts.address, d->_opts.port)) {
+    HL_ERROR(HL, QString("Can not listen for client connections (port=%1)").arg(d->_opts.port).toStdString());
     return false;
   }
-  HL_INFO(HL, QString("Listen for client connections (port=%1)").arg(d->_opts.clientPort).toStdString());
+  HL_INFO(HL, QString("Listen for client connections (port=%1)").arg(d->_opts.port).toStdString());
 
   // Connect to master server.
-  if (!opts.masterServerAddress.isEmpty() && opts.masterServerPort > 0) {
+  if (!opts.masterServerAddress.isNull() && opts.masterServerPort > 0) {
     ControlToMasterConnectionHandler::StartupOptions sopts;
-    sopts.address = opts.masterServerAddress;
+    sopts.address = opts.masterServerAddress.toString();
     sopts.port = opts.masterServerPort;
     d->_masterConnection.startup(sopts);
   }

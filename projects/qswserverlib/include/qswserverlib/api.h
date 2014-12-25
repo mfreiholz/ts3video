@@ -1,7 +1,7 @@
 #ifndef SERVERCORE_API_HEADER
 #define SERVERCORE_API_HEADER
 
-#include "QtGlobal"
+#include <QtGlobal>
 
 // DLL Export.
 #ifdef SERVERCORE_EXPORT

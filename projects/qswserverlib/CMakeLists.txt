@@ -10,8 +10,8 @@ endif()
 
 # Sources
 set(headers
-  include/servercore/api.h
-  include/servercore/includes.h
+  include/qswserverlib/api.h
+  include/qswserverlib/includes.h
 )
 
 set(qheaders

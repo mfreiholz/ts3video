@@ -1,10 +1,10 @@
 #ifndef CONTROLAPI_HEADER
 #define CONTROLAPI_HEADER
 
-#include "QtGlobal"
-#include "QDataStream"
-#include "QByteArray"
-#include "QLatin1String"
+#include <QtGlobal>
+#include <QDataStream>
+#include <QByteArray>
+#include <QLatin1String>
 
 /**
  * The minimum module request over the client connection protocol looks like this:
@@ -50,6 +50,7 @@ struct ModuleActionRequest {
       return false;
     }
     QDataStream in(data);
+    in.setByteOrder(QDataStream::BigEndian);
     in.readBytes(this->module, this->moduleLength);
     in.readBytes(this->action, this->actionLength);
     return true;

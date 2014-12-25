@@ -7,13 +7,15 @@
 class ControlModule
 {
 public:
-  class Action {
+  class Action
+  {
   public:
     QString action;
     QByteArray data;
   };
 
-  class Result {
+  class Result
+  {
   public:
     QString errorMessage;
     QByteArray data;

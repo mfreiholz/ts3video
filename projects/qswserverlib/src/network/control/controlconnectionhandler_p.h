@@ -1,8 +1,8 @@
 #ifndef CONTROLCONNECTIONHANDLERPRIVATE_HEADER
 #define CONTROLCONNECTIONHANDLERPRIVATE_HEADER
 
-#include "QObject"
-#include "QAbstractSocket"
+#include <QObject>
+#include <QAbstractSocket>
 #include "controlconnectionhandler.h"
 #include "qcorconnection.h"
 
@@ -17,7 +17,7 @@ public:
   virtual ~Private();
 
 public slots:
-  void onSocketStateChanged(QAbstractSocket::SocketState);
+  void onSocketStateChanged(QAbstractSocket::SocketState state);
   void onNewIncomingRequest(QCorFrameRefPtr frame);
 
 public:
