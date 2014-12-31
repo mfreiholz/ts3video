@@ -5,17 +5,14 @@
 class QTcpSocket;
 class ControlServer;
 
-class ControlConnectionHandler :
-  public QObject
+class ControlConnectionHandler : public QObject
 {
   Q_OBJECT
 
 public:
   ControlConnectionHandler(ControlServer *server, QTcpSocket *socket, QObject *parent = 0);
   virtual ~ControlConnectionHandler();
-
-  ControlServer* getServer() const;
-  QTcpSocket* getSocket() const;
+  QTcpSocket* socket() const;
 
 signals:
   void disconnected();

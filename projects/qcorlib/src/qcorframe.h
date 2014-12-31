@@ -26,6 +26,12 @@ public:
   void setData(const QByteArray &data) { _data = data; }
   void appendData(const QByteArray &data) { _data.append(data); }
 
+  void initResponse(const QCorFrame &req)
+  {
+    _type = ResponseType;
+    _correlationId = req.correlationId();
+  }
+
 private:
   State _state;
   Type _type;

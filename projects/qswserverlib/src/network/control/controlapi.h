@@ -6,42 +6,53 @@
 #include <QByteArray>
 #include <QLatin1String>
 
-/**
- * The minimum module request over the client connection protocol looks like this:
- *
- *   (4 byte) unsigned int -> Length of the following bytes.
- *   (x byte) char* -> Module identifier (latin-1 string)
- *   (4 byte) unsigned int -> Length of the following bytes.
- *   (x byte) char* -> Module's action identifier (latin-1 string)
- *
- * All other data is dynamicly handled by the module's action itself.
- */
+#include <stdint.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef struct
+{
+  uint16_t moduleLength;
+  uint8_t *module;
+  
+  uint16_t actionLength;
+  uint8_t *action;
+  
+  uint32_t bodyLength;
+  uint8_t *body;
+
+  static const size_t MINSIZE = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(uint32_t);
+} ma_request;
+
+typedef struct
+{
+  uint32_t bodyLength;
+  uint8_t *body;
+} ma_response;
+
+#ifdef __cplusplus
+}
+#endif
 
 namespace ControlProtocol {
 
 struct ModuleActionRequest {
-  static const int MIN_SIZE = sizeof(char) + sizeof(uint) + sizeof(char) + sizeof(uint);
+  static const int MIN_SIZE = 8;
 
-  ModuleActionRequest() :
-    module(0),
-    moduleLength(0),
-    action(0),
-    actionLength(0)
+  ModuleActionRequest()
   {
   }
 
   ModuleActionRequest(const ModuleActionRequest &other)
   {
-    memcpy(this->module, other.module, other.moduleLength);
-    this->moduleLength = other.moduleLength;
-    memcpy(this->action, other.action, other.actionLength);
-    this->actionLength = other.actionLength;
+    this->module = other.module;
+    this->action = other.action;
   }
 
   ~ModuleActionRequest()
   {
-    delete[] module;
-    delete[] action;
   }
 
   bool fromData(const QByteArray &data)
@@ -51,34 +62,35 @@ struct ModuleActionRequest {
     }
     QDataStream in(data);
     in.setByteOrder(QDataStream::BigEndian);
-    in.readBytes(this->module, this->moduleLength);
-    in.readBytes(this->action, this->actionLength);
-    return true;
-  }
+    
+    quint32 len = 0;
+    in >> len;
+    char *buff = new char[len];
+    in.readRawData(buff, len);
+    this->module = QString::fromLatin1(buff, len);
+    delete[] buff;
 
-  bool fromParams(const QLatin1String &moduleId, const QLatin1String &actionId)
-  {
-    this->module = new char[moduleId.size()];
-    memcpy(this->module, moduleId.latin1(), moduleId.size());
-    moduleLength = moduleId.size();
+    len = 0;
+    in >> len;
+    buff = new char[len];
+    in.readRawData(buff, len);
+    this->action = QString::fromLatin1(buff, len);
+    delete[] buff;
 
-    this->action = new char[actionId.size()];
-    memcpy(this->action, actionId.latin1(), actionId.size());
-    moduleLength = actionId.size();
     return true;
   }
 
   void serialize(QDataStream &out)
   {
-    out.writeBytes(this->module, this->moduleLength);
-    out.writeBytes(this->action, this->actionLength);
+    out << (quint32) this->module.length();
+    out.writeRawData(this->module.toLatin1().constData(), this->module.length());
+
+    out << (quint32) this->action.length();
+    out.writeRawData(this->module.toLatin1().constData(), this->action.length());
   }
 
-  char *module;
-  uint moduleLength;
-
-  char *action;
-  uint actionLength;
+  QString module;
+  QString action;
 };
 
 } // End of namespace.

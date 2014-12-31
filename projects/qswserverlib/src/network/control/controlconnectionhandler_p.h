@@ -7,8 +7,7 @@
 #include "qcorconnection.h"
 
 
-class ControlConnectionHandler::Private :
-  public QObject
+class ControlConnectionHandler::Private : public QObject
 {
   Q_OBJECT
 

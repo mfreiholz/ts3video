@@ -29,12 +29,7 @@ ControlConnectionHandler::~ControlConnectionHandler()
   delete d;
 }
 
-ControlServer* ControlConnectionHandler::getServer() const
-{
-  return d->_server;
-}
-
-QTcpSocket* ControlConnectionHandler::getSocket() const
+QTcpSocket* ControlConnectionHandler::socket() const
 {
   return d->_conn->socket();
 }
@@ -70,12 +65,12 @@ void ControlConnectionHandler::Private::onSocketStateChanged(QAbstractSocket::So
   }
 }
 
-void ControlConnectionHandler::Private::onNewIncomingRequest(QCorFrameRefPtr frame)
+void ControlConnectionHandler::Private::onNewIncomingRequest(QCorFrameRefPtr req)
 {
   HL_DEBUG(HL, "New request");
 
   ControlProtocol::ModuleActionRequest mreq;
-  if (!mreq.fromData(frame->data())) {
+  if (!mreq.fromData(req->data())) {
     HL_ERROR(HL, "Request is too small to fit in ModuleActionRequest");
     return;
   }
@@ -87,22 +82,28 @@ void ControlConnectionHandler::Private::onNewIncomingRequest(QCorFrameRefPtr fra
   ControlModule *module = _server->d->_id2module.value(moduleId);
   if (!module) {
     HL_ERROR(HL, QString("Unknown module (module=%1; action=%1)").arg(moduleId).toStdString());
+    QCorFrame res;
+    res.initResponse(*req.data());
+    _conn->sendResponse(res);
     return;
   }
 
   // Execute module's action.
   ControlModule::Action a;
   a.action = actionId;
-  a.data = frame->data().mid(ControlProtocol::ModuleActionRequest::MIN_SIZE);
+  a.data = req->data().mid(ControlProtocol::ModuleActionRequest::MIN_SIZE);
   const ControlModule::Result result = module->handleAction(a);
   if (!result.errorMessage.isEmpty()) {
     HL_ERROR(HL, QString("Action failed (error=%1)").arg(result.errorMessage).toStdString());
+    QCorFrame res;
+    res.initResponse(*req.data());
+    _conn->sendResponse(res);
     return;
   }
 
   // Send response.
   QCorFrame res;
-  res.setCorrelationId(frame->correlationId());
+  res.setCorrelationId(req->correlationId());
   res.setData(result.data);
   _conn->sendResponse(res);
 }
