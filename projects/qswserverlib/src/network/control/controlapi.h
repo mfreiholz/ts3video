@@ -6,6 +6,10 @@
 #include <QByteArray>
 #include <QLatin1String>
 
+/*
+ * Module Action Protocol (MAP).
+ */
+
 #include <stdint.h>
 
 #ifdef __cplusplus
@@ -22,9 +26,9 @@ typedef struct
   
   uint32_t bodyLength;
   uint8_t *body;
+} map_request;
 
-  static const size_t MINSIZE = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(uint32_t);
-} ma_request;
+static const size_t MAP_REQUEST_MINSIZE = sizeof(uint16_t) + sizeof(uint8_t) + sizeof(uint16_t) + sizeof(uint8_t) + sizeof(uint32_t);
 
 typedef struct
 {
