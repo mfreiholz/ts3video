@@ -1,3 +1,4 @@
+#include <QTimer>
 #include "humblelogging/api.h"
 #include "controlserver_p.h"
 #include "controlconnectionhandler.h"
@@ -13,6 +14,10 @@ ControlServer::ControlServer(QObject *parent) :
   QObject(parent),
   d(new Private(this))
 {
+  QTimer *timer = new QTimer(this);
+  timer->setInterval(500);
+  connect(timer, SIGNAL(timeout()), d, SLOT(testBroadcast()));
+  timer->start();
 }
 
 ControlServer::~ControlServer()
@@ -95,4 +100,17 @@ void ControlServer::Private::onClientDisconnected()
   ControlConnectionHandler *handler = qobject_cast<ControlConnectionHandler*>(sender());
   _clientConnections.removeAll(handler);
   handler->deleteLater();
+}
+
+#include "qcorframe.h"
+#include "qcorreply.h"
+#include "controlconnectionhandler_p.h"
+void ControlServer::Private::testBroadcast()
+{
+  QCorFrame frame;
+  frame.setData(QByteArray("Test #1"));
+  foreach (ControlConnectionHandler *handler, _clientConnections) {
+    QCorReply *reply = handler->d->_conn->sendRequest(frame);
+    connect(reply, SIGNAL(finished()), reply, SLOT(deleteLater()));
+  }
 }

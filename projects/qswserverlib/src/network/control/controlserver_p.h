@@ -23,6 +23,7 @@ public:
 public slots:
   void onNewClientConnection();
   void onClientDisconnected();
+  void testBroadcast();
 
 public:
   ControlServer *_owner;

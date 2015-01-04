@@ -166,7 +166,7 @@ void QCorConnection::onSocketStateChanged(QAbstractSocket::SocketState state)
 {
   switch (state) {
     case QAbstractSocket::UnconnectedState:
-      deleteLater();
+      //deleteLater();
       if (d->frame && !d->frame->state() != QCorFrame::FinishedState) {
         d->frame->setState(QCorFrame::ErrorState);
       }

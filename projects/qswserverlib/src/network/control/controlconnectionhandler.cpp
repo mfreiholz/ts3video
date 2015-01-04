@@ -17,7 +17,7 @@ ControlConnectionHandler::ControlConnectionHandler(ControlServer *server, QTcpSo
   d(new Private(this))
 {
   d->_server = server;
-  d->_conn = new QCorConnection(d);
+  d->_conn = new QCorConnection(0);
   d->_conn->connectWith(socket);
   d->onSocketStateChanged(QAbstractSocket::ConnectedState);
   connect(d->_conn, SIGNAL(stateChanged(QAbstractSocket::SocketState)), d, SLOT(onSocketStateChanged(QAbstractSocket::SocketState)));

@@ -20,6 +20,8 @@ signals:
 private:
   class Private;
   Private *d;
+
+  friend class ControlServer;
 };
 
 #endif
