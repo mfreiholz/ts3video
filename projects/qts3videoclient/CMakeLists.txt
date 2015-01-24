@@ -3,6 +3,7 @@
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Gui REQUIRED)
 find_package(Qt5Widgets REQUIRED)
+find_package(Qt5Network REQUIRED)
 if(POLICY CMP0020)
   cmake_policy(SET CMP0020 NEW)
 endif()
@@ -47,6 +48,7 @@ add_definitions(
 # Includes
 include_directories(
   ${CMAKE_CURRENT_BINARY_DIR}
+  ../qcorlib/src
 )
 
 # Target
@@ -65,4 +67,6 @@ target_link_libraries(
   Qt5::Core
   Qt5::Gui
   Qt5::Widgets
+  Qt5::Network
+  qcorlib
 )
