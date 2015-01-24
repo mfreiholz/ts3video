@@ -26,5 +26,4 @@ TS3VideoServer::TS3VideoServer(QObject *parent) :
 
 TS3VideoServer::~TS3VideoServer()
 {
-
 }
