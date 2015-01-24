@@ -1,0 +1,19 @@
+<RCC>
+    <qresource prefix="/">
+        <file>frame.jpg</file>
+        <file>avatar.jpg</file>
+        <file>frame2.jpg</file>
+        <file>frame3.jpg</file>
+        <file>ic_close_grey600_48dp.png</file>
+        <file>ic_close_white_48dp.png</file>
+        <file>ic_fullscreen_exit_grey600_48dp.png</file>
+        <file>ic_fullscreen_exit_white_48dp.png</file>
+        <file>ic_fullscreen_grey600_48dp.png</file>
+        <file>ic_fullscreen_white_48dp.png</file>
+        <file>ic_videocam_grey600_48dp.png</file>
+        <file>ic_videocam_off_grey600_48dp.png</file>
+        <file>ic_videocam_off_white_48dp.png</file>
+        <file>ic_videocam_white_48dp.png</file>
+        <file>example-ad-320-50.png</file>
+    </qresource>
+</RCC>
