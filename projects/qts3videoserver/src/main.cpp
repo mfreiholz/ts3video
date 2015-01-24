@@ -1,9 +1,13 @@
 #include <QCoreApplication>
 #include <QDebug>
 
+#include "ts3videoserver.h"
+
 int main(int argc, char *argv[])
 {
   QCoreApplication a(argc, argv);
-  qDebug() << QString("Starting server...");
+  
+  TS3VideoServer server(nullptr);
+
   return a.exec();
 }

@@ -11,10 +11,14 @@ set(headers
 )
 
 set(qheaders
+  src/ts3videoserver.h
+  src/clientconnectionhandler.h
 )
 
 set(sources
   src/main.cpp
+  src/ts3videoserver.cpp
+  src/clientconnectionhandler.cpp
 )
 
 set(qforms
@@ -35,6 +39,7 @@ add_definitions(
 
 # Includes
 include_directories(
+  ../qcorlib/src
 )
 
 # Target
@@ -52,4 +57,5 @@ target_link_libraries(
   qts3videoserver
   Qt5::Core
   Qt5::Network
+  qcorlib
 )
