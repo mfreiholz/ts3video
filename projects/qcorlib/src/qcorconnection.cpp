@@ -268,11 +268,11 @@ int QCorConnectionPrivate::onParserFrameEnd(cor_parser *parser)
   QCorConnectionPrivate *d = static_cast<QCorConnectionPrivate*>(parser->object);
   QCorFrameRefPtr f = d->frame;
   d->frame.clear();
-  emit d->owner->newIncomingRequest(f);
 
   // Check "replies" and notify associated QCorResponse object.
   switch (parser->request->type) {
   case cor_frame::TYPE_REQUEST:
+    emit d->owner->newIncomingRequest(f);
     break;
   case cor_frame::TYPE_RESPONSE:
     ReplyItem *rep = d->replies.take(parser->request->correlation_id);
