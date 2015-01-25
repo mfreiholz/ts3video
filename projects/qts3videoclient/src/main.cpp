@@ -1,9 +1,15 @@
 #include <QObject>
 #include <QTimer>
 #include <QApplication>
+#include <QJsonDocument>
+#include <QJsonObject>
+
+#include "qcorreply.h"
+
 #include "clientvideowidget.h"
 #include "gridviewwidgetarranger.h"
 #include "videocollectionwidget.h"
+#include "ts3videoclient.h"
 
 QVariant getArgsValue(const QString &key, const QVariant &defaultValue = QVariant())
 {
@@ -25,15 +31,59 @@ QWidget* createVideoWidget()
 
 void runClient()
 {
-  auto serverAddress = getArgsValue("--server-address", "127.0.0.1");
-  auto serverPort = getArgsValue("--server-port", 6667).toUInt();
+  auto serverAddress = getArgsValue("--server-address", "127.0.0.1").toString();
+  auto serverPort = getArgsValue("--server-port", 6000).toUInt();
   auto ts3clientId = getArgsValue("--ts3-clientid").toString();
   auto ts3channelId = getArgsValue("--ts3-channelid").toString();
+
+  // Connect to server.
+  auto ts3client = new TS3VideoClient(nullptr);
+  ts3client->connectToHost(QHostAddress(serverAddress), serverPort);
+  QObject::connect(ts3client, &TS3VideoClient::stateChanged, [ts3client] (QAbstractSocket::SocketState state) {
+    switch (state) {
+      case QAbstractSocket::ConnectedState: {
+
+        // Authenticate.
+        auto reply = ts3client->auth();
+        QObject::connect(reply, &QCorReply::finished, [reply, ts3client] () {
+          reply->deleteLater();
+          qDebug() << QString("Auth answer: %1").arg(QString(reply->frame()->data()));
+          QJsonParseError err;
+          auto doc = QJsonDocument::fromJson(reply->frame()->data(), &err);
+          if (err.error != QJsonParseError::NoError) {
+            qDebug() << QString("JSON Parse Error: %1").arg(err.errorString());
+            return;
+          }
+          auto root = doc.object();
+          auto status = root["status"].toInt();
+          if (status != 0) {
+            return;
+          }
+
+          // Join channel.
+          auto reply2 = ts3client->joinChannel();
+          QObject::connect(reply2, &QCorReply::finished, [reply2, ts3client] () {
+            reply2->deleteLater();
+            qDebug() << QString("Join channel answer: %1").arg(QString(reply2->frame()->data()));
+          });
+
+        });
+        break;
+      }
+      case QAbstractSocket::UnconnectedState: {
+        ts3client->deleteLater();
+        qApp->quit();
+        break;
+      }
+    }
+  });
 }
 
 int main(int argc, char *argv[])
 {
   QApplication a(argc, argv);
+  runClient();
+  return a.exec();
 
   // Create a bunch of initial widgets.
   QList<QWidget*> widgets;

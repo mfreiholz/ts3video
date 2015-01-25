@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QScopedPointer>
 #include <QHostAddress>
+#include <QAbstractSocket>
 
 #include "qcorframe.h"
 
@@ -21,6 +22,10 @@ public:
   ~TS3VideoClient();
   void connectToHost(const QHostAddress &address, qint16 port);
   QCorReply* auth();
+  QCorReply* joinChannel();
+
+signals:
+  void stateChanged(QAbstractSocket::SocketState);
 
 private slots:
   void onStateChanged(QAbstractSocket::SocketState state);

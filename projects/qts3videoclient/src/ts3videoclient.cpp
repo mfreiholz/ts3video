@@ -23,6 +23,9 @@ TS3VideoClient::TS3VideoClient(QObject *parent) :
   QObject(parent),
   d_ptr(new TS3VideoClientPrivate(this))
 {
+  Q_D(TS3VideoClient);
+  connect(d->_connection, &QCorConnection::stateChanged, this, &TS3VideoClient::onStateChanged);
+  connect(d->_connection, &QCorConnection::stateChanged, this, &TS3VideoClient::stateChanged);
 }
 
 TS3VideoClient::~TS3VideoClient()
@@ -35,7 +38,6 @@ void TS3VideoClient::connectToHost(const QHostAddress &address, qint16 port)
 {
   Q_D(TS3VideoClient);
   d->_connection->connectTo(address, port);
-  connect(d->_connection, &QCorConnection::stateChanged, this, &TS3VideoClient::onStateChanged);
 }
 
 QCorReply* TS3VideoClient::auth()
@@ -46,6 +48,16 @@ QCorReply* TS3VideoClient::auth()
   params["username"] = QString("UsernameHere");
   QCorFrame req;
   req.setData(createJsonRequest("auth", params));
+  return d->_connection->sendRequest(req);
+}
+
+QCorReply* TS3VideoClient::joinChannel()
+{
+  Q_D(TS3VideoClient);
+  QJsonObject params;
+  params["channelid"] = 1;
+  QCorFrame req;
+  req.setData(createJsonRequest("joinchannel", params));
   return d->_connection->sendRequest(req);
 }
 
