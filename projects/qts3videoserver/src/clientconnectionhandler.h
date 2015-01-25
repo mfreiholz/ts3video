@@ -8,6 +8,7 @@
 
 class QCorConnection;
 class TS3VideoServer;
+class ClientEntity;
 
 /*
   JSON Example Request
@@ -44,6 +45,7 @@ private slots:
 private:
   TS3VideoServer *_server;
   QCorConnection *_connection;
+  ClientEntity *_clientEntity;
 
   // Status information.
   bool _authenticated;

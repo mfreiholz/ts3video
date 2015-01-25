@@ -3,9 +3,12 @@
 #include <QDebug>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QJsonArray>
 #include <QJsonValue>
+#include <QTcpSocket>
 
 #include "qcorconnection.h"
+#include "qcorreply.h"
 
 #include "ts3videoserver.h"
 
@@ -27,27 +30,47 @@ QByteArray createJsonResponse(const  QJsonObject &data)
   return QJsonDocument(root).toJson(QJsonDocument::Compact);
 }
 
+QByteArray createJsonRequest(const QString &action, const QJsonObject &parameters)
+{
+  QJsonObject root;
+  root["action"] = action;
+  root["parameters"] = parameters;
+  return QJsonDocument(root).toJson(QJsonDocument::Compact);
+}
+
 ///////////////////////////////////////////////////////////////////////
 
 ClientConnectionHandler::ClientConnectionHandler(TS3VideoServer *server, QCorConnection *connection, QObject *parent) :
   QObject(parent),
   _server(server),
   _connection(connection),
-  _authenticated(false)
+  _authenticated(false),
+  _clientEntity(new ClientEntity())
 {
+  _clientEntity = new ClientEntity();
+  _clientEntity->id = ++_server->_nextClientId;
+  _server->_clients.insert(_clientEntity->id, _clientEntity);
+  
+  _server->_connections.insert(_clientEntity->id, this);
+  connect(_connection, &QCorConnection::stateChanged, this, &ClientConnectionHandler::onStateChanged);
   connect(_connection, &QCorConnection::newIncomingRequest, this, &ClientConnectionHandler::onNewIncomingRequest);
+
+  qDebug() << QString("New client connection (addr=%1; port=%2; clientid=%3)").arg(_connection->socket()->peerAddress().toString()).arg(_connection->socket()->peerPort()).arg(_clientEntity->id);
 }
 
 ClientConnectionHandler::~ClientConnectionHandler()
 {
+  _server->_clients.remove(_clientEntity->id);
+  _server->_connections.remove(_clientEntity->id);
+  delete _clientEntity;
   delete _connection;
+  _server = nullptr;
 }
 
 void ClientConnectionHandler::onStateChanged(QAbstractSocket::SocketState state)
 {
   switch (state) {
     case QAbstractSocket::UnconnectedState: {
-      _server->_connections.removeAll(this);
       // TODO: Notify sibling clients about the disconnect.
       // Delete itself.
       deleteLater();
@@ -108,6 +131,14 @@ void ClientConnectionHandler::onNewIncomingRequest(QCorFrameRefPtr frame)
     _connection->sendResponse(res);
     return;
   }
+  else if (action == "goodbye") {
+    QCorFrame res;
+    res.initResponse(*frame.data());
+    res.setData(createJsonResponse(QJsonObject()));
+    _connection->sendResponse(res);
+    _connection->disconnectFromHost();
+    return;
+  }
 
   // The client needs to be authenticated before he can request any other actions.
   // Close connection, if the client tries anything else.
@@ -121,14 +152,66 @@ void ClientConnectionHandler::onNewIncomingRequest(QCorFrameRefPtr frame)
   }
 
   if (action == "joinchannel") {
-    auto channelId = params["channelid"].toString();
-    if (channelId.isEmpty()) {
-      // TODO Send error: Invalid channel.
+    auto channelId = params["channelid"].toInt();
+    if (channelId <= 0) {
+      // Send error: Missing channel id.
+      QCorFrame res;
+      res.initResponse(*frame.data());
+      res.setData(createJsonResponseError(1, QString("Invalid channel id (channelid=%1)").arg(channelId)));
+      _connection->sendResponse(res);
+      return;
     }
-    // TODO Send response.
+    // Create channel.
+    auto channelEntity = _server->_channels.value(channelId);
+    if (!channelEntity) {
+      channelEntity = new ChannelEntity();
+      channelEntity->id = ++_server->_nextChannelId;
+      _server->_channels.insert(channelEntity->id, channelEntity);
+    }
+    // Join channel.
+    _server->_participants[channelEntity->id].insert(_clientEntity->id);
+    // Send response.
+    auto participants = _server->_participants[channelEntity->id];
+    QJsonObject params;
+    params["channel"] = channelEntity->toQJsonObject();
+    QJsonArray paramsParticipants;
+    foreach (auto clientId, participants) {
+      auto client = _server->_clients.value(clientId);
+      if (client) {
+        paramsParticipants.append(client->toQJsonObject());
+      }
+    }
+    params["participants"] = paramsParticipants;
+    QCorFrame res;
+    res.initResponse(*frame.data());
+    res.setData(createJsonResponse(params));
+    _connection->sendResponse(res);
+    // TODO Notify participants about the new client.
+    params = QJsonObject();
+    params["channel"] = channelEntity->toQJsonObject();
+    params["client"] = _clientEntity->toQJsonObject();
+    QCorFrame req;
+    req.setData(createJsonRequest("notify.clientjoinedchannel", params));
+    foreach (auto clientId, participants) {
+      auto conn = _server->_connections.value(clientId);
+      if (conn) {
+        auto reply = conn->_connection->sendRequest(req);
+        connect(reply, &QCorReply::finished, reply, &QCorReply::deleteLater);
+      }
+    }
+    return;
   }
   else if (action == "leavechannel") {
-
+    auto channelId = params["channelid"].toInt();
+    // Find channel.
+    auto channelEntity = _server->_channels.value(channelId);
+    if (!channelEntity) {
+      // TODO Send error.
+    }
+    // TODO Leave channel.
+    // TODO Delete channel.
+    // TODO Send response.
+    // TODO Notify participants.
   }
 
   QCorFrame res;
