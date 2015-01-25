@@ -61,26 +61,15 @@ void ClientConnectionHandler::onNewIncomingRequest(QCorFrameRefPtr frame)
 {
   qDebug() << QString("New incoming frame (size=%1; content=%2)").arg(frame->data().size()).arg(QString(frame->data()));
 
-  QJsonParseError err;
-  auto doc = QJsonDocument::fromJson(frame->data(), &err);
-  if (err.error != QJsonParseError::NoError) {
+  QString action;
+  QJsonObject params;
+  if (!JsonProtocolHelper::fromJsonRequest(frame->data(), action, params)) {
     QCorFrame res;
     res.initResponse(*frame.data());
-    res.setData(JsonProtocolHelper::createJsonResponseError(1, QString("JSON Parse Error: %1").arg(err.errorString())));
+    res.setData(JsonProtocolHelper::createJsonResponseError(500, QString("Invalid protocol format.")));
     _connection->sendResponse(res);
     return;
   }
-  else if (doc.isEmpty() || !doc.isObject()) {
-    QCorFrame res;
-    res.initResponse(*frame.data());
-    res.setData(JsonProtocolHelper::createJsonResponseError(2, QString("Empty request not supported: %1")));
-    _connection->sendResponse(res);
-    return;
-  }
-
-  auto root = doc.object();
-  auto action = root["action"].toString();
-  auto params = root["parameters"].toObject();
 
   if (action == "auth") {
     auto version = params["version"].toInt();
@@ -184,12 +173,41 @@ void ClientConnectionHandler::onNewIncomingRequest(QCorFrameRefPtr frame)
     // Find channel.
     auto channelEntity = _server->_channels.value(channelId);
     if (!channelEntity) {
-      // TODO Send error.
+      // Send error: Invalid channel id.
+      QCorFrame res;
+      res.initResponse(*frame.data());
+      res.setData(JsonProtocolHelper::createJsonResponseError(1, QString("Invalid channel id (channelid=%1)").arg(channelId)));
+      _connection->sendResponse(res);
+      return;
     }
-    // TODO Leave channel.
-    // TODO Delete channel.
+    // Leave channel.
+    _server->_participants[channelEntity->id].remove(_clientEntity->id);
     // TODO Send response.
+    QJsonObject data;
+    QCorFrame res;
+    res.initResponse(*frame.data());
+    res.setData(JsonProtocolHelper::createJsonResponse(data));
+    _connection->sendResponse(res);
     // TODO Notify participants.
+    params = QJsonObject();
+    params["channel"] = channelEntity->toQJsonObject();
+    params["client"] = _clientEntity->toQJsonObject();
+    QCorFrame req;
+    req.setData(JsonProtocolHelper::createJsonRequest("notify.clientleftchannel", params));
+    auto participants = _server->_participants[channelEntity->id];
+    foreach(auto clientId, participants) {
+      auto conn = _server->_connections.value(clientId);
+      if (conn && conn != this) {
+        auto reply = conn->_connection->sendRequest(req);
+        connect(reply, &QCorReply::finished, reply, &QCorReply::deleteLater);
+      }
+    }
+    // Delete channel.
+    if (_server->_participants[channelEntity->id].isEmpty()) {
+      _server->_channels.remove(channelEntity->id);
+      delete channelEntity;
+    }
+    return;
   }
 
   QCorFrame res;
