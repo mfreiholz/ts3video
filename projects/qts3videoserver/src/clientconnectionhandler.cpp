@@ -12,34 +12,9 @@
 
 #include "cliententity.h"
 #include "channelentity.h"
+#include "jsonprotocolhelper.h"
 
 #include "ts3videoserver.h"
-
-///////////////////////////////////////////////////////////////////////
-
-QByteArray createJsonResponseError(int status, const QString &errorMessage)
-{
-  QJsonObject root;
-  root["status"] = status;
-  root["error"] = errorMessage;
-  return QJsonDocument(root).toJson(QJsonDocument::Compact);
-}
-
-QByteArray createJsonResponse(const  QJsonObject &data)
-{
-  QJsonObject root;
-  root["status"] = 0;
-  root["data"] = data;
-  return QJsonDocument(root).toJson(QJsonDocument::Compact);
-}
-
-QByteArray createJsonRequest(const QString &action, const QJsonObject &parameters)
-{
-  QJsonObject root;
-  root["action"] = action;
-  root["parameters"] = parameters;
-  return QJsonDocument(root).toJson(QJsonDocument::Compact);
-}
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -91,14 +66,14 @@ void ClientConnectionHandler::onNewIncomingRequest(QCorFrameRefPtr frame)
   if (err.error != QJsonParseError::NoError) {
     QCorFrame res;
     res.initResponse(*frame.data());
-    res.setData(createJsonResponseError(1, QString("JSON Parse Error: %1").arg(err.errorString())));
+    res.setData(JsonProtocolHelper::createJsonResponseError(1, QString("JSON Parse Error: %1").arg(err.errorString())));
     _connection->sendResponse(res);
     return;
   }
   else if (doc.isEmpty() || !doc.isObject()) {
     QCorFrame res;
     res.initResponse(*frame.data());
-    res.setData(createJsonResponseError(2, QString("Empty request not supported: %1")));
+    res.setData(JsonProtocolHelper::createJsonResponseError(2, QString("Empty request not supported: %1")));
     _connection->sendResponse(res);
     return;
   }
@@ -114,7 +89,7 @@ void ClientConnectionHandler::onNewIncomingRequest(QCorFrameRefPtr frame)
     if (version != TS3VIDEOSERVER_VERSION) {
       QCorFrame res;
       res.initResponse(*frame.data());
-      res.setData(createJsonResponseError(3, QString("Incompatible version. (client=%1; server=%2)").arg(version).arg(TS3VIDEOSERVER_VERSION)));
+      res.setData(JsonProtocolHelper::createJsonResponseError(3, QString("Incompatible version. (client=%1; server=%2)").arg(version).arg(TS3VIDEOSERVER_VERSION)));
       _connection->sendResponse(res);
       return;
     }
@@ -122,7 +97,7 @@ void ClientConnectionHandler::onNewIncomingRequest(QCorFrameRefPtr frame)
     if (username.isEmpty()) {
       QCorFrame res;
       res.initResponse(*frame.data());
-      res.setData(createJsonResponseError(4, QString("Authentication failed.")));
+      res.setData(JsonProtocolHelper::createJsonResponseError(4, QString("Authentication failed.")));
       _connection->sendResponse(res);
       return;
     }
@@ -130,14 +105,14 @@ void ClientConnectionHandler::onNewIncomingRequest(QCorFrameRefPtr frame)
     // Send response.
     QCorFrame res;
     res.initResponse(*frame.data());
-    res.setData(createJsonResponse(QJsonObject()));
+    res.setData(JsonProtocolHelper::createJsonResponse(QJsonObject()));
     _connection->sendResponse(res);
     return;
   }
   else if (action == "goodbye") {
     QCorFrame res;
     res.initResponse(*frame.data());
-    res.setData(createJsonResponse(QJsonObject()));
+    res.setData(JsonProtocolHelper::createJsonResponse(QJsonObject()));
     _connection->sendResponse(res);
     _connection->disconnectFromHost();
     return;
@@ -148,7 +123,7 @@ void ClientConnectionHandler::onNewIncomingRequest(QCorFrameRefPtr frame)
   if (!_authenticated) {
     QCorFrame res;
     res.initResponse(*frame.data());
-    res.setData(createJsonResponseError(4, QString("Authentication failed.")));
+    res.setData(JsonProtocolHelper::createJsonResponseError(4, QString("Authentication failed.")));
     _connection->sendResponse(res);
     _connection->disconnectFromHost();
     return;
@@ -160,7 +135,7 @@ void ClientConnectionHandler::onNewIncomingRequest(QCorFrameRefPtr frame)
       // Send error: Missing channel id.
       QCorFrame res;
       res.initResponse(*frame.data());
-      res.setData(createJsonResponseError(1, QString("Invalid channel id (channelid=%1)").arg(channelId)));
+      res.setData(JsonProtocolHelper::createJsonResponseError(1, QString("Invalid channel id (channelid=%1)").arg(channelId)));
       _connection->sendResponse(res);
       return;
     }
@@ -187,14 +162,14 @@ void ClientConnectionHandler::onNewIncomingRequest(QCorFrameRefPtr frame)
     params["participants"] = paramsParticipants;
     QCorFrame res;
     res.initResponse(*frame.data());
-    res.setData(createJsonResponse(params));
+    res.setData(JsonProtocolHelper::createJsonResponse(params));
     _connection->sendResponse(res);
     // TODO Notify participants about the new client.
     params = QJsonObject();
     params["channel"] = channelEntity->toQJsonObject();
     params["client"] = _clientEntity->toQJsonObject();
     QCorFrame req;
-    req.setData(createJsonRequest("notify.clientjoinedchannel", params));
+    req.setData(JsonProtocolHelper::createJsonRequest("notify.clientjoinedchannel", params));
     foreach (auto clientId, participants) {
       auto conn = _server->_connections.value(clientId);
       if (conn) {
@@ -219,7 +194,7 @@ void ClientConnectionHandler::onNewIncomingRequest(QCorFrameRefPtr frame)
 
   QCorFrame res;
   res.initResponse(*frame.data());
-  res.setData(createJsonResponseError(4, QString("Unknown action.")));
+  res.setData(JsonProtocolHelper::createJsonResponseError(4, QString("Unknown action.")));
   _connection->sendResponse(res);
   return;
 }

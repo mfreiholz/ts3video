@@ -7,15 +7,7 @@
 
 #include "qcorconnection.h"
 
-///////////////////////////////////////////////////////////////////////
-
-QByteArray createJsonRequest(const QString &action, const QJsonObject &parameters)
-{
-  QJsonObject root;
-  root["action"] = action;
-  root["parameters"] = parameters;
-  return QJsonDocument(root).toJson(QJsonDocument::Compact);
-}
+#include "jsonprotocolhelper.h"
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -47,7 +39,7 @@ QCorReply* TS3VideoClient::auth()
   params["version"] = 1;
   params["username"] = QString("UsernameHere");
   QCorFrame req;
-  req.setData(createJsonRequest("auth", params));
+  req.setData(JsonProtocolHelper::createJsonRequest("auth", params));
   return d->_connection->sendRequest(req);
 }
 
@@ -57,7 +49,7 @@ QCorReply* TS3VideoClient::joinChannel()
   QJsonObject params;
   params["channelid"] = 1;
   QCorFrame req;
-  req.setData(createJsonRequest("joinchannel", params));
+  req.setData(JsonProtocolHelper::createJsonRequest("joinchannel", params));
   return d->_connection->sendRequest(req);
 }
 

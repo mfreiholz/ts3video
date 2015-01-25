@@ -49,6 +49,7 @@ add_definitions(
 include_directories(
   ${CMAKE_CURRENT_BINARY_DIR}
   ../qcorlib/src
+  ../qts3videocorelib/src
 )
 
 # Target
@@ -69,4 +70,5 @@ target_link_libraries(
   Qt5::Widgets
   Qt5::Network
   qcorlib
+  qts3videocorelib
 )

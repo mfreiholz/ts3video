@@ -9,6 +9,7 @@ endif()
 set(headers
   src/cliententity.h
   src/channelentity.h
+  src/jsonprotocolhelper.h
 )
 
 set(qheaders
@@ -17,6 +18,7 @@ set(qheaders
 set(sources
   src/cliententity.cpp
   src/channelentity.cpp
+  src/jsonprotocolhelper.cpp
 )
 
 set(qforms
