@@ -38,42 +38,4 @@ private:
   QHash<int, QSet<int> > _participants; ///< Maps channel-ids to client-ids.
 };
 
-// TODO Move into shared library.
-#include <QJsonObject>
-class ClientEntity
-{
-public:
-  void fromQJsonObject(const QJsonObject &obj) {}
-  QJsonObject toQJsonObject() const
-  {
-    QJsonObject obj;
-    obj["id"] = id;
-    obj["name"] = name;
-    return obj;
-  }
-
-public:
-  int id;
-  QString name;
-};
-
-// TODO Move into shared library.
-#include <QJsonObject>
-class ChannelEntity
-{
-public:
-  void fromQJsonObject(const QJsonObject &obj) {}
-  QJsonObject toQJsonObject() const
-  {
-    QJsonObject obj;
-    obj["id"] = id;
-    obj["name"] = name;
-    return obj;
-  }
-
-public:
-  int id;
-  QString name;
-};
-
 #endif

@@ -1,24 +1,22 @@
 
 # Qt5
 find_package(Qt5Core REQUIRED)
-find_package(Qt5Network REQUIRED)
 if(POLICY CMP0020)
   cmake_policy(SET CMP0020 NEW)
 endif()
 
 # Sources
 set(headers
+  src/cliententity.h
+  src/channelentity.h
 )
 
 set(qheaders
-  src/ts3videoserver.h
-  src/clientconnectionhandler.h
 )
 
 set(sources
-  src/main.cpp
-  src/ts3videoserver.cpp
-  src/clientconnectionhandler.cpp
+  src/cliententity.cpp
+  src/channelentity.cpp
 )
 
 set(qforms
@@ -39,13 +37,12 @@ add_definitions(
 
 # Includes
 include_directories(
-  ../qcorlib/src
-  ../qts3videocorelib/src
 )
 
 # Target
-add_executable(
-  qts3videoserver
+add_library(
+  qts3videocorelib
+  STATIC
   ${headers}
   ${sources}
   ${qheaders}
@@ -55,9 +52,6 @@ add_executable(
 )
 
 target_link_libraries(
-  qts3videoserver
-  Qt5::Core
-  Qt5::Network
-  qcorlib
   qts3videocorelib
+  Qt5::Core
 )

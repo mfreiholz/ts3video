@@ -10,6 +10,9 @@
 #include "qcorconnection.h"
 #include "qcorreply.h"
 
+#include "cliententity.h"
+#include "channelentity.h"
+
 #include "ts3videoserver.h"
 
 ///////////////////////////////////////////////////////////////////////
