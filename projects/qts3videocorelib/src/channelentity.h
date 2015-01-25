@@ -3,10 +3,24 @@
 
 #include <QString>
 #include <QJsonObject>
+#include <QMetaType>
 
 class ChannelEntity
 {
 public:
+  ChannelEntity()
+  {}
+
+  ChannelEntity(const ChannelEntity &other)
+  {
+    this->id = other.id;
+    this->name = other.id;
+  }
+  
+  ~ChannelEntity()
+  {
+  }
+
   void fromQJsonObject(const QJsonObject &obj)
   {
     id = obj["id"].toInt();
@@ -25,5 +39,5 @@ public:
   int id;
   QString name;
 };
-
+Q_DECLARE_METATYPE(ChannelEntity);
 #endif

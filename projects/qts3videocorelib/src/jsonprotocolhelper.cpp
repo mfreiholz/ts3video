@@ -23,3 +23,22 @@ QByteArray JsonProtocolHelper::createJsonResponseError(int status, const QString
   root["error"] = errorMessage;
   return QJsonDocument(root).toJson(QJsonDocument::Compact);
 }
+
+bool JsonProtocolHelper::fromJsonRequest(const QByteArray &data, QString &action, QJsonObject &parameters)
+{
+  QJsonParseError err;
+  auto doc = QJsonDocument::fromJson(data, &err);
+  if (err.error != QJsonParseError::NoError) {
+    return false;
+  }
+  else if (!doc.isObject()) {
+    return false;
+  }
+  auto root = doc.object();
+  if (!root.contains("action") || root["action"].toString().isEmpty() || !root.contains("parameters")) {
+    return false;
+  }
+  action = root["action"].toString();
+  parameters = root["parameters"].toObject();
+  return true;
+}

@@ -164,7 +164,7 @@ void ClientConnectionHandler::onNewIncomingRequest(QCorFrameRefPtr frame)
     res.initResponse(*frame.data());
     res.setData(JsonProtocolHelper::createJsonResponse(params));
     _connection->sendResponse(res);
-    // TODO Notify participants about the new client.
+    // Notify participants about the new client.
     params = QJsonObject();
     params["channel"] = channelEntity->toQJsonObject();
     params["client"] = _clientEntity->toQJsonObject();
@@ -172,7 +172,7 @@ void ClientConnectionHandler::onNewIncomingRequest(QCorFrameRefPtr frame)
     req.setData(JsonProtocolHelper::createJsonRequest("notify.clientjoinedchannel", params));
     foreach (auto clientId, participants) {
       auto conn = _server->_connections.value(clientId);
-      if (conn) {
+      if (conn && conn != this) {
         auto reply = conn->_connection->sendRequest(req);
         connect(reply, &QCorReply::finished, reply, &QCorReply::deleteLater);
       }

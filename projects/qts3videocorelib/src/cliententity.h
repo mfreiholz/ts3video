@@ -3,10 +3,23 @@
 
 #include <QString>
 #include <QJsonObject>
+#include <QMetaType>
 
 class ClientEntity
 {
 public:
+  ClientEntity()
+  {}
+
+  ClientEntity(const ClientEntity &other)
+  {
+    this->id = other.id;
+    this->name = other.name;
+  }
+
+  ~ClientEntity()
+  {}
+
   void fromQJsonObject(const QJsonObject &obj)
   {
     id = obj["id"].toInt();
@@ -25,5 +38,5 @@ public:
   int id;
   QString name;
 };
-
+Q_DECLARE_METATYPE(ClientEntity);
 #endif

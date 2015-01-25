@@ -9,6 +9,8 @@
 #include "qcorframe.h"
 
 class QCorReply;
+class ClientEntity;
+class ChannelEntity;
 
 class TS3VideoClientPrivate;
 class TS3VideoClient : public QObject
@@ -26,6 +28,7 @@ public:
 
 signals:
   void stateChanged(QAbstractSocket::SocketState);
+  void clientJoinedChannel(const ClientEntity &client, const ChannelEntity &channel);
 
 private slots:
   void onStateChanged(QAbstractSocket::SocketState state);

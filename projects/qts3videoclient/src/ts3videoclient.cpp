@@ -7,6 +7,8 @@
 
 #include "qcorconnection.h"
 
+#include "cliententity.h"
+#include "channelentity.h"
 #include "jsonprotocolhelper.h"
 
 ///////////////////////////////////////////////////////////////////////
@@ -17,6 +19,7 @@ TS3VideoClient::TS3VideoClient(QObject *parent) :
 {
   Q_D(TS3VideoClient);
   connect(d->_connection, &QCorConnection::stateChanged, this, &TS3VideoClient::onStateChanged);
+  connect(d->_connection, &QCorConnection::newIncomingRequest, this, &TS3VideoClient::onNewIncomingRequest);
   connect(d->_connection, &QCorConnection::stateChanged, this, &TS3VideoClient::stateChanged);
 }
 
@@ -55,12 +58,37 @@ QCorReply* TS3VideoClient::joinChannel()
 
 void TS3VideoClient::onStateChanged(QAbstractSocket::SocketState state)
 {
-  qDebug() << QString("Connection state changed (state=%1)").arg(state);
 }
 
 void TS3VideoClient::onNewIncomingRequest(QCorFrameRefPtr frame)
 {
+  Q_D(TS3VideoClient);
   qDebug() << QString("Incoming request from server (size=%1; content=%2)").arg(frame->data().size()).arg(QString(frame->data()));
+  
+  QString action;
+  QJsonObject parameters;
+  if (!JsonProtocolHelper::fromJsonRequest(frame->data(), action, parameters)) {
+    // Invalid protocol.
+    QCorFrame res;
+    res.initResponse(*frame.data());
+    res.setData(JsonProtocolHelper::createJsonResponseError(500, "Invalid protocol format."));
+    d->_connection->sendResponse(res);
+    return;
+  }
+
+  if (action == "notify.clientjoinedchannel") {
+    ChannelEntity channelEntity;
+    channelEntity.fromQJsonObject(parameters["channel"].toObject());
+    ClientEntity clientEntity;
+    clientEntity.fromQJsonObject(parameters["client"].toObject());
+    emit clientJoinedChannel(clientEntity, channelEntity);
+  }
+
+  // Response with error.
+  QCorFrame res;
+  res.initResponse(*frame.data());
+  res.setData(JsonProtocolHelper::createJsonResponseError(404));
+  d->_connection->sendResponse(res);
 }
 
 ///////////////////////////////////////////////////////////////////////

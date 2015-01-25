@@ -6,6 +6,9 @@
 
 #include "qcorreply.h"
 
+#include "cliententity.h"
+#include "channelentity.h"
+
 #include "clientvideowidget.h"
 #include "gridviewwidgetarranger.h"
 #include "videocollectionwidget.h"
@@ -39,6 +42,7 @@ void runClient()
   // Connect to server.
   auto ts3client = new TS3VideoClient(nullptr);
   ts3client->connectToHost(QHostAddress(serverAddress), serverPort);
+
   QObject::connect(ts3client, &TS3VideoClient::stateChanged, [ts3client] (QAbstractSocket::SocketState state) {
     switch (state) {
       case QAbstractSocket::ConnectedState: {
@@ -76,6 +80,10 @@ void runClient()
         break;
       }
     }
+  });
+
+  QObject::connect(ts3client, &TS3VideoClient::clientJoinedChannel, [] (const ClientEntity &client, const ChannelEntity &channel) {
+    qDebug() << QString("A new client joined the channel (client-id=%1; channel-id=%2)").arg(client.id).arg(channel.id);
   });
 }
 
