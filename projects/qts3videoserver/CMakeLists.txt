@@ -13,12 +13,14 @@ set(headers
 set(qheaders
   src/ts3videoserver.h
   src/clientconnectionhandler.h
+  src/mediasockethandler.h
 )
 
 set(sources
   src/main.cpp
   src/ts3videoserver.cpp
   src/clientconnectionhandler.cpp
+  src/mediasockethandler.cpp
 )
 
 set(qforms

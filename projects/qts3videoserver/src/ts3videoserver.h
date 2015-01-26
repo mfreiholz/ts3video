@@ -10,6 +10,8 @@
 
 #include "qcorserver.h"
 
+#include "mediasockethandler.h"
+
 class ClientConnectionHandler;
 class ClientEntity;
 class ChannelEntity;
@@ -36,6 +38,10 @@ private:
   int _nextChannelId;
   QHash<int, ChannelEntity*> _channels; ///< Maps channel-ids to their info object.
   QHash<int, QSet<int> > _participants; ///< Maps channel-ids to client-ids.
+
+  // Media streaming attributes.
+  MediaSocketHandler *_mediaSocketHandler;
+  QHash<QString, int> _tokens; ///< Maps auth-tokens to client-ids.
 };
 
 #endif

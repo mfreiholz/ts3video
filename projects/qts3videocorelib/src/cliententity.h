@@ -8,7 +8,8 @@
 class ClientEntity
 {
 public:
-  ClientEntity()
+  ClientEntity() :
+    id(0), name(), mediaAddress(), mediaPort(0)
   {}
 
   ClientEntity(const ClientEntity &other)
@@ -37,6 +38,8 @@ public:
 public:
   int id;
   QString name;
+  QString mediaAddress; ///< Do not serialize, as long as we don't support P2P streaming.
+  quint16 mediaPort; ///< Do not serialize, as long as we don't support P2P streaming.
 };
 Q_DECLARE_METATYPE(ClientEntity);
 #endif
