@@ -112,10 +112,12 @@ void ClientConnectionHandler::onNewIncomingRequest(QCorFrameRefPtr frame)
     }
     _authenticated = true;
     _clientEntity->name = username;
+    auto token = QString("%1-%2").arg(_clientEntity->id).arg(QDateTime::currentDateTimeUtc().toString());
+    _server->_tokens.insert(token, _clientEntity->id);
     // Send response.
     QJsonObject resData;
     resData["client"] = _clientEntity->toQJsonObject();
-    resData["authtoken"] = QString("%1-%2").arg(_clientEntity->id).arg(QDateTime::currentDateTimeUtc().toString());
+    resData["authtoken"] = token;
     QCorFrame res;
     res.initResponse(*frame.data());
     res.setData(JsonProtocolHelper::createJsonResponse(resData));

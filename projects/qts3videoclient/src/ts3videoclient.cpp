@@ -7,6 +7,9 @@
 #include <QUdpSocket>
 #include <QTcpSocket>
 #include <QTimerEvent>
+#include <QDataStream>
+
+#include "medprotocol.h"
 
 #include "qcorconnection.h"
 #include "qcorreply.h"
@@ -106,7 +109,10 @@ void TS3VideoClient::onNewIncomingRequest(QCorFrameRefPtr frame)
     return;
   }
 
-  if (action == "notify.clientjoinedchannel") {
+  if (action == "notify.mediaauthsuccess") {
+    d->_mediaSocket->setAuthenticated(true);
+  }
+  else if (action == "notify.clientjoinedchannel") {
     ChannelEntity channelEntity;
     channelEntity.fromQJsonObject(parameters["channel"].toObject());
     ClientEntity clientEntity;
@@ -175,7 +181,20 @@ void MediaSocket::timerEvent(QTimerEvent *ev)
 {
   if (ev->timerId() == _authenticationTimerId) {
     qDebug() << QString("Send media auth token (token=%1; address=%2; port=%3)").arg(_token).arg(peerAddress().toString()).arg(peerPort());
-    writeDatagram(_token.toUtf8(), peerAddress(), peerPort());
+    UDP::AuthDatagram dgauth;
+    dgauth.size = _token.toUtf8().size();
+    dgauth.data = new UDP::dg_byte_t[dgauth.size];
+    memcpy(dgauth.data, _token.toUtf8().data(), dgauth.size);
+
+    QByteArray data;
+    QDataStream out(&data, QIODevice::WriteOnly);
+    out.setByteOrder(QDataStream::BigEndian);
+    out << dgauth.magic;
+    out << dgauth.type;
+    out << dgauth.size;
+    out.writeRawData((char*)dgauth.data, dgauth.size);
+
+    writeDatagram(data, peerAddress(), peerPort());
   }
 }
 

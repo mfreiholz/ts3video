@@ -48,6 +48,7 @@ add_definitions(
 # Includes
 include_directories(
   ${CMAKE_CURRENT_BINARY_DIR}
+  ../medlib/include
   ../qcorlib/src
   ../qts3videocorelib/src
 )
@@ -71,4 +72,5 @@ target_link_libraries(
   Qt5::Network
   qcorlib
   qts3videocorelib
+  medlib
 )
