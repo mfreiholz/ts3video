@@ -1,6 +1,10 @@
 #include "mediasockethandler.h"
 
 #include <QDebug>
+#include <QString>
+#include <QDataStream>
+
+#include "medprotocol.h"
 
 #include "ts3videoserver.h"
 
@@ -37,6 +41,42 @@ void MediaSocketHandler::onReadyRead()
     _socket.readDatagram(data.data(), data.size(), &senderAddress, &senderPort);
 
     qDebug() << QString("Incoming datagram: %1").arg(QString(data));
+
+    QDataStream in(data);
+    in.setByteOrder(QDataStream::BigEndian);
+    
+    // Check magic.
+    UDP::Datagram dg;
+    in >> dg.magic;
+    if (dg.magic != UDP::Datagram::MAGIC) {
+      qDebug() << QString("Invalid datagram (size=%1; data=%2)").arg(data.size()).arg(QString(data));
+      continue;
+    }
+
+    // Handle by type.
+    in >> dg.type;
+    switch (dg.type) {
+
+      // Authentication
+      case UDP::AuthDatagram::TYPE: {
+        UDP::AuthDatagram dgauth;
+        in >> dgauth.size;
+        dgauth.data = new UDP::dg_byte_t[dgauth.size];
+        auto read = in.readRawData((char*)dgauth.data, dgauth.size);
+        if (read != dgauth.size) {
+          // Error.
+          continue;
+        }
+        auto token = QString::fromUtf8((char*)dgauth.data, dgauth.size);
+        emit tokenAuthentication(token, senderAddress, senderPort);
+        break;
+      }
+
+      // Video data.
+      case UDP::VideoFrameDatagram::TYPE: {
+        break;
+      }
+    }
 
     // TODO Handle datagram by type.
     // TODO Handle authentication.

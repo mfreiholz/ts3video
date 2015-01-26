@@ -41,6 +41,7 @@ add_definitions(
 
 # Includes
 include_directories(
+  ../medlib/include
   ../qcorlib/src
   ../qts3videocorelib/src
 )
@@ -62,4 +63,5 @@ target_link_libraries(
   Qt5::Network
   qcorlib
   qts3videocorelib
+  medlib
 )
