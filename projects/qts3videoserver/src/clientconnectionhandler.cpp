@@ -46,6 +46,14 @@ ClientConnectionHandler::~ClientConnectionHandler()
   _server = nullptr;
 }
 
+void ClientConnectionHandler::sendMediaAuthSuccessNotify()
+{
+  QCorFrame req;
+  req.setData(JsonProtocolHelper::createJsonRequest("notify.mediaauthsuccess", QJsonObject()));
+  auto reply = _connection->sendRequest(req);
+  connect(reply, &QCorReply::finished, reply, &QCorReply::deleteLater);
+}
+
 void ClientConnectionHandler::onStateChanged(QAbstractSocket::SocketState state)
 {
   switch (state) {

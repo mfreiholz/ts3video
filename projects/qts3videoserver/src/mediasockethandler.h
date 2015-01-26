@@ -18,9 +18,9 @@ public:
   }
 
   QString id;
+  int clientId;
   QHostAddress address;
   quint16 port;
-  int clientId;
   QVector<MediaReceiverEntity> receivers;
 };
 

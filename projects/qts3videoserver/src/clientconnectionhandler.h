@@ -38,6 +38,8 @@ public:
   ClientConnectionHandler(TS3VideoServer *server, QCorConnection *connection, QObject *parent);
   ~ClientConnectionHandler();
 
+  void sendMediaAuthSuccessNotify();
+
 private slots:
   void onStateChanged(QAbstractSocket::SocketState state);
   void onNewIncomingRequest(QCorFrameRefPtr frame);

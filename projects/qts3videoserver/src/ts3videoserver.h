@@ -26,6 +26,9 @@ public:
   ~TS3VideoServer();
 
 private:
+  void updateMediaRecipients();
+
+private:
   // Listens for new client connections.
   QCorServer _corServer;
 
