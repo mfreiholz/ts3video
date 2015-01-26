@@ -2,6 +2,7 @@
 #define TS3VIDEOSERVER_H
 
 #define TS3VIDEOSERVER_VERSION 1
+#define TS3VIDEOSERVER_PORT 6000
 
 #include <QObject>
 #include <QList>

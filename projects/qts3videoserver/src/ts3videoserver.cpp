@@ -22,7 +22,7 @@ TS3VideoServer::TS3VideoServer(QObject *parent) :
   _tokens()
 {
   // Init QCorServer listening for new client connections.
-  _corServer.listen(QHostAddress::Any, 6000);
+  _corServer.listen(QHostAddress::Any, TS3VIDEOSERVER_PORT);
 
   // Accepting new connections.
   connect(&_corServer, &QCorServer::newConnection, [this] (QCorConnection *connection) {
@@ -30,7 +30,7 @@ TS3VideoServer::TS3VideoServer(QObject *parent) :
   });
 
   // Init media socket.
-  _mediaSocketHandler = new MediaSocketHandler(this);
+  _mediaSocketHandler = new MediaSocketHandler(TS3VIDEOSERVER_PORT, this);
 
   // Handle media authentications.
   // Note: This lambda slot is not thread-safe. If MediaSocketHandler should run in a separate thread, we need to reimplement this function.

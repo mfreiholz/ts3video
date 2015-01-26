@@ -23,11 +23,21 @@ class MediaSocket : public QUdpSocket
   Q_OBJECT
 
 public:
-  MediaSocket(QObject *parent);
+  MediaSocket(const QString &token, QObject *parent);
   ~MediaSocket();
+  bool authenticated() const;
+  void setAuthenticated(bool yesno);
+
+protected:
+  virtual void timerEvent(QTimerEvent *ev);
+
+private slots:
+  void onSocketStateChanged(QAbstractSocket::SocketState state);
 
 private:
   bool _authenticated;
+  QString _token;
+  int _authenticationTimerId;
 };
 
 #endif // TS3VIDEOCLIENT_P_H

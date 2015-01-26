@@ -5,8 +5,11 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QUdpSocket>
+#include <QTcpSocket>
+#include <QTimerEvent>
 
 #include "qcorconnection.h"
+#include "qcorreply.h"
 
 #include "cliententity.h"
 #include "channelentity.h"
@@ -16,12 +19,12 @@
 
 TS3VideoClient::TS3VideoClient(QObject *parent) :
   QObject(parent),
-  d_ptr(new TS3VideoClientPrivate(this)),
+  d_ptr(new TS3VideoClientPrivate(this))
 {
   Q_D(TS3VideoClient);
+  d->_connection = new QCorConnection(this);
   connect(d->_connection, &QCorConnection::stateChanged, this, &TS3VideoClient::onStateChanged);
   connect(d->_connection, &QCorConnection::newIncomingRequest, this, &TS3VideoClient::onNewIncomingRequest);
-  connect(d->_connection, &QCorConnection::stateChanged, this, &TS3VideoClient::stateChanged);
 }
 
 TS3VideoClient::~TS3VideoClient()
@@ -37,15 +40,32 @@ void TS3VideoClient::connectToHost(const QHostAddress &address, qint16 port)
   d->_connection->connectTo(address, port);
 }
 
-QCorReply* TS3VideoClient::auth()
+QCorReply* TS3VideoClient::auth(const QString &name)
 {
   Q_D(TS3VideoClient);
   QJsonObject params;
   params["version"] = 1;
-  params["username"] = QString("UsernameHere");
+  params["username"] = name;
   QCorFrame req;
   req.setData(JsonProtocolHelper::createJsonRequest("auth", params));
-  return d->_connection->sendRequest(req);
+  auto reply = d->_connection->sendRequest(req);
+
+  // Connect with media socket, if authentication was successful.
+  connect(reply, &QCorReply::finished, [d, reply] () {
+    int status = 0;
+    QJsonObject params;
+    if (!JsonProtocolHelper::fromJsonResponse(reply->frame()->data(), status, params) || params["status"].toInt() != 0) {
+      return;
+    }
+    // Create new media socket.
+    if (d->_mediaSocket) {
+      delete d->_mediaSocket;
+    }
+    d->_mediaSocket = new MediaSocket(params["authtoken"].toString(), d->q_ptr);
+    d->_mediaSocket->connectToHost(d->_connection->socket()->peerAddress(), d->_connection->socket()->peerPort());
+  });
+
+  return reply;
 }
 
 QCorReply* TS3VideoClient::joinChannel()
@@ -60,6 +80,14 @@ QCorReply* TS3VideoClient::joinChannel()
 
 void TS3VideoClient::onStateChanged(QAbstractSocket::SocketState state)
 {
+  switch (state) {
+    case QAbstractSocket::ConnectedState:
+      emit connected();
+      break;
+    case QAbstractSocket::UnconnectedState:
+      emit disconnected();
+      break;
+  }
 }
 
 void TS3VideoClient::onNewIncomingRequest(QCorFrameRefPtr frame)
@@ -109,15 +137,57 @@ void TS3VideoClient::onNewIncomingRequest(QCorFrameRefPtr frame)
 
 TS3VideoClientPrivate::TS3VideoClientPrivate(TS3VideoClient *owner) :
   q_ptr(owner),
-  _connection(new QCorConnection(owner)),
-  _mediaSocket(new MediaSocket(owner))
+  _connection(nullptr),
+  _mediaSocket(nullptr)
 {
 }
 
 ///////////////////////////////////////////////////////////////////////
 
-MediaSocket::MediaSocket(QObject *parent) :
+MediaSocket::MediaSocket(const QString &token, QObject *parent) :
   QUdpSocket(parent),
-  _authenticated(false)
+  _authenticated(false),
+  _token(token),
+  _authenticationTimerId(-1)
 {
+  connect(this, &MediaSocket::stateChanged, this, &MediaSocket::onSocketStateChanged);
+}
+
+MediaSocket::~MediaSocket()
+{
+}
+
+bool MediaSocket::authenticated() const
+{
+  return _authenticated;
+}
+
+void MediaSocket::setAuthenticated(bool yesno)
+{
+  _authenticated = yesno;
+  if (_authenticationTimerId != -1) {
+    killTimer(_authenticationTimerId);
+    _authenticationTimerId = -1;
+  }
+}
+
+void MediaSocket::timerEvent(QTimerEvent *ev)
+{
+  if (ev->timerId() == _authenticationTimerId) {
+    qDebug() << QString("Send media auth token (token=%1; address=%2; port=%3)").arg(_token).arg(peerAddress().toString()).arg(peerPort());
+    writeDatagram(_token.toUtf8(), peerAddress(), peerPort());
+  }
+}
+
+void MediaSocket::onSocketStateChanged(QAbstractSocket::SocketState state)
+{
+  switch (state) {
+    case QAbstractSocket::ConnectedState:
+      if (_authenticationTimerId == -1) {
+        _authenticationTimerId = startTimer(1000);
+      }
+      break;
+    case QAbstractSocket::UnconnectedState:
+      break;
+  }
 }

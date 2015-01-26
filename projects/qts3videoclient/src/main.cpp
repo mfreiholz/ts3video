@@ -43,43 +43,37 @@ void runClient()
   auto ts3client = new TS3VideoClient(nullptr);
   ts3client->connectToHost(QHostAddress(serverAddress), serverPort);
 
-  QObject::connect(ts3client, &TS3VideoClient::stateChanged, [ts3client] (QAbstractSocket::SocketState state) {
-    switch (state) {
-      case QAbstractSocket::ConnectedState: {
-
-        // Authenticate.
-        auto reply = ts3client->auth();
-        QObject::connect(reply, &QCorReply::finished, [reply, ts3client] () {
-          reply->deleteLater();
-          qDebug() << QString("Auth answer: %1").arg(QString(reply->frame()->data()));
-          QJsonParseError err;
-          auto doc = QJsonDocument::fromJson(reply->frame()->data(), &err);
-          if (err.error != QJsonParseError::NoError) {
-            qDebug() << QString("JSON Parse Error: %1").arg(err.errorString());
-            return;
-          }
-          auto root = doc.object();
-          auto status = root["status"].toInt();
-          if (status != 0) {
-            return;
-          }
-
-          // Join channel.
-          auto reply2 = ts3client->joinChannel();
-          QObject::connect(reply2, &QCorReply::finished, [reply2, ts3client] () {
-            reply2->deleteLater();
-            qDebug() << QString("Join channel answer: %1").arg(QString(reply2->frame()->data()));
-          });
-
-        });
-        break;
+  QObject::connect(ts3client, &TS3VideoClient::connected, [ts3client] () {
+    // Authenticate.
+    auto reply = ts3client->auth("That's my name!");
+    QObject::connect(reply, &QCorReply::finished, [reply, ts3client] () {
+      reply->deleteLater();
+      qDebug() << QString("Auth answer: %1").arg(QString(reply->frame()->data()));
+      QJsonParseError err;
+      auto doc = QJsonDocument::fromJson(reply->frame()->data(), &err);
+      if (err.error != QJsonParseError::NoError) {
+        qDebug() << QString("JSON Parse Error: %1").arg(err.errorString());
+        return;
       }
-      case QAbstractSocket::UnconnectedState: {
-        ts3client->deleteLater();
-        qApp->quit();
-        break;
+      auto root = doc.object();
+      auto status = root["status"].toInt();
+      if (status != 0) {
+        return;
       }
-    }
+
+      // Join channel.
+      auto reply2 = ts3client->joinChannel();
+      QObject::connect(reply2, &QCorReply::finished, [reply2, ts3client] () {
+        reply2->deleteLater();
+        qDebug() << QString("Join channel answer: %1").arg(QString(reply2->frame()->data()));
+      });
+
+    });
+  });
+
+  QObject::connect(ts3client, &TS3VideoClient::disconnected, [ts3client] () {
+    ts3client->deleteLater();
+    qApp->quit();
   });
 
   QObject::connect(ts3client, &TS3VideoClient::clientJoinedChannel, [] (const ClientEntity &client, const ChannelEntity &channel) {

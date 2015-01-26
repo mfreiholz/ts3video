@@ -6,11 +6,11 @@
 
 ///////////////////////////////////////////////////////////////////////
 
-MediaSocketHandler::MediaSocketHandler(QObject *parent) :
+MediaSocketHandler::MediaSocketHandler(quint16 port, QObject *parent) :
   QObject(parent),
   _socket(this)
 {
-  if (!_socket.bind(QHostAddress::Any, 6001, QAbstractSocket::DontShareAddress)) {
+  if (!_socket.bind(QHostAddress::Any, port, QAbstractSocket::DontShareAddress)) {
     qDebug() << QString("Can not bind media UDP socket on 6001");
   }
   connect(&_socket, &QUdpSocket::readyRead, this, &MediaSocketHandler::onReadyRead);
@@ -36,7 +36,9 @@ void MediaSocketHandler::onReadyRead()
     data.resize(_socket.pendingDatagramSize());
     _socket.readDatagram(data.data(), data.size(), &senderAddress, &senderPort);
 
-    // TODO Handle datagram.
+    qDebug() << QString("Incoming datagram: %1").arg(QString(data));
+
+    // TODO Handle datagram by type.
     // TODO Handle authentication.
     if (false) {
       auto token = QString("foobar");

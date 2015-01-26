@@ -42,3 +42,22 @@ bool JsonProtocolHelper::fromJsonRequest(const QByteArray &data, QString &action
   parameters = root["parameters"].toObject();
   return true;
 }
+
+bool JsonProtocolHelper::fromJsonResponse(const QByteArray &data, int &status, QJsonObject &parameters)
+{
+  QJsonParseError err;
+  auto doc = QJsonDocument::fromJson(data, &err);
+  if (err.error != QJsonParseError::NoError) {
+    return false;
+  }
+  else if (!doc.isObject()) {
+    return false;
+  }
+  auto root = doc.object();
+  if (!root.contains("status") || !root.contains("data")) {
+    return false;
+  }
+  status = root["status"].toInt();
+  parameters = root["data"].toObject();
+  return true;
+}

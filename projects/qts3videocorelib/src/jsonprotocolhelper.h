@@ -16,6 +16,7 @@ public:
   static QByteArray createJsonResponseError(int status, const QString &errorMessage = QString());
 
   static bool fromJsonRequest(const QByteArray &data, QString &action, QJsonObject &parameters);
+  static bool fromJsonResponse(const QByteArray &data, int &status, QJsonObject &parameters);
 };
 
 #endif

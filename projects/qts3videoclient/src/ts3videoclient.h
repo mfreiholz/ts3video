@@ -23,11 +23,12 @@ public:
   explicit TS3VideoClient(QObject *parent = 0);
   ~TS3VideoClient();
   void connectToHost(const QHostAddress &address, qint16 port);
-  QCorReply* auth();
+  QCorReply* auth(const QString &name);
   QCorReply* joinChannel();
 
 signals:
-  void stateChanged(QAbstractSocket::SocketState);
+  void connected();
+  void disconnected();
   void clientJoinedChannel(const ClientEntity &client, const ChannelEntity &channel);
   void clientLeftChannel(const ClientEntity &client, const ChannelEntity &channel);
   void clientDisconnected(const ClientEntity &client);

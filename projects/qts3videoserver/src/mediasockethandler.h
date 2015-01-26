@@ -43,7 +43,7 @@ class MediaSocketHandler : public QObject
   Q_OBJECT
 
 public:
-  MediaSocketHandler(QObject *parent);
+  MediaSocketHandler(quint16 port, QObject *parent);
   ~MediaSocketHandler();
   void setRecipients(const MediaRecipients &rec);
 
