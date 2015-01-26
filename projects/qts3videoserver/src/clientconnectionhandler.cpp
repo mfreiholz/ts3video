@@ -1,6 +1,7 @@
 #include "clientconnectionhandler.h"
 
 #include <QDebug>
+#include <QDateTime>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
@@ -70,7 +71,7 @@ void ClientConnectionHandler::onStateChanged(QAbstractSocket::SocketState state)
 
 void ClientConnectionHandler::onNewIncomingRequest(QCorFrameRefPtr frame)
 {
-  qDebug() << QString("New incoming frame (size=%1; content=%2)").arg(frame->data().size()).arg(QString(frame->data()));
+  qDebug() << QString("New incoming request (size=%1; content=%2)").arg(frame->data().size()).arg(QString(frame->data()));
 
   QString action;
   QJsonObject params;
@@ -102,10 +103,14 @@ void ClientConnectionHandler::onNewIncomingRequest(QCorFrameRefPtr frame)
       return;
     }
     _authenticated = true;
+    _clientEntity->name = username;
     // Send response.
+    QJsonObject resData;
+    resData["client"] = _clientEntity->toQJsonObject();
+    resData["authtoken"] = QString("%1-%2").arg(_clientEntity->id).arg(QDateTime::currentDateTimeUtc().toString());
     QCorFrame res;
     res.initResponse(*frame.data());
-    res.setData(JsonProtocolHelper::createJsonResponse(QJsonObject()));
+    res.setData(JsonProtocolHelper::createJsonResponse(resData));
     _connection->sendResponse(res);
     return;
   }
