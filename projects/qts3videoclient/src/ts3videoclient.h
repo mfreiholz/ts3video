@@ -29,6 +29,8 @@ public:
 signals:
   void stateChanged(QAbstractSocket::SocketState);
   void clientJoinedChannel(const ClientEntity &client, const ChannelEntity &channel);
+  void clientLeftChannel(const ClientEntity &client, const ChannelEntity &channel);
+  void clientDisconnected(const ClientEntity &client);
 
 private slots:
   void onStateChanged(QAbstractSocket::SocketState state);

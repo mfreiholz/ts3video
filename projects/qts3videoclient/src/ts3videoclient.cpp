@@ -83,11 +83,23 @@ void TS3VideoClient::onNewIncomingRequest(QCorFrameRefPtr frame)
     clientEntity.fromQJsonObject(parameters["client"].toObject());
     emit clientJoinedChannel(clientEntity, channelEntity);
   }
+  else if (action == "notify.clientleftchannel") {
+    ChannelEntity channelEntity;
+    channelEntity.fromQJsonObject(parameters["channel"].toObject());
+    ClientEntity clientEntity;
+    clientEntity.fromQJsonObject(parameters["client"].toObject());
+    emit clientLeftChannel(clientEntity, channelEntity);
+  }
+  else if (action == "notify.clientdisconnected") {
+    ClientEntity clientEntity;
+    clientEntity.fromQJsonObject(parameters["client"].toObject());
+    emit clientDisconnected(clientEntity);
+  }
 
   // Response with error.
   QCorFrame res;
   res.initResponse(*frame.data());
-  res.setData(JsonProtocolHelper::createJsonResponseError(404));
+  res.setData(JsonProtocolHelper::createJsonResponse(QJsonObject()));
   d->_connection->sendResponse(res);
 }
 

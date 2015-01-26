@@ -49,7 +49,18 @@ void ClientConnectionHandler::onStateChanged(QAbstractSocket::SocketState state)
 {
   switch (state) {
     case QAbstractSocket::UnconnectedState: {
-      // TODO: Notify sibling clients about the disconnect.
+      // Notify sibling clients about the disconnect.
+      QJsonObject params;
+      params["client"] = _clientEntity->toQJsonObject();
+      QCorFrame req;
+      req.setData(JsonProtocolHelper::createJsonRequest("notify.clientdisconnected", params));
+      auto clientConns = _server->_connections.values();
+      foreach(auto clientConn, clientConns) {
+        if (clientConn && clientConn != this) {
+          auto reply = clientConn->_connection->sendRequest(req);
+          connect(reply, &QCorReply::finished, reply, &QCorReply::deleteLater);
+        }
+      }
       // Delete itself.
       deleteLater();
       break;
@@ -182,13 +193,12 @@ void ClientConnectionHandler::onNewIncomingRequest(QCorFrameRefPtr frame)
     }
     // Leave channel.
     _server->_participants[channelEntity->id].remove(_clientEntity->id);
-    // TODO Send response.
-    QJsonObject data;
+    // Send response.
     QCorFrame res;
     res.initResponse(*frame.data());
-    res.setData(JsonProtocolHelper::createJsonResponse(data));
+    res.setData(JsonProtocolHelper::createJsonResponse(QJsonObject()));
     _connection->sendResponse(res);
-    // TODO Notify participants.
+    // Notify participants.
     params = QJsonObject();
     params["channel"] = channelEntity->toQJsonObject();
     params["client"] = _clientEntity->toQJsonObject();
@@ -204,6 +214,7 @@ void ClientConnectionHandler::onNewIncomingRequest(QCorFrameRefPtr frame)
     }
     // Delete channel.
     if (_server->_participants[channelEntity->id].isEmpty()) {
+      _server->_participants.remove(channelEntity->id);
       _server->_channels.remove(channelEntity->id);
       delete channelEntity;
     }

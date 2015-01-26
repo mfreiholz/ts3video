@@ -83,7 +83,15 @@ void runClient()
   });
 
   QObject::connect(ts3client, &TS3VideoClient::clientJoinedChannel, [] (const ClientEntity &client, const ChannelEntity &channel) {
-    qDebug() << QString("A new client joined the channel (client-id=%1; channel-id=%2)").arg(client.id).arg(channel.id);
+    qDebug() << QString("Client joined channel (client-id=%1; channel-id=%2)").arg(client.id).arg(channel.id);
+  });
+
+  QObject::connect(ts3client, &TS3VideoClient::clientLeftChannel, [](const ClientEntity &client, const ChannelEntity &channel) {
+    qDebug() << QString("Client left channel (client-id=%1; channel-id=%2)").arg(client.id).arg(channel.id);
+  });
+
+  QObject::connect(ts3client, &TS3VideoClient::clientDisconnected, [](const ClientEntity &client) {
+    qDebug() << QString("Client disconnected (client-id=%1)").arg(client.id);
   });
 }
 
