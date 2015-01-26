@@ -4,6 +4,7 @@
 #include <QDebug>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QUdpSocket>
 
 #include "qcorconnection.h"
 
@@ -15,7 +16,7 @@
 
 TS3VideoClient::TS3VideoClient(QObject *parent) :
   QObject(parent),
-  d_ptr(new TS3VideoClientPrivate(this))
+  d_ptr(new TS3VideoClientPrivate(this)),
 {
   Q_D(TS3VideoClient);
   connect(d->_connection, &QCorConnection::stateChanged, this, &TS3VideoClient::onStateChanged);
@@ -27,6 +28,7 @@ TS3VideoClient::~TS3VideoClient()
 {
   Q_D(TS3VideoClient);
   delete d->_connection;
+  delete d->_mediaSocket;
 }
 
 void TS3VideoClient::connectToHost(const QHostAddress &address, qint16 port)
@@ -107,6 +109,15 @@ void TS3VideoClient::onNewIncomingRequest(QCorFrameRefPtr frame)
 
 TS3VideoClientPrivate::TS3VideoClientPrivate(TS3VideoClient *owner) :
   q_ptr(owner),
-  _connection(new QCorConnection(owner))
+  _connection(new QCorConnection(owner)),
+  _mediaSocket(new MediaSocket(owner))
+{
+}
+
+///////////////////////////////////////////////////////////////////////
+
+MediaSocket::MediaSocket(QObject *parent) :
+  QUdpSocket(parent),
+  _authenticated(false)
 {
 }
