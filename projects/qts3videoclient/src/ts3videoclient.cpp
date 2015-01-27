@@ -187,7 +187,7 @@ void MediaSocket::setAuthenticated(bool yesno)
   }
   // TODO Remove demo code.
   if (_sendVideoFrameTimerId == -1) {
-    _sendVideoFrameTimerId = startTimer(250);
+    _sendVideoFrameTimerId = startTimer(2000);
   }
 }
 

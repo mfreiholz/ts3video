@@ -78,7 +78,7 @@ void TS3VideoServer::updateMediaRecipients()
     sender.port = client->mediaPort;
     sender.id = MediaSenderEntity::createID(sender.address, sender.port);
     foreach(auto client2, clients) {
-      if (!client2 || client2 == client || client2->mediaAddress.isEmpty() || client2->mediaPort <= 0) {
+      if (!client2 /*|| client2 == client*/ || client2->mediaAddress.isEmpty() || client2->mediaPort <= 0) {
         continue;
       }
       MediaReceiverEntity receiver;
