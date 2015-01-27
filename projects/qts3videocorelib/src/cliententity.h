@@ -2,6 +2,7 @@
 #define CLIENTENTITY_H
 
 #include <QString>
+#include <QStringList>
 #include <QJsonObject>
 #include <QMetaType>
 
@@ -33,6 +34,13 @@ public:
     obj["id"] = id;
     obj["name"] = name;
     return obj;
+  }
+
+  QString toString() const
+  {
+    QStringList sl;
+    sl << QString::number(id) << name << mediaAddress << QString::number(mediaPort);
+    return sl.join("#");
   }
 
 public:

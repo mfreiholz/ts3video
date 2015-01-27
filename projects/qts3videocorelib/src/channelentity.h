@@ -2,6 +2,7 @@
 #define CHANNELENTITY_H
 
 #include <QString>
+#include <QStringList>
 #include <QJsonObject>
 #include <QMetaType>
 
@@ -33,6 +34,13 @@ public:
     obj["id"] = id;
     obj["name"] = name;
     return obj;
+  }
+
+  QString toString() const
+  {
+    QStringList sl;
+    sl << QString::number(id) << name;
+    return sl.join("#");
   }
 
 public:

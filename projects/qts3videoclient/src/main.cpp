@@ -13,6 +13,7 @@
 #include "gridviewwidgetarranger.h"
 #include "videocollectionwidget.h"
 #include "ts3videoclient.h"
+#include "clientapplogic.h"
 
 QVariant getArgsValue(const QString &key, const QVariant &defaultValue = QVariant())
 {
@@ -32,68 +33,9 @@ QWidget* createVideoWidget()
   return w;
 }
 
-void runClient()
-{
-  auto serverAddress = getArgsValue("--server-address", "127.0.0.1").toString();
-  auto serverPort = getArgsValue("--server-port", 6000).toUInt();
-  auto ts3clientId = getArgsValue("--ts3-clientid").toString();
-  auto ts3channelId = getArgsValue("--ts3-channelid").toString();
-
-  // Connect to server.
-  auto ts3client = new TS3VideoClient(nullptr);
-  ts3client->connectToHost(QHostAddress(serverAddress), serverPort);
-
-  QObject::connect(ts3client, &TS3VideoClient::connected, [ts3client] () {
-    // Authenticate.
-    auto reply = ts3client->auth("That's my name!");
-    QObject::connect(reply, &QCorReply::finished, [reply, ts3client] () {
-      reply->deleteLater();
-      qDebug() << QString("Auth answer: %1").arg(QString(reply->frame()->data()));
-      QJsonParseError err;
-      auto doc = QJsonDocument::fromJson(reply->frame()->data(), &err);
-      if (err.error != QJsonParseError::NoError) {
-        qDebug() << QString("JSON Parse Error: %1").arg(err.errorString());
-        return;
-      }
-      auto root = doc.object();
-      auto status = root["status"].toInt();
-      if (status != 0) {
-        return;
-      }
-
-      // Join channel.
-      auto reply2 = ts3client->joinChannel();
-      QObject::connect(reply2, &QCorReply::finished, [reply2, ts3client] () {
-        reply2->deleteLater();
-        qDebug() << QString("Join channel answer: %1").arg(QString(reply2->frame()->data()));
-      });
-
-    });
-  });
-
-  QObject::connect(ts3client, &TS3VideoClient::disconnected, [ts3client] () {
-    ts3client->deleteLater();
-    qApp->quit();
-  });
-
-  QObject::connect(ts3client, &TS3VideoClient::clientJoinedChannel, [] (const ClientEntity &client, const ChannelEntity &channel) {
-    qDebug() << QString("Client joined channel (client-id=%1; channel-id=%2)").arg(client.id).arg(channel.id);
-  });
-
-  QObject::connect(ts3client, &TS3VideoClient::clientLeftChannel, [](const ClientEntity &client, const ChannelEntity &channel) {
-    qDebug() << QString("Client left channel (client-id=%1; channel-id=%2)").arg(client.id).arg(channel.id);
-  });
-
-  QObject::connect(ts3client, &TS3VideoClient::clientDisconnected, [](const ClientEntity &client) {
-    qDebug() << QString("Client disconnected (client-id=%1)").arg(client.id);
-  });
-}
-
-int main(int argc, char *argv[])
+int runGuiTest(int argc, char *argv[])
 {
   QApplication a(argc, argv);
-  runClient();
-  return a.exec();
 
   // Create a bunch of initial widgets.
   QList<QWidget*> widgets;
@@ -154,4 +96,21 @@ int main(int argc, char *argv[])
 //  tWidgetCreator.start(2000);
 
   return a.exec();
+}
+
+int runClientAppLogic(int argc, char *argv[])
+{
+  QApplication a(argc, argv);
+  a.setApplicationName("TS3Video");
+  a.setApplicationDisplayName("TS3Video");
+  a.setApplicationVersion("1.0 ALPHA");
+  a.setQuitOnLastWindowClosed(false);
+
+  ClientAppLogic logic(nullptr);
+  return a.exec();
+}
+
+int main(int argc, char *argv[])
+{
+  return runClientAppLogic(argc, argv);
 }

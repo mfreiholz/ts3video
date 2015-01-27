@@ -10,6 +10,7 @@ set(headers
   src/cliententity.h
   src/channelentity.h
   src/jsonprotocolhelper.h
+  src/elws.h
 )
 
 set(qheaders
@@ -19,6 +20,7 @@ set(sources
   src/cliententity.cpp
   src/channelentity.cpp
   src/jsonprotocolhelper.cpp
+  src/elws.cpp
 )
 
 set(qforms

@@ -35,6 +35,12 @@ TS3VideoClient::~TS3VideoClient()
   delete d->_mediaSocket;
 }
 
+const ClientEntity& TS3VideoClient::clientEntity() const
+{
+  Q_D(const TS3VideoClient);
+  return d->_clientEntity;
+}
+
 void TS3VideoClient::connectToHost(const QHostAddress &address, qint16 port)
 {
   Q_D(TS3VideoClient);
@@ -196,9 +202,9 @@ void MediaSocket::setAuthenticated(bool yesno)
     _authenticationTimerId = -1;
   }
   // TODO Remove demo code.
-  if (_sendVideoFrameTimerId == -1) {
-    _sendVideoFrameTimerId = startTimer(2000);
-  }
+  //if (_sendVideoFrameTimerId == -1) {
+  //  _sendVideoFrameTimerId = startTimer(2000);
+  //}
 }
 
 void MediaSocket::sendAuthTokenDatagram(const QString &token)

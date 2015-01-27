@@ -22,6 +22,7 @@ class TS3VideoClient : public QObject
 public:
   TS3VideoClient(QObject *parent = 0);
   ~TS3VideoClient();
+  const ClientEntity& clientEntity() const;
   void connectToHost(const QHostAddress &address, qint16 port);
   QCorReply* auth(const QString &name);
   QCorReply* joinChannel();
