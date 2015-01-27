@@ -15,7 +15,7 @@ MediaSocketHandler::MediaSocketHandler(quint16 port, QObject *parent) :
   _socket(this)
 {
   if (!_socket.bind(QHostAddress::Any, port, QAbstractSocket::DontShareAddress)) {
-    qDebug() << QString("Can not bind media UDP socket on 6001");
+    qDebug() << QString("Can not bind media UDP socket on %1").arg(port);
   }
   connect(&_socket, &QUdpSocket::readyRead, this, &MediaSocketHandler::onReadyRead);
 }
@@ -40,7 +40,7 @@ void MediaSocketHandler::onReadyRead()
     data.resize(_socket.pendingDatagramSize());
     _socket.readDatagram(data.data(), data.size(), &senderAddress, &senderPort);
 
-    qDebug() << QString("Incoming datagram: %1").arg(QString(data));
+    qDebug() << QString("Incoming datagram (size=%1)").arg(data.size());
 
     QDataStream in(data);
     in.setByteOrder(QDataStream::BigEndian);
@@ -74,24 +74,15 @@ void MediaSocketHandler::onReadyRead()
 
       // Video data.
       case UDP::VideoFrameDatagram::TYPE: {
+        auto senderId = MediaSenderEntity::createID(senderAddress, senderPort);
+        const auto &senderEntity = _recipients.id2sender[senderId];
+        for (auto i = 0; i < senderEntity.receivers.size(); ++i) {
+          const auto &receiverEntity = senderEntity.receivers[i];
+          _socket.writeDatagram(data, receiverEntity.address, receiverEntity.port);
+        }
         break;
       }
     }
 
-    // TODO Handle datagram by type.
-    // TODO Handle authentication.
-    if (false) {
-      auto token = QString("foobar");
-      emit tokenAuthentication(token, senderAddress, senderPort);
-    }
-    // Handle video datagram.
-    else if (false) {
-      auto senderId = MediaSenderEntity::createID(senderAddress, senderPort);
-      const auto &senderEntity = _recipients.id2sender[senderId];
-      for (auto i = 0; i < senderEntity.receivers.size(); ++i) {
-        const auto &receiverEntity = senderEntity.receivers[i];
-        _socket.writeDatagram(data, receiverEntity.address, receiverEntity.port);
-      }
-    }
-  }
+  } // while (datagrams)
 }

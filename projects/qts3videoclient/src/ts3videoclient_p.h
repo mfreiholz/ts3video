@@ -28,16 +28,22 @@ public:
   bool authenticated() const;
   void setAuthenticated(bool yesno);
 
+  void sendAuthTokenDatagram(const QString &token);
+  void sendVideoFrame(const QByteArray &frameData, quint64 frameId, int senderId);
+
 protected:
   virtual void timerEvent(QTimerEvent *ev);
 
 private slots:
   void onSocketStateChanged(QAbstractSocket::SocketState state);
+  void onReadyRead();
 
 private:
   bool _authenticated;
   QString _token;
   int _authenticationTimerId;
+
+  int _sendVideoFrameTimerId; ///< TODO Remove me (only for dev tests)
 };
 
 #endif // TS3VIDEOCLIENT_P_H

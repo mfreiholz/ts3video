@@ -18,6 +18,8 @@
 #include "channelentity.h"
 #include "jsonprotocolhelper.h"
 
+using namespace UDP;
+
 ///////////////////////////////////////////////////////////////////////
 
 TS3VideoClient::TS3VideoClient(QObject *parent) :
@@ -154,13 +156,21 @@ MediaSocket::MediaSocket(const QString &token, QObject *parent) :
   QUdpSocket(parent),
   _authenticated(false),
   _token(token),
-  _authenticationTimerId(-1)
+  _authenticationTimerId(-1),
+  _sendVideoFrameTimerId(-1)
 {
   connect(this, &MediaSocket::stateChanged, this, &MediaSocket::onSocketStateChanged);
+  connect(this, &MediaSocket::readyRead, this, &MediaSocket::onReadyRead);
 }
 
 MediaSocket::~MediaSocket()
 {
+  if (_authenticationTimerId != -1) {
+    killTimer(_authenticationTimerId);
+  }
+  if (_sendVideoFrameTimerId != -1) {
+    killTimer(_sendVideoFrameTimerId);
+  }
 }
 
 bool MediaSocket::authenticated() const
@@ -175,26 +185,81 @@ void MediaSocket::setAuthenticated(bool yesno)
     killTimer(_authenticationTimerId);
     _authenticationTimerId = -1;
   }
+  // TODO Remove demo code.
+  if (_sendVideoFrameTimerId == -1) {
+    _sendVideoFrameTimerId = startTimer(250);
+  }
+}
+
+void MediaSocket::sendAuthTokenDatagram(const QString &token)
+{
+  qDebug() << QString("Send media auth token (token=%1; address=%2; port=%3)").arg(token).arg(peerAddress().toString()).arg(peerPort());
+
+  UDP::AuthDatagram dgauth;
+  dgauth.size = token.toUtf8().size();
+  dgauth.data = new UDP::dg_byte_t[dgauth.size];
+  memcpy(dgauth.data, token.toUtf8().data(), dgauth.size);
+
+  QByteArray datagram;
+  QDataStream out(&datagram, QIODevice::WriteOnly);
+  out.setByteOrder(QDataStream::BigEndian);
+  out << dgauth.magic;
+  out << dgauth.type;
+  out << dgauth.size;
+  out.writeRawData((char*)dgauth.data, dgauth.size);
+  writeDatagram(datagram, peerAddress(), peerPort());
+}
+
+void MediaSocket::sendVideoFrame(const QByteArray &frameData, quint64 frameId_, int senderId_)
+{
+  qDebug() << QString("Send video frame (size=%1; address=%2; port=%3)").arg(frameData.size()).arg(peerAddress().toString()).arg(peerPort());
+
+  UDP::VideoFrameDatagram::dg_frame_id_t frameId = frameId_;
+  UDP::VideoFrameDatagram::dg_sender_t senderId = senderId_;
+
+  // Split frame into datagrams.
+  VideoFrameDatagram **datagrams = 0;
+  VideoFrameDatagram::dg_data_count_t datagramsLength;
+  if (VideoFrameDatagram::split((dg_byte_t*)frameData.data(), frameData.size(), frameId, senderId, &datagrams, datagramsLength) != 0) {
+    return; // Error.
+  }
+
+  // Send datagrams.
+  for (auto i = 0; i < datagramsLength; ++i) {
+    const auto &dgvideo = *datagrams[i];
+    QByteArray datagram;
+    QDataStream out(&datagram, QIODevice::WriteOnly);
+    out.setByteOrder(QDataStream::BigEndian);
+    out << dgvideo.magic;
+    out << dgvideo.type;
+    out << dgvideo.flags;
+    out << dgvideo.sender;
+    out << dgvideo.frameId;
+    out << dgvideo.index;
+    out << dgvideo.count;
+    out << dgvideo.size;
+    out.writeRawData((char*)dgvideo.data, dgvideo.size);
+    writeDatagram(datagram, peerAddress(), peerPort());
+  }
+  VideoFrameDatagram::freeData(datagrams, datagramsLength);
 }
 
 void MediaSocket::timerEvent(QTimerEvent *ev)
 {
   if (ev->timerId() == _authenticationTimerId) {
-    qDebug() << QString("Send media auth token (token=%1; address=%2; port=%3)").arg(_token).arg(peerAddress().toString()).arg(peerPort());
-    UDP::AuthDatagram dgauth;
-    dgauth.size = _token.toUtf8().size();
-    dgauth.data = new UDP::dg_byte_t[dgauth.size];
-    memcpy(dgauth.data, _token.toUtf8().data(), dgauth.size);
-
-    QByteArray data;
-    QDataStream out(&data, QIODevice::WriteOnly);
-    out.setByteOrder(QDataStream::BigEndian);
-    out << dgauth.magic;
-    out << dgauth.type;
-    out << dgauth.size;
-    out.writeRawData((char*)dgauth.data, dgauth.size);
-
-    writeDatagram(data, peerAddress(), peerPort());
+    sendAuthTokenDatagram(_token);
+  }
+  else if (ev->timerId() == _sendVideoFrameTimerId) {
+    auto frameData = QByteArray();
+    for (auto i = 0; i < 4096; ++i) {
+      if (i == 0)
+        frameData.append('A');
+      else if (i == 4095)
+        frameData.append('C');
+      else
+        frameData.append('B');
+    }
+    sendVideoFrame(frameData, 0, 0);
   }
 }
 
@@ -208,5 +273,35 @@ void MediaSocket::onSocketStateChanged(QAbstractSocket::SocketState state)
       break;
     case QAbstractSocket::UnconnectedState:
       break;
+  }
+}
+
+void MediaSocket::onReadyRead()
+{
+  while (hasPendingDatagrams()) {
+    // Read datagram.
+    QByteArray data;
+    QHostAddress senderAddress;
+    quint16 senderPort;
+    data.resize(pendingDatagramSize());
+    readDatagram(data.data(), data.size(), &senderAddress, &senderPort);
+
+    qDebug() << QString("Incoming datagram (size=%1)").arg(data.size());
+
+    QDataStream in(data);
+    in.setByteOrder(QDataStream::BigEndian);
+
+    // Check magic.
+    UDP::Datagram dg;
+    in >> dg.magic;
+    if (dg.magic != UDP::Datagram::MAGIC) {
+      qDebug() << QString("Invalid datagram (size=%1; data=%2)").arg(data.size()).arg(QString(data));
+      continue;
+    }
+
+    // Handle by type.
+    in >> dg.type;
+    switch (dg.type) {
+    }
   }
 }
