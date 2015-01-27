@@ -18,6 +18,7 @@ set(qheaders
   src/videocollectionwidget.h
   src/ts3videoclient.h
   src/ts3videoclient_p.h
+  src/clientapplogic.h
 )
 
 set(sources
@@ -26,6 +27,7 @@ set(sources
   src/gridviewwidgetarranger.cpp
   src/videocollectionwidget.cpp
   src/ts3videoclient.cpp
+  src/clientapplogic.cpp
 )
 
 set(qforms
