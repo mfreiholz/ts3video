@@ -20,7 +20,7 @@ class TS3VideoClient : public QObject
   QScopedPointer<TS3VideoClientPrivate> const d_ptr;
 
 public:
-  explicit TS3VideoClient(QObject *parent = 0);
+  TS3VideoClient(QObject *parent = 0);
   ~TS3VideoClient();
   void connectToHost(const QHostAddress &address, qint16 port);
   QCorReply* auth(const QString &name);

@@ -14,10 +14,6 @@
 #include "qcorconnection.h"
 #include "qcorreply.h"
 
-#include "cliententity.h"
-#include "channelentity.h"
-#include "jsonprotocolhelper.h"
-
 using namespace UDP;
 
 ///////////////////////////////////////////////////////////////////////
@@ -42,12 +38,17 @@ TS3VideoClient::~TS3VideoClient()
 void TS3VideoClient::connectToHost(const QHostAddress &address, qint16 port)
 {
   Q_D(TS3VideoClient);
+  Q_ASSERT(!address.isNull());
+  Q_ASSERT(port > 0);
   d->_connection->connectTo(address, port);
 }
 
 QCorReply* TS3VideoClient::auth(const QString &name)
 {
   Q_D(TS3VideoClient);
+  Q_ASSERT(!name.isEmpty());
+  Q_ASSERT(d->_connection->socket()->state() == QAbstractSocket::ConnectedState);
+
   QJsonObject params;
   params["version"] = 1;
   params["username"] = name;
@@ -59,11 +60,17 @@ QCorReply* TS3VideoClient::auth(const QString &name)
   connect(reply, &QCorReply::finished, [d, reply] () {
     int status = 0;
     QJsonObject params;
-    if (!JsonProtocolHelper::fromJsonResponse(reply->frame()->data(), status, params) || params["status"].toInt() != 0) {
+    if (!JsonProtocolHelper::fromJsonResponse(reply->frame()->data(), status, params)) {
       return;
     }
+    else if (params["status"].toInt() != 0) {
+      return;
+    }
+    // Get self client info from response.
+    d->_clientEntity.fromQJsonObject(params["client"].toObject());
     // Create new media socket.
     if (d->_mediaSocket) {
+      d->_mediaSocket->close();
       delete d->_mediaSocket;
     }
     d->_mediaSocket = new MediaSocket(params["authtoken"].toString(), d->q_ptr);
@@ -76,6 +83,7 @@ QCorReply* TS3VideoClient::auth(const QString &name)
 QCorReply* TS3VideoClient::joinChannel()
 {
   Q_D(TS3VideoClient);
+  Q_ASSERT(d->_connection->socket()->state() == QAbstractSocket::ConnectedState);
   QJsonObject params;
   params["channelid"] = 1;
   QCorFrame req;
@@ -98,6 +106,7 @@ void TS3VideoClient::onStateChanged(QAbstractSocket::SocketState state)
 void TS3VideoClient::onNewIncomingRequest(QCorFrameRefPtr frame)
 {
   Q_D(TS3VideoClient);
+  Q_ASSERT(!frame.isNull());
   qDebug() << QString("Incoming request from server (size=%1; content=%2)").arg(frame->data().size()).arg(QString(frame->data()));
   
   QString action;
@@ -146,7 +155,8 @@ void TS3VideoClient::onNewIncomingRequest(QCorFrameRefPtr frame)
 TS3VideoClientPrivate::TS3VideoClientPrivate(TS3VideoClient *owner) :
   q_ptr(owner),
   _connection(nullptr),
-  _mediaSocket(nullptr)
+  _mediaSocket(nullptr),
+  _clientEntity()
 {
 }
 

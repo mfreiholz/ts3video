@@ -3,6 +3,10 @@
 
 #include <QUdpSocket>
 
+#include "cliententity.h"
+#include "channelentity.h"
+#include "jsonprotocolhelper.h"
+
 #include "ts3videoclient.h"
 
 class QCorConnection;
@@ -16,6 +20,7 @@ class TS3VideoClientPrivate {
 
   QCorConnection *_connection;
   MediaSocket *_mediaSocket;
+  ClientEntity _clientEntity;
 };
 
 class MediaSocket : public QUdpSocket

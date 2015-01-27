@@ -12,9 +12,9 @@ class MediaRecipients;
 class MediaSenderEntity
 {
 public:
-  static QString createID(const QHostAddress &address, quint16 port)
+  static inline QString createID(const QHostAddress &address, quint16 port)
   {
-    return address.toString() + QString::number(port);
+    return address.toString() + QString(":") + QString::number(port);
   }
 
   QString id;
