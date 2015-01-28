@@ -147,7 +147,6 @@ void ClientAppLogic::onClientDisconnected(const ClientEntity &client)
 QWidget* ClientAppLogic::createClientWidget(const ClientEntity &client)
 {
   auto w = new ClientVideoWidget(nullptr);
-  w->setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowTitleHint);
   w->setWindowTitle(QString("Client: %1").arg(client.id));
   w->show();
   return w;
