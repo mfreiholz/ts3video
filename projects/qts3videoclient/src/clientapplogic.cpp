@@ -16,6 +16,7 @@
 #include "elws.h"
 
 #include "clientvideowidget.h"
+#include "clientcameravideowidget.h"
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -33,11 +34,15 @@ ClientAppLogic::ClientAppLogic(QObject *parent) :
   connect(&_ts3vc, &TS3VideoClient::clientJoinedChannel, this, &ClientAppLogic::onClientJoinedChannel);
   connect(&_ts3vc, &TS3VideoClient::clientLeftChannel, this, &ClientAppLogic::onClientLeftChannel);
   connect(&_ts3vc, &TS3VideoClient::clientDisconnected, this, &ClientAppLogic::onClientDisconnected);
+
+  _cameraWidget = new ClientCameraVideoWidget(nullptr);
+  _cameraWidget->show();
 }
 
 ClientAppLogic::~ClientAppLogic()
 {
-
+  _cameraWidget->close();
+  delete _cameraWidget;
 }
 
 void ClientAppLogic::onConnected()
@@ -99,7 +104,8 @@ void ClientAppLogic::onConnected()
 
 void ClientAppLogic::onDisconnected()
 {
-  qApp->quit();
+  qDebug() << QString("Disconnected...");
+  //qApp->quit();
 }
 
 void ClientAppLogic::onClientJoinedChannel(const ClientEntity &client, const ChannelEntity &channel)

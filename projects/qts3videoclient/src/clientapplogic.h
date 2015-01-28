@@ -7,6 +7,7 @@
 #include "ts3videoclient.h"
 
 class QWidget;
+class ClientCameraVideoWidget;
 
 class ClientAppLogic : public QObject
 {
@@ -24,13 +25,14 @@ private slots:
   void onClientDisconnected(const ClientEntity &client);
 
 protected:
+  QWidget* createCameraWidget();
   QWidget* createClientWidget(const ClientEntity &client);
 
 private:
   TS3VideoClient _ts3vc;
 
-  // Client widgets.
-  QHash<int, QWidget*> _clientWidgets;
+  ClientCameraVideoWidget *_cameraWidget;
+  QHash<int, QWidget*> _clientWidgets; ///< Remote client widgets.
 };
 
 #endif

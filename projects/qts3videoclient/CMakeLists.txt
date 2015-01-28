@@ -4,6 +4,8 @@ find_package(Qt5Core REQUIRED)
 find_package(Qt5Gui REQUIRED)
 find_package(Qt5Widgets REQUIRED)
 find_package(Qt5Network REQUIRED)
+find_package(Qt5Multimedia REQUIRED)
+find_package(Qt5MultimediaWidgets REQUIRED)
 if(POLICY CMP0020)
   cmake_policy(SET CMP0020 NEW)
 endif()
@@ -19,6 +21,7 @@ set(qheaders
   src/ts3videoclient.h
   src/ts3videoclient_p.h
   src/clientapplogic.h
+  src/clientcameravideowidget.h
 )
 
 set(sources
@@ -28,6 +31,7 @@ set(sources
   src/videocollectionwidget.cpp
   src/ts3videoclient.cpp
   src/clientapplogic.cpp
+  src/clientcameravideowidget.cpp
 )
 
 set(qforms
@@ -72,6 +76,8 @@ target_link_libraries(
   Qt5::Gui
   Qt5::Widgets
   Qt5::Network
+  Qt5::Multimedia
+  Qt5::MultimediaWidgets
   qcorlib
   qts3videocorelib
   medlib
