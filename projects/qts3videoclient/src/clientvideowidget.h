@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <QPixmap>
+#include <QImage>
 
 namespace Ui {
 class ClientVideoWidget;
@@ -18,6 +19,7 @@ public:
 
 public slots:
   void setFrame(const QPixmap &pm);
+  void setImage(const QImage &image);
 
 protected:
   virtual void paintEvent(QPaintEvent *ev);

@@ -40,6 +40,12 @@ void ClientVideoWidget::setFrame(const QPixmap &pm)
   update();
 }
 
+void ClientVideoWidget::setImage(const QImage &image)
+{
+  _frame = QPixmap::fromImage(image);
+  update();
+}
+
 void ClientVideoWidget::paintEvent(QPaintEvent *)
 {
   QPainter p(this);
