@@ -1,6 +1,7 @@
 
 # Qt5
 find_package(Qt5Core REQUIRED)
+find_package(Qt5Gui REQUIRED)
 if(POLICY CMP0020)
   cmake_policy(SET CMP0020 NEW)
 endif()
@@ -11,6 +12,10 @@ set(headers
   src/channelentity.h
   src/jsonprotocolhelper.h
   src/elws.h
+  src/yuvframe.h
+  src/vp8frame.h
+  src/imageutil.h
+  src/timeutil.h
 )
 
 set(qheaders
@@ -21,6 +26,10 @@ set(sources
   src/channelentity.cpp
   src/jsonprotocolhelper.cpp
   src/elws.cpp
+  src/yuvframe.cpp
+  src/vp8frame.cpp
+  src/imageutil.cpp
+  src/timeutil.cpp
 )
 
 set(qforms
@@ -58,4 +67,5 @@ add_library(
 target_link_libraries(
   qts3videocorelib
   Qt5::Core
+  Qt5::Gui
 )

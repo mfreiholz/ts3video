@@ -22,6 +22,7 @@ set(qheaders
   src/ts3videoclient_p.h
   src/clientapplogic.h
   src/clientcameravideowidget.h
+  src/udpvideoframedecoder.h
 )
 
 set(sources
@@ -32,6 +33,7 @@ set(sources
   src/ts3videoclient.cpp
   src/clientapplogic.cpp
   src/clientcameravideowidget.cpp
+  src/udpvideoframedecoder.cpp
 )
 
 set(qforms
