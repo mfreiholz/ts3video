@@ -26,6 +26,7 @@ public:
   void connectToHost(const QHostAddress &address, qint16 port);
   QCorReply* auth(const QString &name);
   QCorReply* joinChannel();
+  void sendVideoFrame(); ///< TODO Parameterize!
 
 signals:
   void connected();

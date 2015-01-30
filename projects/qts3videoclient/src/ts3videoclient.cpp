@@ -14,8 +14,6 @@
 #include "qcorconnection.h"
 #include "qcorreply.h"
 
-using namespace UDP;
-
 ///////////////////////////////////////////////////////////////////////
 
 TS3VideoClient::TS3VideoClient(QObject *parent) :
@@ -209,6 +207,7 @@ void MediaSocket::setAuthenticated(bool yesno)
 
 void MediaSocket::sendAuthTokenDatagram(const QString &token)
 {
+  Q_ASSERT(!token.isEmpty());
   qDebug() << QString("Send media auth token (token=%1; address=%2; port=%3)").arg(token).arg(peerAddress().toString()).arg(peerPort());
 
   UDP::AuthDatagram dgauth;
@@ -228,15 +227,19 @@ void MediaSocket::sendAuthTokenDatagram(const QString &token)
 
 void MediaSocket::sendVideoFrame(const QByteArray &frameData, quint64 frameId_, int senderId_)
 {
+  Q_ASSERT(!frameData.isEmpty());
+  Q_ASSERT(frameId_ != 0);
+  Q_ASSERT(senderId_ != 0);
+  Q_ASSERT(state() == QAbstractSocket::ConnectedState);
   qDebug() << QString("Send video frame (size=%1; address=%2; port=%3)").arg(frameData.size()).arg(peerAddress().toString()).arg(peerPort());
 
   UDP::VideoFrameDatagram::dg_frame_id_t frameId = frameId_;
   UDP::VideoFrameDatagram::dg_sender_t senderId = senderId_;
 
   // Split frame into datagrams.
-  VideoFrameDatagram **datagrams = 0;
-  VideoFrameDatagram::dg_data_count_t datagramsLength;
-  if (VideoFrameDatagram::split((dg_byte_t*)frameData.data(), frameData.size(), frameId, senderId, &datagrams, datagramsLength) != 0) {
+  UDP::VideoFrameDatagram **datagrams = 0;
+  UDP::VideoFrameDatagram::dg_data_count_t datagramsLength;
+  if (UDP::VideoFrameDatagram::split((UDP::dg_byte_t*)frameData.data(), frameData.size(), frameId, senderId, &datagrams, datagramsLength) != 0) {
     return; // Error.
   }
 
@@ -257,7 +260,7 @@ void MediaSocket::sendVideoFrame(const QByteArray &frameData, quint64 frameId_, 
     out.writeRawData((char*)dgvideo.data, dgvideo.size);
     writeDatagram(datagram, peerAddress(), peerPort());
   }
-  VideoFrameDatagram::freeData(datagrams, datagramsLength);
+  UDP::VideoFrameDatagram::freeData(datagrams, datagramsLength);
 }
 
 void MediaSocket::timerEvent(QTimerEvent *ev)
@@ -318,6 +321,24 @@ void MediaSocket::onReadyRead()
     // Handle by type.
     in >> dg.type;
     switch (dg.type) {
+
+      // Video data.
+      case UDP::VideoFrameDatagram::TYPE: {
+        UDP::VideoFrameDatagram dgvideo;
+        in >> dgvideo.flags;
+        in >> dgvideo.sender;
+        in >> dgvideo.frameId;
+        in >> dgvideo.index;
+        in >> dgvideo.count;
+        in >> dgvideo.size;
+        if (dgvideo.size > 0) {
+          dgvideo.data = new UDP::dg_byte_t[dgvideo.size];
+          in.readRawData((char*)dgvideo.data, dgvideo.size);
+        }
+
+        break;
+      }
+
     }
   }
 }
