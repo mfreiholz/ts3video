@@ -40,7 +40,7 @@ void MediaSocketHandler::onReadyRead()
     data.resize(_socket.pendingDatagramSize());
     _socket.readDatagram(data.data(), data.size(), &senderAddress, &senderPort);
 
-    qDebug() << QString("Incoming datagram (size=%1)").arg(data.size());
+    //qDebug() << QString("Incoming datagram (size=%1)").arg(data.size());
 
     QDataStream in(data);
     in.setByteOrder(QDataStream::BigEndian);

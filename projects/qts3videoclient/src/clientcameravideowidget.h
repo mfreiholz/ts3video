@@ -3,6 +3,8 @@
 
 #include <QWidget>
 
+class TS3VideoClient;
+
 /**
  */
 class ClientCameraVideoWidget : public QWidget
@@ -10,8 +12,11 @@ class ClientCameraVideoWidget : public QWidget
   Q_OBJECT
 
 public:
-  ClientCameraVideoWidget(QWidget *parent);
+  ClientCameraVideoWidget(TS3VideoClient *ts3vc, QWidget *parent);
   ~ClientCameraVideoWidget();
+
+private:
+  TS3VideoClient *_ts3vc;
 };
 
 /**
@@ -29,8 +34,7 @@ public:
   bool present(const QVideoFrame &frame);
 
 signals:
-  void newFrame(const QImage &image);
-  void newPixmapFrame(const QPixmap &pm);
+  void newQImage(const QImage &image);
 };
 
 #endif

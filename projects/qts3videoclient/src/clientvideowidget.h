@@ -20,6 +20,8 @@ public:
 public slots:
   void setFrame(const QPixmap &pm);
   void setImage(const QImage &image);
+  void setAvatar(const QPixmap &pm);
+  void setText(const QString &text);
 
 protected:
   virtual void paintEvent(QPaintEvent *ev);

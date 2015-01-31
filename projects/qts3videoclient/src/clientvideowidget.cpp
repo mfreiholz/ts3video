@@ -35,7 +35,6 @@ ClientVideoWidget::~ClientVideoWidget()
 
 void ClientVideoWidget::setFrame(const QPixmap &pm)
 {
-  //qDebug() << QString("New pixmap (w=%1; h=%2").arg(pm.width()).arg(pm.height());
   _frame = pm;
   update();
 }
@@ -43,6 +42,18 @@ void ClientVideoWidget::setFrame(const QPixmap &pm)
 void ClientVideoWidget::setImage(const QImage &image)
 {
   _frame = QPixmap::fromImage(image);
+  update();
+}
+
+void ClientVideoWidget::setAvatar(const QPixmap &pm)
+{
+  _avatar = pm;
+  update();
+}
+
+void ClientVideoWidget::setText(const QString &text)
+{
+  _text = text;
   update();
 }
 

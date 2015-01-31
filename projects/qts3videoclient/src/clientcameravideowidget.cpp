@@ -8,34 +8,37 @@
 
 #include <QVideoWidget>
 
+#include "ts3videoclient.h"
 #include "clientvideowidget.h"
 
 ///////////////////////////////////////////////////////////////////////
 
-ClientCameraVideoWidget::ClientCameraVideoWidget(QWidget *parent) :
-  QWidget(parent)
+ClientCameraVideoWidget::ClientCameraVideoWidget(TS3VideoClient *ts3vc, QWidget *parent) :
+  QWidget(parent),
+  _ts3vc(ts3vc)
 {
   auto cameraInfo = QCameraInfo::defaultCamera();
   auto camera = new QCamera(cameraInfo, this);
   camera->start();
 
-  auto videoWidget = new QVideoWidget();
-  videoWidget->setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowTitleHint);
-  videoWidget->setAspectRatioMode(Qt::KeepAspectRatioByExpanding);
-  camera->setViewfinder(videoWidget);
+  //auto videoWidget = new QVideoWidget();
+  //videoWidget->setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowTitleHint);
+  //videoWidget->setAspectRatioMode(Qt::KeepAspectRatioByExpanding);
+  //camera->setViewfinder(videoWidget);
 
-  //auto grabber = new CameraFrameGrabber(this);
-  //auto videoWidget = new ClientVideoWidget();
-  //QObject::connect(grabber, &CameraFrameGrabber::newFrame, videoWidget, &ClientVideoWidget::setImage);
-  //QObject::connect(grabber, &CameraFrameGrabber::newPixmapFrame, videoWidget, &ClientVideoWidget::setFrame);
-
-  auto cameraLabel = new QLabel();
-  cameraLabel->setText(tr("Camera: %1").arg(cameraInfo.description()));
+  auto grabber = new CameraFrameGrabber(this);
+  auto videoWidget = new ClientVideoWidget();
+  camera->setViewfinder(grabber);
+  QObject::connect(grabber, &CameraFrameGrabber::newQImage, [ts3vc, videoWidget] (const QImage &image) {
+    videoWidget->setImage(image);
+    if (ts3vc->isReadyForStreaming() /*&& _streamingEnabled*/) {
+      ts3vc->sendVideoFrame(image);
+    }
+  });
 
   auto mainLayout = new QBoxLayout(QBoxLayout::TopToBottom);
   mainLayout->setContentsMargins(0, 0, 0, 0);
   mainLayout->addWidget(videoWidget, 1);
-  mainLayout->addWidget(cameraLabel, 0);
   setLayout(mainLayout);
 }
 
@@ -108,14 +111,11 @@ bool CameraFrameGrabber::present(const QVideoFrame &frame)
     return false;
   }
   // Calls the deep copy constructor of QImage.
-  f.map(QAbstractVideoBuffer::ReadOnly);
-
-  const QImage image(f.bits(), f.width(), f.height(), imageFormat);
-  emit newFrame(image);
-
-  //auto pm = QPixmap::fromImage(image);
-  //emit newPixmapFrame(pm);
-
-  f.unmap();
+  if (f.map(QAbstractVideoBuffer::ReadOnly)) {
+    // Create copy via copy() or mirrored(). At least we need a copy as long as we don't directly print here.
+    auto image = QImage(f.bits(), f.width(), f.height(), imageFormat).mirrored(false, true);
+    emit newQImage(image);
+    f.unmap();
+  }
   return true;
 }

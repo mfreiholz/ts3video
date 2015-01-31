@@ -23,6 +23,7 @@ set(qheaders
   src/clientapplogic.h
   src/clientcameravideowidget.h
   src/udpvideoframedecoder.h
+  src/remoteclientvideowidget.h
 )
 
 set(sources
@@ -34,6 +35,7 @@ set(sources
   src/clientapplogic.cpp
   src/clientcameravideowidget.cpp
   src/udpvideoframedecoder.cpp
+  src/remoteclientvideowidget.cpp
 )
 
 set(qforms

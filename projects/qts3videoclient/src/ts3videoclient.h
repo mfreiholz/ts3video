@@ -21,12 +21,23 @@ class TS3VideoClient : public QObject
 
 public:
   TS3VideoClient(QObject *parent = 0);
+  TS3VideoClient(const TS3VideoClient &other);
   ~TS3VideoClient();
+
   const ClientEntity& clientEntity() const;
+  bool isReadyForStreaming() const;
+
   void connectToHost(const QHostAddress &address, qint16 port);
   QCorReply* auth(const QString &name);
   QCorReply* joinChannel();
-  void sendVideoFrame(); ///< TODO Parameterize!
+
+  /*!
+    Sends a single frame to the server, which will then broadcast it to other clients.
+    Internally encodes the image with VPX codec.
+    \thread-safe
+    \param image A single frame of the video.
+  */
+  void sendVideoFrame(const QImage &image);
 
 signals:
   void connected();

@@ -16,6 +16,7 @@ class ClientAppLogic : public QObject
 public:
   ClientAppLogic(QObject *parent);
   ~ClientAppLogic();
+  TS3VideoClient& ts3client();
 
 private slots:
   void onConnected();

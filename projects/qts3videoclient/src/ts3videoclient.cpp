@@ -8,11 +8,18 @@
 #include <QTcpSocket>
 #include <QTimerEvent>
 #include <QDataStream>
+#include <QImage>
 
 #include "medprotocol.h"
 
 #include "qcorconnection.h"
 #include "qcorreply.h"
+
+/*
+  Notes
+  =====
+  - Reading UDP datagrams in same thread may cause the GUI to hang, if there are a lot of clients?
+*/
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -31,12 +38,29 @@ TS3VideoClient::~TS3VideoClient()
   Q_D(TS3VideoClient);
   delete d->_connection;
   delete d->_mediaSocket;
+  if (d->_encodingThread) {
+    d->_encodingThread->stop();
+    d->_encodingThread->wait();
+    delete d->_encodingThread;
+  }
 }
 
 const ClientEntity& TS3VideoClient::clientEntity() const
 {
   Q_D(const TS3VideoClient);
   return d->_clientEntity;
+}
+
+bool TS3VideoClient::isReadyForStreaming() const
+{
+  Q_D(const TS3VideoClient);
+  if (d->_mediaSocket->state() != QAbstractSocket::ConnectedState) {
+    return false;
+  }
+  if (!d->_mediaSocket->isAuthenticated()) {
+    return false;
+  }
+  return true;
 }
 
 void TS3VideoClient::connectToHost(const QHostAddress &address, qint16 port)
@@ -95,6 +119,14 @@ QCorReply* TS3VideoClient::joinChannel()
   return d->_connection->sendRequest(req);
 }
 
+void TS3VideoClient::sendVideoFrame(const QImage &image)
+{
+  Q_D(TS3VideoClient);
+  if (d->_encodingThread) {
+    d->_encodingThread->enqueue(image);
+  }
+}
+
 void TS3VideoClient::onStateChanged(QAbstractSocket::SocketState state)
 {
   switch (state) {
@@ -126,6 +158,15 @@ void TS3VideoClient::onNewIncomingRequest(QCorFrameRefPtr frame)
 
   if (action == "notify.mediaauthsuccess") {
     d->_mediaSocket->setAuthenticated(true);
+    if (d->_encodingThread) {
+      delete d->_encodingThread;
+    }
+    d->_encodingThread = new VideoEncodingThread(this);
+    d->_encodingThread->start();
+    static quint64 __frameid = 1;
+    connect(d->_encodingThread, &VideoEncodingThread::newEncodedFrame, [d] (const QByteArray &frame) {
+      d->_mediaSocket->sendVideoFrame(frame, __frameid++, d->_clientEntity.id);
+    });
   }
   else if (action == "notify.clientjoinedchannel") {
     ChannelEntity channelEntity;
@@ -160,7 +201,8 @@ TS3VideoClientPrivate::TS3VideoClientPrivate(TS3VideoClient *owner) :
   q_ptr(owner),
   _connection(nullptr),
   _mediaSocket(nullptr),
-  _clientEntity()
+  _clientEntity(),
+  _encodingThread(nullptr)
 {
 }
 
@@ -170,8 +212,7 @@ MediaSocket::MediaSocket(const QString &token, QObject *parent) :
   QUdpSocket(parent),
   _authenticated(false),
   _token(token),
-  _authenticationTimerId(-1),
-  _sendVideoFrameTimerId(-1)
+  _authenticationTimerId(-1)
 {
   connect(this, &MediaSocket::stateChanged, this, &MediaSocket::onSocketStateChanged);
   connect(this, &MediaSocket::readyRead, this, &MediaSocket::onReadyRead);
@@ -182,12 +223,9 @@ MediaSocket::~MediaSocket()
   if (_authenticationTimerId != -1) {
     killTimer(_authenticationTimerId);
   }
-  if (_sendVideoFrameTimerId != -1) {
-    killTimer(_sendVideoFrameTimerId);
-  }
 }
 
-bool MediaSocket::authenticated() const
+bool MediaSocket::isAuthenticated() const
 {
   return _authenticated;
 }
@@ -195,14 +233,10 @@ bool MediaSocket::authenticated() const
 void MediaSocket::setAuthenticated(bool yesno)
 {
   _authenticated = yesno;
-  if (_authenticationTimerId != -1) {
+  if (_authenticated && _authenticationTimerId != -1) {
     killTimer(_authenticationTimerId);
     _authenticationTimerId = -1;
   }
-  // TODO Remove demo code.
-  //if (_sendVideoFrameTimerId == -1) {
-  //  _sendVideoFrameTimerId = startTimer(2000);
-  //}
 }
 
 void MediaSocket::sendAuthTokenDatagram(const QString &token)
@@ -225,13 +259,15 @@ void MediaSocket::sendAuthTokenDatagram(const QString &token)
   writeDatagram(datagram, peerAddress(), peerPort());
 }
 
-void MediaSocket::sendVideoFrame(const QByteArray &frameData, quint64 frameId_, int senderId_)
+void MediaSocket::sendVideoFrame(const QByteArray &frame_, quint64 frameId_, quint32 senderId_)
 {
-  Q_ASSERT(!frameData.isEmpty());
+  Q_ASSERT(frame_.isEmpty() == false);
   Q_ASSERT(frameId_ != 0);
-  Q_ASSERT(senderId_ != 0);
-  Q_ASSERT(state() == QAbstractSocket::ConnectedState);
-  qDebug() << QString("Send video frame (size=%1; address=%2; port=%3)").arg(frameData.size()).arg(peerAddress().toString()).arg(peerPort());
+  //qDebug() << QString("Send video frame (size=%1; address=%2; port=%3)").arg(frameData.size()).arg(peerAddress().toString()).arg(peerPort());
+  
+  if (state() == QAbstractSocket::ConnectedState) {
+    return;
+  }
 
   UDP::VideoFrameDatagram::dg_frame_id_t frameId = frameId_;
   UDP::VideoFrameDatagram::dg_sender_t senderId = senderId_;
@@ -239,7 +275,7 @@ void MediaSocket::sendVideoFrame(const QByteArray &frameData, quint64 frameId_, 
   // Split frame into datagrams.
   UDP::VideoFrameDatagram **datagrams = 0;
   UDP::VideoFrameDatagram::dg_data_count_t datagramsLength;
-  if (UDP::VideoFrameDatagram::split((UDP::dg_byte_t*)frameData.data(), frameData.size(), frameId, senderId, &datagrams, datagramsLength) != 0) {
+  if (UDP::VideoFrameDatagram::split((UDP::dg_byte_t*)frame_.data(), frame_.size(), frameId, senderId, &datagrams, datagramsLength) != 0) {
     return; // Error.
   }
 
@@ -268,18 +304,6 @@ void MediaSocket::timerEvent(QTimerEvent *ev)
   if (ev->timerId() == _authenticationTimerId) {
     sendAuthTokenDatagram(_token);
   }
-  else if (ev->timerId() == _sendVideoFrameTimerId) {
-    auto frameData = QByteArray();
-    for (auto i = 0; i < 4096; ++i) {
-      if (i == 0)
-        frameData.append('A');
-      else if (i == 4095)
-        frameData.append('C');
-      else
-        frameData.append('B');
-    }
-    sendVideoFrame(frameData, 0, 0);
-  }
 }
 
 void MediaSocket::onSocketStateChanged(QAbstractSocket::SocketState state)
@@ -305,7 +329,7 @@ void MediaSocket::onReadyRead()
     data.resize(pendingDatagramSize());
     readDatagram(data.data(), data.size(), &senderAddress, &senderPort);
 
-    qDebug() << QString("Incoming datagram (size=%1)").arg(data.size());
+    //qDebug() << QString("Incoming datagram (size=%1)").arg(data.size());
 
     QDataStream in(data);
     in.setByteOrder(QDataStream::BigEndian);
@@ -335,10 +359,69 @@ void MediaSocket::onReadyRead()
           dgvideo.data = new UDP::dg_byte_t[dgvideo.size];
           in.readRawData((char*)dgvideo.data, dgvideo.size);
         }
-
         break;
       }
 
     }
+  }
+}
+
+///////////////////////////////////////////////////////////////////////
+
+VideoEncodingThread::VideoEncodingThread(QObject *parent) :
+  QThread(parent),
+  _stopFlag(0)
+{
+}
+
+VideoEncodingThread::~VideoEncodingThread()
+{
+  stop();
+}
+
+void VideoEncodingThread::stop()
+{
+  _stopFlag = 1;
+  _queueCond.wakeAll();
+}
+
+void VideoEncodingThread::enqueue(const QImage &image)
+{
+  QMutexLocker l(&_m);
+  _queue.enqueue(image);
+  while (_queue.size() > 5) {
+    _queue.dequeue();
+  }
+  l.unlock();
+  _queueCond.wakeAll();
+}
+
+void VideoEncodingThread::run()
+{
+  while (_stopFlag == 0) {
+    QMutexLocker l(&_m);
+    if (_queue.isEmpty()) {
+      _queueCond.wait(&_m);
+    }
+    auto image = _queue.dequeue();
+    l.unlock();
+
+    if (image.isNull()) {
+      qDebug() << QString("Invalid image");
+      continue;
+    }
+
+    // TODO Convert to YuvFrame.
+    // TODO Encode via VPX.
+    // TODO emit signal
+
+    // DEV
+    if (true) {
+      QByteArray data;
+      QDataStream out(&data, QIODevice::WriteOnly);
+      out << image;
+      emit newEncodedFrame(data);
+    }
+
   }
 }

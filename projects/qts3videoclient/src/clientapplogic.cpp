@@ -35,7 +35,8 @@ ClientAppLogic::ClientAppLogic(QObject *parent) :
   connect(&_ts3vc, &TS3VideoClient::clientLeftChannel, this, &ClientAppLogic::onClientLeftChannel);
   connect(&_ts3vc, &TS3VideoClient::clientDisconnected, this, &ClientAppLogic::onClientDisconnected);
 
-  _cameraWidget = new ClientCameraVideoWidget(nullptr);
+  _cameraWidget = new ClientCameraVideoWidget(&_ts3vc, nullptr);
+  _cameraWidget->resize(640, 360);
   _cameraWidget->show();
 }
 
@@ -43,6 +44,11 @@ ClientAppLogic::~ClientAppLogic()
 {
   _cameraWidget->close();
   delete _cameraWidget;
+}
+
+TS3VideoClient& ClientAppLogic::ts3client()
+{
+  return _ts3vc;
 }
 
 void ClientAppLogic::onConnected()
