@@ -61,6 +61,7 @@ include_directories(
   ../medlib/include
   ../qcorlib/src
   ../qts3videocorelib/src
+  ../../thirdparty/vpx/include
 )
 
 # Target
@@ -85,4 +86,5 @@ target_link_libraries(
   qcorlib
   qts3videocorelib
   medlib
+  ${PROJECT_SOURCE_DIR}/thirdparty/vpx/lib-x86-vc10-release/vpxmt.lib
 )

@@ -1,3 +1,6 @@
 [submodule "thirdparty/humblelogging"]
 	path = thirdparty/humblelogging
 	url = https://github.com/mfreiholz/humble-logging-library.git
+[submodule "thirdparty/vpx"]
+	path = thirdparty/vpx
+	url = git@git.insanefactory.com:/opt/git/ts3video-vpx.git
