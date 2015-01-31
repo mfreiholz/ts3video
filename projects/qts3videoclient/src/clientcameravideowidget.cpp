@@ -1,5 +1,7 @@
 #include "clientcameravideowidget.h"
 
+#include <QTime>
+
 #include <QDebug>
 #include <QBoxLayout>
 #include <QLabel>
@@ -29,8 +31,13 @@ ClientCameraVideoWidget::ClientCameraVideoWidget(TS3VideoClient *ts3vc, QWidget 
   auto grabber = new CameraFrameGrabber(this);
   auto videoWidget = new ClientVideoWidget();
   camera->setViewfinder(grabber);
+  static QTime __time;
+  __time.start();
   QObject::connect(grabber, &CameraFrameGrabber::newQImage, [ts3vc, videoWidget] (const QImage &image) {
     videoWidget->setImage(image);
+    if (__time.elapsed() < 33)
+      return;
+    __time.restart();
     if (ts3vc->isReadyForStreaming() /*&& _streamingEnabled*/) {
       ts3vc->sendVideoFrame(image);
     }
@@ -113,7 +120,7 @@ bool CameraFrameGrabber::present(const QVideoFrame &frame)
   // Calls the deep copy constructor of QImage.
   if (f.map(QAbstractVideoBuffer::ReadOnly)) {
     // Create copy via copy() or mirrored(). At least we need a copy as long as we don't directly print here.
-    auto image = QImage(f.bits(), f.width(), f.height(), imageFormat).mirrored(false, true);
+    auto image = QImage(f.bits(), f.width(), f.height(), imageFormat).mirrored(false, true).scaled(50, 50);
     emit newQImage(image);
     f.unmap();
   }

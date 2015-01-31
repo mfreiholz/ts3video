@@ -16,10 +16,7 @@ public:
 		ALTREF = 3
 	};
 
-	VP8Frame()
-		: time(0),
-		  type(NORMAL)
-	{}
+	VP8Frame();
 
 public:
 	quint64 time;
@@ -27,25 +24,7 @@ public:
 	QByteArray data;
 };
 
-/** Serializes the frame.
- */
-QDataStream& operator<<(QDataStream &ds, const VP8Frame &frame)
-{
-  ds << frame.time << frame.type;
-  ds.writeRawData(frame.data.data(), frame.data.size());
-  return ds;
-}
-
-/** Deserializes the "frame".
- * The frame's data QByteArray must have the correct size.
- * Use QByteArray::resize() before to allocate the required memory.
- */
-QDataStream& operator>>(QDataStream &ds, VP8Frame &frame)
-{
-  ds >> frame.time;
-  ds >> frame.type;
-  ds.readRawData(frame.data.data(), frame.data.size());
-  return ds;
-}
+QDataStream& operator<<(QDataStream &ds, const VP8Frame &frame);
+QDataStream& operator>>(QDataStream &ds, VP8Frame &frame);
 
 #endif

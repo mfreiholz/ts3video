@@ -54,7 +54,7 @@ const ClientEntity& TS3VideoClient::clientEntity() const
 bool TS3VideoClient::isReadyForStreaming() const
 {
   Q_D(const TS3VideoClient);
-  if (d->_mediaSocket->state() != QAbstractSocket::ConnectedState) {
+  if (!d->_mediaSocket || d->_mediaSocket->state() != QAbstractSocket::ConnectedState) {
     return false;
   }
   if (!d->_mediaSocket->isAuthenticated()) {
@@ -84,8 +84,8 @@ QCorReply* TS3VideoClient::auth(const QString &name)
   req.setData(JsonProtocolHelper::createJsonRequest("auth", params));
   auto reply = d->_connection->sendRequest(req);
 
-  // Connect with media socket, if authentication was successful.
-  connect(reply, &QCorReply::finished, [d, reply] () {
+  // Authentication response: Automatically connect media socket, if authentication was successful.
+  connect(reply, &QCorReply::finished, [this, d, reply] () {
     int status = 0;
     QJsonObject params;
     if (!JsonProtocolHelper::fromJsonResponse(reply->frame()->data(), status, params)) {
@@ -94,15 +94,18 @@ QCorReply* TS3VideoClient::auth(const QString &name)
     else if (params["status"].toInt() != 0) {
       return;
     }
+    auto client = params["client"].toObject();
+    auto authtoken = params["authtoken"].toString();
     // Get self client info from response.
-    d->_clientEntity.fromQJsonObject(params["client"].toObject());
+    d->_clientEntity.fromQJsonObject(client);
     // Create new media socket.
     if (d->_mediaSocket) {
       d->_mediaSocket->close();
       delete d->_mediaSocket;
     }
-    d->_mediaSocket = new MediaSocket(params["authtoken"].toString(), d->q_ptr);
+    d->_mediaSocket = new MediaSocket(authtoken, d->q_ptr);
     d->_mediaSocket->connectToHost(d->_connection->socket()->peerAddress(), d->_connection->socket()->peerPort());
+    QObject::connect(d->_mediaSocket, &MediaSocket::newVideoFrame, d->q_ptr, &TS3VideoClient::newVideoFrame);
   });
 
   return reply;
@@ -122,7 +125,7 @@ QCorReply* TS3VideoClient::joinChannel()
 void TS3VideoClient::sendVideoFrame(const QImage &image)
 {
   Q_D(TS3VideoClient);
-  if (d->_encodingThread) {
+  if (d->_encodingThread && d->_encodingThread->isRunning()) {
     d->_encodingThread->enqueue(image);
   }
 }
@@ -212,10 +215,14 @@ MediaSocket::MediaSocket(const QString &token, QObject *parent) :
   QUdpSocket(parent),
   _authenticated(false),
   _token(token),
-  _authenticationTimerId(-1)
+  _authenticationTimerId(-1),
+  _videoDecodingThread(new VideoDecodingThread(this))
 {
   connect(this, &MediaSocket::stateChanged, this, &MediaSocket::onSocketStateChanged);
   connect(this, &MediaSocket::readyRead, this, &MediaSocket::onReadyRead);
+  
+  _videoDecodingThread->start();
+  connect(_videoDecodingThread, &VideoDecodingThread::decoded, this, &MediaSocket::newVideoFrame);
 }
 
 MediaSocket::~MediaSocket()
@@ -223,6 +230,15 @@ MediaSocket::~MediaSocket()
   if (_authenticationTimerId != -1) {
     killTimer(_authenticationTimerId);
   }
+
+  while (!_videoFrameDatagramDecoders.isEmpty()) {
+    auto obj = _videoFrameDatagramDecoders.take(_videoFrameDatagramDecoders.begin().key());
+    delete obj;
+  }
+
+  _videoDecodingThread->stop();
+  _videoDecodingThread->wait();
+  delete _videoDecodingThread;
 }
 
 bool MediaSocket::isAuthenticated() const
@@ -265,7 +281,7 @@ void MediaSocket::sendVideoFrame(const QByteArray &frame_, quint64 frameId_, qui
   Q_ASSERT(frameId_ != 0);
   //qDebug() << QString("Send video frame (size=%1; address=%2; port=%3)").arg(frameData.size()).arg(peerAddress().toString()).arg(peerPort());
   
-  if (state() == QAbstractSocket::ConnectedState) {
+  if (state() != QAbstractSocket::ConnectedState) {
     return;
   }
 
@@ -348,16 +364,49 @@ void MediaSocket::onReadyRead()
 
       // Video data.
       case UDP::VideoFrameDatagram::TYPE: {
-        UDP::VideoFrameDatagram dgvideo;
-        in >> dgvideo.flags;
-        in >> dgvideo.sender;
-        in >> dgvideo.frameId;
-        in >> dgvideo.index;
-        in >> dgvideo.count;
-        in >> dgvideo.size;
-        if (dgvideo.size > 0) {
-          dgvideo.data = new UDP::dg_byte_t[dgvideo.size];
-          in.readRawData((char*)dgvideo.data, dgvideo.size);
+        // Parse datagram.
+        auto dgvideo = new UDP::VideoFrameDatagram();
+        in >> dgvideo->flags;
+        in >> dgvideo->sender;
+        in >> dgvideo->frameId;
+        in >> dgvideo->index;
+        in >> dgvideo->count;
+        in >> dgvideo->size;
+        if (dgvideo->size > 0) {
+          dgvideo->data = new UDP::dg_byte_t[dgvideo->size];
+          in.readRawData((char*)dgvideo->data, dgvideo->size);
+        }
+        if (dgvideo->size == 0) {
+          delete dgvideo;
+          continue;
+        }
+
+        // UDP Decode.
+        auto senderId = dgvideo->sender;
+        auto decoder = _videoFrameDatagramDecoders.value(dgvideo->sender);
+        if (!decoder) {
+          decoder = new VideoFrameUdpDecoder();
+          _videoFrameDatagramDecoders.insert(dgvideo->sender, decoder);
+        }
+        decoder->add(dgvideo);
+
+        // Check for new decoded frame.
+        auto frame = decoder->next();
+        auto waitForType = decoder->getWaitsForType();
+        if (frame) {
+          _videoDecodingThread->enqueue(senderId, frame);
+        }
+
+        // Handle the case, that the UDP decoder requires some special data.
+        if (waitForType != VP8Frame::NORMAL) {
+          // TODO Request key-frame.
+          //auto now = get_local_timestamp();
+          //if (get_local_timestamp_diff(d->_lastFrameRequestTimestamp, now) > 1000) {
+          //  d->_lastFrameRequestTimestamp = now;
+          //  auto clientInfo = d->getClientInfoFromCache(sender_id, false);
+          //  if (clientInfo)
+          //    requestKeyFrame(clientInfo);
+          //}
         }
         break;
       }
@@ -417,10 +466,79 @@ void VideoEncodingThread::run()
 
     // DEV
     if (true) {
-      QByteArray data;
-      QDataStream out(&data, QIODevice::WriteOnly);
+      static quint64 __frameTime = 1;
+      VP8Frame vpframe;
+      vpframe.time = __frameTime++;
+      vpframe.type = VP8Frame::KEY;
+      QDataStream out(&vpframe.data, QIODevice::WriteOnly);
       out << image;
+
+      QByteArray data;
+      QDataStream out2(&data, QIODevice::WriteOnly);
+      out2 << vpframe;
+
       emit newEncodedFrame(data);
+    }
+
+  }
+}
+
+///////////////////////////////////////////////////////////////////////
+
+VideoDecodingThread::VideoDecodingThread(QObject *parent) :
+  QThread(parent)
+{
+
+}
+
+VideoDecodingThread::~VideoDecodingThread()
+{
+  stop();
+}
+
+void VideoDecodingThread::stop()
+{
+  _stopFlag = 1;
+  _queueCond.wakeAll();
+}
+
+void VideoDecodingThread::enqueue(int senderId, VP8Frame *frame)
+{
+  QMutexLocker l(&_m);
+  _queue.enqueue(qMakePair(senderId, frame));
+  while (_queue.size() > 5) {
+    auto item = _queue.dequeue();
+    delete item.second;
+  }
+  _queueCond.wakeAll();
+}
+
+void VideoDecodingThread::run()
+{
+  while (_stopFlag == 0) {
+    QMutexLocker l(&_m);
+    if (_queue.isEmpty()) {
+      _queueCond.wait(&_m);
+    }
+    auto obj = _queue.dequeue();
+    l.unlock();
+
+    if (obj.first == 0 || !obj.second) {
+      qDebug() << QString("Invalid object.");
+      continue;
+    }
+
+    // TODO Decode VP8
+    // TODO Convert decoded YuvFrame to QImage
+    // TODO Emit signal.
+
+    // DEV
+    if (true) {
+      QImage image;
+      QDataStream in(obj.second->data);
+      in >> image;
+
+      emit decoded(image, obj.first);
     }
 
   }

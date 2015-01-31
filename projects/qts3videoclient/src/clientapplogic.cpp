@@ -38,6 +38,16 @@ ClientAppLogic::ClientAppLogic(QObject *parent) :
   _cameraWidget = new ClientCameraVideoWidget(&_ts3vc, nullptr);
   _cameraWidget->resize(640, 360);
   _cameraWidget->show();
+
+  // TEST
+  connect(&_ts3vc, &TS3VideoClient::newVideoFrame, [this] (const QImage &image, int senderId) {
+    auto w = _clientWidgets.value(senderId);
+    if (!w) {
+      w = createClientWidget(ClientEntity());
+      _clientWidgets.insert(senderId, w);
+    }
+    ((ClientVideoWidget*)w)->setImage(image);
+  });
 }
 
 ClientAppLogic::~ClientAppLogic()

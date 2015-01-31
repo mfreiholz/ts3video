@@ -45,6 +45,7 @@ signals:
   void clientJoinedChannel(const ClientEntity &client, const ChannelEntity &channel);
   void clientLeftChannel(const ClientEntity &client, const ChannelEntity &channel);
   void clientDisconnected(const ClientEntity &client);
+  void newVideoFrame(const QImage &image, int senderId);
 
 private slots:
   void onStateChanged(QAbstractSocket::SocketState state);

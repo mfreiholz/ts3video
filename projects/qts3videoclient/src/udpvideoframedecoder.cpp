@@ -198,9 +198,8 @@ VP8Frame* VideoFrameUdpDecoder::createFrame(const DGPtrList &buffer) const
   }
 
   auto frame = new VP8Frame();
-  /*QDataStream in(data);
-  in.setVersion(UdpProtocol::QDS_VERSION);
-  in >> frame->time >> frame->type >> frame->data;*/
+  QDataStream in(data);
+  in >> *frame;
   return frame;
 }
 
