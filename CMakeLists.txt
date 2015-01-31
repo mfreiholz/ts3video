@@ -8,6 +8,15 @@ add_subdirectory(thirdparty/humblelogging)
 set(humblelogging_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/thirdparty/humblelogging/include)
 #set(humblelogging_LIBRARIES humblelogging)
 
+# Third party (VPX)
+set(vpx_INCLUDE_DIRS
+  ${PROJECT_SOURCE_DIR}/thirdparty/vpx/include
+)
+set(vpx_LIBRARIES
+  optimized "${PROJECT_SOURCE_DIR}/thirdparty/vpx/lib-x86-vc10-release/vpxmt.lib"
+  debug "${PROJECT_SOURCE_DIR}/thirdparty/vpx/lib-x86-vc10-debug/vpxmtd.lib"
+)
+
 # Third party (external projects)
 #include(CMakeThirdParty.txt)
 
