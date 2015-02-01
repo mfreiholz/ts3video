@@ -4,11 +4,12 @@
 #include <QDebug>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QUdpSocket>
-#include <QTcpSocket>
 #include <QTimerEvent>
 #include <QDataStream>
 #include <QImage>
+#include <QUdpSocket>
+#include <QTcpSocket>
+#include <QHostAddress>
 
 #include "medprotocol.h"
 
@@ -38,11 +39,6 @@ TS3VideoClient::~TS3VideoClient()
   Q_D(TS3VideoClient);
   delete d->_connection;
   delete d->_mediaSocket;
-  if (d->_encodingThread) {
-    d->_encodingThread->stop();
-    d->_encodingThread->wait();
-    delete d->_encodingThread;
-  }
 }
 
 const ClientEntity& TS3VideoClient::clientEntity() const
@@ -125,8 +121,8 @@ QCorReply* TS3VideoClient::joinChannel()
 void TS3VideoClient::sendVideoFrame(const QImage &image)
 {
   Q_D(TS3VideoClient);
-  if (d->_encodingThread && d->_encodingThread->isRunning()) {
-    d->_encodingThread->enqueue(image);
+  if (d->_mediaSocket) {
+    d->_mediaSocket->sendVideoFrame(image, d->_clientEntity.id);
   }
 }
 
@@ -161,15 +157,6 @@ void TS3VideoClient::onNewIncomingRequest(QCorFrameRefPtr frame)
 
   if (action == "notify.mediaauthsuccess") {
     d->_mediaSocket->setAuthenticated(true);
-    if (d->_encodingThread) {
-      delete d->_encodingThread;
-    }
-    d->_encodingThread = new VideoEncodingThread(this);
-    d->_encodingThread->start();
-    static quint64 __frameid = 1;
-    connect(d->_encodingThread, &VideoEncodingThread::newEncodedFrame, [d] (const QByteArray &frame) {
-      d->_mediaSocket->sendVideoFrame(frame, __frameid++, d->_clientEntity.id);
-    });
   }
   else if (action == "notify.clientjoinedchannel") {
     ChannelEntity channelEntity;
@@ -204,8 +191,7 @@ TS3VideoClientPrivate::TS3VideoClientPrivate(TS3VideoClient *owner) :
   q_ptr(owner),
   _connection(nullptr),
   _mediaSocket(nullptr),
-  _clientEntity(),
-  _encodingThread(nullptr)
+  _clientEntity()
 {
 }
 
@@ -216,10 +202,17 @@ MediaSocket::MediaSocket(const QString &token, QObject *parent) :
   _authenticated(false),
   _token(token),
   _authenticationTimerId(-1),
+  _videoEncodingThread(new VideoEncodingThread(this)),
   _videoDecodingThread(new VideoDecodingThread(this))
 {
   connect(this, &MediaSocket::stateChanged, this, &MediaSocket::onSocketStateChanged);
   connect(this, &MediaSocket::readyRead, this, &MediaSocket::onReadyRead);
+
+  static quint64 __frameId = 1;
+  _videoEncodingThread->start();
+  connect(_videoEncodingThread, &VideoEncodingThread::encoded, [this] (const QByteArray &frame, int senderId) {
+    sendVideoFrame(frame, __frameId++, senderId);
+  });
   
   _videoDecodingThread->start();
   connect(_videoDecodingThread, &VideoDecodingThread::decoded, this, &MediaSocket::newVideoFrame);
@@ -236,9 +229,17 @@ MediaSocket::~MediaSocket()
     delete obj;
   }
 
-  _videoDecodingThread->stop();
-  _videoDecodingThread->wait();
-  delete _videoDecodingThread;
+  if (_videoEncodingThread) {
+    _videoEncodingThread->stop();
+    _videoEncodingThread->wait();
+    delete _videoEncodingThread;
+  }
+
+  if (_videoDecodingThread) {
+    _videoDecodingThread->stop();
+    _videoDecodingThread->wait();
+    delete _videoDecodingThread;
+  }
 }
 
 bool MediaSocket::isAuthenticated() const
@@ -253,6 +254,15 @@ void MediaSocket::setAuthenticated(bool yesno)
     killTimer(_authenticationTimerId);
     _authenticationTimerId = -1;
   }
+}
+
+void MediaSocket::sendVideoFrame(const QImage &image, int senderId)
+{
+  if (!_videoEncodingThread || !_videoEncodingThread->isRunning()) {
+    qDebug() << QString("Encoding thread not running yet.");
+    return;
+  }
+  _videoEncodingThread->enqueue(image, senderId);
 }
 
 void MediaSocket::sendAuthTokenDatagram(const QString &token)
@@ -394,7 +404,7 @@ void MediaSocket::onReadyRead()
         auto frame = decoder->next();
         auto waitForType = decoder->getWaitsForType();
         if (frame) {
-          _videoDecodingThread->enqueue(senderId, frame);
+          _videoDecodingThread->enqueue(frame, senderId);
         }
 
         // Handle the case, that the UDP decoder requires some special data.
@@ -434,28 +444,28 @@ void VideoEncodingThread::stop()
   _queueCond.wakeAll();
 }
 
-void VideoEncodingThread::enqueue(const QImage &image)
+void VideoEncodingThread::enqueue(const QImage &image, int senderId)
 {
   QMutexLocker l(&_m);
-  _queue.enqueue(image);
+  _queue.enqueue(qMakePair(image, senderId));
   while (_queue.size() > 5) {
-    _queue.dequeue();
+    auto item = _queue.dequeue();
   }
-  l.unlock();
   _queueCond.wakeAll();
 }
 
 void VideoEncodingThread::run()
 {
+  _stopFlag = 0;
   while (_stopFlag == 0) {
     QMutexLocker l(&_m);
     if (_queue.isEmpty()) {
       _queueCond.wait(&_m);
     }
-    auto image = _queue.dequeue();
+    auto item = _queue.dequeue();
     l.unlock();
 
-    if (image.isNull()) {
+    if (item.first.isNull()) {
       qDebug() << QString("Invalid image");
       continue;
     }
@@ -471,13 +481,13 @@ void VideoEncodingThread::run()
       vpframe.time = __frameTime++;
       vpframe.type = VP8Frame::KEY;
       QDataStream out(&vpframe.data, QIODevice::WriteOnly);
-      out << image;
+      out << item.first;
 
       QByteArray data;
       QDataStream out2(&data, QIODevice::WriteOnly);
       out2 << vpframe;
 
-      emit newEncodedFrame(data);
+      emit encoded(data, item.second);
     }
 
   }
@@ -502,28 +512,29 @@ void VideoDecodingThread::stop()
   _queueCond.wakeAll();
 }
 
-void VideoDecodingThread::enqueue(int senderId, VP8Frame *frame)
+void VideoDecodingThread::enqueue(VP8Frame *frame, int senderId)
 {
   QMutexLocker l(&_m);
-  _queue.enqueue(qMakePair(senderId, frame));
+  _queue.enqueue(qMakePair(frame, senderId));
   while (_queue.size() > 5) {
     auto item = _queue.dequeue();
-    delete item.second;
+    delete item.first;
   }
   _queueCond.wakeAll();
 }
 
 void VideoDecodingThread::run()
 {
+  _stopFlag = 0;
   while (_stopFlag == 0) {
     QMutexLocker l(&_m);
     if (_queue.isEmpty()) {
       _queueCond.wait(&_m);
     }
-    auto obj = _queue.dequeue();
+    auto item = _queue.dequeue();
     l.unlock();
 
-    if (obj.first == 0 || !obj.second) {
+    if (!item.first || item.second == 0) {
       qDebug() << QString("Invalid object.");
       continue;
     }
@@ -535,10 +546,10 @@ void VideoDecodingThread::run()
     // DEV
     if (true) {
       QImage image;
-      QDataStream in(obj.second->data);
+      QDataStream in(item.first->data);
       in >> image;
-
-      emit decoded(image, obj.first);
+      delete item.first;
+      emit decoded(image, item.second);
     }
 
   }

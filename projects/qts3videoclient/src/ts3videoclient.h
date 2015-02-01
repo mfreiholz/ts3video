@@ -3,11 +3,11 @@
 
 #include <QObject>
 #include <QScopedPointer>
-#include <QHostAddress>
 #include <QAbstractSocket>
 
 #include "qcorframe.h"
 
+class QHostAddress;
 class QCorReply;
 class ClientEntity;
 class ChannelEntity;

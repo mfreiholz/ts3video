@@ -4,6 +4,10 @@
 #include <QHash>
 #include <QPair>
 #include <QUdpSocket>
+#include <QThread>
+#include <QMutex>
+#include <QWaitCondition>
+#include <QQueue>
 
 #include "cliententity.h"
 #include "channelentity.h"
@@ -16,7 +20,6 @@
 
 class QCorConnection;
 class MediaSocket;
-class VideoEncodingThread;
 
 class TS3VideoClientPrivate {
   Q_DISABLE_COPY(TS3VideoClientPrivate)
@@ -27,10 +30,6 @@ class TS3VideoClientPrivate {
   QCorConnection *_connection;
   MediaSocket *_mediaSocket;
   ClientEntity _clientEntity;
-
-  // Encoding.
-  // TODO Move into MediaSocket.
-  VideoEncodingThread *_encodingThread;
 };
 
 /*!
@@ -45,13 +44,17 @@ public:
   ~MediaSocket();
   bool isAuthenticated() const;
   void setAuthenticated(bool yesno);
-  void sendAuthTokenDatagram(const QString &token);
-  void sendVideoFrame(const QByteArray &frame, quint64 frameId, quint32 senderId);
+
+  /*! Encodes the image and sends it to server.
+  */
+  void sendVideoFrame(const QImage &image, int senderId);
 
 signals:
   void newVideoFrame(const QImage &image, int senderId);
 
 protected:
+  void sendAuthTokenDatagram(const QString &token);
+  void sendVideoFrame(const QByteArray &frame, quint64 frameId, quint32 senderId);
   virtual void timerEvent(QTimerEvent *ev);
 
 private slots:
@@ -63,6 +66,9 @@ private:
   QString _token;
   int _authenticationTimerId;
 
+  // Encoding.
+  class VideoEncodingThread *_videoEncodingThread;
+
   // Decoding.
   QHash<int, VideoFrameUdpDecoder*> _videoFrameDatagramDecoders; ///< Maps client-id to it's decoder.
   class VideoDecodingThread *_videoDecodingThread;
@@ -71,10 +77,6 @@ private:
 /*!
   Encodes and serializes video frames.
  */
-#include <QThread>
-#include <QMutex>
-#include <QWaitCondition>
-#include <QQueue>
 class VideoEncodingThread : public  QThread
 {
   Q_OBJECT
@@ -83,18 +85,18 @@ public:
   VideoEncodingThread(QObject *parent);
   ~VideoEncodingThread();
   void stop();
-  void enqueue(const QImage &image);
+  void enqueue(const QImage &image, int senderId);
 
 protected:
   void run();
 
 signals:
-  void newEncodedFrame(QByteArray &frame);
+  void encoded(QByteArray &frame, int senderId);
 
 private:
   QMutex _m;
   QWaitCondition _queueCond;
-  QQueue<QImage> _queue; ///< Replace with RingQueue (Might not keep more than X frames! Otherwise we might get a memory problem.)
+  QQueue<QPair<QImage, int> > _queue; ///< Replace with RingQueue (Might not keep more than X frames! Otherwise we might get a memory problem.)
   QAtomicInt _stopFlag;
 };
 
@@ -108,7 +110,7 @@ public:
   VideoDecodingThread(QObject *parent);
   ~VideoDecodingThread();
   void stop();
-  void enqueue(int senderId, VP8Frame *frame);
+  void enqueue(VP8Frame *frame, int senderId);
 
 protected:
   void run();
@@ -119,7 +121,7 @@ signals:
 private:
   QMutex _m;
   QWaitCondition _queueCond;
-  QQueue<QPair<int, VP8Frame*> > _queue;
+  QQueue<QPair<VP8Frame*, int> > _queue;
   QAtomicInt _stopFlag;
 };
 

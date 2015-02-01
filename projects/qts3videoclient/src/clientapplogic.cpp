@@ -5,6 +5,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QHostAddress>
 #include <QApplication>
 
 #include "qcorreply.h"
