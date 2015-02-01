@@ -13,8 +13,8 @@ set(vpx_INCLUDE_DIRS
   ${PROJECT_SOURCE_DIR}/thirdparty/vpx/include
 )
 set(vpx_LIBRARIES
-  optimized "${PROJECT_SOURCE_DIR}/thirdparty/vpx/lib-x86-vc10-release/vpxmt.lib"
-  debug "${PROJECT_SOURCE_DIR}/thirdparty/vpx/lib-x86-vc10-debug/vpxmtd.lib"
+  optimized "${PROJECT_SOURCE_DIR}/thirdparty/vpx/lib-win-x86-vc11-release/vpxmd.lib"
+  debug "${PROJECT_SOURCE_DIR}/thirdparty/vpx/lib-win-x86-vc11-debug/vpxmdd.lib"
 )
 
 # Third party (external projects)

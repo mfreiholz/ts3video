@@ -24,6 +24,8 @@ set(qheaders
   src/clientcameravideowidget.h
   src/udpvideoframedecoder.h
   src/remoteclientvideowidget.h
+  src/vp8encoder.h
+  src/vp8decoder.h
 )
 
 set(sources
@@ -36,6 +38,8 @@ set(sources
   src/clientcameravideowidget.cpp
   src/udpvideoframedecoder.cpp
   src/remoteclientvideowidget.cpp
+  src/vp8encoder.cpp
+  src/vp8decoder.cpp
 )
 
 set(qforms
