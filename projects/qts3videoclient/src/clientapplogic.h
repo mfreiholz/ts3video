@@ -24,6 +24,7 @@ private slots:
   void onClientJoinedChannel(const ClientEntity &client, const ChannelEntity &channel);
   void onClientLeftChannel(const ClientEntity &client, const ChannelEntity &channel);
   void onClientDisconnected(const ClientEntity &client);
+  void onNewVideoFrame(const QImage &image, int senderId);
 
 protected:
   QWidget* createCameraWidget();

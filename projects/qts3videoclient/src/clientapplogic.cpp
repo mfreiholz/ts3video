@@ -16,8 +16,8 @@
 #include "jsonprotocolhelper.h"
 #include "elws.h"
 
-#include "clientvideowidget.h"
 #include "clientcameravideowidget.h"
+#include "remoteclientvideowidget.h"
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -33,20 +33,11 @@ ClientAppLogic::ClientAppLogic(QObject *parent) :
   connect(&_ts3vc, &TS3VideoClient::clientJoinedChannel, this, &ClientAppLogic::onClientJoinedChannel);
   connect(&_ts3vc, &TS3VideoClient::clientLeftChannel, this, &ClientAppLogic::onClientLeftChannel);
   connect(&_ts3vc, &TS3VideoClient::clientDisconnected, this, &ClientAppLogic::onClientDisconnected);
+  connect(&_ts3vc, &TS3VideoClient::newVideoFrame, this, &ClientAppLogic::onNewVideoFrame);
 
   _cameraWidget = new ClientCameraVideoWidget(&_ts3vc, nullptr);
   _cameraWidget->resize(1280, 720);
   _cameraWidget->show();
-
-  // TEST
-  connect(&_ts3vc, &TS3VideoClient::newVideoFrame, [this] (const QImage &image, int senderId) {
-    auto w = _clientWidgets.value(senderId);
-    if (!w) {
-      w = createClientWidget(ClientEntity());
-      _clientWidgets.insert(senderId, w);
-    }
-    ((ClientVideoWidget*)w)->setImage(image);
-  });
 }
 
 ClientAppLogic::~ClientAppLogic()
@@ -101,21 +92,12 @@ void ClientAppLogic::onConnected()
       // Extract channel.
       ChannelEntity channel;
       channel.fromQJsonObject(params["channel"].toObject());
-      // Extract participants and create a widget for each (skip own!).
+
+      // Extract participants and create widgets.
       foreach (auto v, params["participants"].toArray()) {
         ClientEntity client;
         client.fromQJsonObject(v.toObject());
-        if (client.id == _ts3vc.clientEntity().id) {
-          continue;
-        }
-        auto w = _clientWidgets.value(client.id);
-        if (!w) {
-          w = createClientWidget(client);
-          _clientWidgets.insert(client.id, w);
-        }
-        if (!w->isVisible()) {
-          w->show();
-        }
+        onClientJoinedChannel(client, channel);
       }
     });
   });
@@ -163,10 +145,25 @@ void ClientAppLogic::onClientDisconnected(const ClientEntity &client)
   }
 }
 
+void ClientAppLogic::onNewVideoFrame(const QImage &image, int senderId)
+{
+  auto w = _clientWidgets.value(senderId);
+  if (!w) {
+    ClientEntity client;
+    client.id = senderId;
+    client.name = "UNKNOWN!";
+    w = createClientWidget(client);
+    _clientWidgets.insert(senderId, w);
+  }
+  auto rcWidget = static_cast<RemoteClientVideoWidget*>(w);
+  rcWidget->videoWidget()->setImage(image);
+}
+
 QWidget* ClientAppLogic::createClientWidget(const ClientEntity &client)
 {
-  auto w = new ClientVideoWidget(nullptr);
-  w->setWindowTitle(QString("Client: %1").arg(client.id));
+  auto w = new RemoteClientVideoWidget(nullptr);
+  w->setClient(client);
+  w->resize(640, 320);
   w->show();
   return w;
 }

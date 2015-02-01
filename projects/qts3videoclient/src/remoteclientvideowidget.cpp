@@ -2,8 +2,6 @@
 
 #include <QBoxLayout>
 
-#include "clientvideowidget.h"
-
 ///////////////////////////////////////////////////////////////////////
 
 RemoteClientVideoWidget::RemoteClientVideoWidget(QWidget *parent) :
@@ -23,10 +21,10 @@ RemoteClientVideoWidget::~RemoteClientVideoWidget()
 
 }
 
-void RemoteClientVideoWidget::setClient(const ClientEntity &&client)
+void RemoteClientVideoWidget::setClient(const ClientEntity &client)
 {
   _client = client;
-  _videoWidget->setText(client.name);
+  _videoWidget->setText(QString("%1 (ID=%2)").arg(client.name).arg(client.id));
 }
 
 ClientVideoWidget* RemoteClientVideoWidget::videoWidget() const

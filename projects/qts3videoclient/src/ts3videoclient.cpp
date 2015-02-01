@@ -500,8 +500,9 @@ void VideoEncodingThread::run()
   _stopFlag = 0;
   while (_stopFlag == 0) {
     QMutexLocker l(&_m);
-    while (_queue.isEmpty()) {
+    if (_queue.isEmpty()) {
       _queueCond.wait(&_m);
+      continue;
     }
     auto item = _queue.dequeue();
     l.unlock();
@@ -596,6 +597,7 @@ void VideoDecodingThread::run()
     QMutexLocker l(&_m);
     if (_queue.isEmpty()) {
       _queueCond.wait(&_m);
+      continue;
     }
     auto item = _queue.dequeue();
     l.unlock();

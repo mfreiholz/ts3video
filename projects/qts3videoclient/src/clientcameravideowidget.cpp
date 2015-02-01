@@ -51,7 +51,6 @@ ClientCameraVideoWidget::ClientCameraVideoWidget(TS3VideoClient *ts3vc, QWidget 
 
 ClientCameraVideoWidget::~ClientCameraVideoWidget()
 {
-
 }
 
 ///////////////////////////////////////////////////////////////////////

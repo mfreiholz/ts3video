@@ -5,7 +5,7 @@
 
 #include "cliententity.h"
 
-class ClientVideoWidget;
+#include "clientvideowidget.h"
 
 class RemoteClientVideoWidget : public QFrame
 {
@@ -14,7 +14,7 @@ class RemoteClientVideoWidget : public QFrame
 public:
   RemoteClientVideoWidget(QWidget *parent);
   ~RemoteClientVideoWidget();
-  void setClient(const ClientEntity &&client);
+  void setClient(const ClientEntity &client);
   ClientVideoWidget* videoWidget() const;
 
 private:
