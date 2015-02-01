@@ -16,6 +16,10 @@
 #include "qcorconnection.h"
 #include "qcorreply.h"
 
+#include "vp8encoder.h"
+#include "vp8decoder.h"
+#include "timeutil.h"
+
 /*
   Notes
   =====
@@ -203,7 +207,8 @@ MediaSocket::MediaSocket(const QString &token, QObject *parent) :
   _token(token),
   _authenticationTimerId(-1),
   _videoEncodingThread(new VideoEncodingThread(this)),
-  _videoDecodingThread(new VideoDecodingThread(this))
+  _videoDecodingThread(new VideoDecodingThread(this)),
+  _lastFrameRequestTimestamp(0)
 {
   connect(this, &MediaSocket::stateChanged, this, &MediaSocket::onSocketStateChanged);
   connect(this, &MediaSocket::readyRead, this, &MediaSocket::onReadyRead);
@@ -268,7 +273,7 @@ void MediaSocket::sendVideoFrame(const QImage &image, int senderId)
 void MediaSocket::sendAuthTokenDatagram(const QString &token)
 {
   Q_ASSERT(!token.isEmpty());
-  qDebug() << QString("Send media auth token (token=%1; address=%2; port=%3)").arg(token).arg(peerAddress().toString()).arg(peerPort());
+  //qDebug() << QString("Send media auth token (token=%1; address=%2; port=%3)").arg(token).arg(peerAddress().toString()).arg(peerPort());
 
   UDP::AuthDatagram dgauth;
   dgauth.size = token.toUtf8().size();
@@ -290,10 +295,6 @@ void MediaSocket::sendVideoFrame(const QByteArray &frame_, quint64 frameId_, qui
   Q_ASSERT(frame_.isEmpty() == false);
   Q_ASSERT(frameId_ != 0);
   //qDebug() << QString("Send video frame (size=%1; address=%2; port=%3)").arg(frameData.size()).arg(peerAddress().toString()).arg(peerPort());
-  
-  if (state() != QAbstractSocket::ConnectedState) {
-    return;
-  }
 
   UDP::VideoFrameDatagram::dg_frame_id_t frameId = frameId_;
   UDP::VideoFrameDatagram::dg_sender_t senderId = senderId_;
@@ -323,6 +324,27 @@ void MediaSocket::sendVideoFrame(const QByteArray &frame_, quint64 frameId_, qui
     writeDatagram(datagram, peerAddress(), peerPort());
   }
   UDP::VideoFrameDatagram::freeData(datagrams, datagramsLength);
+}
+
+void MediaSocket::sendVideoFrameRecoveryDatagram(quint64 frameId_, quint32 fromSenderId_)
+{
+  Q_ASSERT(frameId_ != 0);
+  Q_ASSERT(fromSenderId_ != 0);
+
+  UDP::VideoFrameRecoveryDatagram dgrec;
+  dgrec.sender = fromSenderId_;
+  dgrec.frameId = frameId_;
+  dgrec.index = 0;
+
+  QByteArray datagram;
+  QDataStream out(&datagram, QIODevice::WriteOnly);
+  out.setByteOrder(QDataStream::BigEndian);
+  out << dgrec.magic;
+  out << dgrec.type;
+  out << dgrec.sender;
+  out << dgrec.frameId;
+  out << dgrec.index;
+  writeDatagram(datagram, peerAddress(), peerPort());
 }
 
 void MediaSocket::timerEvent(QTimerEvent *ev)
@@ -391,8 +413,10 @@ void MediaSocket::onReadyRead()
           continue;
         }
 
-        // UDP Decode.
         auto senderId = dgvideo->sender;
+        auto frameId =dgvideo->frameId;
+
+        // UDP Decode.
         auto decoder = _videoFrameDatagramDecoders.value(dgvideo->sender);
         if (!decoder) {
           decoder = new VideoFrameUdpDecoder();
@@ -409,15 +433,23 @@ void MediaSocket::onReadyRead()
 
         // Handle the case, that the UDP decoder requires some special data.
         if (waitForType != VP8Frame::NORMAL) {
-          // TODO Request key-frame.
-          //auto now = get_local_timestamp();
-          //if (get_local_timestamp_diff(d->_lastFrameRequestTimestamp, now) > 1000) {
-          //  d->_lastFrameRequestTimestamp = now;
-          //  auto clientInfo = d->getClientInfoFromCache(sender_id, false);
-          //  if (clientInfo)
-          //    requestKeyFrame(clientInfo);
-          //}
+          // Request recovery frame (for now only key-frames).
+          auto now = get_local_timestamp();
+          if (get_local_timestamp_diff(_lastFrameRequestTimestamp, now) > 1000) {
+            _lastFrameRequestTimestamp = now;
+            sendVideoFrameRecoveryDatagram(frameId, senderId);
+          }
         }
+        break;
+      }
+
+      // Video recovery.
+      case UDP::VideoFrameRecoveryDatagram::TYPE: {
+        UDP::VideoFrameRecoveryDatagram dgrec;
+        in >> dgrec.sender;
+        in >> dgrec.frameId;
+        in >> dgrec.index;
+        _videoEncodingThread->enqueueRecovery();
         break;
       }
 
@@ -429,7 +461,8 @@ void MediaSocket::onReadyRead()
 
 VideoEncodingThread::VideoEncodingThread(QObject *parent) :
   QThread(parent),
-  _stopFlag(0)
+  _stopFlag(0),
+  _recoveryFlag(VP8Frame::NORMAL)
 {
 }
 
@@ -454,12 +487,20 @@ void VideoEncodingThread::enqueue(const QImage &image, int senderId)
   _queueCond.wakeAll();
 }
 
+void VideoEncodingThread::enqueueRecovery()
+{
+  _recoveryFlag = VP8Frame::KEY;
+  _queueCond.wakeAll();
+}
+
 void VideoEncodingThread::run()
 {
+  QHash<int, VP8Encoder*> encoders;
+
   _stopFlag = 0;
   while (_stopFlag == 0) {
     QMutexLocker l(&_m);
-    if (_queue.isEmpty()) {
+    while (_queue.isEmpty()) {
       _queueCond.wait(&_m);
     }
     auto item = _queue.dequeue();
@@ -470,25 +511,48 @@ void VideoEncodingThread::run()
       continue;
     }
 
-    // TODO Convert to YuvFrame.
-    // TODO Encode via VPX.
-    // TODO emit signal
-
-    // DEV
     if (true) {
-      static quint64 __frameTime = 1;
-      VP8Frame vpframe;
-      vpframe.time = __frameTime++;
-      vpframe.type = VP8Frame::KEY;
-      QDataStream out(&vpframe.data, QIODevice::WriteOnly);
-      out << item.first;
-
+      // Convert to YuvFrame.
+      auto yuv = YuvFrame::fromQImage(item.first);
+      // Encode via VPX.
+      auto encoder = encoders.value(item.second);
+      if (!encoder) {
+        encoder = new VP8Encoder();
+        if (!encoder->initialize(1280, 720, 100, 30)) { ///< TODO Find a way to pass this parameters from outside (videoBegin(...), sendVideo(...), videoEnd(...)).
+          qDebug() << QString("Can not initialize VP8Encoder.");
+          continue;
+        }
+        encoders.insert(item.second, encoder);
+      }
+      if (_recoveryFlag != VP8Frame::NORMAL) {
+        encoder->setRequestRecoveryFlag(VP8Frame::KEY);
+        _recoveryFlag = VP8Frame::NORMAL;
+      }
+      auto vp8 = encoder->encode(*yuv);
+      delete yuv;
+      // Serialize VP8Frame.
       QByteArray data;
-      QDataStream out2(&data, QIODevice::WriteOnly);
-      out2 << vpframe;
-
+      QDataStream out(&data, QIODevice::WriteOnly);
+      out << *vp8;
+      delete vp8;
       emit encoded(data, item.second);
     }
+    
+    // DEV Provides plain QImage.
+    //if (true) {
+    //  static quint64 __frameTime = 1;
+    //  VP8Frame vpframe;
+    //  vpframe.time = __frameTime++;
+    //  vpframe.type = VP8Frame::KEY;
+    //  QDataStream out(&vpframe.data, QIODevice::WriteOnly);
+    //  out << item.first;
+
+    //  QByteArray data;
+    //  QDataStream out2(&data, QIODevice::WriteOnly);
+    //  out2 << vpframe;
+
+    //  emit encoded(data, item.second);
+    //}
 
   }
 }
@@ -516,15 +580,17 @@ void VideoDecodingThread::enqueue(VP8Frame *frame, int senderId)
 {
   QMutexLocker l(&_m);
   _queue.enqueue(qMakePair(frame, senderId));
-  while (_queue.size() > 5) {
-    auto item = _queue.dequeue();
-    delete item.first;
-  }
+  //while (_queue.size() > 5) {
+  //  auto item = _queue.dequeue();
+  //  delete item.first;
+  //}
   _queueCond.wakeAll();
 }
 
 void VideoDecodingThread::run()
 {
+  QHash<int, VP8Decoder*> decoders;
+
   _stopFlag = 0;
   while (_stopFlag == 0) {
     QMutexLocker l(&_m);
@@ -539,18 +605,28 @@ void VideoDecodingThread::run()
       continue;
     }
 
-    // TODO Decode VP8
-    // TODO Convert decoded YuvFrame to QImage
-    // TODO Emit signal.
-
-    // DEV
     if (true) {
-      QImage image;
-      QDataStream in(item.first->data);
-      in >> image;
-      delete item.first;
+      // Decode VPX frame to YuvFrame.
+      auto decoder = decoders.value(item.second);
+      if (!decoder) {
+        decoder = new VP8Decoder();
+        decoder->initialize();
+        decoders.insert(item.second, decoder);
+      }
+      auto yuv = decoder->decodeFrameRaw(item.first->data);
+      auto image = yuv->toQImage(); ///< TODO This call is VERY instense! We may want to work with YuvFrame's directly.
+      delete yuv;
       emit decoded(image, item.second);
     }
+
+    // DEV
+    //if (true) {
+    //  QImage image;
+    //  QDataStream in(item.first->data);
+    //  in >> image;
+    //  delete item.first;
+    //  emit decoded(image, item.second);
+    //}
 
   }
 }

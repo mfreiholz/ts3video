@@ -82,6 +82,25 @@ void MediaSocketHandler::onReadyRead()
         }
         break;
       }
+
+      // Video recovery.
+      // TODO Only send recovery datagram to the required client.
+      case UDP::VideoFrameRecoveryDatagram::TYPE: {
+        qDebug() << QString("Process video frame recovery datagram.");
+
+        UDP::VideoFrameRecoveryDatagram dgrec;
+        in >> dgrec.sender;
+        in >> dgrec.frameId;
+        in >> dgrec.index;
+
+        auto senderId = MediaSenderEntity::createID(senderAddress, senderPort);
+        const auto &senderEntity = _recipients.id2sender[senderId];
+        for (auto i = 0; i < senderEntity.receivers.size(); ++i) {
+          const auto &receiverEntity = senderEntity.receivers[i];
+          _socket.writeDatagram(data, receiverEntity.address, receiverEntity.port);
+        }        
+        break;
+      }
     }
 
   } // while (datagrams)

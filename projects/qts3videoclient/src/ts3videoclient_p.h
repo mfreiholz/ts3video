@@ -14,6 +14,7 @@
 #include "jsonprotocolhelper.h"
 
 #include "vp8frame.h"
+#include "yuvframe.h"
 
 #include "ts3videoclient.h"
 #include "udpvideoframedecoder.h"
@@ -55,6 +56,7 @@ signals:
 protected:
   void sendAuthTokenDatagram(const QString &token);
   void sendVideoFrame(const QByteArray &frame, quint64 frameId, quint32 senderId);
+  void sendVideoFrameRecoveryDatagram(quint64 frameId, quint32 fromSenderId);
   virtual void timerEvent(QTimerEvent *ev);
 
 private slots:
@@ -68,6 +70,7 @@ private:
 
   // Encoding.
   class VideoEncodingThread *_videoEncodingThread;
+  unsigned long long _lastFrameRequestTimestamp;
 
   // Decoding.
   QHash<int, VideoFrameUdpDecoder*> _videoFrameDatagramDecoders; ///< Maps client-id to it's decoder.
@@ -86,6 +89,7 @@ public:
   ~VideoEncodingThread();
   void stop();
   void enqueue(const QImage &image, int senderId);
+  void enqueueRecovery();
 
 protected:
   void run();
@@ -98,6 +102,7 @@ private:
   QWaitCondition _queueCond;
   QQueue<QPair<QImage, int> > _queue; ///< Replace with RingQueue (Might not keep more than X frames! Otherwise we might get a memory problem.)
   QAtomicInt _stopFlag;
+  QAtomicInt _recoveryFlag;
 };
 
 /*!
