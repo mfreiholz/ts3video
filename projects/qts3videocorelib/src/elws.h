@@ -8,6 +8,7 @@ class ELWS
 {
 public:
   static QVariant getArgsValue(const QString &key, const QVariant &defaultValue = QVariant());
+  static QString getUserName();
 };
 
 #endif

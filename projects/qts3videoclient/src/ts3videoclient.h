@@ -27,9 +27,27 @@ public:
   const ClientEntity& clientEntity() const;
   bool isReadyForStreaming() const;
 
+  /*!
+    Connects to the remote TS3-VideoServer.
+    Emits the "connected()" signal when the connection is established.
+  */
   void connectToHost(const QHostAddress &address, qint16 port);
+
+  /*!
+    Authenticates with the server.
+    This action has to be performed as first step, as soon as the connection is established.
+    \see connected()
+    \return QCorReply* Ownership goes over to caller who needs to delete it with "deleteLater()".
+  */
   QCorReply* auth(const QString &name);
-  QCorReply* joinChannel();
+
+  /*!
+    Joins a channel/room/conference.
+    Requires an authenticated connection.
+    \see auth()
+    \return QCorReply* Ownership goes over to caller who needs to delete it with "deleteLater()".
+  */
+  QCorReply* joinChannel(int id = 0);
 
   /*!
     Sends a single frame to the server, which will then broadcast it to other clients.

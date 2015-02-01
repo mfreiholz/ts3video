@@ -111,12 +111,12 @@ QCorReply* TS3VideoClient::auth(const QString &name)
   return reply;
 }
 
-QCorReply* TS3VideoClient::joinChannel()
+QCorReply* TS3VideoClient::joinChannel(int id)
 {
   Q_D(TS3VideoClient);
   Q_ASSERT(d->_connection->socket()->state() == QAbstractSocket::ConnectedState);
   QJsonObject params;
-  params["channelid"] = 1;
+  params["channelid"] = id;
   QCorFrame req;
   req.setData(JsonProtocolHelper::createJsonRequest("joinchannel", params));
   return d->_connection->sendRequest(req);

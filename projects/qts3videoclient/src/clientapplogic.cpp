@@ -26,8 +26,6 @@ ClientAppLogic::ClientAppLogic(QObject *parent) :
 {
   auto serverAddress = ELWS::getArgsValue("--server-address", "127.0.0.1").toString();
   auto serverPort = ELWS::getArgsValue("--server-port", 6000).toUInt();
-  auto ts3clientId = ELWS::getArgsValue("--ts3-clientid").toString();
-  auto ts3channelId = ELWS::getArgsValue("--ts3-channelid").toString();
 
   _ts3vc.connectToHost(QHostAddress(serverAddress), serverPort);
   connect(&_ts3vc, &TS3VideoClient::connected, this, &ClientAppLogic::onConnected);
@@ -37,7 +35,7 @@ ClientAppLogic::ClientAppLogic(QObject *parent) :
   connect(&_ts3vc, &TS3VideoClient::clientDisconnected, this, &ClientAppLogic::onClientDisconnected);
 
   _cameraWidget = new ClientCameraVideoWidget(&_ts3vc, nullptr);
-  _cameraWidget->resize(640, 360);
+  _cameraWidget->resize(1280, 720);
   _cameraWidget->show();
 
   // TEST
@@ -64,9 +62,13 @@ TS3VideoClient& ClientAppLogic::ts3client()
 
 void ClientAppLogic::onConnected()
 {
+  auto ts3clientId = ELWS::getArgsValue("--ts3-clientid", 0).toUInt();
+  auto ts3channelId = ELWS::getArgsValue("--ts3-channelid", 0).toUInt();
+  auto username = ELWS::getArgsValue("--username", ELWS::getUserName()).toString();
+
   // Authenticate.
-  auto reply = _ts3vc.auth("That's my name!");
-  QObject::connect(reply, &QCorReply::finished, [this, reply] () {
+  auto reply = _ts3vc.auth(username);
+  QObject::connect(reply, &QCorReply::finished, [this, reply, ts3clientId, ts3channelId] () {
     qDebug() << QString("Auth answer: %1").arg(QString(reply->frame()->data()));
     reply->deleteLater();
 
@@ -81,7 +83,7 @@ void ClientAppLogic::onConnected()
     }
 
     // Join channel.
-    auto reply2 = _ts3vc.joinChannel();
+    auto reply2 = _ts3vc.joinChannel(ts3channelId);
     QObject::connect(reply2, &QCorReply::finished, [this, reply2] () {
       qDebug() << QString("Join channel answer: %1").arg(QString(reply2->frame()->data()));
       reply2->deleteLater();
