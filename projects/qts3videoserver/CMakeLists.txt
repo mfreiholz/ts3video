@@ -39,6 +39,7 @@ add_definitions(
 
 # Includes
 include_directories(
+  ${humblelogging_INCLUDE_DIRS}
   ../medlib/include
   ../qcorlib/src
   ../qts3videocorelib/src
@@ -60,6 +61,7 @@ target_link_libraries(
   Qt5::Core
   Qt5::Network
   Qt5::Gui
+  humblelogging
   qcorlib
   qts3videocorelib
   medlib

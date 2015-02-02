@@ -1,6 +1,6 @@
 #include "ts3videoserver.h"
 
-#include <QDebug>
+#include "humblelogging/api.h"
 
 #include "qcorconnection.h"
 
@@ -8,6 +8,8 @@
 #include "channelentity.h"
 
 #include "clientconnectionhandler.h"
+
+HUMBLE_LOGGER(HL, "server");
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -35,7 +37,7 @@ bool TS3VideoServer::init()
 {
   // Init QCorServer listening for new client connections.
   if (!_corServer.listen(QHostAddress::Any, TS3VIDEOSERVER_PORT)) {
-    qDebug() << QString("Can not bind to TCP port (port=%1)").arg(TS3VIDEOSERVER_PORT);
+    HL_ERROR(HL, QString("Can not bind to TCP port (port=%1)").arg(TS3VIDEOSERVER_PORT).toStdString());
     return false;
   }
   // Accepting new connections.
@@ -52,14 +54,14 @@ bool TS3VideoServer::init()
   // Note: This lambda slot is not thread-safe. If MediaSocketHandler should run in a separate thread, we need to reimplement this function.
   connect(_mediaSocketHandler, &MediaSocketHandler::tokenAuthentication, [this](const QString &token, const QHostAddress &address, quint16 port) {
     if (!_tokens.contains(token)) {
-      qDebug() << QString("Received invalid media auth token (token=%1; address=%2; port=%3)").arg(token).arg(address.toString()).arg(port);
+      HL_WARN(HL, QString("Received invalid media auth token (token=%1; address=%2; port=%3)").arg(token).arg(address.toString()).arg(port).toStdString());
       return;
     }
     // Update client-info with address and port.
     auto clientId = _tokens.take(token);
     auto clientEntity = _clients.value(clientId);
     if (!clientEntity) {
-      qDebug() << QString("No matching ClientEntity for auth token (token=%1; client-id=%2)").arg(token).arg(clientId);
+      HL_WARN(HL, QString("No matching ClientEntity for auth token (token=%1; client-id=%2)").arg(token).arg(clientId).toStdString());
       return;
     }
     clientEntity->mediaAddress = address.toString();
