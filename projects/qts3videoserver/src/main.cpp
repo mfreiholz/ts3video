@@ -1,5 +1,4 @@
 #include <QCoreApplication>
-#include <QDebug>
 
 #include "ts3videoserver.h"
 

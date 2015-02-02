@@ -2,9 +2,6 @@
 # Qt5
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Gui REQUIRED)
-if(POLICY CMP0020)
-  cmake_policy(SET CMP0020 NEW)
-endif()
 
 # Sources
 set(headers

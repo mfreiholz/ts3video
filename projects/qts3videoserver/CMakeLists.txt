@@ -2,9 +2,7 @@
 # Qt5
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Network REQUIRED)
-if(POLICY CMP0020)
-  cmake_policy(SET CMP0020 NEW)
-endif()
+find_package(Qt5Gui REQUIRED) # Due to qts3videocorelib
 
 # Sources
 set(headers
@@ -61,6 +59,7 @@ target_link_libraries(
   qts3videoserver
   Qt5::Core
   Qt5::Network
+  Qt5::Gui
   qcorlib
   qts3videocorelib
   medlib

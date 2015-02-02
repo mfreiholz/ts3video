@@ -6,9 +6,6 @@ find_package(Qt5Widgets REQUIRED)
 find_package(Qt5Network REQUIRED)
 find_package(Qt5Multimedia REQUIRED)
 find_package(Qt5MultimediaWidgets REQUIRED)
-if(POLICY CMP0020)
-  cmake_policy(SET CMP0020 NEW)
-endif()
 
 # Sources
 set(headers
