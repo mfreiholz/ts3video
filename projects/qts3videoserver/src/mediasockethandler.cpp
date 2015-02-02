@@ -1,12 +1,15 @@
 #include "mediasockethandler.h"
 
-#include <QDebug>
 #include <QString>
 #include <QDataStream>
+
+#include "humblelogging/api.h"
 
 #include "medprotocol.h"
 
 #include "ts3videoserver.h"
+
+HUMBLE_LOGGER(HL, "server.mediasocket");
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -26,7 +29,7 @@ MediaSocketHandler::~MediaSocketHandler()
 bool MediaSocketHandler::init()
 {
   if (!_socket.bind(QHostAddress::Any, _port, QAbstractSocket::DontShareAddress)) {
-    qDebug() << QString("Can not bind to UDP port (port=%1)").arg(_port);
+    HL_ERROR(HL, QString("Can not bind to UDP port (port=%1)").arg(_port).toStdString());
     return false;
   }
   return true;
@@ -47,8 +50,6 @@ void MediaSocketHandler::onReadyRead()
     data.resize(_socket.pendingDatagramSize());
     _socket.readDatagram(data.data(), data.size(), &senderAddress, &senderPort);
 
-    //qDebug() << QString("Incoming datagram (size=%1)").arg(data.size());
-
     QDataStream in(data);
     in.setByteOrder(QDataStream::BigEndian);
     
@@ -56,7 +57,7 @@ void MediaSocketHandler::onReadyRead()
     UDP::Datagram dg;
     in >> dg.magic;
     if (dg.magic != UDP::Datagram::MAGIC) {
-      qDebug() << QString("Invalid datagram (size=%1; data=%2)").arg(data.size()).arg(QString(data));
+      HL_WARN(HL, QString("Received invalid datagram (size=%1; data=%2)").arg(data.size()).arg(QString(data)).toStdString());
       continue;
     }
 
@@ -93,7 +94,7 @@ void MediaSocketHandler::onReadyRead()
       // Video recovery.
       // TODO Only send recovery datagram to the required client.
       case UDP::VideoFrameRecoveryDatagram::TYPE: {
-        qDebug() << QString("Process video frame recovery datagram.");
+        HL_TRACE(HL, QString("Process video frame recovery datagram.").toStdString());
 
         UDP::VideoFrameRecoveryDatagram dgrec;
         in >> dgrec.sender;
@@ -103,7 +104,7 @@ void MediaSocketHandler::onReadyRead()
         // Send to specific receiver only.
         const auto &receiver = _recipients.clientid2receiver[dgrec.sender];
         if (receiver.address.isNull() || receiver.port == 0) {
-          qDebug() << QString("Unknown receiver (client-id=%1)").arg(dgrec.sender);
+          HL_WARN(HL, QString("Unknown receiver for recovery frame (client-id=%1)").arg(dgrec.sender).toStdString());
           continue;
         }
         _socket.writeDatagram(data, receiver.address, receiver.port);

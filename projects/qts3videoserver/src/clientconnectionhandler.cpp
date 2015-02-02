@@ -1,12 +1,13 @@
 #include "clientconnectionhandler.h"
 
-#include <QDebug>
 #include <QDateTime>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QJsonValue>
 #include <QTcpSocket>
+
+#include "humblelogging/api.h"
 
 #include "qcorconnection.h"
 #include "qcorreply.h"
@@ -16,6 +17,8 @@
 #include "jsonprotocolhelper.h"
 
 #include "ts3videoserver.h"
+
+HUMBLE_LOGGER(HL, "server.clientconnection");
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -34,7 +37,7 @@ ClientConnectionHandler::ClientConnectionHandler(TS3VideoServer *server, QCorCon
   connect(_connection, &QCorConnection::stateChanged, this, &ClientConnectionHandler::onStateChanged);
   connect(_connection, &QCorConnection::newIncomingRequest, this, &ClientConnectionHandler::onNewIncomingRequest);
 
-  qDebug() << QString("New client connection (addr=%1; port=%2; clientid=%3)").arg(_connection->socket()->peerAddress().toString()).arg(_connection->socket()->peerPort()).arg(_clientEntity->id);
+  HL_INFO(HL, QString("New client connection (addr=%1; port=%2; clientid=%3)").arg(_connection->socket()->peerAddress().toString()).arg(_connection->socket()->peerPort()).arg(_clientEntity->id).toStdString());
 }
 
 ClientConnectionHandler::~ClientConnectionHandler()
@@ -79,7 +82,7 @@ void ClientConnectionHandler::onStateChanged(QAbstractSocket::SocketState state)
 
 void ClientConnectionHandler::onNewIncomingRequest(QCorFrameRefPtr frame)
 {
-  qDebug() << QString("New incoming request (size=%1; content=%2)").arg(frame->data().size()).arg(QString(frame->data()));
+  HL_TRACE(HL, QString("New incoming request (size=%1; content=%2)").arg(frame->data().size()).arg(QString(frame->data())).toStdString());
 
   QString action;
   QJsonObject params;
