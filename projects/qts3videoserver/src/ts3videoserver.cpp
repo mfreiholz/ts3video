@@ -1,5 +1,7 @@
 #include "ts3videoserver.h"
 
+#include <QDebug>
+
 #include "qcorconnection.h"
 
 #include "cliententity.h"
@@ -21,20 +23,34 @@ TS3VideoServer::TS3VideoServer(QObject *parent) :
   _mediaSocketHandler(nullptr),
   _tokens()
 {
-  // Init QCorServer listening for new client connections.
-  _corServer.listen(QHostAddress::Any, TS3VIDEOSERVER_PORT);
 
+}
+
+TS3VideoServer::~TS3VideoServer()
+{
+  delete _mediaSocketHandler;
+}
+
+bool TS3VideoServer::init()
+{
+  // Init QCorServer listening for new client connections.
+  if (!_corServer.listen(QHostAddress::Any, TS3VIDEOSERVER_PORT)) {
+    qDebug() << QString("Can not bind to TCP port (port=%1)").arg(TS3VIDEOSERVER_PORT);
+    return false;
+  }
   // Accepting new connections.
-  connect(&_corServer, &QCorServer::newConnection, [this] (QCorConnection *connection) {
+  connect(&_corServer, &QCorServer::newConnection, [this](QCorConnection *connection) {
     new ClientConnectionHandler(this, connection, this);
   });
 
   // Init media socket.
   _mediaSocketHandler = new MediaSocketHandler(TS3VIDEOSERVER_PORT, this);
-
+  if (!_mediaSocketHandler->init()) {
+    return false;
+  }
   // Handle media authentications.
   // Note: This lambda slot is not thread-safe. If MediaSocketHandler should run in a separate thread, we need to reimplement this function.
-  connect(_mediaSocketHandler, &MediaSocketHandler::tokenAuthentication, [this] (const QString &token, const QHostAddress &address, quint16 port) {
+  connect(_mediaSocketHandler, &MediaSocketHandler::tokenAuthentication, [this](const QString &token, const QHostAddress &address, quint16 port) {
     if (!_tokens.contains(token)) {
       qDebug() << QString("Received invalid media auth token (token=%1; address=%2; port=%3)").arg(token).arg(address.toString()).arg(port);
       return;
@@ -56,11 +72,7 @@ TS3VideoServer::TS3VideoServer(QObject *parent) :
     }
     this->updateMediaRecipients();
   });
-}
-
-TS3VideoServer::~TS3VideoServer()
-{
-  delete _mediaSocketHandler;
+  return true;
 }
 
 void TS3VideoServer::updateMediaRecipients()

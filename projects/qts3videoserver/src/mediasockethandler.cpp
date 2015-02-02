@@ -12,17 +12,24 @@
 
 MediaSocketHandler::MediaSocketHandler(quint16 port, QObject *parent) :
   QObject(parent),
+  _port(port),
   _socket(this)
 {
-  if (!_socket.bind(QHostAddress::Any, port, QAbstractSocket::DontShareAddress)) {
-    qDebug() << QString("Can not bind media UDP socket on %1").arg(port);
-  }
   connect(&_socket, &QUdpSocket::readyRead, this, &MediaSocketHandler::onReadyRead);
 }
 
 MediaSocketHandler::~MediaSocketHandler()
 {
   _socket.close();
+}
+
+bool MediaSocketHandler::init()
+{
+  if (!_socket.bind(QHostAddress::Any, _port, QAbstractSocket::DontShareAddress)) {
+    qDebug() << QString("Can not bind to UDP port (port=%1)").arg(_port);
+    return false;
+  }
+  return true;
 }
 
 void MediaSocketHandler::setRecipients(const MediaRecipients &rec)

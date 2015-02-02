@@ -25,6 +25,7 @@ class TS3VideoServer : public QObject
 public:
   TS3VideoServer(QObject *parent);
   ~TS3VideoServer();
+  bool init();
 
 private:
   void updateMediaRecipients();
