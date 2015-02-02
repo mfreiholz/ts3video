@@ -35,7 +35,8 @@ public:
 class MediaRecipients
 {
 public:
-  QHash<QString, MediaSenderEntity> id2sender;
+  QHash<QString, MediaSenderEntity> id2sender; ///< Maps a sender's adress-id to itself.
+  QHash<int, MediaReceiverEntity> clientid2receiver; ///< Maps a receiver's client-id to itself.
 };
 
 class MediaSocketHandler : public QObject

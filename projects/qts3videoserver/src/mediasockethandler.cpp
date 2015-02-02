@@ -93,12 +93,13 @@ void MediaSocketHandler::onReadyRead()
         in >> dgrec.frameId;
         in >> dgrec.index;
 
-        auto senderId = MediaSenderEntity::createID(senderAddress, senderPort);
-        const auto &senderEntity = _recipients.id2sender[senderId];
-        for (auto i = 0; i < senderEntity.receivers.size(); ++i) {
-          const auto &receiverEntity = senderEntity.receivers[i];
-          _socket.writeDatagram(data, receiverEntity.address, receiverEntity.port);
-        }        
+        // Send to specific receiver only.
+        const auto &receiver = _recipients.clientid2receiver[dgrec.sender];
+        if (receiver.address.isNull() || receiver.port == 0) {
+          qDebug() << QString("Unknown receiver (client-id=%1)").arg(dgrec.sender);
+          continue;
+        }
+        _socket.writeDatagram(data, receiver.address, receiver.port);
         break;
       }
     }

@@ -8,6 +8,7 @@
 
 class QWidget;
 class ClientCameraVideoWidget;
+class RemoteClientVideoWidget;
 
 class ClientAppLogic : public QObject
 {
@@ -28,13 +29,16 @@ private slots:
 
 protected:
   QWidget* createCameraWidget();
-  QWidget* createClientWidget(const ClientEntity &client);
+  RemoteClientVideoWidget* createClientWidget(const ClientEntity &client);
+  void deleteClientWidget(const ClientEntity &client);
 
 private:
   TS3VideoClient _ts3vc;
 
-  ClientCameraVideoWidget *_cameraWidget;
-  QHash<int, QWidget*> _clientWidgets; ///< Remote client widgets.
+  ClientCameraVideoWidget *_cameraWidget; ///< Local user's camera widget.
+  QHash<int, RemoteClientVideoWidget*> _clientWidgets; ///< Remote client widgets.
+
+  class VideoCollectionWidget *_containerWidget;
 };
 
 #endif

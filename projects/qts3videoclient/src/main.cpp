@@ -104,7 +104,7 @@ int runClientAppLogic(int argc, char *argv[])
   a.setApplicationName("TS3Video");
   a.setApplicationDisplayName("TS3Video");
   a.setApplicationVersion("1.0 ALPHA");
-  a.setQuitOnLastWindowClosed(false);
+  a.setQuitOnLastWindowClosed(true);
 
   ClientAppLogic logic(nullptr);
   return a.exec();

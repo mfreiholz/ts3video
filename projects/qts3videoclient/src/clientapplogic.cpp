@@ -18,6 +18,7 @@
 
 #include "clientcameravideowidget.h"
 #include "remoteclientvideowidget.h"
+#include "videocollectionwidget.h"
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -35,9 +36,10 @@ ClientAppLogic::ClientAppLogic(QObject *parent) :
   connect(&_ts3vc, &TS3VideoClient::clientDisconnected, this, &ClientAppLogic::onClientDisconnected);
   connect(&_ts3vc, &TS3VideoClient::newVideoFrame, this, &ClientAppLogic::onNewVideoFrame);
 
-  _cameraWidget = new ClientCameraVideoWidget(&_ts3vc, nullptr);
-  _cameraWidget->resize(1280, 720);
-  _cameraWidget->show();
+  _containerWidget = new VideoCollectionWidget(nullptr);
+  _containerWidget->show();
+
+  createCameraWidget();
 }
 
 ClientAppLogic::~ClientAppLogic()
@@ -126,23 +128,13 @@ void ClientAppLogic::onClientJoinedChannel(const ClientEntity &client, const Cha
 void ClientAppLogic::onClientLeftChannel(const ClientEntity &client, const ChannelEntity &channel)
 {
   qDebug() << QString("Client left channel (client-id=%1; channel-id=%2)").arg(client.id).arg(channel.id);
-  // Close widget of client.
-  auto w = _clientWidgets.take(client.id);
-  if (w) {
-    w->close();
-    w->deleteLater();
-  }
+  deleteClientWidget(client);
 }
 
 void ClientAppLogic::onClientDisconnected(const ClientEntity &client)
 {
   qDebug() << QString("Client disconnected (client-id=%1)").arg(client.id);
-  // Close widget of client.
-  auto w = _clientWidgets.take(client.id);
-  if (w) {
-    w->close();
-    w->deleteLater();
-  }
+  deleteClientWidget(client);
 }
 
 void ClientAppLogic::onNewVideoFrame(const QImage &image, int senderId)
@@ -155,15 +147,32 @@ void ClientAppLogic::onNewVideoFrame(const QImage &image, int senderId)
     w = createClientWidget(client);
     _clientWidgets.insert(senderId, w);
   }
-  auto rcWidget = static_cast<RemoteClientVideoWidget*>(w);
-  rcWidget->videoWidget()->setImage(image);
+  w->videoWidget()->setImage(image);
 }
 
-QWidget* ClientAppLogic::createClientWidget(const ClientEntity &client)
+QWidget* ClientAppLogic::createCameraWidget()
+{
+  _cameraWidget = new ClientCameraVideoWidget(&_ts3vc, nullptr);
+  _containerWidget->addWidget(_cameraWidget);
+  return _cameraWidget;
+}
+
+RemoteClientVideoWidget* ClientAppLogic::createClientWidget(const ClientEntity &client)
 {
   auto w = new RemoteClientVideoWidget(nullptr);
   w->setClient(client);
-  w->resize(640, 320);
-  w->show();
+  _containerWidget->addWidget(w);
   return w;
+}
+
+void ClientAppLogic::deleteClientWidget(const ClientEntity &client)
+{
+  auto w = _clientWidgets.take(client.id);
+  if (!w) {
+    qDebug() << QString("Trying to delete a non existing widget (client-id=%1)").arg(client.id);
+    return;
+  }
+  _containerWidget->removeWidget(w);
+  w->close();
+  w->deleteLater();
 }

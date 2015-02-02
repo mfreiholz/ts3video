@@ -8,6 +8,9 @@ class VideoCollectionWidget : public QWidget
   Q_OBJECT
 public:
   explicit VideoCollectionWidget(QWidget *parent = 0);
+  ~VideoCollectionWidget();
+  void addWidget(QWidget *widget);
+  void removeWidget(QWidget *widget);
   void setWidgets(const QList<QWidget*> widgets);
 
 private:

@@ -66,6 +66,7 @@ TS3VideoServer::~TS3VideoServer()
 void TS3VideoServer::updateMediaRecipients()
 {
   // TODO Currently everyone sends to everyone, thats not the end scenario!
+  bool sendBackOwnVideo = true;
   MediaRecipients recips;
   auto clients = _clients.values();
   foreach(auto client, clients) {
@@ -78,7 +79,7 @@ void TS3VideoServer::updateMediaRecipients()
     sender.port = client->mediaPort;
     sender.id = MediaSenderEntity::createID(sender.address, sender.port);
     foreach(auto client2, clients) {
-      if (!client2 /*|| client2 == client*/ || client2->mediaAddress.isEmpty() || client2->mediaPort <= 0) {
+      if (!client2 || (!sendBackOwnVideo && client2 == client) || client2->mediaAddress.isEmpty() || client2->mediaPort <= 0) {
         continue;
       }
       MediaReceiverEntity receiver;
@@ -86,6 +87,10 @@ void TS3VideoServer::updateMediaRecipients()
       receiver.address = QHostAddress(client2->mediaAddress);
       receiver.port = client2->mediaPort;
       sender.receivers.append(receiver);
+
+      if (!recips.clientid2receiver.contains(receiver.clientId)) {
+        recips.clientid2receiver.insert(receiver.clientId, receiver);
+      }
     }
     recips.id2sender.insert(sender.id, sender);
   }
