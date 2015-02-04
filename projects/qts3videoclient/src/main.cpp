@@ -6,6 +6,7 @@
 
 #include "qcorreply.h"
 
+#include "elws.h"
 #include "cliententity.h"
 #include "channelentity.h"
 
@@ -14,15 +15,6 @@
 #include "videocollectionwidget.h"
 #include "ts3videoclient.h"
 #include "clientapplogic.h"
-
-QVariant getArgsValue(const QString &key, const QVariant &defaultValue = QVariant())
-{
-  auto pos = qApp->arguments().indexOf(key);
-  if (pos < 0 || pos + 1 >= qApp->arguments().size()) {
-    return defaultValue;
-  }
-  return qApp->arguments().at(pos + 1);
-}
 
 QWidget* createVideoWidget()
 {
@@ -33,10 +25,8 @@ QWidget* createVideoWidget()
   return w;
 }
 
-int runGuiTest(int argc, char *argv[])
+int runGuiTest(QApplication &a)
 {
-  QApplication a(argc, argv);
-
   // Create a bunch of initial widgets.
   QList<QWidget*> widgets;
   for (auto i = 0; i < 5; ++i) {
@@ -98,19 +88,58 @@ int runGuiTest(int argc, char *argv[])
   return a.exec();
 }
 
-int runClientAppLogic(int argc, char *argv[])
+int runTestClient(QApplication &a)
 {
-  QApplication a(argc, argv);
+  a.setQuitOnLastWindowClosed(false);
+
+  auto ts3vc = new TS3VideoClient(nullptr);
+  ts3vc->connectToHost(QHostAddress("127.0.0.1"), 6000);
+  QObject::connect(ts3vc, &TS3VideoClient::connected, [ts3vc]() {
+    // Auth.
+    auto reply = ts3vc->auth("TestName");
+    QObject::connect(reply, &QCorReply::finished, [ts3vc, reply]() {
+      reply->deleteLater();
+      qDebug() << QString(reply->frame()->data());
+      // Join channel.
+      auto reply2 = ts3vc->joinChannel(42);
+      QObject::connect(reply2, &QCorReply::finished, [ts3vc, reply2]() {
+        reply2->deleteLater();
+        qDebug() << QString(reply2->frame()->data());
+        // OPT We might start a timer to disconnect.
+      });
+    });
+  });
+  QObject::connect(ts3vc, &TS3VideoClient::disconnected, [ts3vc]() {
+    qApp->quit();
+  });
+
+  return a.exec();
+}
+
+int runClientAppLogic(QApplication &a)
+{
   a.setApplicationName("TS3Video");
   a.setApplicationDisplayName("TS3Video");
   a.setApplicationVersion("1.0 ALPHA");
   a.setQuitOnLastWindowClosed(true);
 
-  ClientAppLogic logic(nullptr);
+  ClientAppLogic::Options opts;
+  opts.serverAddress = ELWS::getArgsValue("--server-address", "127.0.0.1").toString();
+  opts.serverPort = ELWS::getArgsValue("--server-port", 6000).toUInt();
+  opts.ts3clientId = ELWS::getArgsValue("--ts3-clientid", 0).toUInt();
+  opts.ts3channelId = ELWS::getArgsValue("--ts3-channelid", 42).toUInt();
+  opts.username = ELWS::getArgsValue("--username", ELWS::getUserName()).toString();
+
+  ClientAppLogic logic(opts, nullptr);
   return a.exec();
 }
 
 int main(int argc, char *argv[])
 {
-  return runClientAppLogic(argc, argv);
+  QApplication a(argc, argv);
+  const auto mode = ELWS::getArgsValue("--mode").toString();
+  if (mode == QString("clienttest")) {
+    return runTestClient(a);
+  }
+  return runClientAppLogic(a);
 }

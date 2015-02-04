@@ -35,6 +35,9 @@ public:
 
 signals:
   void newQImage(const QImage &image);
+
+private:
+  bool _firstFrame;
 };
 
 #endif

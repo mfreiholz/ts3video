@@ -2,7 +2,9 @@
 #define CLIENTAPPLOGIC_H
 
 #include <QObject>
+#include <QString>
 #include <QHash>
+#include <QHostAddress>
 
 #include "ts3videoclient.h"
 
@@ -15,7 +17,18 @@ class ClientAppLogic : public QObject
   Q_OBJECT
 
 public:
-  ClientAppLogic(QObject *parent);
+  class Options
+  {
+  public:
+    Options();
+    QHostAddress serverAddress;
+    quint16 serverPort;
+    quint64 ts3clientId;
+    quint64 ts3channelId;
+    QString username;
+  };
+
+  ClientAppLogic(const Options &opts, QObject *parent);
   ~ClientAppLogic();
   TS3VideoClient& ts3client();
 
@@ -31,8 +44,10 @@ protected:
   QWidget* createCameraWidget();
   RemoteClientVideoWidget* createClientWidget(const ClientEntity &client);
   void deleteClientWidget(const ClientEntity &client);
+  void showError(const QString &message);
 
 private:
+  Options _opts;
   TS3VideoClient _ts3vc;
 
   ClientCameraVideoWidget *_cameraWidget; ///< Local user's camera widget.

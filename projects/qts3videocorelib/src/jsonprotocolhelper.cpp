@@ -54,7 +54,7 @@ bool JsonProtocolHelper::fromJsonResponse(const QByteArray &data, int &status, Q
     return false;
   }
   auto root = doc.object();
-  if (!root.contains("status") || !root.contains("data")) {
+  if (!root.contains("status")) {
     return false;
   }
   status = root["status"].toInt();

@@ -19,34 +19,45 @@ ClientCameraVideoWidget::ClientCameraVideoWidget(TS3VideoClient *ts3vc, QWidget 
   QWidget(parent),
   _ts3vc(ts3vc)
 {
-  auto cameraInfo = QCameraInfo::defaultCamera();
-  auto camera = new QCamera(cameraInfo, this);
-  camera->start();
+  //auto cameraInfo = QCameraInfo::defaultCamera();
+  //auto camera = new QCamera(cameraInfo, this);
+  //camera->start();
 
   //auto videoWidget = new QVideoWidget();
   //videoWidget->setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowTitleHint);
   //videoWidget->setAspectRatioMode(Qt::KeepAspectRatioByExpanding);
   //camera->setViewfinder(videoWidget);
 
-  auto grabber = new CameraFrameGrabber(this);
+  //auto grabber = new CameraFrameGrabber(this);
   auto videoWidget = new ClientVideoWidget();
-  camera->setViewfinder(grabber);
-  static QTime __time;
-  __time.start();
-  QObject::connect(grabber, &CameraFrameGrabber::newQImage, [ts3vc, videoWidget] (const QImage &image) {
-    videoWidget->setImage(image);
-    //if (__time.elapsed() < 33)
-    //  return;
-    //__time.restart();
-    if (ts3vc->isReadyForStreaming() /*&& _streamingEnabled*/) {
-      ts3vc->sendVideoFrame(image);
-    }
-  });
+  //camera->setViewfinder(grabber);
+  //static QTime __time;
+  //__time.start();
+  //QObject::connect(grabber, &CameraFrameGrabber::newQImage, [ts3vc, videoWidget] (const QImage &image) {
+  //  videoWidget->setImage(image);
+  //  if (__time.elapsed() < 33)
+  //    return;
+  //  __time.restart();
+  //  if (ts3vc->isReadyForStreaming() /*&& _streamingEnabled*/) {
+  //    ts3vc->sendVideoFrame(image);
+  //  }
+  //});
 
   auto mainLayout = new QBoxLayout(QBoxLayout::TopToBottom);
   mainLayout->setContentsMargins(0, 0, 0, 0);
   mainLayout->addWidget(videoWidget, 1);
   setLayout(mainLayout);
+
+  //QObject::connect(camera, &QCamera::stateChanged, [this, camera](QCamera::State state) {
+  //  switch (state) {
+  //  case QCamera::UnloadedState:
+  //    break;
+  //  case QCamera::LoadedState:
+  //    break;
+  //  case QCamera::ActiveState:
+  //    break;
+  //  }
+  //});
 }
 
 ClientCameraVideoWidget::~ClientCameraVideoWidget()
@@ -56,9 +67,10 @@ ClientCameraVideoWidget::~ClientCameraVideoWidget()
 ///////////////////////////////////////////////////////////////////////
 
 CameraFrameGrabber::CameraFrameGrabber(QObject *parent) :
-  QAbstractVideoSurface(parent)
+  QAbstractVideoSurface(parent),
+  _firstFrame(true)
 {
-
+  setNativeResolution(QSize(640, 360));
 }
 
 QList<QVideoFrame::PixelFormat> CameraFrameGrabber::supportedPixelFormats(QAbstractVideoBuffer::HandleType handleType) const

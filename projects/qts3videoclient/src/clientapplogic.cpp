@@ -1,12 +1,11 @@
 #include "clientapplogic.h"
 
 #include <QDebug>
-#include <QString>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
-#include <QHostAddress>
 #include <QApplication>
+#include <QMessageBox>
 
 #include "qcorreply.h"
 #include "qcorframe.h"
@@ -14,7 +13,6 @@
 #include "cliententity.h"
 #include "channelentity.h"
 #include "jsonprotocolhelper.h"
-#include "elws.h"
 
 #include "clientcameravideowidget.h"
 #include "remoteclientvideowidget.h"
@@ -22,13 +20,23 @@
 
 ///////////////////////////////////////////////////////////////////////
 
-ClientAppLogic::ClientAppLogic(QObject *parent) :
-  QObject(parent)
+ClientAppLogic::Options::Options() :
+  serverAddress(),
+  serverPort(0),
+  ts3clientId(0),
+  ts3channelId(0),
+  username()
 {
-  auto serverAddress = ELWS::getArgsValue("--server-address", "127.0.0.1").toString();
-  auto serverPort = ELWS::getArgsValue("--server-port", 6000).toUInt();
 
-  _ts3vc.connectToHost(QHostAddress(serverAddress), serverPort);
+}
+
+///////////////////////////////////////////////////////////////////////
+
+ClientAppLogic::ClientAppLogic(const Options &opts, QObject *parent) :
+  QObject(parent),
+  _opts(opts)
+{
+  _ts3vc.connectToHost(_opts.serverAddress, _opts.serverPort);
   connect(&_ts3vc, &TS3VideoClient::connected, this, &ClientAppLogic::onConnected);
   connect(&_ts3vc, &TS3VideoClient::disconnected, this, &ClientAppLogic::onDisconnected);
   connect(&_ts3vc, &TS3VideoClient::clientJoinedChannel, this, &ClientAppLogic::onClientJoinedChannel);
@@ -38,7 +46,6 @@ ClientAppLogic::ClientAppLogic(QObject *parent) :
 
   _containerWidget = new VideoCollectionWidget(nullptr);
   _containerWidget->show();
-
   createCameraWidget();
 }
 
@@ -55,9 +62,9 @@ TS3VideoClient& ClientAppLogic::ts3client()
 
 void ClientAppLogic::onConnected()
 {
-  auto ts3clientId = ELWS::getArgsValue("--ts3-clientid", 0).toUInt();
-  auto ts3channelId = ELWS::getArgsValue("--ts3-channelid", 0).toUInt();
-  auto username = ELWS::getArgsValue("--username", ELWS::getUserName()).toString();
+  auto ts3clientId = _opts.ts3clientId;
+  auto ts3channelId = _opts.ts3channelId;
+  auto username = _opts.username;
 
   // Authenticate.
   auto reply = _ts3vc.auth(username);
@@ -68,10 +75,10 @@ void ClientAppLogic::onConnected()
     int status;
     QJsonObject params;
     if (!JsonProtocolHelper::fromJsonResponse(reply->frame()->data(), status, params)) {
-      // TODO Internal error.
+      this->showError(reply->frame()->data());
       return;
     } else if (status != 0) {
-      // TODO Auth error.
+      this->showError(reply->frame()->data());
       return;
     }
 
@@ -84,10 +91,10 @@ void ClientAppLogic::onConnected()
       int status;
       QJsonObject params;
       if (!JsonProtocolHelper::fromJsonResponse(reply2->frame()->data(), status, params)) {
-        // TODO Internal error.
+        this->showError(reply2->frame()->data());
         return;
       } else if (status != 0) {
-        // TODO Can not join channel error.
+        this->showError(reply2->frame()->data());
         return;
       }
       
@@ -120,9 +127,6 @@ void ClientAppLogic::onClientJoinedChannel(const ClientEntity &client, const Cha
     w = createClientWidget(client);
     _clientWidgets.insert(client.id, w);
   }
-  if (!w->isVisible()) {
-    w->show();
-  }
 }
 
 void ClientAppLogic::onClientLeftChannel(const ClientEntity &client, const ChannelEntity &channel)
@@ -153,6 +157,7 @@ void ClientAppLogic::onNewVideoFrame(const QImage &image, int senderId)
 QWidget* ClientAppLogic::createCameraWidget()
 {
   _cameraWidget = new ClientCameraVideoWidget(&_ts3vc, nullptr);
+  _cameraWidget->setVisible(true);
   _containerWidget->addWidget(_cameraWidget);
   return _cameraWidget;
 }
@@ -161,6 +166,7 @@ RemoteClientVideoWidget* ClientAppLogic::createClientWidget(const ClientEntity &
 {
   auto w = new RemoteClientVideoWidget(nullptr);
   w->setClient(client);
+  w->setVisible(true);
   _containerWidget->addWidget(w);
   return w;
 }
@@ -175,4 +181,15 @@ void ClientAppLogic::deleteClientWidget(const ClientEntity &client)
   _containerWidget->removeWidget(w);
   w->close();
   w->deleteLater();
+}
+
+void ClientAppLogic::showError(const QString &message)
+{
+  QMessageBox box;
+  box.setIcon(QMessageBox::Critical);
+  box.addButton(QMessageBox::Ok);
+  box.setText(message);
+  box.setDetailedText(message);
+  box.exec();
+  qApp->quit();
 }

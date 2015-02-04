@@ -161,7 +161,7 @@ void ClientConnectionHandler::onNewIncomingRequest(QCorFrameRefPtr frame)
     auto channelEntity = _server->_channels.value(channelId);
     if (!channelEntity) {
       channelEntity = new ChannelEntity();
-      channelEntity->id = ++_server->_nextChannelId;
+      channelEntity->id = channelId; //++_server->_nextChannelId;
       _server->_channels.insert(channelEntity->id, channelEntity);
     }
     // Join channel.

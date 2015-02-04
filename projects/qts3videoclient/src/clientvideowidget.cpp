@@ -86,12 +86,21 @@ void ClientVideoWidget::paintEvent(QPaintEvent *)
   p.setOpacity(1.0);
 
   const QRect avatarRect(bottomRect.x(), bottomRect.y(), bottomAvatarWidth, bottomAreaHeight);
-  p.setOpacity(0.8);
-  p.drawPixmap(avatarRect, _avatar);
-  p.setOpacity(1.0);
+  if (!_avatar.isNull()) {
+    p.setOpacity(0.8);
+    p.drawPixmap(avatarRect, _avatar);
+    p.setOpacity(1.0);
+  }
 
   const QRect textRect = bottomRect.adjusted(bottomAvatarWidth + 5, 0, 0, 0);
-  const QFontMetrics fmetrics = fontMetrics();
-  p.setPen(Qt::white);
-  p.drawText(textRect, Qt::AlignLeft | Qt::AlignVCenter, fmetrics.elidedText(_text, Qt::ElideRight, textRect.width()));
+  if (!_text.isEmpty()) {
+    const QFontMetrics fmetrics = fontMetrics();
+    p.setPen(Qt::white);
+    p.drawText(textRect, Qt::AlignLeft | Qt::AlignVCenter, fmetrics.elidedText(_text, Qt::ElideRight, textRect.width()));
+  }
+
+  // Painter border arround the entire rect.
+  const QRect borderRect = rect().adjusted(0, 0, -1, -1);
+  p.setPen(Qt::gray);
+  p.drawRect(borderRect);
 }

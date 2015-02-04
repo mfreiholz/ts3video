@@ -5,6 +5,10 @@ VideoCollectionWidget::VideoCollectionWidget(QWidget *parent) :
   QWidget(parent),
   _columnCount(3)
 {
+  QPalette pal(palette());
+  pal.setColor(QPalette::Background, Qt::black);
+  setAutoFillBackground(true);
+  setPalette(pal);
 }
 
 VideoCollectionWidget::~VideoCollectionWidget()
