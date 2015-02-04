@@ -36,6 +36,7 @@ TS3VideoClient::TS3VideoClient(QObject *parent) :
   d->_connection = new QCorConnection(this);
   connect(d->_connection, &QCorConnection::stateChanged, this, &TS3VideoClient::onStateChanged);
   connect(d->_connection, &QCorConnection::newIncomingRequest, this, &TS3VideoClient::onNewIncomingRequest);
+  connect(d->_connection, &QCorConnection::error, this, &TS3VideoClient::error);
 }
 
 TS3VideoClient::~TS3VideoClient()
@@ -43,6 +44,12 @@ TS3VideoClient::~TS3VideoClient()
   Q_D(TS3VideoClient);
   delete d->_connection;
   delete d->_mediaSocket;
+}
+
+const QAbstractSocket* TS3VideoClient::socket() const
+{
+  Q_D(const TS3VideoClient);
+  return d->_connection->socket();
 }
 
 const ClientEntity& TS3VideoClient::clientEntity() const
@@ -90,8 +97,7 @@ QCorReply* TS3VideoClient::auth(const QString &name)
     QJsonObject params;
     if (!JsonProtocolHelper::fromJsonResponse(reply->frame()->data(), status, params)) {
       return;
-    }
-    else if (params["status"].toInt() != 0) {
+    } else if (status != 0) {
       return;
     }
     auto client = params["client"].toObject();

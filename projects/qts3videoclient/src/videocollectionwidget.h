@@ -13,12 +13,21 @@ public:
   void removeWidget(QWidget *widget);
   void setWidgets(const QList<QWidget*> widgets);
 
+protected:
+  virtual void showEvent(QShowEvent *);
+  virtual void closeEvent(QCloseEvent *);
+
 private:
   void doGridLayout();
+  void prepareWidget(QWidget *widget);
 
 private:
   QList<QWidget*> _widgets;
   int _columnCount;
+
+  class QBoxLayout *_mainLayout;
+  class QGridLayout *_gridLayout;
+  class QSpinBox *_columnCountSpinBox;
 };
 
 #endif // VIDEOCOLLECTIONWIDGET_H

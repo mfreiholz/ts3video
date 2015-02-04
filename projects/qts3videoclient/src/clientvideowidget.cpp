@@ -1,31 +1,18 @@
-#include <QDebug>
-#include <QApplication>
-#include <QImage>
-#include <QPainter>
-#include <QPaintEvent>
 #include "clientvideowidget.h"
 #include "ui_clientvideowidget.h"
+
+#include <QPainter>
+#include <QPaintEvent>
 
 ClientVideoWidget::ClientVideoWidget(QWidget *parent) :
   QWidget(parent),
   ui(new Ui::ClientVideoWidget)
 {
   ui->setupUi(this);
-  //_frame = QPixmap::fromImage(QImage(QString(":/frame.jpg")));
-  _avatar = QPixmap::fromImage(QImage(QString(":/avatar.jpg")));
-  _text = QString("Manuel wir brauchen hier einen längeren Text!");
-
-  // Handle fullscreen toggle.
-  connect(ui->fullscreenButton, &QPushButton::clicked, [this] (bool checked) {
-    if (checked) {
-      this->showFullScreen();
-    } else {
-      this->showNormal();
-    }
-  });
-
-  // Simple actions.
-  connect(ui->exitButton, SIGNAL(clicked()), qApp, SLOT(quit()));
+  ui->videoToggleButton->setVisible(false);
+  ui->fullscreenButton->setVisible(false);
+  ui->exitButton->setVisible(false);
+  setAttribute(Qt::WA_OpaquePaintEvent);
 }
 
 ClientVideoWidget::~ClientVideoWidget()
@@ -62,8 +49,10 @@ void ClientVideoWidget::paintEvent(QPaintEvent *)
   QPainter p(this);
 
   // Paint background.
-  p.setPen(Qt::black);
-  p.fillRect(rect(), Qt::SolidPattern);
+  if (_frame.isNull()) {
+    p.setPen(Qt::black);
+    p.fillRect(rect(), Qt::SolidPattern);
+  }
 
   // Paint frame.
   if (!_frame.isNull()) {
@@ -80,10 +69,12 @@ void ClientVideoWidget::paintEvent(QPaintEvent *)
   const int bottomAvatarWidth = 30;
   const QRect bottomRect(rect().x(), rect().height() - bottomAreaHeight, rect().width(), bottomAreaHeight);
 
-  p.setPen(Qt::black);
-  p.setOpacity(0.5);
-  p.fillRect(bottomRect, Qt::SolidPattern);
-  p.setOpacity(1.0);
+  if (!_avatar.isNull() || !_text.isEmpty()) {
+    p.setPen(Qt::black);
+    p.setOpacity(0.5);
+    p.fillRect(bottomRect, Qt::SolidPattern);
+    p.setOpacity(1.0);
+  }
 
   const QRect avatarRect(bottomRect.x(), bottomRect.y(), bottomAvatarWidth, bottomAreaHeight);
   if (!_avatar.isNull()) {
@@ -99,8 +90,8 @@ void ClientVideoWidget::paintEvent(QPaintEvent *)
     p.drawText(textRect, Qt::AlignLeft | Qt::AlignVCenter, fmetrics.elidedText(_text, Qt::ElideRight, textRect.width()));
   }
 
-  // Painter border arround the entire rect.
-  const QRect borderRect = rect().adjusted(0, 0, -1, -1);
-  p.setPen(Qt::gray);
-  p.drawRect(borderRect);
+  // Painter border around the entire rect.
+  //const QRect borderRect = rect().adjusted(0, 0, -1, -1);
+  //p.setPen(Qt::darkGray);
+  //p.drawRect(borderRect);
 }

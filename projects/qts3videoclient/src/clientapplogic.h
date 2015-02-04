@@ -9,6 +9,7 @@
 #include "ts3videoclient.h"
 
 class QWidget;
+class VideoCollectionWidget;
 class ClientCameraVideoWidget;
 class RemoteClientVideoWidget;
 
@@ -35,6 +36,7 @@ public:
 private slots:
   void onConnected();
   void onDisconnected();
+  void onError(QAbstractSocket::SocketError socketError);
   void onClientJoinedChannel(const ClientEntity &client, const ChannelEntity &channel);
   void onClientLeftChannel(const ClientEntity &client, const ChannelEntity &channel);
   void onClientDisconnected(const ClientEntity &client);
@@ -44,16 +46,15 @@ protected:
   QWidget* createCameraWidget();
   RemoteClientVideoWidget* createClientWidget(const ClientEntity &client);
   void deleteClientWidget(const ClientEntity &client);
-  void showError(const QString &message);
+  void showError(const QString &shortText, const QString &longText = QString());
 
 private:
   Options _opts;
   TS3VideoClient _ts3vc;
 
+  VideoCollectionWidget *_containerWidget;
   ClientCameraVideoWidget *_cameraWidget; ///< Local user's camera widget.
   QHash<int, RemoteClientVideoWidget*> _clientWidgets; ///< Remote client widgets.
-
-  class VideoCollectionWidget *_containerWidget;
 };
 
 #endif

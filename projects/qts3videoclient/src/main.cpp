@@ -92,36 +92,69 @@ int runTestClient(QApplication &a)
 {
   a.setQuitOnLastWindowClosed(false);
 
-  auto ts3vc = new TS3VideoClient(nullptr);
-  ts3vc->connectToHost(QHostAddress("127.0.0.1"), 6000);
-  QObject::connect(ts3vc, &TS3VideoClient::connected, [ts3vc]() {
-    // Auth.
-    auto reply = ts3vc->auth("TestName");
-    QObject::connect(reply, &QCorReply::finished, [ts3vc, reply]() {
-      reply->deleteLater();
-      qDebug() << QString(reply->frame()->data());
-      // Join channel.
-      auto reply2 = ts3vc->joinChannel(42);
-      QObject::connect(reply2, &QCorReply::finished, [ts3vc, reply2]() {
-        reply2->deleteLater();
-        qDebug() << QString(reply2->frame()->data());
-        // OPT We might start a timer to disconnect.
+  QList<TS3VideoClient*> ts3vconns;
+  
+  auto timer = new QTimer(nullptr);
+  timer->setInterval(2000);
+  timer->start();
+
+  QObject::connect(timer, &QTimer::timeout, [&ts3vconns] () {
+
+    // Create a new connecion to the TS3VideoServer.
+    auto ts3vc = new TS3VideoClient(nullptr);
+    ts3vc->connectToHost(QHostAddress("127.0.0.1"), 6000);
+    QObject::connect(ts3vc, &TS3VideoClient::connected, [ts3vc]() {
+      // Auth.
+      auto reply = ts3vc->auth("TestName");
+      QObject::connect(reply, &QCorReply::finished, [ts3vc, reply]() {
+        reply->deleteLater();
+        qDebug() << QString(reply->frame()->data());
+        // Join channel.
+        auto reply2 = ts3vc->joinChannel(42);
+        QObject::connect(reply2, &QCorReply::finished, [ts3vc, reply2]() {
+          reply2->deleteLater();
+          qDebug() << QString(reply2->frame()->data());
+          // OPT We might start a timer to disconnect.
+        });
       });
     });
-  });
-  QObject::connect(ts3vc, &TS3VideoClient::disconnected, [ts3vc]() {
-    qApp->quit();
+    QObject::connect(ts3vc, &TS3VideoClient::disconnected, [ts3vc]() {
+      qApp->quit();
+    });
+
   });
 
   return a.exec();
 }
 
+/*!
+  Runs the basic application.
+  - Connects to server.
+  - Authenticates with server.
+  - Joins channel.
+  - Sends and receives video streams.
+
+  Command line parameters
+  -----------------------
+  --server-address
+    Hostname or IPv4/IPv6 address of the server.
+  --server-port
+    Port on which the server is listen.
+  --ts3-clientid
+    The internal Teamspeak3 client-id (uint64) (>0)
+  --ts3-channelid
+    The internal Teamspeak3 channel-id (uint64) (>0)
+  --username
+    Visible username.
+*/
 int runClientAppLogic(QApplication &a)
 {
-  a.setApplicationName("TS3Video");
-  a.setApplicationDisplayName("TS3Video");
+  a.setApplicationName("TS3 Video Client");
+  a.setApplicationDisplayName("TS3 Video Client");
   a.setApplicationVersion("1.0 ALPHA");
   a.setQuitOnLastWindowClosed(true);
+  a.setOrganizationName("insaneFactory");
+  a.setOrganizationDomain("http://www.insanefactory.com");
 
   ClientAppLogic::Options opts;
   opts.serverAddress = ELWS::getArgsValue("--server-address", "127.0.0.1").toString();

@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <QPixmap>
 #include <QImage>
+#include <QString>
 
 namespace Ui {
 class ClientVideoWidget;

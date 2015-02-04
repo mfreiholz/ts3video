@@ -24,6 +24,7 @@ RemoteClientVideoWidget::~RemoteClientVideoWidget()
 void RemoteClientVideoWidget::setClient(const ClientEntity &client)
 {
   _client = client;
+  _videoWidget->setAvatar(QPixmap::fromImage(QImage(QString(":/avatar.jpg"))));
   _videoWidget->setText(QString("%1 (ID=%2)").arg(client.name).arg(client.id));
 }
 

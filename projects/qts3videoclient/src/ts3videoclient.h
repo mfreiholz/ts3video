@@ -6,9 +6,10 @@
 #include <QAbstractSocket>
 
 #include "qcorframe.h"
+#include "qcorreply.h"
+#include "qcorconnection.h"
 
 class QHostAddress;
-class QCorReply;
 class ClientEntity;
 class ChannelEntity;
 
@@ -24,6 +25,7 @@ public:
   TS3VideoClient(const TS3VideoClient &other);
   ~TS3VideoClient();
 
+  const QAbstractSocket* socket() const;
   const ClientEntity& clientEntity() const;
   bool isReadyForStreaming() const;
 
@@ -60,6 +62,7 @@ public:
 signals:
   void connected();
   void disconnected();
+  void error(QAbstractSocket::SocketError socketError);
   void clientJoinedChannel(const ClientEntity &client, const ChannelEntity &channel);
   void clientLeftChannel(const ClientEntity &client, const ChannelEntity &channel);
   void clientDisconnected(const ClientEntity &client);

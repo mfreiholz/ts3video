@@ -67,6 +67,7 @@ void QCorConnection::connectWith(quintptr descriptor)
   connect(d->socket, SIGNAL(readyRead()), SLOT(onSocketReadyRead()));
   connect(d->socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), SLOT(onSocketStateChanged(QAbstractSocket::SocketState)));
   connect(d->socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), SIGNAL(stateChanged(QAbstractSocket::SocketState)));
+  connect(d->socket, SIGNAL(error(QAbstractSocket::SocketError)), SIGNAL(error(QAbstractSocket::SocketError)));
 }
 
 void QCorConnection::connectWith(QTcpSocket *socket)
@@ -82,6 +83,7 @@ void QCorConnection::connectWith(QTcpSocket *socket)
   connect(d->socket, SIGNAL(readyRead()), SLOT(onSocketReadyRead()));
   connect(d->socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), SLOT(onSocketStateChanged(QAbstractSocket::SocketState)));
   connect(d->socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), SIGNAL(stateChanged(QAbstractSocket::SocketState)));
+  connect(d->socket, SIGNAL(error(QAbstractSocket::SocketError)), SIGNAL(error(QAbstractSocket::SocketError)));
 }
 
 void QCorConnection::connectTo(const QHostAddress &address, quint16 port)
@@ -97,6 +99,7 @@ void QCorConnection::connectTo(const QHostAddress &address, quint16 port)
   connect(d->socket, SIGNAL(readyRead()), SLOT(onSocketReadyRead()));
   connect(d->socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), SLOT(onSocketStateChanged(QAbstractSocket::SocketState)));
   connect(d->socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), SIGNAL(stateChanged(QAbstractSocket::SocketState)));
+  connect(d->socket, SIGNAL(error(QAbstractSocket::SocketError)), SIGNAL(error(QAbstractSocket::SocketError)));
 }
 
 void QCorConnection::disconnectFromHost()

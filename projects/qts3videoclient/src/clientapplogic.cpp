@@ -27,7 +27,6 @@ ClientAppLogic::Options::Options() :
   ts3channelId(0),
   username()
 {
-
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -39,6 +38,7 @@ ClientAppLogic::ClientAppLogic(const Options &opts, QObject *parent) :
   _ts3vc.connectToHost(_opts.serverAddress, _opts.serverPort);
   connect(&_ts3vc, &TS3VideoClient::connected, this, &ClientAppLogic::onConnected);
   connect(&_ts3vc, &TS3VideoClient::disconnected, this, &ClientAppLogic::onDisconnected);
+  connect(&_ts3vc, &TS3VideoClient::error, this, &ClientAppLogic::onError);
   connect(&_ts3vc, &TS3VideoClient::clientJoinedChannel, this, &ClientAppLogic::onClientJoinedChannel);
   connect(&_ts3vc, &TS3VideoClient::clientLeftChannel, this, &ClientAppLogic::onClientLeftChannel);
   connect(&_ts3vc, &TS3VideoClient::clientDisconnected, this, &ClientAppLogic::onClientDisconnected);
@@ -51,6 +51,14 @@ ClientAppLogic::ClientAppLogic(const Options &opts, QObject *parent) :
 
 ClientAppLogic::~ClientAppLogic()
 {
+  _containerWidget->close();
+  delete _containerWidget;
+
+  while (!_clientWidgets.isEmpty()) {
+    auto w = _clientWidgets.take(_clientWidgets.begin().key());
+    delete w;
+  }
+
   _cameraWidget->close();
   delete _cameraWidget;
 }
@@ -114,8 +122,13 @@ void ClientAppLogic::onConnected()
 
 void ClientAppLogic::onDisconnected()
 {
-  qDebug() << QString("Disconnected...");
-  //qApp->quit();
+  qDebug() << QString("Disconnected... Quit now?");
+}
+
+void ClientAppLogic::onError(QAbstractSocket::SocketError socketError)
+{
+  qDebug() << QString("Socket error... Quit now?");
+  showError(tr("Network socket error."), _ts3vc.socket()->errorString());
 }
 
 void ClientAppLogic::onClientJoinedChannel(const ClientEntity &client, const ChannelEntity &channel)
@@ -157,7 +170,6 @@ void ClientAppLogic::onNewVideoFrame(const QImage &image, int senderId)
 QWidget* ClientAppLogic::createCameraWidget()
 {
   _cameraWidget = new ClientCameraVideoWidget(&_ts3vc, nullptr);
-  _cameraWidget->setVisible(true);
   _containerWidget->addWidget(_cameraWidget);
   return _cameraWidget;
 }
@@ -166,7 +178,6 @@ RemoteClientVideoWidget* ClientAppLogic::createClientWidget(const ClientEntity &
 {
   auto w = new RemoteClientVideoWidget(nullptr);
   w->setClient(client);
-  w->setVisible(true);
   _containerWidget->addWidget(w);
   return w;
 }
@@ -183,13 +194,14 @@ void ClientAppLogic::deleteClientWidget(const ClientEntity &client)
   w->deleteLater();
 }
 
-void ClientAppLogic::showError(const QString &message)
+void ClientAppLogic::showError(const QString &shortText, const QString &longText)
 {
-  QMessageBox box;
+  QMessageBox box(qApp->activeWindow());
   box.setIcon(QMessageBox::Critical);
   box.addButton(QMessageBox::Ok);
-  box.setText(message);
-  box.setDetailedText(message);
+  box.setText(shortText);
+  box.setDetailedText(longText);
+  box.setMinimumWidth(400);
   box.exec();
   qApp->quit();
 }

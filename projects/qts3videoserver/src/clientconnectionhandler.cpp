@@ -37,7 +37,7 @@ ClientConnectionHandler::ClientConnectionHandler(TS3VideoServer *server, QCorCon
   connect(_connection, &QCorConnection::stateChanged, this, &ClientConnectionHandler::onStateChanged);
   connect(_connection, &QCorConnection::newIncomingRequest, this, &ClientConnectionHandler::onNewIncomingRequest);
 
-  HL_INFO(HL, QString("New client connection (addr=%1; port=%2; clientid=%3)").arg(_connection->socket()->peerAddress().toString()).arg(_connection->socket()->peerPort()).arg(_clientEntity->id).toStdString());
+  onStateChanged(QAbstractSocket::ConnectedState);
 }
 
 ClientConnectionHandler::~ClientConnectionHandler()
@@ -60,7 +60,12 @@ void ClientConnectionHandler::sendMediaAuthSuccessNotify()
 void ClientConnectionHandler::onStateChanged(QAbstractSocket::SocketState state)
 {
   switch (state) {
+    case QAbstractSocket::ConnectedState: {
+      HL_INFO(HL, QString("New client connection (addr=%1; port=%2; clientid=%3)").arg(_connection->socket()->peerAddress().toString()).arg(_connection->socket()->peerPort()).arg(_clientEntity->id).toStdString());
+      break;
+    }
     case QAbstractSocket::UnconnectedState: {
+      HL_INFO(HL, QString("Client disconnected (addr=%1; port=%2; clientid=%3)").arg(_connection->socket()->peerAddress().toString()).arg(_connection->socket()->peerPort()).arg(_clientEntity->id).toStdString());
       // Notify sibling clients about the disconnect.
       QJsonObject params;
       params["client"] = _clientEntity->toQJsonObject();
@@ -70,7 +75,7 @@ void ClientConnectionHandler::onStateChanged(QAbstractSocket::SocketState state)
       foreach(auto clientConn, clientConns) {
         if (clientConn && clientConn != this) {
           auto reply = clientConn->_connection->sendRequest(req);
-          connect(reply, &QCorReply::finished, reply, &QCorReply::deleteLater);
+          if (reply) connect(reply, &QCorReply::finished, reply, &QCorReply::deleteLater);
         }
       }
       // Delete itself.
@@ -89,7 +94,7 @@ void ClientConnectionHandler::onNewIncomingRequest(QCorFrameRefPtr frame)
   if (!JsonProtocolHelper::fromJsonRequest(frame->data(), action, params)) {
     QCorFrame res;
     res.initResponse(*frame.data());
-    res.setData(JsonProtocolHelper::createJsonResponseError(500, QString("Invalid protocol format.")));
+    res.setData(JsonProtocolHelper::createJsonResponseError(500, QString("Invalid protocol format")));
     _connection->sendResponse(res);
     return;
   }
@@ -101,7 +106,7 @@ void ClientConnectionHandler::onNewIncomingRequest(QCorFrameRefPtr frame)
     if (version != TS3VIDEOSERVER_VERSION) {
       QCorFrame res;
       res.initResponse(*frame.data());
-      res.setData(JsonProtocolHelper::createJsonResponseError(3, QString("Incompatible version. (client=%1; server=%2)").arg(version).arg(TS3VIDEOSERVER_VERSION)));
+      res.setData(JsonProtocolHelper::createJsonResponseError(3, QString("Incompatible version (client=%1; server=%2)").arg(version).arg(TS3VIDEOSERVER_VERSION)));
       _connection->sendResponse(res);
       return;
     }
@@ -109,7 +114,7 @@ void ClientConnectionHandler::onNewIncomingRequest(QCorFrameRefPtr frame)
     if (username.isEmpty()) {
       QCorFrame res;
       res.initResponse(*frame.data());
-      res.setData(JsonProtocolHelper::createJsonResponseError(4, QString("Authentication failed.")));
+      res.setData(JsonProtocolHelper::createJsonResponseError(4, QString("Authentication failed")));
       _connection->sendResponse(res);
       return;
     }
@@ -141,7 +146,7 @@ void ClientConnectionHandler::onNewIncomingRequest(QCorFrameRefPtr frame)
   if (!_authenticated) {
     QCorFrame res;
     res.initResponse(*frame.data());
-    res.setData(JsonProtocolHelper::createJsonResponseError(4, QString("Authentication failed.")));
+    res.setData(JsonProtocolHelper::createJsonResponseError(4, QString("Authentication failed")));
     _connection->sendResponse(res);
     _connection->disconnectFromHost();
     return;

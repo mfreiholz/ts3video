@@ -48,6 +48,8 @@ signals:
    */
   void stateChanged(QAbstractSocket::SocketState state);
 
+  void error(QAbstractSocket::SocketError socketError);
+
   /* Emits for every new incoming request, which must be handled.
    * The ownership goes over to the receiver.
    */
