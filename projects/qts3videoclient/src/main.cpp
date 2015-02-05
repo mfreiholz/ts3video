@@ -3,6 +3,8 @@
 #include <QApplication>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QUrl>
+#include <QUrlQuery>
 
 #include "qcorreply.h"
 
@@ -127,6 +129,21 @@ int runTestClient(QApplication &a)
   return a.exec();
 }
 
+int runRegisterUriHandler(QApplication &a)
+{
+  // TODO Run with elevated privileges!
+  ELWS::unregisterURISchemeHandler("ts3video");
+  ELWS::registerURISchemeHandler("ts3video", QString(), QString(), QString("--uri \"%1\""));
+  return 0;
+}
+
+int runUnregisterUriHandler(QApplication &a)
+{
+  // TODO Run with elevated privileges!
+  ELWS::unregisterURISchemeHandler("ts3video");
+  return 0;
+}
+
 /*!
   Runs the basic application.
   - Connects to server.
@@ -146,6 +163,15 @@ int runTestClient(QApplication &a)
     The internal Teamspeak3 channel-id (uint64) (>0)
   --username
     Visible username.
+
+  URL Syntax example
+  ------------------
+  By using the "--uri" parameter its possible to define those parameters with a URI.
+  e.g.:
+    ts3video://127.0.0.1:6000/?ts3clientid=13&ts3channelid=42&username=mfreiholz
+
+
+  \todo DNS lookups for server address. Currently only IP addresses work (See QHostInfo).
 */
 int runClientAppLogic(QApplication &a)
 {
@@ -154,14 +180,28 @@ int runClientAppLogic(QApplication &a)
   a.setApplicationVersion("1.0 ALPHA");
   a.setQuitOnLastWindowClosed(true);
   a.setOrganizationName("insaneFactory");
-  a.setOrganizationDomain("http://www.insanefactory.com");
+  a.setOrganizationDomain("http://www.insanefactory.com/ts3video");
 
+  // Prepare startup options.
   ClientAppLogic::Options opts;
   opts.serverAddress = ELWS::getArgsValue("--server-address", "127.0.0.1").toString();
   opts.serverPort = ELWS::getArgsValue("--server-port", 6000).toUInt();
   opts.ts3clientId = ELWS::getArgsValue("--ts3-clientid", 0).toUInt();
   opts.ts3channelId = ELWS::getArgsValue("--ts3-channelid", 42).toUInt();
   opts.username = ELWS::getArgsValue("--username", ELWS::getUserName()).toString();
+
+  QUrl url(ELWS::getArgsValue("--uri").toString(), QUrl::StrictMode);
+  if (url.isValid()) {
+    QUrlQuery urlQuery(url);
+    opts.serverAddress = url.host();
+    opts.serverPort = url.port(6000);
+    opts.ts3clientId = urlQuery.queryItemValue("ts3clientid").toULongLong();
+    opts.ts3channelId = urlQuery.queryItemValue("ts3channelid").toULongLong();
+    opts.username = urlQuery.queryItemValue("username");
+    if (opts.username.isEmpty()) {
+      opts.username = ELWS::getUserName();
+    }
+  }
 
   ClientAppLogic logic(opts, nullptr);
   return a.exec();
@@ -171,8 +211,14 @@ int main(int argc, char *argv[])
 {
   QApplication a(argc, argv);
   const auto mode = ELWS::getArgsValue("--mode").toString();
-  if (mode == QString("clienttest")) {
+  if (mode == QString("test-multi-client")) {
     return runTestClient(a);
+  }
+  else if (mode == QString("install-uri-handler")) {
+    return runRegisterUriHandler(a);
+  }
+  else if (mode == QString("uninstall-uri-handler")) {
+    return runUnregisterUriHandler(a);
   }
   return runClientAppLogic(a);
 }
