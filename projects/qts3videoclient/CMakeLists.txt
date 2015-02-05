@@ -59,6 +59,7 @@ add_definitions(
 # Includes
 include_directories(
   ${CMAKE_CURRENT_BINARY_DIR}
+  ${humblelogging_INCLUDE_DIRS}
   ../medlib/include
   ../qcorlib/src
   ../qts3videocorelib/src
@@ -88,6 +89,7 @@ target_link_libraries(
   qts3videocorelib
   medlib
   ${vpx_LIBRARIES}
+  humblelogging
 )
 
 humblelogging_POSTBUILD(qts3videoclient)

@@ -6,6 +6,8 @@
 #include <QUrl>
 #include <QUrlQuery>
 
+#include "humblelogging/api.h"
+
 #include "qcorreply.h"
 
 #include "elws.h"
@@ -17,6 +19,10 @@
 #include "videocollectionwidget.h"
 #include "ts3videoclient.h"
 #include "clientapplogic.h"
+
+HUMBLE_LOGGER(HL, "client");
+
+///////////////////////////////////////////////////////////////////////
 
 QWidget* createVideoWidget()
 {
@@ -110,12 +116,12 @@ int runTestClient(QApplication &a)
       auto reply = ts3vc->auth("TestName");
       QObject::connect(reply, &QCorReply::finished, [ts3vc, reply]() {
         reply->deleteLater();
-        qDebug() << QString(reply->frame()->data());
+        HL_DEBUG(HL, QString(reply->frame()->data()).toStdString());
         // Join channel.
         auto reply2 = ts3vc->joinChannel(42);
         QObject::connect(reply2, &QCorReply::finished, [ts3vc, reply2]() {
           reply2->deleteLater();
-          qDebug() << QString(reply2->frame()->data());
+          HL_DEBUG(HL, QString(reply2->frame()->data()).toStdString());
           // OPT We might start a timer to disconnect.
         });
       });

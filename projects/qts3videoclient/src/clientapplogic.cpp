@@ -1,12 +1,13 @@
 #include "clientapplogic.h"
 
-#include <QDebug>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QApplication>
 #include <QMessageBox>
 #include <QProgressDialog>
+
+#include "humblelogging/api.h"
 
 #include "qcorreply.h"
 #include "qcorframe.h"
@@ -18,6 +19,8 @@
 #include "clientcameravideowidget.h"
 #include "remoteclientvideowidget.h"
 #include "videocollectionwidget.h"
+
+HUMBLE_LOGGER(HL, "client.logic");
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -85,7 +88,7 @@ void ClientAppLogic::onConnected()
   showProgress(tr("Authenticating..."));
   auto reply = _ts3vc.auth(username);
   QObject::connect(reply, &QCorReply::finished, [this, reply, ts3clientId, ts3channelId] () {
-    qDebug() << QString("Auth answer: %1").arg(QString(reply->frame()->data()));
+    HL_DEBUG(HL, QString("Auth answer: %1").arg(QString(reply->frame()->data())).toStdString());
     reply->deleteLater();
 
     int status;
@@ -102,7 +105,7 @@ void ClientAppLogic::onConnected()
     showProgress(tr("Joining channel..."));
     auto reply2 = _ts3vc.joinChannel(ts3channelId);
     QObject::connect(reply2, &QCorReply::finished, [this, reply2] () {
-      qDebug() << QString("Join channel answer: %1").arg(QString(reply2->frame()->data()));
+      HL_DEBUG(HL, QString("Join channel answer: %1").arg(QString(reply2->frame()->data())).toStdString());
       reply2->deleteLater();
       
       int status;
@@ -135,19 +138,18 @@ void ClientAppLogic::onConnected()
 
 void ClientAppLogic::onDisconnected()
 {
-  qDebug() << QString("Disconnected... Quit now?");
+  HL_INFO(HL, QString("Disconnected").toStdString());
 }
 
 void ClientAppLogic::onError(QAbstractSocket::SocketError socketError)
 {
-  qDebug() << QString("Socket error... Quit now?");
+  HL_INFO(HL, QString("Socket error (error=%1; message=%2)").arg(socketError).arg(_ts3vc.socket()->errorString()).toStdString());
   showError(tr("Network socket error."), _ts3vc.socket()->errorString());
 }
 
 void ClientAppLogic::onClientJoinedChannel(const ClientEntity &client, const ChannelEntity &channel)
 {
-  qDebug() << QString("Client joined channel (client-id=%1; channel-id=%2)").arg(client.id).arg(channel.id);
-  // Create new widget for client.
+  HL_INFO(HL, QString("Client joined channel (client-id=%1; channel-id=%2)").arg(client.id).arg(channel.id).toStdString());
   auto w = _clientWidgets.value(client.id);
   if (!w) {
     w = createClientWidget(client);
@@ -157,13 +159,13 @@ void ClientAppLogic::onClientJoinedChannel(const ClientEntity &client, const Cha
 
 void ClientAppLogic::onClientLeftChannel(const ClientEntity &client, const ChannelEntity &channel)
 {
-  qDebug() << QString("Client left channel (client-id=%1; channel-id=%2)").arg(client.id).arg(channel.id);
+  HL_INFO(HL, QString("Client left channel (client-id=%1; channel-id=%2)").arg(client.id).arg(channel.id).toStdString());
   deleteClientWidget(client);
 }
 
 void ClientAppLogic::onClientDisconnected(const ClientEntity &client)
 {
-  qDebug() << QString("Client disconnected (client-id=%1)").arg(client.id);
+  HL_INFO(HL, QString("Client disconnected (client-id=%1)").arg(client.id).toStdString());
   deleteClientWidget(client);
 }
 
@@ -206,7 +208,6 @@ void ClientAppLogic::deleteClientWidget(const ClientEntity &client)
 {
   auto w = _clientWidgets.take(client.id);
   if (!w) {
-    qDebug() << QString("Trying to delete a non existing widget (client-id=%1)").arg(client.id);
     return;
   }
   _containerWidget->removeWidget(w);
@@ -219,7 +220,7 @@ void ClientAppLogic::showProgress(const QString &text)
   if (!_progressBox) {
     _progressBox = new QProgressDialog(nullptr);
     _progressBox->setMinimumWidth(400);
-    _progressBox->setWindowFlags(Qt::FramelessWindowHint);
+    _progressBox->setWindowFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
     _progressBox->setCancelButton(nullptr);
     _progressBox->setAutoClose(false);
     _progressBox->setAutoReset(false);
