@@ -434,7 +434,8 @@ void MediaSocket::onReadyRead()
         auto frame = decoder->next();
         auto waitForType = decoder->getWaitsForType();
         if (frame) {
-          _videoDecodingThread->enqueue(frame, senderId);
+          //_videoDecodingThread->enqueue(frame, senderId);
+          delete frame;//REMOVE
         }
 
         // Handle the case, that the UDP decoder requires some special data.
