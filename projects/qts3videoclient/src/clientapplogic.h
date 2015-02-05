@@ -9,6 +9,7 @@
 #include "ts3videoclient.h"
 
 class QWidget;
+class QProgressDialog;
 class VideoCollectionWidget;
 class ClientCameraVideoWidget;
 class RemoteClientVideoWidget;
@@ -43,9 +44,12 @@ private slots:
   void onNewVideoFrame(const QImage &image, int senderId);
 
 protected:
+  void initGui();
   QWidget* createCameraWidget();
   RemoteClientVideoWidget* createClientWidget(const ClientEntity &client);
   void deleteClientWidget(const ClientEntity &client);
+  void showProgress(const QString &text);
+  void hideProgress();
   void showError(const QString &shortText, const QString &longText = QString());
 
 private:
@@ -55,6 +59,8 @@ private:
   VideoCollectionWidget *_containerWidget;
   ClientCameraVideoWidget *_cameraWidget; ///< Local user's camera widget.
   QHash<int, RemoteClientVideoWidget*> _clientWidgets; ///< Remote client widgets.
+
+  QProgressDialog *_progressBox;
 };
 
 #endif

@@ -6,6 +6,7 @@
 #include <QJsonArray>
 #include <QApplication>
 #include <QMessageBox>
+#include <QProgressDialog>
 
 #include "qcorreply.h"
 #include "qcorframe.h"
@@ -33,8 +34,12 @@ ClientAppLogic::Options::Options() :
 
 ClientAppLogic::ClientAppLogic(const Options &opts, QObject *parent) :
   QObject(parent),
-  _opts(opts)
+  _opts(opts),
+  _containerWidget(nullptr),
+  _cameraWidget(nullptr),
+  _progressBox(nullptr)
 {
+  showProgress(tr("Connecting to server %1:%2").arg(_opts.serverAddress.toString()).arg(_opts.serverPort));
   _ts3vc.connectToHost(_opts.serverAddress, _opts.serverPort);
   connect(&_ts3vc, &TS3VideoClient::connected, this, &ClientAppLogic::onConnected);
   connect(&_ts3vc, &TS3VideoClient::disconnected, this, &ClientAppLogic::onDisconnected);
@@ -43,24 +48,26 @@ ClientAppLogic::ClientAppLogic(const Options &opts, QObject *parent) :
   connect(&_ts3vc, &TS3VideoClient::clientLeftChannel, this, &ClientAppLogic::onClientLeftChannel);
   connect(&_ts3vc, &TS3VideoClient::clientDisconnected, this, &ClientAppLogic::onClientDisconnected);
   connect(&_ts3vc, &TS3VideoClient::newVideoFrame, this, &ClientAppLogic::onNewVideoFrame);
-
-  _containerWidget = new VideoCollectionWidget(nullptr);
-  _containerWidget->show();
-  createCameraWidget();
 }
 
 ClientAppLogic::~ClientAppLogic()
 {
-  _containerWidget->close();
-  delete _containerWidget;
+  hideProgress();
+
+  if (_containerWidget) {
+    _containerWidget->close();
+    delete _containerWidget;
+  }
 
   while (!_clientWidgets.isEmpty()) {
     auto w = _clientWidgets.take(_clientWidgets.begin().key());
     delete w;
   }
 
-  _cameraWidget->close();
-  delete _cameraWidget;
+  if (_cameraWidget) {
+    _cameraWidget->close();
+    delete _cameraWidget;
+  }
 }
 
 TS3VideoClient& ClientAppLogic::ts3client()
@@ -75,6 +82,7 @@ void ClientAppLogic::onConnected()
   auto username = _opts.username;
 
   // Authenticate.
+  showProgress(tr("Authenticating..."));
   auto reply = _ts3vc.auth(username);
   QObject::connect(reply, &QCorReply::finished, [this, reply, ts3clientId, ts3channelId] () {
     qDebug() << QString("Auth answer: %1").arg(QString(reply->frame()->data()));
@@ -91,6 +99,7 @@ void ClientAppLogic::onConnected()
     }
 
     // Join channel.
+    showProgress(tr("Joining channel..."));
     auto reply2 = _ts3vc.joinChannel(ts3channelId);
     QObject::connect(reply2, &QCorReply::finished, [this, reply2] () {
       qDebug() << QString("Join channel answer: %1").arg(QString(reply2->frame()->data()));
@@ -106,6 +115,9 @@ void ClientAppLogic::onConnected()
         return;
       }
       
+      // Create user interface.
+      initGui();
+
       // Extract channel.
       ChannelEntity channel;
       channel.fromQJsonObject(params["channel"].toObject());
@@ -116,6 +128,7 @@ void ClientAppLogic::onConnected()
         client.fromQJsonObject(v.toObject());
         onClientJoinedChannel(client, channel);
       }
+      hideProgress();
     });
   });
 }
@@ -167,6 +180,13 @@ void ClientAppLogic::onNewVideoFrame(const QImage &image, int senderId)
   w->videoWidget()->setImage(image);
 }
 
+void ClientAppLogic::initGui()
+{
+  _containerWidget = new VideoCollectionWidget(nullptr);
+  _containerWidget->show();
+  createCameraWidget();
+}
+
 QWidget* ClientAppLogic::createCameraWidget()
 {
   _cameraWidget = new ClientCameraVideoWidget(&_ts3vc, nullptr);
@@ -194,8 +214,32 @@ void ClientAppLogic::deleteClientWidget(const ClientEntity &client)
   w->deleteLater();
 }
 
+void ClientAppLogic::showProgress(const QString &text)
+{
+  if (!_progressBox) {
+    _progressBox = new QProgressDialog(nullptr);
+    _progressBox->setMinimumWidth(400);
+    _progressBox->setWindowFlags(Qt::FramelessWindowHint);
+    _progressBox->setCancelButton(nullptr);
+    _progressBox->setAutoClose(false);
+    _progressBox->setAutoReset(false);
+    _progressBox->setRange(0, 0);
+  }
+  _progressBox->setLabelText(text);
+  _progressBox->show();
+}
+
+void ClientAppLogic::hideProgress()
+{
+  if (_progressBox) {
+    _progressBox->hide();
+  }
+}
+
 void ClientAppLogic::showError(const QString &shortText, const QString &longText)
 {
+  hideProgress();
+
   QMessageBox box(qApp->activeWindow());
   box.setIcon(QMessageBox::Critical);
   box.addButton(QMessageBox::Ok);
