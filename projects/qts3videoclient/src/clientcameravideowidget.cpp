@@ -31,17 +31,15 @@ ClientCameraVideoWidget::ClientCameraVideoWidget(TS3VideoClient *ts3vc, QWidget 
   auto grabber = new CameraFrameGrabber(this);
   auto videoWidget = new ClientVideoWidget();
   camera->setViewfinder(grabber);
-  static QTime __time;
-  __time.start();
+
   QObject::connect(grabber, &CameraFrameGrabber::newQImage, [ts3vc, videoWidget] (const QImage &image) {
     videoWidget->setImage(image);
-    if (__time.elapsed() < 33)
-      return;
-    __time.restart();
-    //if (ts3vc->isReadyForStreaming()) {
-    //  ts3vc->sendVideoFrame(image);
-    //}
   });
+  //QObject::connect(grabber, &CameraFrameGrabber::newQImage, [ts3vc, videoWidget](const QImage &image) {
+  //  if (ts3vc->isReadyForStreaming()) {
+  //    ts3vc->sendVideoFrame(image);
+  //  }
+  //});
 
   auto mainLayout = new QBoxLayout(QBoxLayout::TopToBottom);
   mainLayout->setContentsMargins(0, 0, 0, 0);
@@ -128,7 +126,6 @@ bool CameraFrameGrabber::present(const QVideoFrame &frame)
     qDebug() << QString("Invalid image format for video frame.");
     return false;
   }
-  // Calls the deep copy constructor of QImage.
   if (f.map(QAbstractVideoBuffer::ReadOnly)) {
     // Create copy via copy() or mirrored(). At least we need a copy as long as we don't directly print here.
     auto image = QImage(f.bits(), f.width(), f.height(), imageFormat).mirrored(false, true);
@@ -137,3 +134,5 @@ bool CameraFrameGrabber::present(const QVideoFrame &frame)
   }
   return true;
 }
+
+///////////////////////////////////////////////////////////////////////
