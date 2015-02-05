@@ -66,3 +66,5 @@ target_link_libraries(
   qts3videocorelib
   medlib
 )
+
+humblelogging_POSTBUILD(qts3videoserver)

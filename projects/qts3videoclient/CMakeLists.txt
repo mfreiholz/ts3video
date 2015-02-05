@@ -89,3 +89,5 @@ target_link_libraries(
   medlib
   ${vpx_LIBRARIES}
 )
+
+humblelogging_POSTBUILD(qts3videoclient)
