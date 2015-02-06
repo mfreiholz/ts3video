@@ -188,6 +188,10 @@ int runClientAppLogic(QApplication &a)
   a.setOrganizationName("insaneFactory");
   a.setOrganizationDomain("http://www.insanefactory.com/ts3video");
 
+  // Setup logging.
+  auto& fac = humble::logging::Factory::getInstance();
+  fac.registerAppender(new humble::logging::ConsoleAppender());
+
   // Prepare startup options.
   ClientAppLogic::Options opts;
   opts.serverAddress = ELWS::getArgsValue("--server-address", "127.0.0.1").toString();

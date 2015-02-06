@@ -1,7 +1,6 @@
 #include "ts3videoclient.h"
 #include "ts3videoclient_p.h"
 
-#include <QDebug>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QTimerEvent>
@@ -10,6 +9,9 @@
 #include <QUdpSocket>
 #include <QTcpSocket>
 #include <QHostAddress>
+#include <QTime>
+
+#include "humblelogging/api.h"
 
 #include "medprotocol.h"
 
@@ -19,6 +21,8 @@
 #include "vp8encoder.h"
 #include "vp8decoder.h"
 #include "timeutil.h"
+
+HUMBLE_LOGGER(HL, "client.ts3videoclient");
 
 /*
   Notes
@@ -35,8 +39,8 @@ TS3VideoClient::TS3VideoClient(QObject *parent) :
   Q_D(TS3VideoClient);
   d->_connection = new QCorConnection(this);
   connect(d->_connection, &QCorConnection::stateChanged, this, &TS3VideoClient::onStateChanged);
-  connect(d->_connection, &QCorConnection::newIncomingRequest, this, &TS3VideoClient::onNewIncomingRequest);
   connect(d->_connection, &QCorConnection::error, this, &TS3VideoClient::error);
+  connect(d->_connection, &QCorConnection::newIncomingRequest, this, &TS3VideoClient::onNewIncomingRequest);
 }
 
 TS3VideoClient::~TS3VideoClient()
@@ -131,6 +135,7 @@ QCorReply* TS3VideoClient::joinChannel(int id)
 void TS3VideoClient::sendVideoFrame(const QImage &image)
 {
   Q_D(TS3VideoClient);
+  Q_ASSERT(d->_mediaSocket);
   if (d->_mediaSocket) {
     d->_mediaSocket->sendVideoFrame(image, d->_clientEntity.id);
   }
@@ -152,7 +157,7 @@ void TS3VideoClient::onNewIncomingRequest(QCorFrameRefPtr frame)
 {
   Q_D(TS3VideoClient);
   Q_ASSERT(!frame.isNull());
-  qDebug() << QString("Incoming request from server (size=%1; content=%2)").arg(frame->data().size()).arg(QString(frame->data()));
+  HL_TRACE(HL, QString("Incoming request (size=%1): %2").arg(frame->data().size()).arg(QString(frame->data())).toStdString());
   
   QString action;
   QJsonObject parameters;
@@ -270,7 +275,7 @@ void MediaSocket::setAuthenticated(bool yesno)
 void MediaSocket::sendVideoFrame(const QImage &image, int senderId)
 {
   if (!_videoEncodingThread || !_videoEncodingThread->isRunning()) {
-    qDebug() << QString("Encoding thread not running yet.");
+    HL_WARN(HL, QString("Can not send video. Encoding thread not yet running.").toStdString());
     return;
   }
   _videoEncodingThread->enqueue(image, senderId);
@@ -279,7 +284,7 @@ void MediaSocket::sendVideoFrame(const QImage &image, int senderId)
 void MediaSocket::sendAuthTokenDatagram(const QString &token)
 {
   Q_ASSERT(!token.isEmpty());
-  //qDebug() << QString("Send media auth token (token=%1; address=%2; port=%3)").arg(token).arg(peerAddress().toString()).arg(peerPort());
+  HL_TRACE(HL, QString("Send media auth token (token=%1; address=%2; port=%3)").arg(token).arg(peerAddress().toString()).arg(peerPort()).toStdString());
 
   UDP::AuthDatagram dgauth;
   dgauth.size = token.toUtf8().size();
@@ -300,7 +305,7 @@ void MediaSocket::sendVideoFrame(const QByteArray &frame_, quint64 frameId_, qui
 {
   Q_ASSERT(frame_.isEmpty() == false);
   Q_ASSERT(frameId_ != 0);
-  //qDebug() << QString("Send video frame (size=%1; address=%2; port=%3)").arg(frameData.size()).arg(peerAddress().toString()).arg(peerPort());
+  //HL_TRACE(HL, QString("Send video frame (size=%1; address=%2; port=%3)").arg(frame_.size()).arg(peerAddress().toString()).arg(peerPort()).toStdString());
 
   UDP::VideoFrameDatagram::dg_frame_id_t frameId = frameId_;
   UDP::VideoFrameDatagram::dg_sender_t senderId = senderId_;
@@ -383,8 +388,6 @@ void MediaSocket::onReadyRead()
     data.resize(pendingDatagramSize());
     readDatagram(data.data(), data.size(), &senderAddress, &senderPort);
 
-    //qDebug() << QString("Incoming datagram (size=%1)").arg(data.size());
-
     QDataStream in(data);
     in.setByteOrder(QDataStream::BigEndian);
 
@@ -392,7 +395,7 @@ void MediaSocket::onReadyRead()
     UDP::Datagram dg;
     in >> dg.magic;
     if (dg.magic != UDP::Datagram::MAGIC) {
-      qDebug() << QString("Invalid datagram (size=%1; data=%2)").arg(data.size()).arg(QString(data));
+      HL_WARN(HL, QString("Received invalid datagram (size=%1; data=%2)").arg(data.size()).arg(QString(data)).toStdString());
       continue;
     }
 
@@ -434,8 +437,8 @@ void MediaSocket::onReadyRead()
         auto frame = decoder->next();
         auto waitForType = decoder->getWaitsForType();
         if (frame) {
-          //_videoDecodingThread->enqueue(frame, senderId);
-          delete frame;//REMOVE
+          _videoDecodingThread->enqueue(frame, senderId);
+          //delete frame;//REMOVE
         }
 
         // Handle the case, that the UDP decoder requires some special data.
@@ -502,7 +505,12 @@ void VideoEncodingThread::enqueueRecovery()
 
 void VideoEncodingThread::run()
 {
+  const int fps = 15;
+  const int fpsTimeMs = 1000 / fps;
+
   QHash<int, VP8Encoder*> encoders;
+  QTime fpsTimer;
+  fpsTimer.start();
 
   _stopFlag = 0;
   while (_stopFlag == 0) {
@@ -515,9 +523,13 @@ void VideoEncodingThread::run()
     l.unlock();
 
     if (item.first.isNull()) {
-      qDebug() << QString("Invalid image");
       continue;
     }
+
+    if (fpsTimer.elapsed() < fpsTimeMs) {
+      continue;
+    }
+    fpsTimer.restart();
 
     if (true) {
       // Convert to YuvFrame.
@@ -525,9 +537,11 @@ void VideoEncodingThread::run()
       // Encode via VPX.
       auto encoder = encoders.value(item.second);
       if (!encoder) {
+        HL_DEBUG(HL, QString("Create new VP8 video encoder (id=%1)").arg(item.second).toStdString());
         encoder = new VP8Encoder();
-        if (!encoder->initialize(1280, 720, 100, 30)) { ///< TODO Find a way to pass this parameters from outside (videoBegin(...), sendVideo(...), videoEnd(...)).
-          qDebug() << QString("Can not initialize VP8Encoder.");
+        if (!encoder->initialize(1280, 720, 100, fps)) { ///< TODO Find a way to pass this parameters from outside (videoBegin(...), sendVideo(...), videoEnd(...)).
+          HL_ERROR(HL, QString("Can not initialize VP8 video encoder").toStdString());
+          _stopFlag = 1;
           continue;
         }
         encoders.insert(item.second, encoder);
@@ -610,7 +624,6 @@ void VideoDecodingThread::run()
     l.unlock();
 
     if (!item.first || item.second == 0) {
-      qDebug() << QString("Invalid object.");
       continue;
     }
 

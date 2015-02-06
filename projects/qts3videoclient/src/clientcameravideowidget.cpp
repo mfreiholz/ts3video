@@ -1,17 +1,17 @@
 #include "clientcameravideowidget.h"
 
 #include <QTime>
-
-#include <QDebug>
 #include <QBoxLayout>
 #include <QLabel>
-
 #include <QCameraInfo>
-
 #include <QVideoWidget>
+
+#include "humblelogging/api.h"
 
 #include "ts3videoclient.h"
 #include "clientvideowidget.h"
+
+HUMBLE_LOGGER(HL, "client.camera");
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -35,27 +35,27 @@ ClientCameraVideoWidget::ClientCameraVideoWidget(TS3VideoClient *ts3vc, QWidget 
   QObject::connect(grabber, &CameraFrameGrabber::newQImage, [ts3vc, videoWidget] (const QImage &image) {
     videoWidget->setImage(image);
   });
-  //QObject::connect(grabber, &CameraFrameGrabber::newQImage, [ts3vc, videoWidget](const QImage &image) {
-  //  if (ts3vc->isReadyForStreaming()) {
-  //    ts3vc->sendVideoFrame(image);
-  //  }
-  //});
+  QObject::connect(grabber, &CameraFrameGrabber::newQImage, [ts3vc, videoWidget](const QImage &image) {
+    if (ts3vc->isReadyForStreaming()) {
+      ts3vc->sendVideoFrame(image);
+    }
+  });
 
   auto mainLayout = new QBoxLayout(QBoxLayout::TopToBottom);
   mainLayout->setContentsMargins(0, 0, 0, 0);
   mainLayout->addWidget(videoWidget, 1);
   setLayout(mainLayout);
 
-  //QObject::connect(camera, &QCamera::stateChanged, [this, camera](QCamera::State state) {
-  //  switch (state) {
-  //  case QCamera::UnloadedState:
-  //    break;
-  //  case QCamera::LoadedState:
-  //    break;
-  //  case QCamera::ActiveState:
-  //    break;
-  //  }
-  //});
+  QObject::connect(camera, &QCamera::stateChanged, [this, camera](QCamera::State state) {
+    switch (state) {
+    case QCamera::UnloadedState:
+      break;
+    case QCamera::LoadedState:
+      break;
+    case QCamera::ActiveState:
+      break;
+    }
+  });
 }
 
 ClientCameraVideoWidget::~ClientCameraVideoWidget()
@@ -68,7 +68,6 @@ CameraFrameGrabber::CameraFrameGrabber(QObject *parent) :
   QAbstractVideoSurface(parent),
   _firstFrame(true)
 {
-  setNativeResolution(QSize(640, 360));
 }
 
 QList<QVideoFrame::PixelFormat> CameraFrameGrabber::supportedPixelFormats(QAbstractVideoBuffer::HandleType handleType) const
@@ -115,11 +114,14 @@ QList<QVideoFrame::PixelFormat> CameraFrameGrabber::supportedPixelFormats(QAbstr
 bool CameraFrameGrabber::present(const QVideoFrame &frame)
 {
   if (!frame.isValid()) {
-    qDebug() << QString("Invalid video frame.");
     return false;
   }
   // Clone frame to have it as non-const.
   QVideoFrame f(frame);
+  if (_firstFrame) {
+    HL_INFO(HL, QString("Camera first frame (format=%1; width=%2; height=%3)").arg(f.pixelFormat()).arg(f.width()).arg(f.height())  .toStdString());
+    _firstFrame = false;
+  }
   // Convert video frame to QImage.
   auto imageFormat = QVideoFrame::imageFormatFromPixelFormat(f.pixelFormat());
   if (imageFormat == QImage::Format_Invalid) {
@@ -128,7 +130,7 @@ bool CameraFrameGrabber::present(const QVideoFrame &frame)
   }
   if (f.map(QAbstractVideoBuffer::ReadOnly)) {
     // Create copy via copy() or mirrored(). At least we need a copy as long as we don't directly print here.
-    auto image = QImage(f.bits(), f.width(), f.height(), imageFormat).mirrored(false, true);
+    auto image = QImage(f.bits(), f.width(), f.height(), imageFormat).mirrored();
     emit newQImage(image);
     f.unmap();
   }
