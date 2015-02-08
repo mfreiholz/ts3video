@@ -6,6 +6,7 @@
 #include "QtGui/QPainter"
 #include "QtGui/QResizeEvent"
 #include "QtGui/QColor"
+#include "QtGui/QExposeEvent"
 
 #include "QtWidgets/QWidget"
 
@@ -80,10 +81,9 @@ bool OpenGLWindow::event( QEvent *event )
 
 void OpenGLWindow::exposeEvent( QExposeEvent *event )
 {
-	Q_UNUSED( event );
-
 	if( isExposed() ) {
 		d->thread->update( d->renderId );
+    d->thread->resize( d->renderId, event->region().boundingRect().size() );
 	}
 }
 

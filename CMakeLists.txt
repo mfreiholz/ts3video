@@ -31,19 +31,24 @@ set(vpx_LIBRARIES
 # Local projects.
 add_subdirectory(projects/corlib) # TCP protocol lib
 add_subdirectory(projects/medlib) # UDP protocol lib
-#add_subdirectory(projects/testexe)
 
 # Local Qt based projects.
-if(QTDIR)
-    message("Qt found")
-    list(APPEND CMAKE_PREFIX_PATH ${QTDIR})
-endif()
+#if(QTDIR)
+#  message("Qt found")
+#  list(APPEND CMAKE_PREFIX_PATH ${QTDIR})
+#endif()
+
 cmake_policy(SET CMP0020 NEW)
 
 add_subdirectory(projects/qcorlib)
+add_subdirectory(projects/qts3videocorelib)
+add_subdirectory(projects/qts3videoserver)
+add_subdirectory(projects/qts3videoclient)
+
+# Obsolete
 #add_subdirectory(projects/qswserverlib)
 #add_subdirectory(projects/qswserverapp)
+
+# Tests
+#add_subdirectory(projects/testexe)
 #add_subdirectory(projects/qtestexe)
-add_subdirectory(projects/qts3videoclient)
-add_subdirectory(projects/qts3videoserver)
-add_subdirectory(projects/qts3videocorelib)

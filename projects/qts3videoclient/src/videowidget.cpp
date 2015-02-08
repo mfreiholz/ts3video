@@ -32,6 +32,8 @@ ClientVideoWidget::ClientVideoWidget(Type type, QWidget *parent) :
       break;
   }
 
+  d->frameWidget->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
+
   auto mainLayout = new QBoxLayout(QBoxLayout::TopToBottom);
   mainLayout->setContentsMargins(0, 0, 0, 0);
   mainLayout->setSpacing(0);
@@ -132,8 +134,7 @@ void VideoFrame_CpuImpl::paintEvent(QPaintEvent *)
   // Paint frame.
   if (!_frameImage.isNull()) {
     auto scaledImage = _frameImage.scaled(rect().size(), Qt::KeepAspectRatioByExpanding, Qt::FastTransformation);
-    auto pixmap = QPixmap::fromImage(scaledImage);
-    p.drawPixmap(pixmap.rect(), pixmap);
+    p.drawImage(scaledImage.rect(), scaledImage);
   }
 
   // Bottom area.
