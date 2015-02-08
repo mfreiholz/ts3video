@@ -46,12 +46,15 @@ public:
   bool isAuthenticated() const;
   void setAuthenticated(bool yesno);
 
-  /*! Encodes the image and sends it to server.
-  */
+  /*! Encodes and sends the image as new video frame of the current
+      video stream to the server.
+   */
   void sendVideoFrame(const QImage &image, int senderId);
 
 signals:
-  void newVideoFrame(const QImage &image, int senderId);
+  /*! Emits with every new arrived and decoded video frame.
+   */
+  void newVideoFrame(YuvFrameRefPtr frame, int senderId);
 
 protected:
   void sendAuthTokenDatagram(const QString &token);
@@ -121,7 +124,7 @@ protected:
   void run();
 
 signals:
-  void decoded(const QImage &image, int senderId);
+  void decoded(YuvFrameRefPtr frame, int senderId);
 
 private:
   QMutex _m;

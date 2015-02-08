@@ -5,7 +5,7 @@
 
 #include "cliententity.h"
 
-#include "clientvideowidget.h"
+#include "videowidget.h"
 
 class RemoteClientVideoWidget : public QFrame
 {

@@ -9,6 +9,8 @@
 #include "qcorreply.h"
 #include "qcorconnection.h"
 
+#include "yuvframe.h"
+
 class QHostAddress;
 class ClientEntity;
 class ChannelEntity;
@@ -66,7 +68,8 @@ signals:
   void clientJoinedChannel(const ClientEntity &client, const ChannelEntity &channel);
   void clientLeftChannel(const ClientEntity &client, const ChannelEntity &channel);
   void clientDisconnected(const ClientEntity &client);
-  void newVideoFrame(const QImage &image, int senderId);
+  //void newVideoFrame(const QImage &image, int senderId);
+  void newVideoFrame(YuvFrameRefPtr frame, int senderId);
 
 private slots:
   void onStateChanged(QAbstractSocket::SocketState state);

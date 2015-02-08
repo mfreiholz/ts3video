@@ -14,7 +14,7 @@
 #include "cliententity.h"
 #include "channelentity.h"
 
-#include "clientvideowidget.h"
+#include "videowidget.h"
 #include "gridviewwidgetarranger.h"
 #include "videocollectionwidget.h"
 #include "ts3videoclient.h"
@@ -55,7 +55,7 @@ int runGuiTest(QApplication &a)
       pixmapsIndex = 0;
     }
     foreach (auto w, widgets) {
-      ((ClientVideoWidget*)w)->setFrame(pixmaps.at(pixmapsIndex));
+      //((ClientVideoWidget*)w)->setFrame(pixmaps.at(pixmapsIndex));
     }
   });
   t0.start(66); // 66 = ~15fps

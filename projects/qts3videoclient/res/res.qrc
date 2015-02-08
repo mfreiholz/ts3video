@@ -16,4 +16,8 @@
         <file>ic_videocam_white_48dp.png</file>
         <file>example-ad-320-50.png</file>
     </qresource>
+    <qresource prefix="/opengl">
+        <file>vertex.vsh</file>
+        <file>fragment.fsh</file>
+    </qresource>
 </RCC>

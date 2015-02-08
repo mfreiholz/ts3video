@@ -1,4 +1,6 @@
 
+option(IncludeOpenGLSupport "IncludeOpenGLSupport" ON)
+
 # Qt5
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Gui REQUIRED)
@@ -6,13 +8,15 @@ find_package(Qt5Widgets REQUIRED)
 find_package(Qt5Network REQUIRED)
 find_package(Qt5Multimedia REQUIRED)
 find_package(Qt5MultimediaWidgets REQUIRED)
+find_package(Qt5OpenGL REQUIRED)
 
 # Sources
 set(headers
 )
 
 set(qheaders
-  src/clientvideowidget.h
+  src/videowidget.h
+  src/videowidget_p.h
   src/gridviewwidgetarranger.h
   src/videocollectionwidget.h
   src/ts3videoclient.h
@@ -27,7 +31,7 @@ set(qheaders
 
 set(sources
   src/main.cpp
-  src/clientvideowidget.cpp
+  src/videowidget.cpp
   src/gridviewwidgetarranger.cpp
   src/videocollectionwidget.cpp
   src/ts3videoclient.cpp
@@ -40,12 +44,20 @@ set(sources
 )
 
 set(qforms
-  src/clientvideowidget.ui
 )
 
 set(qresources
   res/res.qrc
 )
+
+if(IncludeOpenGLSupport)
+  add_definitions(-DUSE_OPENGL_IMPL)
+  add_definitions(-DINCLUDE_OPENGL_VIDEOWIDGET_SUPPORT)
+  list(APPEND qheaders src/opengl/openglrenderthread.h)
+  list(APPEND qheaders src/opengl/openglwindow.h)
+  list(APPEND sources src/opengl/openglrenderthread.cpp)
+  list(APPEND sources src/opengl/openglwindow.cpp)
+endif()
 
 qt5_wrap_cpp(qheaders_wrap ${qheaders})
 qt5_wrap_ui(qforms_wrap ${qforms})
@@ -54,6 +66,7 @@ source_group(QtWrap FILES ${qheaders_wrap} ${qforms_wrap} ${qresources_wrap})
 
 # Defines
 add_definitions(
+  -DUSE_OPENGL_IMPL
 )
 
 # Includes
@@ -85,11 +98,16 @@ target_link_libraries(
   Qt5::Network
   Qt5::Multimedia
   Qt5::MultimediaWidgets
+  Qt5::OpenGL
   qcorlib
   qts3videocorelib
   medlib
   ${vpx_LIBRARIES}
   humblelogging
 )
+
+if(IncludeOpenGLSupport)
+  target_link_libraries(qts3videoclient opengl32) # TODO This shouldn't be here!
+endif()
 
 humblelogging_POSTBUILD(qts3videoclient)

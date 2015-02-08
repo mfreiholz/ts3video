@@ -37,6 +37,8 @@ TS3VideoClient::TS3VideoClient(QObject *parent) :
   d_ptr(new TS3VideoClientPrivate(this))
 {
   Q_D(TS3VideoClient);
+  qRegisterMetaType<YuvFrameRefPtr>("YuvFrameRefPtr");
+
   d->_connection = new QCorConnection(this);
   connect(d->_connection, &QCorConnection::stateChanged, this, &TS3VideoClient::onStateChanged);
   connect(d->_connection, &QCorConnection::error, this, &TS3VideoClient::error);
@@ -505,8 +507,9 @@ void VideoEncodingThread::enqueueRecovery()
 
 void VideoEncodingThread::run()
 {
-  const int fps = 15;
+  const int fps = 30;
   const int fpsTimeMs = 1000 / fps;
+  const int bitRate = 50;
 
   QHash<int, VP8Encoder*> encoders;
   QTime fpsTimer;
@@ -526,7 +529,7 @@ void VideoEncodingThread::run()
       continue;
     }
 
-    if (fpsTimer.elapsed() < fpsTimeMs) {
+    if (fps > 0 && fpsTimer.elapsed() < fpsTimeMs) {
       continue;
     }
     fpsTimer.restart();
@@ -539,7 +542,7 @@ void VideoEncodingThread::run()
       if (!encoder) {
         HL_DEBUG(HL, QString("Create new VP8 video encoder (id=%1)").arg(item.second).toStdString());
         encoder = new VP8Encoder();
-        if (!encoder->initialize(1280, 720, 100, fps)) { ///< TODO Find a way to pass this parameters from outside (videoBegin(...), sendVideo(...), videoEnd(...)).
+        if (!encoder->initialize(1280, 720, bitRate, fps)) { ///< TODO Find a way to pass this parameters from outside (videoBegin(...), sendVideo(...), videoEnd(...)).
           HL_ERROR(HL, QString("Can not initialize VP8 video encoder").toStdString());
           _stopFlag = 1;
           continue;
@@ -635,10 +638,9 @@ void VideoDecodingThread::run()
         decoder->initialize();
         decoders.insert(item.second, decoder);
       }
-      auto yuv = decoder->decodeFrameRaw(item.first->data);
-      auto image = yuv->toQImage(); ///< TODO This call is VERY instense! We may want to work with YuvFrame's directly.
-      delete yuv;
-      emit decoded(image, item.second);
+      auto yuv = YuvFrameRefPtr(decoder->decodeFrameRaw(item.first->data));
+      //auto image = yuv->toQImage(); ///< TODO This call is VERY instense! We may want to work with YuvFrame's directly.
+      emit decoded(yuv, item.second);
     }
 
     // DEV

@@ -169,7 +169,7 @@ void ClientAppLogic::onClientDisconnected(const ClientEntity &client)
   deleteClientWidget(client);
 }
 
-void ClientAppLogic::onNewVideoFrame(const QImage &image, int senderId)
+void ClientAppLogic::onNewVideoFrame(YuvFrameRefPtr frame, int senderId)
 {
   auto w = _clientWidgets.value(senderId);
   if (!w) {
@@ -179,7 +179,7 @@ void ClientAppLogic::onNewVideoFrame(const QImage &image, int senderId)
     w = createClientWidget(client);
     _clientWidgets.insert(senderId, w);
   }
-  w->videoWidget()->setImage(image);
+  w->videoWidget()->setFrame(frame);
 }
 
 void ClientAppLogic::initGui()

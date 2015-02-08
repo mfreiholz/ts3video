@@ -9,7 +9,7 @@
 #include "humblelogging/api.h"
 
 #include "ts3videoclient.h"
-#include "clientvideowidget.h"
+#include "videowidget.h"
 
 HUMBLE_LOGGER(HL, "client.camera");
 
@@ -23,28 +23,24 @@ ClientCameraVideoWidget::ClientCameraVideoWidget(TS3VideoClient *ts3vc, QWidget 
   auto camera = new QCamera(cameraInfo, this);
   camera->start();
 
-  //auto videoWidget = new QVideoWidget();
-  //videoWidget->setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowTitleHint);
-  //videoWidget->setAspectRatioMode(Qt::KeepAspectRatioByExpanding);
-  //camera->setViewfinder(videoWidget);
-
   auto grabber = new CameraFrameGrabber(this);
-  auto videoWidget = new ClientVideoWidget();
+  auto videoWidget = new ClientVideoWidget(ClientVideoWidget::CPU);
   camera->setViewfinder(grabber);
-
-  QObject::connect(grabber, &CameraFrameGrabber::newQImage, [ts3vc, videoWidget] (const QImage &image) {
-    videoWidget->setImage(image);
-  });
-  QObject::connect(grabber, &CameraFrameGrabber::newQImage, [ts3vc, videoWidget](const QImage &image) {
-    if (ts3vc->isReadyForStreaming()) {
-      ts3vc->sendVideoFrame(image);
-    }
-  });
 
   auto mainLayout = new QBoxLayout(QBoxLayout::TopToBottom);
   mainLayout->setContentsMargins(0, 0, 0, 0);
   mainLayout->addWidget(videoWidget, 1);
   setLayout(mainLayout);
+
+  QObject::connect(grabber, &CameraFrameGrabber::newQImage, [ts3vc, videoWidget] (const QImage &image) {
+    videoWidget->setFrame(image);
+  });
+
+  QObject::connect(grabber, &CameraFrameGrabber::newQImage, [ts3vc, videoWidget](const QImage &image) {
+    if (ts3vc->isReadyForStreaming()) {
+      ts3vc->sendVideoFrame(image);
+    }
+  });
 
   QObject::connect(camera, &QCamera::stateChanged, [this, camera](QCamera::State state) {
     switch (state) {

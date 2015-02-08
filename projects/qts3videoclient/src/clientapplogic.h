@@ -6,6 +6,8 @@
 #include <QHash>
 #include <QHostAddress>
 
+#include "yuvframe.h"
+
 #include "ts3videoclient.h"
 
 class QWidget;
@@ -41,7 +43,7 @@ private slots:
   void onClientJoinedChannel(const ClientEntity &client, const ChannelEntity &channel);
   void onClientLeftChannel(const ClientEntity &client, const ChannelEntity &channel);
   void onClientDisconnected(const ClientEntity &client);
-  void onNewVideoFrame(const QImage &image, int senderId);
+  void onNewVideoFrame(YuvFrameRefPtr frame, int senderId);
 
 protected:
   void initGui();
