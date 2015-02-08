@@ -52,7 +52,8 @@ set(qresources
 
 if(IncludeOpenGLSupport)
   add_definitions(-DUSE_OPENGL_IMPL)
-  add_definitions(-DINCLUDE_OPENGL_VIDEOWIDGET_SUPPORT)
+  #add_definitions(-DINCLUDE_OPENGL_VIDEOWIDGET_SUPPORT)
+  add_definitions(-DINCLUDE_OPENGL_VIDEOWIDGET2_SUPPORT)
   list(APPEND qheaders src/opengl/openglrenderthread.h)
   list(APPEND qheaders src/opengl/openglwindow.h)
   list(APPEND sources src/opengl/openglrenderthread.cpp)

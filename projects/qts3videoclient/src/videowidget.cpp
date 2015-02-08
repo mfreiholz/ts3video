@@ -29,7 +29,6 @@ ClientVideoWidget::ClientVideoWidget(Type type, QWidget *parent) :
       break;
 #elif INCLUDE_OPENGL_VIDEOWIDGET2_SUPPORT
       d->yuvWindow = new YuvVideoWindowSub(nullptr);
-      //d->yuvWindow->show();
       d->frameWidget = QWidget::createWindowContainer(d->yuvWindow, this);
       break;
 #endif
