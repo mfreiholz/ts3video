@@ -11,6 +11,8 @@
 #ifdef INCLUDE_OPENGL_VIDEOWIDGET_SUPPORT
 #include "opengl/openglrenderthread.h"
 #include "opengl/openglwindow.h"
+#elif INCLUDE_OPENGL_VIDEOWIDGET2_SUPPORT
+#include "opengl2/yuvvideowindow.h"
 #endif
 
 class VideoFrame_CpuImpl;
@@ -31,6 +33,8 @@ public:
   VideoFrame_CpuImpl *cpuImageImpl;
 #ifdef INCLUDE_OPENGL_VIDEOWIDGET_SUPPORT
   OpenGLWindow *oglWindow;
+#elif INCLUDE_OPENGL_VIDEOWIDGET2_SUPPORT
+  YuvVideoWindowSub *yuvWindow;
 #endif
 };
 

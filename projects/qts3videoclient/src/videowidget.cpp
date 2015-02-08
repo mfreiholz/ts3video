@@ -15,6 +15,8 @@ ClientVideoWidget::ClientVideoWidget(Type type, QWidget *parent) :
   d->cpuImageImpl = nullptr;
 #ifdef INCLUDE_OPENGL_VIDEOWIDGET_SUPPORT
   d->oglWindow = nullptr;
+#elif INCLUDE_OPENGL_VIDEOWIDGET2_SUPPORT
+  d->yuvWindow = nullptr;
 #endif
 
   switch (d->type) {
@@ -24,6 +26,11 @@ ClientVideoWidget::ClientVideoWidget(Type type, QWidget *parent) :
       d->oglWindow->setRenderMode(OpenGLWindow::RM_CROPPED);
       d->oglWindow->setBackgroundColor(QColor(Qt::black));
       d->frameWidget = d->oglWindow->widget();
+      break;
+#elif INCLUDE_OPENGL_VIDEOWIDGET2_SUPPORT
+      d->yuvWindow = new YuvVideoWindowSub(nullptr);
+      //d->yuvWindow->show();
+      d->frameWidget = QWidget::createWindowContainer(d->yuvWindow, this);
       break;
 #endif
     case CPU:
@@ -45,6 +52,8 @@ ClientVideoWidget::~ClientVideoWidget()
 {
 #if INCLUDE_OPENGL_VIDEOWIDGET_SUPPORT
   delete d->oglWindow;
+#elif INCLUDE_OPENGL_VIDEOWIDGET2_SUPPORT
+  delete d->yuvWindow;
 #endif
 }
 
@@ -53,7 +62,10 @@ void ClientVideoWidget::setFrame(YuvFrameRefPtr frame)
   switch (d->type) {
     case OpenGL:
 #ifdef INCLUDE_OPENGL_VIDEOWIDGET_SUPPORT
-      d->oglWindow->setData(frame);
+      if (d->oglWindow) d->oglWindow->setData(frame);
+      break;
+#elif INCLUDE_OPENGL_VIDEOWIDGET2_SUPPORT
+      if (d->yuvWindow) d->yuvWindow->setFrame(frame);
       break;
 #endif
     case CPU:
@@ -70,7 +82,10 @@ void ClientVideoWidget::setFrame(const QImage &frame)
   switch (d->type) {
     case OpenGL:
 #ifdef INCLUDE_OPENGL_VIDEOWIDGET_SUPPORT
-      d->oglWindow->setData(YuvFrameRefPtr(YuvFrame::fromQImage(frame)));
+      if (d->oglWindow) d->oglWindow->setData(YuvFrameRefPtr(YuvFrame::fromQImage(frame)));
+      break;
+#elif INCLUDE_OPENGL_VIDEOWIDGET2_SUPPORT
+      if (d->yuvWindow) d->yuvWindow->setFrame(YuvFrameRefPtr(YuvFrame::fromQImage(frame)));
       break;
 #endif
     case CPU:

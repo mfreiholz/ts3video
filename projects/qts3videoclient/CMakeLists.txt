@@ -57,6 +57,9 @@ if(IncludeOpenGLSupport)
   list(APPEND qheaders src/opengl/openglwindow.h)
   list(APPEND sources src/opengl/openglrenderthread.cpp)
   list(APPEND sources src/opengl/openglwindow.cpp)
+
+  list(APPEND qheaders src/opengl2/yuvvideowindow.h)
+  list(APPEND sources src/opengl2/yuvvideowindow.cpp)
 endif()
 
 qt5_wrap_cpp(qheaders_wrap ${qheaders})
