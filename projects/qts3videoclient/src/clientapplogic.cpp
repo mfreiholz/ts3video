@@ -173,11 +173,8 @@ void ClientAppLogic::onNewVideoFrame(YuvFrameRefPtr frame, int senderId)
 {
   auto w = _clientWidgets.value(senderId);
   if (!w) {
-    ClientEntity client;
-    client.id = senderId;
-    client.name = "UNKNOWN!";
-    w = createClientWidget(client);
-    _clientWidgets.insert(senderId, w);
+    HL_WARN(HL, QString("Received video frame for unknown client (client-id=%1)").arg(senderId).toStdString());
+    return;
   }
   w->videoWidget()->setFrame(frame);
 }

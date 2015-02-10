@@ -106,9 +106,10 @@ int runTestClient(QApplication &a)
 
   QList<TS3VideoClient*> ts3vconns;
   auto maxConns = ELWS::getArgsValue("--max", 6).toUInt();
+  auto serverAddress = ELWS::getArgsValue("--server-address", "127.0.0.1").toString();
+  auto serverPort = ELWS::getArgsValue("--server-port", "6000").toUInt();
 
-  QObject::connect(timer, &QTimer::timeout, [timer, &maxConns, &ts3vconns] () {
-    
+  QObject::connect(timer, &QTimer::timeout, [timer, &maxConns, &ts3vconns, serverAddress, serverPort] () {
     // Stop creating new connections.
     if (maxConns != -1 && ts3vconns.size() >= maxConns) {
       timer->stop();
@@ -117,9 +118,8 @@ int runTestClient(QApplication &a)
 
     // Create a new connecion to the TS3VideoServer.
     auto ts3vc = new TS3VideoClient(nullptr);
-    ts3vc->connectToHost(QHostAddress("127.0.0.1"), 6000);
+    ts3vc->connectToHost(QHostAddress(serverAddress), serverPort);
     ts3vconns.append(ts3vc);
-
     QObject::connect(ts3vc, &TS3VideoClient::connected, [ts3vc]() {
       // Auth.
       auto reply = ts3vc->auth("TestName");
@@ -197,10 +197,6 @@ int runClientAppLogic(QApplication &a)
   a.setOrganizationName("insaneFactory");
   a.setOrganizationDomain("http://www.insanefactory.com/ts3video");
 
-  // Setup logging.
-  auto& fac = humble::logging::Factory::getInstance();
-  fac.registerAppender(new humble::logging::ConsoleAppender());
-
   // Prepare startup options.
   ClientAppLogic::Options opts;
   opts.serverAddress = ELWS::getArgsValue("--server-address", "127.0.0.1").toString();
@@ -229,6 +225,10 @@ int runClientAppLogic(QApplication &a)
 int main(int argc, char *argv[])
 {
   QApplication a(argc, argv);
+
+  auto& fac = humble::logging::Factory::getInstance();
+  fac.registerAppender(new humble::logging::ConsoleAppender());
+
   const auto mode = ELWS::getArgsValue("--mode").toString();
   if (mode == QString("test-multi-client")) {
     return runTestClient(a);
