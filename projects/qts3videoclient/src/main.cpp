@@ -99,18 +99,27 @@ int runGuiTest(QApplication &a)
 int runTestClient(QApplication &a)
 {
   a.setQuitOnLastWindowClosed(false);
-
-  QList<TS3VideoClient*> ts3vconns;
   
   auto timer = new QTimer(nullptr);
   timer->setInterval(2000);
   timer->start();
 
-  QObject::connect(timer, &QTimer::timeout, [&ts3vconns] () {
+  QList<TS3VideoClient*> ts3vconns;
+  auto maxConns = ELWS::getArgsValue("--max", 6).toUInt();
+
+  QObject::connect(timer, &QTimer::timeout, [timer, &maxConns, &ts3vconns] () {
+    
+    // Stop creating new connections.
+    if (maxConns != -1 && ts3vconns.size() >= maxConns) {
+      timer->stop();
+      return;
+    }
 
     // Create a new connecion to the TS3VideoServer.
     auto ts3vc = new TS3VideoClient(nullptr);
     ts3vc->connectToHost(QHostAddress("127.0.0.1"), 6000);
+    ts3vconns.append(ts3vc);
+
     QObject::connect(ts3vc, &TS3VideoClient::connected, [ts3vc]() {
       // Auth.
       auto reply = ts3vc->auth("TestName");
