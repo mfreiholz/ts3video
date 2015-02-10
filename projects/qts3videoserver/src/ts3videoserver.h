@@ -29,6 +29,9 @@ public:
 
 private:
   void updateMediaRecipients();
+  ChannelEntity* addClientToChannel(int clientId, int channelId);
+  void removeClientFromChannel(int clientId, int channelId);
+  void removeClientFromChannels(int clientId);
 
 private:
   // Listens for new client connections.

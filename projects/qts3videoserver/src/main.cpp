@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
   auto& hlFactory = humble::logging::Factory::getInstance();
   hlFactory.registerAppender(new humble::logging::ConsoleAppender());
   hlFactory.registerAppender(new humble::logging::FileAppender(std::string("ts3videoserver.log"), false));
-  hlFactory.changeGlobalLogLevel(humble::logging::LogLevel::Info);
+  hlFactory.changeGlobalLogLevel(humble::logging::LogLevel::Trace);
   
   HL_INFO(HL, QString("Server startup (version=%1)").arg(a.applicationVersion()).toStdString());
 

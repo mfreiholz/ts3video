@@ -113,3 +113,43 @@ void TS3VideoServer::updateMediaRecipients()
   }
   _mediaSocketHandler->setRecipients(recips);
 }
+
+ChannelEntity* TS3VideoServer::addClientToChannel(int clientId, int channelId)
+{
+  // Search for existing channel or create it, if it doesn't exists.
+  auto channelEntity = _channels.value(channelId);
+  if (!channelEntity) {
+    channelEntity = new ChannelEntity();
+    channelEntity->id = channelId;
+    _channels.insert(channelEntity->id, channelEntity);
+  }
+  // Join channel.
+  _participants[channelEntity->id].insert(clientId);
+  return channelEntity;
+}
+
+void TS3VideoServer::removeClientFromChannel(int clientId, int channelId)
+{
+  // Remove from channel.
+  _participants[channelId].remove(clientId);
+  // Delete channel and free some resources, if there are no more participants.
+  if (_participants[channelId].isEmpty()) {
+    _participants.remove(channelId);
+    delete _channels.take(channelId);
+  }
+}
+
+void TS3VideoServer::removeClientFromChannels(int clientId)
+{
+  // Find all channels of the client.
+  QList<int> channelIds;
+  foreach (auto channelId, _participants.keys()) {
+    if (_participants[channelId].contains(clientId)) {
+      channelIds.append(channelId);
+    }
+  }
+  // Remove from all channels.
+  foreach (auto channelId, channelIds) {
+    removeClientFromChannel(clientId, channelId);
+  }
+}

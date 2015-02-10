@@ -27,7 +27,7 @@ ClientConnectionHandler::ClientConnectionHandler(TS3VideoServer *server, QCorCon
   _server(server),
   _connection(connection),
   _authenticated(false),
-  _clientEntity(new ClientEntity())
+  _clientEntity(nullptr)
 {
   _clientEntity = new ClientEntity();
   _clientEntity->id = ++_server->_nextClientId;
@@ -42,6 +42,7 @@ ClientConnectionHandler::ClientConnectionHandler(TS3VideoServer *server, QCorCon
 
 ClientConnectionHandler::~ClientConnectionHandler()
 {
+  _server->removeClientFromChannels(_clientEntity->id);
   _server->_clients.remove(_clientEntity->id);
   _server->_connections.remove(_clientEntity->id);
   delete _clientEntity;
@@ -162,15 +163,8 @@ void ClientConnectionHandler::onNewIncomingRequest(QCorFrameRefPtr frame)
       _connection->sendResponse(res);
       return;
     }
-    // Create channel.
-    auto channelEntity = _server->_channels.value(channelId);
-    if (!channelEntity) {
-      channelEntity = new ChannelEntity();
-      channelEntity->id = channelId; //++_server->_nextChannelId;
-      _server->_channels.insert(channelEntity->id, channelEntity);
-    }
     // Join channel.
-    _server->_participants[channelEntity->id].insert(_clientEntity->id);
+    auto channelEntity = _server->addClientToChannel(_clientEntity->id, channelId);
     // Send response.
     auto participants = _server->_participants[channelEntity->id];
     QJsonObject params;
@@ -214,8 +208,6 @@ void ClientConnectionHandler::onNewIncomingRequest(QCorFrameRefPtr frame)
       _connection->sendResponse(res);
       return;
     }
-    // Leave channel.
-    _server->_participants[channelEntity->id].remove(_clientEntity->id);
     // Send response.
     QCorFrame res;
     res.initResponse(*frame.data());
@@ -235,12 +227,8 @@ void ClientConnectionHandler::onNewIncomingRequest(QCorFrameRefPtr frame)
         connect(reply, &QCorReply::finished, reply, &QCorReply::deleteLater);
       }
     }
-    // Delete channel.
-    if (_server->_participants[channelEntity->id].isEmpty()) {
-      _server->_participants.remove(channelEntity->id);
-      _server->_channels.remove(channelEntity->id);
-      delete channelEntity;
-    }
+    // Leave channel.
+    _server->removeClientFromChannel(_clientEntity->id, channelId);
     return;
   }
 
