@@ -125,6 +125,7 @@ ChannelEntity* TS3VideoServer::addClientToChannel(int clientId, int channelId)
   }
   // Join channel.
   _participants[channelEntity->id].insert(clientId);
+  _client2channels[clientId].insert(channelEntity->id);
   return channelEntity;
 }
 
@@ -132,10 +133,14 @@ void TS3VideoServer::removeClientFromChannel(int clientId, int channelId)
 {
   // Remove from channel.
   _participants[channelId].remove(clientId);
+  _client2channels[clientId].remove(channelId);
   // Delete channel and free some resources, if there are no more participants.
   if (_participants[channelId].isEmpty()) {
     _participants.remove(channelId);
     delete _channels.take(channelId);
+  }
+  if (_client2channels[clientId].isEmpty()) {
+    _client2channels.remove(clientId);
   }
 }
 
@@ -143,13 +148,23 @@ void TS3VideoServer::removeClientFromChannels(int clientId)
 {
   // Find all channels of the client.
   QList<int> channelIds;
-  foreach (auto channelId, _participants.keys()) {
-    if (_participants[channelId].contains(clientId)) {
-      channelIds.append(channelId);
-    }
+  if (_client2channels.contains(clientId)) {
+    channelIds = _client2channels[clientId].toList();
   }
   // Remove from all channels.
   foreach (auto channelId, channelIds) {
     removeClientFromChannel(clientId, channelId);
   }
+}
+
+QList<int> TS3VideoServer::getSiblingClientIds(int clientId) const
+{
+  QSet<int> clientIds;
+  // From channels (participants).
+  foreach (auto channelId, _client2channels.value(clientId).toList()) {
+    foreach (auto participantId, _participants.value(channelId)) {
+      clientIds.insert(participantId);
+    }
+  }
+  return clientIds.toList();
 }

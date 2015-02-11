@@ -32,6 +32,7 @@ private:
   ChannelEntity* addClientToChannel(int clientId, int channelId);
   void removeClientFromChannel(int clientId, int channelId);
   void removeClientFromChannels(int clientId);
+  QList<int> getSiblingClientIds(int clientId) const;
 
 private:
   // Listens for new client connections.
@@ -46,6 +47,7 @@ private:
   int _nextChannelId;
   QHash<int, ChannelEntity*> _channels; ///< Maps channel-ids to their info object.
   QHash<int, QSet<int> > _participants; ///< Maps channel-ids to client-ids.
+  QHash<int, QSet<int> > _client2channels; ///< Maps client-ids to channel-ids.
 
   // Media streaming attributes.
   MediaSocketHandler *_mediaSocketHandler;
