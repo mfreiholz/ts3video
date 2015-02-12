@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>TS3VideoServer - Status</title>
+    <script type="text/javascript">
+    (function () {
+      "use strict";
+
+      function updateUI(data) {
+        var html = "";
+        for (var i = 0; i < data.clients.length; ++i) {
+          html+= '<option>' + data.clients[i].id + ' - ' + data.clients[i].name + '</option>';
+        }
+        document.getElementById("clients").innerHTML = html;
+        
+        html = "";
+        for (var i = 0; i < data.channels.length; ++i) {
+          html+= '<option>' + data.channels[i].id + ' - ' + data.channels[i].name + '</option>';
+        }
+        document.getElementById("channels").innerHTML = html;
+      }
+      
+      var ws = new WebSocket("ws://127.0.0.1:6002");
+      ws.onopen = function (ev) {
+        setInterval(function () {
+          var req = { action: "status" };
+          ws.send(JSON.stringify(req));
+        }, 1500);
+      };
+      ws.onclose = function (ev) {};
+      ws.onerror = function (ev) {};
+      ws.onmessage = function (ev) {
+        updateUI(JSON.parse(ev.data));
+      };
+    }());
+    </script>
+  </head>
+  <body>
+  
+  <h1>Connected Clients</h1>
+  <select id="clients" name="clients" size="10" multiple>
+  </select>
+  
+  <h1></h1>
+  <select id="channels" name="channels" size="10" multiple>
+  </select>
+  
+  
+  
+  </body>
+</html>
