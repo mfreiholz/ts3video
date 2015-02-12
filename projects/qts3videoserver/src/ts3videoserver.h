@@ -12,6 +12,7 @@
 #include "qcorserver.h"
 
 #include "mediasockethandler.h"
+#include "websocketstatusserver.h"
 
 class ClientConnectionHandler;
 class ClientEntity;
@@ -21,6 +22,7 @@ class TS3VideoServer : public QObject
 {
   Q_OBJECT
   friend class ClientConnectionHandler;
+  friend class WebSocketStatusServer;
 
 public:
   TS3VideoServer(QObject *parent);
@@ -52,6 +54,9 @@ private:
   // Media streaming attributes.
   MediaSocketHandler *_mediaSocketHandler;
   QHash<QString, int> _tokens; ///< Maps auth-tokens to client-ids.
+
+  // Web-socket status server.
+  WebSocketStatusServer _wsStatusServer;
 };
 
 #endif

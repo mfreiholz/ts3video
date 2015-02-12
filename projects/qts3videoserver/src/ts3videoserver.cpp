@@ -23,7 +23,8 @@ TS3VideoServer::TS3VideoServer(QObject *parent) :
   _channels(),
   _participants(),
   _mediaSocketHandler(nullptr),
-  _tokens()
+  _tokens(),
+  _wsStatusServer(this)
 {
 
 }
@@ -77,6 +78,12 @@ bool TS3VideoServer::init()
     }
     this->updateMediaRecipients();
   });
+
+  // Init status web-socket.
+  if (!_wsStatusServer.init()) {
+    return false;
+  }
+
   return true;
 }
 
