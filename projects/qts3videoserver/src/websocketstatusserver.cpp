@@ -71,7 +71,7 @@ void WebSocketStatusServer::onTextMessage(const QString &message)
   }
   root.insert("channels", channels);
 
-  socket->sendTextMessage(QJsonDocument(root).toJson());
+  socket->sendTextMessage(QJsonDocument(root).toJson(QJsonDocument::Compact));
 }
 
 void WebSocketStatusServer::onDisconnected()
