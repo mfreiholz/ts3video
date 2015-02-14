@@ -14,6 +14,7 @@ ImageFormat imageFormat( QImage::Format format )
 	case QImage::Format_RGB888:
 		return ImageFormat::RGB24;
 	}
+  return (ImageFormat) -1;
 }
 
 /*

@@ -1,7 +1,9 @@
 cmake_minimum_required(VERSION 2.8)
 project(source)
 
-set(CMAKE_CXX_FLAGS "-std=c++11")
+if(CMAKE_COMPILER_IS_GNUCC)
+  set(CMAKE_CXX_FLAGS "-std=c++11")
+endif(CMAKE_COMPILER_IS_GNUCC)
 
 # Third party (HumbleLogging)
 add_subdirectory(thirdparty/humblelogging)

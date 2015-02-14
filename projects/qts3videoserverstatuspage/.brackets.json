@@ -1,0 +1,18 @@
+{
+  "jslint.options": {
+    "browser": true,
+    "nomen": true,
+    "vars": true,
+    "indent": 2,
+    "plusplus": true,
+    "bitwise": true,
+    "regexp": true,
+    "predef": ["brite", "$", "jQuery", "psol", "WebSocket"]
+  },
+  "language": {
+    "javascript": {
+      "linting.prefer": ["JSLint"],
+      "linting.usePreferredOnly": true
+    }
+  }
+}

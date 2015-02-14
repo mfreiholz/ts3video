@@ -33,7 +33,7 @@ set(qforms
 )
 
 set(qresources
-  res/res.qrc
+  #res/res.qrc
 )
 
 qt5_wrap_cpp(qheaders_wrap ${qheaders})
