@@ -147,8 +147,40 @@ void VideoFrame_CpuImpl::paintEvent(QPaintEvent *)
 
   // Paint frame.
   if (!_frameImage.isNull()) {
-    auto scaledImage = _frameImage.scaled(rect().size(), Qt::KeepAspectRatioByExpanding, Qt::FastTransformation);
-    p.drawImage(scaledImage.rect(), scaledImage);
+    
+    // Scale and center image.
+    // TODO Only do calculation once with every resize, instead of calculating it for every image.
+    if (true) {
+      auto surfaceRect = rect();
+      auto surfaceRatio = (float)surfaceRect.width() / (float)surfaceRect.height();
+
+      auto imageRect = _frameImage.rect();
+      auto imageRatio = (float)imageRect.width() / (float)imageRect.height();
+      auto scaleFactor = 1.0F;
+
+      auto x = 0, y = 0;
+
+      if (surfaceRatio < imageRatio) {
+        scaleFactor = (float)surfaceRect.height() / (float)imageRect.height();
+        imageRect.setWidth((float)imageRect.width() * scaleFactor);
+        imageRect.setHeight((float)imageRect.height() * scaleFactor);
+        x = ((float)imageRect.width() - (float)surfaceRect.width()) / 2;
+      } else {
+        scaleFactor = (float)surfaceRect.width() / (float)imageRect.width();
+        imageRect.setWidth((float)imageRect.width() * scaleFactor);
+        imageRect.setHeight((float)imageRect.height() * scaleFactor);
+        y = ((float)imageRect.height() - (float)surfaceRect.height()) / 2;
+      }
+
+      auto scaledImage = _frameImage.scaled(imageRect.size());
+      auto offset = QPoint(-x, -y);
+      p.drawImage(offset, scaledImage, scaledImage.rect());
+    }
+    // Basic scale.
+    else {
+      //auto scaledImage = _frameImage.scaled(rect().size(), Qt::KeepAspectRatioByExpanding, Qt::FastTransformation);
+      p.drawImage(rect(), _frameImage);
+    }
   }
 
   // Bottom area.
