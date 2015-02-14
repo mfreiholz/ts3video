@@ -31,6 +31,8 @@ class TS3VideoClientPrivate {
   QCorConnection *_connection;
   MediaSocket *_mediaSocket;
   ClientEntity _clientEntity;
+
+  bool useMediaSocket; ///< TODO Remove me (DEV ONLY)
 };
 
 /*!

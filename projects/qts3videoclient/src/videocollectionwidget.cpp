@@ -3,35 +3,57 @@
 #include <limits.h>
 
 #include <QSettings>
-
-#include <QGridLayout>
-#include <QBoxLayout>
+#include <QFrame>
 #include <QSpinBox>
 #include <QLabel>
+#include <QScrollArea>
+#include <QGridLayout>
+#include <QBoxLayout>
 #include <QGraphicsDropShadowEffect>
 
 VideoCollectionWidget::VideoCollectionWidget(QWidget *parent) :
   QWidget(parent),
   _columnCount(1)
 {
-  auto columnCountSpinBox = new QSpinBox(this);
+  // Top frame.
+  auto topFrame = new QFrame(this);
+
+  auto topFrameLayout = new QBoxLayout(QBoxLayout::LeftToRight);
+  topFrameLayout->setContentsMargins(3, 3, 3, 3);
+  topFrameLayout->setSpacing(3);
+  topFrame->setLayout(topFrameLayout);
+
+  auto columnCountSpinBox = new QSpinBox(topFrame);
   columnCountSpinBox->setMinimum(1);
   columnCountSpinBox->setMaximum(std::numeric_limits<int>::max());
   _columnCountSpinBox = columnCountSpinBox;
 
-  auto topLayout = new QBoxLayout(QBoxLayout::LeftToRight);
-  topLayout->addStretch(1);
-  topLayout->addWidget(new QLabel(tr("Columns:")));
-  topLayout->addWidget(columnCountSpinBox);
+  topFrameLayout->addStretch(1);
+  topFrameLayout->addWidget(new QLabel(tr("Columns:")));
+  topFrameLayout->addWidget(columnCountSpinBox);
 
-  auto gridLayout = new QGridLayout();
-  gridLayout->setContentsMargins(0, 0, 0, 0);
-  gridLayout->setSpacing(9);
-  _gridLayout = gridLayout;
+  // Content area.
+  auto contentAreaWidget = new QWidget();
 
+  auto contentAreaWidgetLayout = new QGridLayout();
+  contentAreaWidgetLayout->setContentsMargins(0, 0, 0, 0);
+  contentAreaWidgetLayout->setSpacing(0);
+  contentAreaWidget->setLayout(contentAreaWidgetLayout);
+
+  auto contentScrollArea = new QScrollArea(this);
+  contentScrollArea->setBackgroundRole(QPalette::Dark);
+  contentScrollArea->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+  contentScrollArea->setWidget(contentAreaWidget);
+  contentScrollArea->setWidgetResizable(true);
+
+  _gridLayout = contentAreaWidgetLayout;
+
+  // Layout elements.
   _mainLayout = new QBoxLayout(QBoxLayout::TopToBottom);
-  _mainLayout->addLayout(topLayout, 0);
-  _mainLayout->addLayout(gridLayout, 1);
+  _mainLayout->setContentsMargins(0, 0, 0, 0);
+  _mainLayout->setSpacing(0);
+  _mainLayout->addWidget(topFrame, 0, Qt::AlignTop);
+  _mainLayout->addWidget(contentScrollArea, 1);
   setLayout(_mainLayout);
 
   QObject::connect(columnCountSpinBox, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), [this, columnCountSpinBox] (int value) {
@@ -59,6 +81,7 @@ void VideoCollectionWidget::removeWidget(QWidget *widget)
 {
   _widgets.removeAll(widget);
   widget->setVisible(false);
+  widget->setParent(nullptr);
   doGridLayout();
 }
 
@@ -122,5 +145,5 @@ void VideoCollectionWidget::prepareWidget(QWidget *widget)
   //  dse->setBlurRadius(5);
   //  widget->setGraphicsEffect(dse);
   //}
-  //widget->setMinimumSize(480, 270);
+  widget->setMinimumSize(256, 192);
 }

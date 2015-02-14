@@ -27,6 +27,8 @@ public:
   TS3VideoClient(const TS3VideoClient &other);
   ~TS3VideoClient();
 
+  void setMediaEnabled(bool yesno); ///< TODO Remove me... DEV only.
+
   const QAbstractSocket* socket() const;
   const ClientEntity& clientEntity() const;
   bool isReadyForStreaming() const;
@@ -68,7 +70,6 @@ signals:
   void clientJoinedChannel(const ClientEntity &client, const ChannelEntity &channel);
   void clientLeftChannel(const ClientEntity &client, const ChannelEntity &channel);
   void clientDisconnected(const ClientEntity &client);
-  //void newVideoFrame(const QImage &image, int senderId);
   void newVideoFrame(YuvFrameRefPtr frame, int senderId);
 
 private slots:

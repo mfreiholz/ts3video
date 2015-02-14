@@ -52,6 +52,12 @@ TS3VideoClient::~TS3VideoClient()
   delete d->_mediaSocket;
 }
 
+void TS3VideoClient::setMediaEnabled(bool yesno)
+{
+  Q_D(TS3VideoClient);
+  d->useMediaSocket = yesno;
+}
+
 const QAbstractSocket* TS3VideoClient::socket() const
 {
   Q_D(const TS3VideoClient);
@@ -111,13 +117,15 @@ QCorReply* TS3VideoClient::auth(const QString &name)
     // Get self client info from response.
     d->_clientEntity.fromQJsonObject(client);
     // Create new media socket.
-    if (d->_mediaSocket) {
-      d->_mediaSocket->close();
-      delete d->_mediaSocket;
+    if (d->useMediaSocket) {
+      if (d->_mediaSocket) {
+        d->_mediaSocket->close();
+        delete d->_mediaSocket;
+      }
+      d->_mediaSocket = new MediaSocket(authtoken, d->q_ptr);
+      d->_mediaSocket->connectToHost(d->_connection->socket()->peerAddress(), d->_connection->socket()->peerPort());
+      QObject::connect(d->_mediaSocket, &MediaSocket::newVideoFrame, d->q_ptr, &TS3VideoClient::newVideoFrame);
     }
-    d->_mediaSocket = new MediaSocket(authtoken, d->q_ptr);
-    d->_mediaSocket->connectToHost(d->_connection->socket()->peerAddress(), d->_connection->socket()->peerPort());
-    QObject::connect(d->_mediaSocket, &MediaSocket::newVideoFrame, d->q_ptr, &TS3VideoClient::newVideoFrame);
   });
 
   return reply;
@@ -208,7 +216,8 @@ TS3VideoClientPrivate::TS3VideoClientPrivate(TS3VideoClient *owner) :
   q_ptr(owner),
   _connection(nullptr),
   _mediaSocket(nullptr),
-  _clientEntity()
+  _clientEntity(),
+  useMediaSocket(true)
 {
 }
 

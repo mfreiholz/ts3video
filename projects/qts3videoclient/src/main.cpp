@@ -118,11 +118,12 @@ int runTestClient(QApplication &a)
 
     // Create a new connecion to the TS3VideoServer.
     auto ts3vc = new TS3VideoClient(nullptr);
+    ts3vc->setMediaEnabled(false);
     ts3vc->connectToHost(QHostAddress(serverAddress), serverPort);
     ts3vconns.append(ts3vc);
-    QObject::connect(ts3vc, &TS3VideoClient::connected, [ts3vc]() {
+    QObject::connect(ts3vc, &TS3VideoClient::connected, [ts3vc, &ts3vconns]() {
       // Auth.
-      auto reply = ts3vc->auth("TestName");
+      auto reply = ts3vc->auth(QString("Test Client #%1").arg(ts3vconns.size()));
       QObject::connect(reply, &QCorReply::finished, [ts3vc, reply]() {
         reply->deleteLater();
         HL_DEBUG(HL, QString(reply->frame()->data()).toStdString());
