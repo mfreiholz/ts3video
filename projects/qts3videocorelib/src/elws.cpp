@@ -65,3 +65,26 @@ bool ELWS::unregisterURISchemeHandler(const QString &scheme)
 #endif
   return true;
 }
+
+void ELWS::calcScaledAndCenterizedImageRect(const QRect &surfaceRect, QRect &imageRect, QPoint &offset)
+{
+  auto surfaceRatio = (float)surfaceRect.width() / (float)surfaceRect.height();
+  auto imageRatio = (float)imageRect.width() / (float)imageRect.height();
+  
+  auto scaleFactor = 1.0F;
+  auto x = 0, y = 0;
+
+  if (surfaceRatio < imageRatio) {
+    scaleFactor = (float)surfaceRect.height() / (float)imageRect.height();
+    imageRect.setWidth((float)imageRect.width() * scaleFactor);
+    imageRect.setHeight((float)imageRect.height() * scaleFactor);
+    x = ((float)imageRect.width() - (float)surfaceRect.width()) / 2;
+  } else {
+    scaleFactor = (float)surfaceRect.width() / (float)imageRect.width();
+    imageRect.setWidth((float)imageRect.width() * scaleFactor);
+    imageRect.setHeight((float)imageRect.height() * scaleFactor);
+    y = ((float)imageRect.height() - (float)surfaceRect.height()) / 2;
+  }
+  offset.setX(-x);
+  offset.setY(-y);
+}

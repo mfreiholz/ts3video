@@ -3,6 +3,8 @@
 
 #include <QString>
 #include <QVariant>
+#include <QRect>
+#include <QPoint>
 
 class ELWS
 {
@@ -12,6 +14,8 @@ public:
 
   static bool registerURISchemeHandler(const QString &scheme, const QString &title, const QString &modulePath, const QString &moduleArgs);
   static bool unregisterURISchemeHandler(const QString &scheme);
+
+  static void calcScaledAndCenterizedImageRect(const QRect &surfaceRect, QRect &imageRect, QPoint &offset);
 };
 
 #endif

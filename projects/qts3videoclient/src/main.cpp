@@ -108,7 +108,7 @@ int runTestClient(QApplication &a)
   timer->start();
 
   QList<TS3VideoClient*> ts3vconns;
-  auto maxConns = ELWS::getArgsValue("--max", 6).toUInt();
+  auto maxConns = ELWS::getArgsValue("--max", 6).toInt();
   auto serverAddress = ELWS::getArgsValue("--server-address", DEFAULT_SERVER_ADDRESS).toString();
   auto serverPort = ELWS::getArgsValue("--server-port", DEFAULT_SERVER_PORT).toUInt();
 

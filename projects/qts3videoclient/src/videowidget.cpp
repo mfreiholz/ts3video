@@ -4,6 +4,8 @@
 #include <QPaintEvent>
 #include <QBoxLayout>
 
+#include "elws.h"
+
 ///////////////////////////////////////////////////////////////////////
 
 ClientVideoWidget::ClientVideoWidget(Type type, QWidget *parent) :
@@ -149,32 +151,13 @@ void VideoFrame_CpuImpl::paintEvent(QPaintEvent *)
   if (!_frameImage.isNull()) {
     
     // Scale and center image.
-    // TODO Only do calculation once with every resize, instead of calculating it for every image.
+    // TODO Optimize: Only do calculation once with every resize, instead of calculating it for every image.
     if (true) {
-      auto surfaceRect = rect();
-      auto surfaceRatio = (float)surfaceRect.width() / (float)surfaceRect.height();
-
       auto imageRect = _frameImage.rect();
-      auto imageRatio = (float)imageRect.width() / (float)imageRect.height();
-      auto scaleFactor = 1.0F;
-
-      auto x = 0, y = 0;
-
-      if (surfaceRatio < imageRatio) {
-        scaleFactor = (float)surfaceRect.height() / (float)imageRect.height();
-        imageRect.setWidth((float)imageRect.width() * scaleFactor);
-        imageRect.setHeight((float)imageRect.height() * scaleFactor);
-        x = ((float)imageRect.width() - (float)surfaceRect.width()) / 2;
-      } else {
-        scaleFactor = (float)surfaceRect.width() / (float)imageRect.width();
-        imageRect.setWidth((float)imageRect.width() * scaleFactor);
-        imageRect.setHeight((float)imageRect.height() * scaleFactor);
-        y = ((float)imageRect.height() - (float)surfaceRect.height()) / 2;
-      }
-
+      auto offset = QPoint(0, 0);
+      ELWS::calcScaledAndCenterizedImageRect(rect(), imageRect, offset);
       auto scaledImage = _frameImage.scaled(imageRect.size());
-      //p.drawImage(QPoint(-x, -y), scaledImage, scaledImage.rect());
-      p.drawImage(QPoint(0, 0), scaledImage, scaledImage.rect().adjusted(x, y, x, y));
+      p.drawImage(offset, scaledImage, scaledImage.rect());
     }
     // Basic scale.
     else {
@@ -213,3 +196,32 @@ void VideoFrame_CpuImpl::paintEvent(QPaintEvent *)
   //p.setPen(Qt::darkGray);
   //p.drawRect(borderRect);
 }
+
+/*
+
+auto surfaceRect = rect();
+auto surfaceRatio = (float)surfaceRect.width() / (float)surfaceRect.height();
+
+auto imageRect = _frameImage.rect();
+auto imageRatio = (float)imageRect.width() / (float)imageRect.height();
+auto scaleFactor = 1.0F;
+
+auto x = 0, y = 0;
+
+if (surfaceRatio < imageRatio) {
+  scaleFactor = (float)surfaceRect.height() / (float)imageRect.height();
+  imageRect.setWidth((float)imageRect.width() * scaleFactor);
+  imageRect.setHeight((float)imageRect.height() * scaleFactor);
+  x = ((float)imageRect.width() - (float)surfaceRect.width()) / 2;
+} else {
+  scaleFactor = (float)surfaceRect.width() / (float)imageRect.width();
+  imageRect.setWidth((float)imageRect.width() * scaleFactor);
+  imageRect.setHeight((float)imageRect.height() * scaleFactor);
+  y = ((float)imageRect.height() - (float)surfaceRect.height()) / 2;
+}
+
+auto scaledImage = _frameImage.scaled(imageRect.size());
+//p.drawImage(QPoint(-x, -y), scaledImage, scaledImage.rect());
+p.drawImage(QPoint(0, 0), scaledImage, scaledImage.rect().adjusted(x, y, x, y));
+
+*/
