@@ -1,0 +1,54 @@
+<script id="tmpl-MainView" type="text/css">
+  <div class="MainView">
+  
+    <nav class="navbar navbar-default">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="index.html">Status</a>
+          <p class="navbar-text">TS3 Video Server</p>
+        </div>
+      </div>
+    </nav>
+  
+    <h2>Clients ({{>clients.length}})</h2>
+    <div class="table-responsive">
+      <table class="table table-striped table-bordered">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{for clients}}
+          <tr>
+            <td>{{>id}}</td>
+            <td>{{>name}}</td>
+          </tr>
+          {{/for}}
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Channels ({{>channels.length}})</h2>
+    <div class="table-responsive">
+      <table class="table table-striped table-bordered">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{for channels}}
+          <tr>
+            <td>{{>id}}</td>
+            <td>{{>name}}</td>
+          </tr>
+          {{/for}}
+        </tbody>
+      </table>
+    </div>
+    
+  </div>
+</script>

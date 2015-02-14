@@ -92,7 +92,6 @@ void MediaSocketHandler::onReadyRead()
       }
 
       // Video recovery.
-      // TODO Only send recovery datagram to the required client.
       case UDP::VideoFrameRecoveryDatagram::TYPE: {
         HL_TRACE(HL, QString("Process video frame recovery datagram.").toStdString());
 

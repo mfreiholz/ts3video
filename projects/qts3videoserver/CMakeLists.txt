@@ -3,6 +3,7 @@
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Network REQUIRED)
 find_package(Qt5Gui REQUIRED) # Due to qts3videocorelib
+find_package(Qt5WebSockets REQUIRED)
 
 # Sources
 set(headers
@@ -12,6 +13,7 @@ set(qheaders
   src/ts3videoserver.h
   src/clientconnectionhandler.h
   src/mediasockethandler.h
+  src/websocketstatusserver.h
 )
 
 set(sources
@@ -19,6 +21,7 @@ set(sources
   src/ts3videoserver.cpp
   src/clientconnectionhandler.cpp
   src/mediasockethandler.cpp
+  src/websocketstatusserver.cpp
 )
 
 set(qforms
@@ -61,6 +64,7 @@ target_link_libraries(
   Qt5::Core
   Qt5::Network
   Qt5::Gui
+  Qt5::WebSockets
   humblelogging
   qcorlib
   qts3videocorelib
