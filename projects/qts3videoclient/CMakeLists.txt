@@ -85,6 +85,7 @@ include_directories(
 # Target
 add_executable(
   qts3videoclient
+  WIN32
   ${headers}
   ${sources}
   ${qheaders}
