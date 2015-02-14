@@ -516,7 +516,7 @@ void VideoEncodingThread::enqueueRecovery()
 
 void VideoEncodingThread::run()
 {
-  const int fps = 30;
+  const int fps = 15;
   const int fpsTimeMs = 1000 / fps;
   const int bitRate = 50;
 
