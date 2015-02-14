@@ -11,6 +11,7 @@
 #include "humblelogging/api.h"
 
 #include "ts3videoserver.h"
+#include "clientconnectionhandler.h"
 #include "cliententity.h"
 #include "channelentity.h"
 
@@ -61,13 +62,29 @@ void WebSocketStatusServer::onTextMessage(const QString &message)
 
   QJsonArray clients;
   foreach (auto clientEntity, _server->_clients) {
-    clients.append(clientEntity->toQJsonObject());
+    auto jsClient = clientEntity->toQJsonObject();
+    auto conn = _server->_connections.value(clientEntity->id);
+    if (conn) {
+      QJsonObject jsConn;
+      jsConn.insert("address", "n/a");
+      jsConn.insert("port", 0);
+      jsConn.insert("mediaaddress", clientEntity->mediaAddress);
+      jsConn.insert("mediaport", clientEntity->mediaPort);
+      jsClient.insert("connection", jsConn);
+    }
+    clients.append(jsClient);
   }
   root.insert("clients", clients);
 
   QJsonArray channels;
   foreach (auto channelEntity, _server->_channels) {
-    channels.append(channelEntity->toQJsonObject());
+    auto jsChannel = channelEntity->toQJsonObject();
+    QJsonArray jsParticipants;
+    foreach (auto clientId, _server->_participants.value(channelEntity->id)) {
+      jsParticipants.append(clientId);
+    }
+    jsChannel.insert("participants", jsParticipants);
+    channels.append(jsChannel);
   }
   root.insert("channels", channels);
 
