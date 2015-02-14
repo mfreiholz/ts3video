@@ -8,6 +8,8 @@
 
 #include "humblelogging/api.h"
 
+#include "elws.h"
+
 #include "ts3videoclient.h"
 #include "videowidget.h"
 
@@ -62,7 +64,8 @@ ClientCameraVideoWidget::~ClientCameraVideoWidget()
 
 CameraFrameGrabber::CameraFrameGrabber(QObject *parent) :
   QAbstractVideoSurface(parent),
-  _firstFrame(true)
+  _firstFrame(true),
+  _targetSize(640, 480)
 {
 }
 
@@ -112,21 +115,34 @@ bool CameraFrameGrabber::present(const QVideoFrame &frame)
   if (!frame.isValid()) {
     return false;
   }
-  // Clone frame to have it as non-const.
+
   QVideoFrame f(frame);
-  if (_firstFrame) {
-    HL_INFO(HL, QString("Camera first frame (format=%1; width=%2; height=%3)").arg(f.pixelFormat()).arg(f.width()).arg(f.height())  .toStdString());
-    _firstFrame = false;
-  }
-  // Convert video frame to QImage.
   auto imageFormat = QVideoFrame::imageFormatFromPixelFormat(f.pixelFormat());
   if (imageFormat == QImage::Format_Invalid) {
     qDebug() << QString("Invalid image format for video frame.");
     return false;
   }
+
+  if (_firstFrame) {
+    HL_INFO(HL, QString("Camera first frame (format=%1; width=%2; height=%3)").arg(f.pixelFormat()).arg(f.width()).arg(f.height())  .toStdString());
+    _firstFrame = false;
+
+    // Calculate target rect for centered-scaling.
+    auto surfaceRect = QRect(QPoint(0, 0), _targetSize);
+    _imageRect = QRect(QPoint(0, 0), f.size());
+    ELWS::calcScaledAndCenterizedImageRect(surfaceRect, _imageRect, _imageOffset);
+  }
+
   if (f.map(QAbstractVideoBuffer::ReadOnly)) {
     // Create copy via copy() or mirrored(). At least we need a copy as long as we don't directly print here.
-    auto image = QImage(f.bits(), f.width(), f.height(), imageFormat).mirrored();
+    auto image = QImage(f.bits(), f.width(), f.height(), imageFormat);
+    image = image.mirrored();
+    image = image.scaled(_imageRect.size());
+    if (_imageOffset.x() != 0) {
+      image = image.copy(_imageOffset.x(), 0, _targetSize.width(), _targetSize.height());
+    } else if (_imageOffset.y() != 0) {
+      image = image.copy(0, _imageOffset.y(), _targetSize.width(), _targetSize.height());
+    }
     emit newQImage(image);
     f.unmap();
   }

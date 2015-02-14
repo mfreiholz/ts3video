@@ -38,6 +38,10 @@ signals:
 
 private:
   bool _firstFrame;
+  QSize _targetSize;
+
+  QRect _imageRect;
+  QPoint _imageOffset;
 };
 
 #endif

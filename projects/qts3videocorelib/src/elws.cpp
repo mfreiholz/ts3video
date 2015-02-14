@@ -85,6 +85,6 @@ void ELWS::calcScaledAndCenterizedImageRect(const QRect &surfaceRect, QRect &ima
     imageRect.setHeight((float)imageRect.height() * scaleFactor);
     y = ((float)imageRect.height() - (float)surfaceRect.height()) / 2;
   }
-  offset.setX(-x);
-  offset.setY(-y);
+  offset.setX(x);
+  offset.setY(y);
 }

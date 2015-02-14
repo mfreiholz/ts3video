@@ -149,7 +149,6 @@ void VideoFrame_CpuImpl::paintEvent(QPaintEvent *)
 
   // Paint frame.
   if (!_frameImage.isNull()) {
-    
     // Scale and center image.
     // TODO Optimize: Only do calculation once with every resize, instead of calculating it for every image.
     if (true) {
@@ -157,7 +156,8 @@ void VideoFrame_CpuImpl::paintEvent(QPaintEvent *)
       auto offset = QPoint(0, 0);
       ELWS::calcScaledAndCenterizedImageRect(rect(), imageRect, offset);
       auto scaledImage = _frameImage.scaled(imageRect.size());
-      p.drawImage(offset, scaledImage, scaledImage.rect());
+      p.drawImage(QPoint(-offset.x(), -offset.y()), scaledImage, scaledImage.rect());
+      //p.drawImage(offset, scaledImage, scaledImage.rect());
     }
     // Basic scale.
     else {

@@ -519,6 +519,7 @@ void VideoEncodingThread::run()
   const int fps = 15;
   const int fpsTimeMs = 1000 / fps;
   const int bitRate = 50;
+  const QSize dim(640, 480);
 
   QHash<int, VP8Encoder*> encoders;
   QTime fpsTimer;
@@ -551,7 +552,7 @@ void VideoEncodingThread::run()
       if (!encoder) {
         HL_DEBUG(HL, QString("Create new VP8 video encoder (id=%1)").arg(item.second).toStdString());
         encoder = new VP8Encoder();
-        if (!encoder->initialize(1280, 720, bitRate, fps)) { ///< TODO Find a way to pass this parameters from outside (videoBegin(...), sendVideo(...), videoEnd(...)).
+        if (!encoder->initialize(dim.width(), dim.height(), bitRate, fps)) { ///< TODO Find a way to pass this parameters from outside (videoBegin(...), sendVideo(...), videoEnd(...)).
           HL_ERROR(HL, QString("Can not initialize VP8 video encoder").toStdString());
           _stopFlag = 1;
           continue;
