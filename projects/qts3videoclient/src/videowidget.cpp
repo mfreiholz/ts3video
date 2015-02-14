@@ -173,12 +173,11 @@ void VideoFrame_CpuImpl::paintEvent(QPaintEvent *)
       }
 
       auto scaledImage = _frameImage.scaled(imageRect.size());
-      auto offset = QPoint(-x, -y);
-      p.drawImage(offset, scaledImage, scaledImage.rect());
+      //p.drawImage(QPoint(-x, -y), scaledImage, scaledImage.rect());
+      p.drawImage(QPoint(0, 0), scaledImage, scaledImage.rect().adjusted(x, y, x, y));
     }
     // Basic scale.
     else {
-      //auto scaledImage = _frameImage.scaled(rect().size(), Qt::KeepAspectRatioByExpanding, Qt::FastTransformation);
       p.drawImage(rect(), _frameImage);
     }
   }
