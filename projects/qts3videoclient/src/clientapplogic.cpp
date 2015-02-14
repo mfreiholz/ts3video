@@ -151,7 +151,7 @@ void ClientAppLogic::onClientJoinedChannel(const ClientEntity &client, const Cha
 {
   HL_INFO(HL, QString("Client joined channel (client-id=%1; channel-id=%2)").arg(client.id).arg(channel.id).toStdString());
   auto w = _clientWidgets.value(client.id);
-  if (!w) {
+  if (!w && client.id != _ts3vc.clientEntity().id) {
     w = createClientWidget(client);
     _clientWidgets.insert(client.id, w);
   }
