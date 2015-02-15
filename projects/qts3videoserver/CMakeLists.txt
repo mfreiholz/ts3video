@@ -38,6 +38,7 @@ source_group(QtWrap FILES ${qheaders_wrap} ${qforms_wrap} ${qresources_wrap})
 
 # Defines
 add_definitions(
+  -DNOMINMAX
 )
 
 # Includes

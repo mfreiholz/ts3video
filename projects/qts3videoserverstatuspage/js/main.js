@@ -26,4 +26,21 @@
       });
   };
 
+  function round(f) {
+    return parseFloat(Math.round(f * 100) / 100).toFixed(2);
+  }
+
+  $.views.helpers({
+    bytesAsReadableSize: function (b) {
+      if (b > 1073741824) {
+        return round(b / 1073741824) + " GB";
+      } else if (b > 1048576) {
+        return round(b / 1048576) + " MB";
+      } else if (b > 1024) {
+        return round(b / 1024) + " KB";
+      }
+      return (b) + " Bytes";
+    }
+  });
+
 }());

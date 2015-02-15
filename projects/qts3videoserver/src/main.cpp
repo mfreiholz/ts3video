@@ -9,6 +9,8 @@ HUMBLE_LOGGER(HL, "server");
 int main(int argc, char *argv[])
 {
   QCoreApplication a(argc, argv);
+  a.setOrganizationName("insaneFactory");
+  a.setOrganizationDomain("http://www.insanefactory.com/");
   a.setApplicationName("iF.TS3VideoServer");
   a.setApplicationVersion("1.0 ALPHA");
 

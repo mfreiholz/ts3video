@@ -1,5 +1,11 @@
 #include "websocketstatusserver.h"
 
+#ifdef Q_OS_WIN
+#include <Windows.h>
+#include <Psapi.h>
+#endif
+
+#include <QCoreApplication>
 #include <QWebSocketServer>
 #include <QWebSocket>
 #include <QString>
@@ -60,6 +66,33 @@ void WebSocketStatusServer::onTextMessage(const QString &message)
   // Collect status information from TS3VideoServer.
   QJsonObject root;
 
+  QJsonObject jsInfo;
+  jsInfo.insert("appname", qApp->applicationName());
+  jsInfo.insert("appversion", qApp->applicationVersion());
+  jsInfo.insert("appdirectory", qApp->applicationDirPath());
+  jsInfo.insert("appfilepath", qApp->applicationFilePath());
+  jsInfo.insert("apppid", qApp->applicationPid());
+  jsInfo.insert("organizationname", qApp->organizationName());
+  jsInfo.insert("organizationdomain", qApp->organizationDomain());
+  root.insert("info", jsInfo);
+
+  QJsonObject jsMemory;
+#ifdef Q_OS_WIN
+  PROCESS_MEMORY_COUNTERS_EX pmc;
+  GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS*)&pmc, sizeof(pmc));
+  jsMemory.insert("pagefaultcount", (qint64)pmc.PageFaultCount);
+  jsMemory.insert("peakworkingsetsize", (qint64)pmc.PeakWorkingSetSize);
+  jsMemory.insert("workingsetsize", (qint64)pmc.WorkingSetSize);
+  jsMemory.insert("quotapeakpagedpoolusage", (qint64)pmc.QuotaPeakPagedPoolUsage);
+  jsMemory.insert("quotapagedpoolusage", (qint64)pmc.QuotaPagedPoolUsage);
+  jsMemory.insert("quotapeaknonpagedpoolusage", (qint64)pmc.QuotaPeakNonPagedPoolUsage);
+  jsMemory.insert("quotanonpagedpoolusage", (qint64)pmc.QuotaNonPagedPoolUsage);
+  jsMemory.insert("pagefileusage", (qint64)pmc.PagefileUsage);
+  jsMemory.insert("peakpagefileusage", (qint64)pmc.PeakPagefileUsage);
+  jsMemory.insert("privateusage", (qint64)pmc.PrivateUsage);
+#endif
+  root.insert("memory", jsMemory);
+
   QJsonArray clients;
   foreach (auto clientEntity, _server->_clients) {
     auto jsClient = clientEntity->toQJsonObject();
@@ -87,6 +120,15 @@ void WebSocketStatusServer::onTextMessage(const QString &message)
     channels.append(jsChannel);
   }
   root.insert("channels", channels);
+
+  QJsonArray jsWsSockets;
+  foreach (auto socket, _sockets) {
+    QJsonObject o;
+    o.insert("address", socket->peerAddress().toString());
+    o.insert("port", socket->peerPort());
+    jsWsSockets.append(o);
+  }
+  root.insert("websockets", jsWsSockets);
 
   socket->sendTextMessage(QJsonDocument(root).toJson(QJsonDocument::Compact));
 }

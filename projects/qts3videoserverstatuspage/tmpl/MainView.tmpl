@@ -1,6 +1,6 @@
 <script id="tmpl-MainView" type="text/css">
   <div class="MainView">
-  
+
     <nav class="navbar navbar-default">
       <div class="container-fluid">
         <div class="navbar-header">
@@ -11,7 +11,54 @@
         </div>
       </div>
     </nav>
-  
+
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h1 class="panel-title">Server info</h1>
+      </div>
+      <div class="panel-body">
+        <div class="row">
+          <div class="col-xs-4"><b>PID</b><br/>{{>info.apppid}}</div>
+          <div class="col-xs-4"><b>Name</b><br/>{{>info.appname}}</div>
+          <div class="col-xs-4"><b>Version</b><br/>{{>info.appversion}}</div>
+        </div>
+        <div class="row">
+          <div class="col-xs-4"><b>Directory</b><br/>{{>info.appdirectory}}</div>
+          <div class="col-xs-4"><b>File</b><br/>{{>info.appfilepath}}</div>
+        </div>
+        <div class="row">
+          <div class="col-xs-4"><b>Organization</b><br/>{{>info.organizationname}}</div>
+          <div class="col-xs-4"><b>Organization URL</b><br/>{{>info.organizationdomain}}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h1 class="panel-title">Memory usage</h1>
+      </div>
+      <div class="panel-body">
+        <div class="row">
+          <div class="col-xs-4"><b>PageFaultCount</b><br/>{{>memory.pagefaultcount}}</div>
+          <div class="col-xs-4"><b>PeakWorkingSetSize</b><br/>{{>~bytesAsReadableSize(memory.peakworkingsetsize)}}</div>
+          <div class="col-xs-4"><b>WorkingSetSize</b><br/>{{>~bytesAsReadableSize(memory.workingsetsize)}}</div>
+        </div>
+        <div class="row">
+          <div class="col-xs-4"><b>QuotaPeakPagedPoolUsage</b><br/>{{>~bytesAsReadableSize(memory.quotapeakpagedpoolusage)}}</div>
+          <div class="col-xs-4"><b>QuotaPagedPoolUsage</b><br/>{{>~bytesAsReadableSize(memory.quotapagedpoolusage)}}</div>
+          <div class="col-xs-4"><b>QuotaPeakNonPagedPoolUsage</b><br/>{{>~bytesAsReadableSize(memory.quotapeaknonpagedpoolusage)}}</div>
+        </div>
+        <div class="row">
+          <div class="col-xs-4"><b>QuotaNonPagedPoolUsage</b><br/>{{>~bytesAsReadableSize(memory.quotanonpagedpoolusage)}}</div>
+          <div class="col-xs-4"><b>PagefileUsage</b><br/>{{>~bytesAsReadableSize(memory.pagefileusage)}}</div>
+          <div class="col-xs-4"><b>PeakPagefileUsage</b><br/>{{>~bytesAsReadableSize(memory.peakpagefileusage)}}</div>
+        </div>
+        <div class="row">
+          <div class="col-xs-4"><b>PrivateUsage</b><br/>{{>~bytesAsReadableSize(memory.privateusage)}}</div>
+        </div>
+      </div>
+    </div>
+
     <h3>Clients ({{>clients.length}})</h3>
     <div class="table-responsive">
       <table class="table table-striped table-bordered">
@@ -61,6 +108,24 @@
         </tbody>
       </table>
     </div>
-    
+
+    <h3>Web sockets ({{>websockets.length}})</h3>
+    <div class="table-responsive">
+      <table class="table table-striped table-bordered">
+        <thead>
+          <tr>
+            <th>Address</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{for websockets}}
+          <tr>
+            <td>{{>address}}:{{>port}}</td>
+          </tr>
+          {{/for}}
+        </tbody>
+      </table>
+    </div>
+
   </div>
 </script>
