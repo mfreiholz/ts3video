@@ -95,10 +95,10 @@ void ClientAppLogic::onConnected()
     int status;
     QJsonObject params;
     if (!JsonProtocolHelper::fromJsonResponse(reply->frame()->data(), status, params)) {
-      this->showError(reply->frame()->data());
+      this->showError(tr("Protocol error"), reply->frame()->data());
       return;
     } else if (status != 0) {
-      this->showError(reply->frame()->data());
+      this->showError(tr("Protocol error"), reply->frame()->data());
       return;
     }
 
@@ -112,10 +112,10 @@ void ClientAppLogic::onConnected()
       int status;
       QJsonObject params;
       if (!JsonProtocolHelper::fromJsonResponse(reply2->frame()->data(), status, params)) {
-        this->showError(reply2->frame()->data());
+        this->showError(tr("Protocol error"), reply2->frame()->data());
         return;
       } else if (status != 0) {
-        this->showError(reply2->frame()->data());
+        this->showError(tr("Protocol error"), reply2->frame()->data());
         return;
       }
       
