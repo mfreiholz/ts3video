@@ -65,6 +65,10 @@ if(IncludeOpenGLSupport)
   list(APPEND sources src/opengl2/yuvvideowindow.cpp)
 endif()
 
+if(WIN32)
+	list(APPEND sources res/app.rc)
+endif(WIN32)
+
 qt5_wrap_cpp(qheaders_wrap ${qheaders})
 qt5_wrap_ui(qforms_wrap ${qforms})
 qt5_add_resources(qresources_wrap ${qresources})
