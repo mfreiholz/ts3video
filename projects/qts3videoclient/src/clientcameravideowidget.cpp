@@ -4,7 +4,7 @@
 #include <QBoxLayout>
 #include <QLabel>
 #include <QCameraInfo>
-#include <QVideoWidget>
+#include <QCamera>
 
 #include "humblelogging/api.h"
 
@@ -17,11 +17,10 @@ HUMBLE_LOGGER(HL, "client.camera");
 
 ///////////////////////////////////////////////////////////////////////
 
-ClientCameraVideoWidget::ClientCameraVideoWidget(TS3VideoClient *ts3vc, QWidget *parent) :
+ClientCameraVideoWidget::ClientCameraVideoWidget(TS3VideoClient *ts3vc, const QCameraInfo &cameraInfo, QWidget *parent) :
   QWidget(parent),
   _ts3vc(ts3vc)
 {
-  auto cameraInfo = QCameraInfo::defaultCamera();
   auto camera = new QCamera(cameraInfo, this);
   camera->start();
 

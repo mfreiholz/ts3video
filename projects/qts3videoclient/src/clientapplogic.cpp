@@ -6,6 +6,7 @@
 #include <QApplication>
 #include <QMessageBox>
 #include <QProgressDialog>
+#include <QCameraInfo>
 
 #include "humblelogging/api.h"
 
@@ -189,7 +190,15 @@ void ClientAppLogic::initGui()
 
 QWidget* ClientAppLogic::createCameraWidget()
 {
-  _cameraWidget = new ClientCameraVideoWidget(&_ts3vc, nullptr);
+  auto cameraInfo = QCameraInfo::defaultCamera();
+  foreach (auto ci, QCameraInfo::availableCameras()) {
+    if (ci.deviceName() == _opts.cameraDeviceId) {
+      cameraInfo = ci;
+      break;
+    }
+  }
+
+  _cameraWidget = new ClientCameraVideoWidget(&_ts3vc, cameraInfo, nullptr);
   _containerWidget->addWidget(_cameraWidget);
   return _cameraWidget;
 }

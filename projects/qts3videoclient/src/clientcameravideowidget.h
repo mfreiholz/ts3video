@@ -3,6 +3,7 @@
 
 #include <QWidget>
 
+class QCameraInfo;
 class TS3VideoClient;
 
 /**
@@ -12,7 +13,7 @@ class ClientCameraVideoWidget : public QWidget
   Q_OBJECT
 
 public:
-  ClientCameraVideoWidget(TS3VideoClient *ts3vc, QWidget *parent);
+  ClientCameraVideoWidget(TS3VideoClient *ts3vc, const QCameraInfo &cameraInfo, QWidget *parent);
   ~ClientCameraVideoWidget();
 
 private:
