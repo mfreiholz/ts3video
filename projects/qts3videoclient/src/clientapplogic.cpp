@@ -29,7 +29,8 @@ ClientAppLogic::Options::Options() :
   serverPort(0),
   ts3clientId(0),
   ts3channelId(0),
-  username()
+  username(),
+  cameraDeviceId()
 {
 }
 

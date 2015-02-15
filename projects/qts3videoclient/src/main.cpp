@@ -19,6 +19,7 @@
 #include "videocollectionwidget.h"
 #include "ts3videoclient.h"
 #include "clientapplogic.h"
+#include "startupwidget.h"
 
 HUMBLE_LOGGER(HL, "client");
 
@@ -220,6 +221,24 @@ int runClientAppLogic(QApplication &a)
     if (opts.username.isEmpty()) {
       opts.username = ELWS::getUserName();
     }
+  }
+
+  // Show startup dialog.
+  // The values from dialog will modify the ClientAppLogic::Options.
+  if (true) {
+    StartupDialogValues v;
+    v.serverAddress = opts.serverAddress.toString() + QString(":") + QString::number(opts.serverPort);
+    v.username = opts.username;
+    StartupDialog dialog(nullptr);
+    dialog.setValues(v);
+    if (dialog.exec() != QDialog::Accepted) {
+      QMetaObject::invokeMethod(&a, "quit", Qt::QueuedConnection);
+      return a.exec();
+    }
+    v = dialog.values();
+    opts.username = v.username;
+    opts.cameraDeviceId = v.cameraDeviceName;
+    // TODO opts.serverAddress = v.serverAddress;
   }
 
   ClientAppLogic logic(opts, nullptr);

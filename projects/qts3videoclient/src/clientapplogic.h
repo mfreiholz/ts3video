@@ -30,6 +30,7 @@ public:
     quint64 ts3clientId;
     quint64 ts3channelId;
     QString username;
+    QString cameraDeviceId;
   };
 
   ClientAppLogic(const Options &opts, QObject *parent);

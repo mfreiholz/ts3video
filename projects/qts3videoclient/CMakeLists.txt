@@ -27,6 +27,7 @@ set(qheaders
   src/remoteclientvideowidget.h
   src/vp8encoder.h
   src/vp8decoder.h
+  src/startupwidget.h
 )
 
 set(sources
@@ -41,9 +42,11 @@ set(sources
   src/remoteclientvideowidget.cpp
   src/vp8encoder.cpp
   src/vp8decoder.cpp
+  src/startupwidget.cpp
 )
 
 set(qforms
+  src/startupwidget.ui
 )
 
 set(qresources
@@ -69,7 +72,6 @@ source_group(QtWrap FILES ${qheaders_wrap} ${qforms_wrap} ${qresources_wrap})
 
 # Defines
 add_definitions(
-  -DUSE_OPENGL_IMPL
 )
 
 # Includes
