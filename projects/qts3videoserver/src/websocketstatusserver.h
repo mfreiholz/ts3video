@@ -24,6 +24,13 @@ private slots:
   void onNewConnection();
   void onTextMessage(const QString &message);
   void onDisconnected();
+  
+private:
+  QJsonValue getAppInfo() const;
+  QJsonValue getMemoryUsageInfo() const;
+  QJsonValue getClientsInfo() const;
+  QJsonValue getChannelsInfo() const;
+  QJsonValue getWebSocketsInfo() const;
 
 private:
   TS3VideoServer *_server;

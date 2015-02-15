@@ -63,9 +63,27 @@ void WebSocketStatusServer::onTextMessage(const QString &message)
   auto socket = qobject_cast<QWebSocket*>(sender());
   HL_TRACE(HL, QString("Incoming text message (message=%1)").arg(message).toStdString());
 
-  // Collect status information from TS3VideoServer.
   QJsonObject root;
+  root.insert("info", getAppInfo());
+  root.insert("memory", getMemoryUsageInfo());
+  root.insert("clients", getClientsInfo());
+  root.insert("channels", getChannelsInfo());
+  root.insert("websockets", getWebSocketsInfo());
 
+  socket->sendTextMessage(QJsonDocument(root).toJson(QJsonDocument::Compact));
+}
+
+void WebSocketStatusServer::onDisconnected()
+{
+  auto socket = qobject_cast<QWebSocket*>(sender());
+  if (socket) {
+    _sockets.removeAll(socket);
+    socket->deleteLater();
+  }
+}
+
+QJsonValue WebSocketStatusServer::getAppInfo() const
+{
   QJsonObject jsInfo;
   jsInfo.insert("appname", qApp->applicationName());
   jsInfo.insert("appversion", qApp->applicationVersion());
@@ -74,8 +92,11 @@ void WebSocketStatusServer::onTextMessage(const QString &message)
   jsInfo.insert("apppid", qApp->applicationPid());
   jsInfo.insert("organizationname", qApp->organizationName());
   jsInfo.insert("organizationdomain", qApp->organizationDomain());
-  root.insert("info", jsInfo);
+  return jsInfo;
+}
 
+QJsonValue WebSocketStatusServer::getMemoryUsageInfo() const
+{
   QJsonObject jsMemory;
 #ifdef Q_OS_WIN
   PROCESS_MEMORY_COUNTERS_EX pmc;
@@ -91,10 +112,13 @@ void WebSocketStatusServer::onTextMessage(const QString &message)
   jsMemory.insert("peakpagefileusage", (qint64)pmc.PeakPagefileUsage);
   jsMemory.insert("privateusage", (qint64)pmc.PrivateUsage);
 #endif
-  root.insert("memory", jsMemory);
+  return jsMemory;
+}
 
+QJsonValue WebSocketStatusServer::getClientsInfo() const
+{
   QJsonArray clients;
-  foreach (auto clientEntity, _server->_clients) {
+  foreach(auto clientEntity, _server->_clients) {
     auto jsClient = clientEntity->toQJsonObject();
     auto conn = _server->_connections.value(clientEntity->id);
     if (conn) {
@@ -107,37 +131,32 @@ void WebSocketStatusServer::onTextMessage(const QString &message)
     }
     clients.append(jsClient);
   }
-  root.insert("clients", clients);
+  return clients;
+}
 
+QJsonValue WebSocketStatusServer::getChannelsInfo() const
+{
   QJsonArray channels;
-  foreach (auto channelEntity, _server->_channels) {
+  foreach(auto channelEntity, _server->_channels) {
     auto jsChannel = channelEntity->toQJsonObject();
     QJsonArray jsParticipants;
-    foreach (auto clientId, _server->_participants.value(channelEntity->id)) {
+    foreach(auto clientId, _server->_participants.value(channelEntity->id)) {
       jsParticipants.append(clientId);
     }
     jsChannel.insert("participants", jsParticipants);
     channels.append(jsChannel);
   }
-  root.insert("channels", channels);
+  return channels;
+}
 
+QJsonValue WebSocketStatusServer::getWebSocketsInfo() const
+{
   QJsonArray jsWsSockets;
-  foreach (auto socket, _sockets) {
+  foreach(auto socket, _sockets) {
     QJsonObject o;
     o.insert("address", socket->peerAddress().toString());
     o.insert("port", socket->peerPort());
     jsWsSockets.append(o);
   }
-  root.insert("websockets", jsWsSockets);
-
-  socket->sendTextMessage(QJsonDocument(root).toJson(QJsonDocument::Compact));
-}
-
-void WebSocketStatusServer::onDisconnected()
-{
-  auto socket = qobject_cast<QWebSocket*>(sender());
-  if (socket) {
-    _sockets.removeAll(socket);
-    socket->deleteLater();
-  }
+  return jsWsSockets;
 }

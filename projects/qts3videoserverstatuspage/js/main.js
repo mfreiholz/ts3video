@@ -1,10 +1,6 @@
 (function () {
   "use strict";
   
-  // Brite init.
-  brite.viewDefaultConfig.loadTmpl = true;
-  brite.viewDefaultConfig.loadCss = false;
-  
   /////////////////////////////////////////////////////////////////////
   // AppMain
   /////////////////////////////////////////////////////////////////////
@@ -28,11 +24,10 @@
     };
     
     this.websocket.onclose = function (ev) {
-      console.log("WS CLOSE");
+      that.websocket = null;
     };
     
     this.websocket.onerror = function (ev) {
-      console.log("WS ERROR");
       that.websocket = null;
       jQuery("#AppMain").html("Server connection lost... Reconnecting...");
       setTimeout(function () { that.connect(); }, 3000);
@@ -53,24 +48,7 @@
     };
   };
   
-
-  /*var ws = new WebSocket("ws://" + window.location.host + ":6002");
-  ws.onopen = function (ev) {
-    ws.send("/status");
-  };
-  ws.onclose = function (ev) {
-  };
-  ws.onerror = function (ev) {
-  };
-  ws.onmessage = function (ev) {
-    var data = JSON.parse(ev.data);
-    brite.display("MainView", "#AppMain", data, { emptyParent: true })
-      .done(function () {
-        setTimeout(function () { ws.send("/status"); }, 1500);
-      })
-      .fail(function () {
-      });
-  };*/
+  /////////////////////////////////////////////////////////////////////
 
   function round(f) {
     return parseFloat(Math.round(f * 100) / 100).toFixed(2);
@@ -90,6 +68,9 @@
   });
   
   /////////////////////////////////////////////////////////////////////
+  
+  brite.viewDefaultConfig.loadTmpl = true;
+  brite.viewDefaultConfig.loadCss = false;
   
   var app = new AppMain(window.location.host, 6002);
   app.connect();
