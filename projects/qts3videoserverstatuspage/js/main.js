@@ -17,7 +17,7 @@
       return;
     }
     
-    this.websocket = new WebSocket("ws://" + this.address + ":" + this.port);
+    this.websocket = new WebSocket("ws://" + this.address + ":" + this.port + "/ts3video-websocket");
     
     this.websocket.onopen = function (ev) {
       that.websocket.send("/status");
@@ -72,7 +72,7 @@
   brite.viewDefaultConfig.loadTmpl = true;
   brite.viewDefaultConfig.loadCss = false;
   
-  var app = new AppMain(window.location.host, 6002);
+  var app = new AppMain(window.location.host, 80);
   app.connect();
 
 }());
