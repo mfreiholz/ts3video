@@ -250,7 +250,7 @@ int main(int argc, char *argv[])
   QApplication a(argc, argv);
 
   auto& fac = humble::logging::Factory::getInstance();
-  fac.registerAppender(new humble::logging::FileAppender(std::string("ts3videoclient.log"), false));
+  fac.registerAppender(new humble::logging::FileAppender(std::string("ts3videoclient.log"), true));
   fac.changeGlobalLogLevel(humble::logging::LogLevel::Debug);
 
   const auto mode = ELWS::getArgsValue("--mode").toString();

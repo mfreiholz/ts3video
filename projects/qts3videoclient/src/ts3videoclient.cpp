@@ -167,7 +167,7 @@ void TS3VideoClient::onNewIncomingRequest(QCorFrameRefPtr frame)
 {
   Q_D(TS3VideoClient);
   Q_ASSERT(!frame.isNull());
-  HL_TRACE(HL, QString("Incoming request (size=%1): %2").arg(frame->data().size()).arg(QString(frame->data())).toStdString());
+  HL_DEBUG(HL, QString("Incoming request (size=%1): %2").arg(frame->data().size()).arg(QString(frame->data())).toStdString());
   
   QString action;
   QJsonObject parameters;
@@ -295,7 +295,7 @@ void MediaSocket::sendVideoFrame(const QImage &image, int senderId)
 void MediaSocket::sendAuthTokenDatagram(const QString &token)
 {
   Q_ASSERT(!token.isEmpty());
-  HL_TRACE(HL, QString("Send media auth token (token=%1; address=%2; port=%3)").arg(token).arg(peerAddress().toString()).arg(peerPort()).toStdString());
+  HL_DEBUG(HL, QString("Send media auth token (token=%1; address=%2; port=%3)").arg(token).arg(peerAddress().toString()).arg(peerPort()).toStdString());
 
   UDP::AuthDatagram dgauth;
   dgauth.size = token.toUtf8().size();
@@ -316,7 +316,6 @@ void MediaSocket::sendVideoFrame(const QByteArray &frame_, quint64 frameId_, qui
 {
   Q_ASSERT(frame_.isEmpty() == false);
   Q_ASSERT(frameId_ != 0);
-  //HL_TRACE(HL, QString("Send video frame (size=%1; address=%2; port=%3)").arg(frame_.size()).arg(peerAddress().toString()).arg(peerPort()).toStdString());
 
   UDP::VideoFrameDatagram::dg_frame_id_t frameId = frameId_;
   UDP::VideoFrameDatagram::dg_sender_t senderId = senderId_;
