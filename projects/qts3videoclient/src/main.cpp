@@ -257,6 +257,9 @@ int main(int argc, char *argv[])
   if (mode == QString("test-multi-client")) {
     return runTestClient(a);
   }
+  else if (mode == QString("test-gui")) {
+    return runGuiTest(a);
+  }
   else if (mode == QString("install-uri-handler")) {
     return runRegisterUriHandler(a);
   }

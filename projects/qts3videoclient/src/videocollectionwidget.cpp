@@ -108,6 +108,22 @@ void VideoCollectionWidget::closeEvent(QCloseEvent *)
 void VideoCollectionWidget::doGridLayout()
 {
   auto l = _gridLayout;
+  auto columnCount = _columnCount;
+
+  if (true) { // Auto adjust column count.
+    auto widgetSize = QSize(256, 192);
+    auto surfaceRect = rect();
+
+    auto itemsPerRowCount = (int) ((float)surfaceRect.width() / (float)widgetSize.width());
+    if (itemsPerRowCount <= 0) {
+      columnCount = 1;
+    }
+    else if (itemsPerRowCount >= 2) {
+
+    }
+
+    // TODO Add free space to the widget size.
+  }
 
   // Remove existing widgets from layout.
   for (auto i = 0; i < l->count(); ++i) {
