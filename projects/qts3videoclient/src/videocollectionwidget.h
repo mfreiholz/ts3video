@@ -16,18 +16,19 @@ public:
 protected:
   virtual void showEvent(QShowEvent *);
   virtual void closeEvent(QCloseEvent *);
+  virtual void resizeEvent(QResizeEvent *);
 
 private:
+  void doLayout();
   void doGridLayout();
-  void prepareWidget(QWidget *widget);
+  void doGridLayoutAuto();
 
 private:
   QList<QWidget*> _widgets;
-  int _columnCount;
-
   class QBoxLayout *_mainLayout;
   class QGridLayout *_gridLayout;
   class QSpinBox *_columnCountSpinBox;
+  class QCheckBox *_autoDetectColumnCountCheckBox;
 };
 
 #endif // VIDEOCOLLECTIONWIDGET_H

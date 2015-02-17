@@ -192,9 +192,9 @@ void VideoFrame_CpuImpl::paintEvent(QPaintEvent *)
   }
 
   // Painter border around the entire rect.
-  //const QRect borderRect = rect().adjusted(0, 0, -1, -1);
-  //p.setPen(Qt::darkGray);
-  //p.drawRect(borderRect);
+  const QRect borderRect = rect().adjusted(0, 0, -1, -1);
+  p.setPen(Qt::darkGray);
+  p.drawRect(borderRect);
 }
 
 /*

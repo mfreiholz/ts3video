@@ -100,6 +100,21 @@ int runGuiTest(QApplication &a)
   return a.exec();
 }
 
+int runVideoCollectionTest(QApplication &a)
+{
+  a.setQuitOnLastWindowClosed(true);
+
+  QList<QWidget *> widgets;
+  for (auto i = 0; i < 3; ++i) {
+    auto w = new ClientVideoWidget();
+    widgets.append(w);
+  }
+  VideoCollectionWidget coll;
+  coll.setWidgets(widgets);
+  coll.setVisible(true);
+  return a.exec();
+}
+
 int runTestClient(QApplication &a)
 {
   a.setQuitOnLastWindowClosed(false);
@@ -259,6 +274,9 @@ int main(int argc, char *argv[])
   }
   else if (mode == QString("test-gui")) {
     return runGuiTest(a);
+  }
+  else if (mode == QString("test-gui2")) {
+    return runVideoCollectionTest(a);
   }
   else if (mode == QString("install-uri-handler")) {
     return runRegisterUriHandler(a);

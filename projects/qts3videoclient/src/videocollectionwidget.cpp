@@ -5,6 +5,7 @@
 #include <QSettings>
 #include <QFrame>
 #include <QSpinBox>
+#include <QCheckBox>
 #include <QLabel>
 #include <QScrollArea>
 #include <QGridLayout>
@@ -12,8 +13,7 @@
 #include <QGraphicsDropShadowEffect>
 
 VideoCollectionWidget::VideoCollectionWidget(QWidget *parent) :
-  QWidget(parent),
-  _columnCount(1)
+  QWidget(parent)
 {
   // Top frame.
   auto topFrame = new QFrame(this);
@@ -23,14 +23,20 @@ VideoCollectionWidget::VideoCollectionWidget(QWidget *parent) :
   topFrameLayout->setSpacing(3);
   topFrame->setLayout(topFrameLayout);
 
-  auto columnCountSpinBox = new QSpinBox(topFrame);
-  columnCountSpinBox->setMinimum(1);
-  columnCountSpinBox->setMaximum(std::numeric_limits<int>::max());
-  _columnCountSpinBox = columnCountSpinBox;
+  _columnCountSpinBox = new QSpinBox(topFrame);
+  _columnCountSpinBox->setMinimum(1);
+  _columnCountSpinBox->setMaximum(std::numeric_limits<int>::max());
+  _columnCountSpinBox->setValue(1);
 
-  topFrameLayout->addStretch(1);
+  _autoDetectColumnCountCheckBox = new QCheckBox(topFrame);
+  _autoDetectColumnCountCheckBox->setText(tr("Auto columns"));
+  _autoDetectColumnCountCheckBox->setCheckable(true);
+  _autoDetectColumnCountCheckBox->setChecked(false);
+
   topFrameLayout->addWidget(new QLabel(tr("Columns:")));
-  topFrameLayout->addWidget(columnCountSpinBox);
+  topFrameLayout->addWidget(_columnCountSpinBox);
+  topFrameLayout->addWidget(_autoDetectColumnCountCheckBox);
+  topFrameLayout->addStretch(1);
 
   // Content area.
   auto contentAreaWidget = new QWidget();
@@ -56,9 +62,13 @@ VideoCollectionWidget::VideoCollectionWidget(QWidget *parent) :
   _mainLayout->addWidget(contentScrollArea, 1);
   setLayout(_mainLayout);
 
-  QObject::connect(columnCountSpinBox, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), [this, columnCountSpinBox] (int value) {
-    _columnCount = columnCountSpinBox->value();
-    doGridLayout();
+  QObject::connect(_columnCountSpinBox, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), [this] (int value) {
+    doLayout();
+  });
+
+  QObject::connect(_autoDetectColumnCountCheckBox, &QCheckBox::stateChanged, [this] (int state) {
+    _columnCountSpinBox->setEnabled(state != Qt::Checked);
+    doLayout();
   });
 }
 
@@ -74,7 +84,7 @@ VideoCollectionWidget::~VideoCollectionWidget()
 void VideoCollectionWidget::addWidget(QWidget *widget)
 {
   _widgets.append(widget);
-  doGridLayout();
+  doLayout();
 }
 
 void VideoCollectionWidget::removeWidget(QWidget *widget)
@@ -82,13 +92,13 @@ void VideoCollectionWidget::removeWidget(QWidget *widget)
   _widgets.removeAll(widget);
   widget->setVisible(false);
   widget->setParent(nullptr);
-  doGridLayout();
+  doLayout();
 }
 
 void VideoCollectionWidget::setWidgets(const QList<QWidget *> widgets)
 {
   _widgets = widgets;
-  doGridLayout();
+  doLayout();
 }
 
 void VideoCollectionWidget::showEvent(QShowEvent *)
@@ -96,34 +106,38 @@ void VideoCollectionWidget::showEvent(QShowEvent *)
   QSettings settings;
   restoreGeometry(settings.value("UI/VideoCollectionWidget-Geometry").toByteArray());
   _columnCountSpinBox->setValue(settings.value("UI/VideoCollectionWidget-ColumnCount").toUInt());
+  _autoDetectColumnCountCheckBox->setChecked(settings.value("UI/VideoCollectionWidget-ColumnCountAuto").toBool());
 }
 
 void VideoCollectionWidget::closeEvent(QCloseEvent *)
 {
   QSettings settings;
   settings.setValue("UI/VideoCollectionWidget-Geometry", saveGeometry());
-  settings.setValue("UI/VideoCollectionWidget-ColumnCount", _columnCount);
+  settings.setValue("UI/VideoCollectionWidget-ColumnCount", _columnCountSpinBox->value());
+  settings.setValue("UI/VideoCollectionWidget-ColumnCountAuto", _autoDetectColumnCountCheckBox->isChecked());
+}
+
+void VideoCollectionWidget::resizeEvent(QResizeEvent *)
+{
+  if (_autoDetectColumnCountCheckBox->isChecked()) {
+    doLayout();
+  }
+}
+
+void VideoCollectionWidget::doLayout()
+{
+  if (_autoDetectColumnCountCheckBox->isChecked()) {
+    doGridLayoutAuto();
+  } else {
+    doGridLayout();
+  }
 }
 
 void VideoCollectionWidget::doGridLayout()
 {
   auto l = _gridLayout;
-  auto columnCount = _columnCount;
-
-  if (true) { // Auto adjust column count.
-    auto widgetSize = QSize(256, 192);
-    auto surfaceRect = rect();
-
-    auto itemsPerRowCount = (int) ((float)surfaceRect.width() / (float)widgetSize.width());
-    if (itemsPerRowCount <= 0) {
-      columnCount = 1;
-    }
-    else if (itemsPerRowCount >= 2) {
-
-    }
-
-    // TODO Add free space to the widget size.
-  }
+  auto columnCount = _columnCountSpinBox->value();
+  auto minWidgetSize = QSize(256, 192);
 
   // Remove existing widgets from layout.
   for (auto i = 0; i < l->count(); ++i) {
@@ -139,27 +153,77 @@ void VideoCollectionWidget::doGridLayout()
   for (auto i = 0; i < _widgets.size(); ++i) {
     auto w = _widgets.at(i);
     l->addWidget(w, ri, ci);
-    prepareWidget(w);
+    w->setMinimumSize(minWidgetSize);
+    w->setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
     w->setVisible(true);
 
     // Calc next cell index.
     ci++;
-    if (ci >= _columnCount) {
+    if (ci >= columnCount) {
       ri++;
       ci = 0;
     }
   }
 }
 
-void VideoCollectionWidget::prepareWidget(QWidget *widget)
+void VideoCollectionWidget::doGridLayoutAuto()
 {
-  // Note: Drop shadow causes flickering during resize events.
-  //if (!widget->graphicsEffect()) {
-  //  auto dse = new QGraphicsDropShadowEffect(this);
-  //  dse->setColor(QColor(Qt::black));
-  //  dse->setOffset(0);
-  //  dse->setBlurRadius(5);
-  //  widget->setGraphicsEffect(dse);
+  auto l = _gridLayout;
+  auto columnCount = 1;
+  auto minWidgetSize = QSize(256, 192);
+  auto fixWidgetSize = minWidgetSize;
+  auto surfaceRect = rect();
+  
+  // Calculate number of required columns based on "minWidgetSize.width()".
+  auto itemsPerRowCount = (int) ((float)surfaceRect.width() / (float)minWidgetSize.width());
+  itemsPerRowCount = qMin(itemsPerRowCount, _widgets.count());
+  if (itemsPerRowCount <= 0) {
+    itemsPerRowCount = 1;
+    columnCount = 1;
+  } else {
+    columnCount = itemsPerRowCount;
+  }
+  // Add free space to the widget size.
+  auto widthFree = (float)surfaceRect.width() - ((float)minWidgetSize.width() * (float)columnCount);
+  widthFree = (float)widthFree / (float)columnCount;
+  widthFree -= 1;
+
+  // Set fixed height to keep aspect ratio.
+  if (widthFree > 0) {
+    fixWidgetSize.scale(fixWidgetSize.width() + widthFree, fixWidgetSize.height() + widthFree, Qt::KeepAspectRatio);
+    foreach (auto w, _widgets) {
+      w->setFixedSize(fixWidgetSize);
+    }
+  }
+
+  // Only re-layout, if the column count changes.
+  //if (columnCount == _columnCount) {
+  //  return;
   //}
-  widget->setMinimumSize(256, 192);
+  //_columnCount = columnCount;
+
+  // Remove existing widgets from layout.
+  for (auto i = 0; i < l->count(); ++i) {
+    auto li = l->itemAt(i);
+    auto w = li->widget();
+    w->setParent(nullptr);
+    l->removeWidget(w);
+  }
+
+  // Add new widgets to layout.
+  auto ri = 0;
+  auto ci = 0;
+  for (auto i = 0; i < _widgets.size(); ++i) {
+    auto w = _widgets.at(i);
+    l->addWidget(w, ri, ci, Qt::AlignCenter | Qt::AlignVCenter);
+    w->setFixedSize(fixWidgetSize);
+    w->setVisible(true);
+
+    // Calc next cell index.
+    ci++;
+    if (ci >= columnCount) {
+      ri++;
+      ci = 0;
+    }
+  }
 }
