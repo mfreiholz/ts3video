@@ -28,6 +28,8 @@ set(qheaders
   src/vp8encoder.h
   src/vp8decoder.h
   src/startupwidget.h
+  src/hangoutviewwidget.h
+  src/hangoutviewwidget_p.h
 )
 
 set(sources
@@ -43,6 +45,7 @@ set(sources
   src/vp8encoder.cpp
   src/vp8decoder.cpp
   src/startupwidget.cpp
+  src/hangoutviewwidget.cpp
 )
 
 set(qforms

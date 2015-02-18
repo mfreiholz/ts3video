@@ -20,6 +20,7 @@
 #include "ts3videoclient.h"
 #include "clientapplogic.h"
 #include "startupwidget.h"
+#include "hangoutviewwidget.h"
 
 HUMBLE_LOGGER(HL, "client");
 
@@ -112,6 +113,21 @@ int runVideoCollectionTest(QApplication &a)
   VideoCollectionWidget coll;
   coll.setWidgets(widgets);
   coll.setVisible(true);
+  return a.exec();
+}
+
+int runHangoutViewTest(QApplication &a)
+{
+  a.setQuitOnLastWindowClosed(true);
+  QList<QWidget *> widgets;
+  for (auto i = 0; i < 8; ++i) {
+    auto w = new ClientVideoWidget();
+    widgets.append(w);
+  }
+  HangoutViewWidget hang(nullptr);
+  hang.setWidgets(widgets);
+  hang.resize(800, 600);
+  hang.setVisible(true);
   return a.exec();
 }
 
@@ -277,6 +293,9 @@ int main(int argc, char *argv[])
   }
   else if (mode == QString("test-gui2")) {
     return runVideoCollectionTest(a);
+  }
+  else if (mode == QString("test-gui3")) {
+    return runHangoutViewTest(a);
   }
   else if (mode == QString("install-uri-handler")) {
     return runRegisterUriHandler(a);
