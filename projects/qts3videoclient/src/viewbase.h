@@ -18,8 +18,7 @@ public:
   virtual void removeClient(const ClientEntity &client, const ChannelEntity &channel) = 0;
   virtual void updateClientVideo(YuvFrameRefPtr frame, int senderId) = 0;
 
-protected:
-  virtual RemoteClientVideoWidget* createVideoWidget(const ClientEntity &client, QWidget *parent = nullptr);
+  static RemoteClientVideoWidget* createRemoteVideoWidget(const ClientEntity &client, QWidget *parent = nullptr);
 };
 
 #endif

@@ -15,6 +15,8 @@ class HangoutViewFullViewWidget;
 class HangoutViewCameraWidget;
 class HangoutViewThumbnailWidget;
 
+///////////////////////////////////////////////////////////////////////
+
 class HangoutViewWidgetPrivate : public QObject
 {
   Q_OBJECT
@@ -22,8 +24,14 @@ class HangoutViewWidgetPrivate : public QObject
 public:
   HangoutViewWidgetPrivate(HangoutViewWidget *o) :
     owner(o),
-    cameraWidgetSize(160, 113),
+    fullViewContainer(nullptr),
+    fullViewWidget(nullptr),
+    fullViewClientId(-1),
     thumbnailWidgetSize(160, 113),
+    thumbnailScrollArea(nullptr),
+    thumbnailContainer(nullptr),
+    thumbnailContainerLayout(nullptr),
+    cameraWidgetSize(160, 113),
     cameraWidget(nullptr)
   {}
 
@@ -35,6 +43,7 @@ public:
 
   QWidget *fullViewContainer;
   HangoutViewFullViewWidget *fullViewWidget;
+  int fullViewClientId;
 
   QSize thumbnailWidgetSize;
   QScrollArea *thumbnailScrollArea;
@@ -48,6 +57,7 @@ public:
   QHash<int, RemoteClientVideoWidget*> videoWidgets; ///< Maps client-id to it's video-widget.
 };
 
+///////////////////////////////////////////////////////////////////////
 
 class HangoutViewFullViewWidget : public QFrame
 {
@@ -55,12 +65,17 @@ class HangoutViewFullViewWidget : public QFrame
 
 public:
   HangoutViewFullViewWidget(QWidget *parent);
-  virtual ~HangoutViewFullViewWidget();
+  RemoteClientVideoWidget* remoteVideoWidget() const { return _videoWidget; }
+
+private slots:
+  void createRemoteVideoWidget();
 
 private:
   QSize _aspectRatio;
+  RemoteClientVideoWidget *_videoWidget;
 };
 
+///////////////////////////////////////////////////////////////////////
 
 class HangoutViewCameraWidget : public QFrame
 {
@@ -77,15 +92,15 @@ private:
   QWidget *_widget;
 };
 
+///////////////////////////////////////////////////////////////////////
 
 class HangoutViewThumbnailWidget : public QFrame
 {
   Q_OBJECT
 
 public:
-  HangoutViewThumbnailWidget(QWidget *parent);
-  virtual ~HangoutViewThumbnailWidget();
-  void setWidget(QWidget *w);
+  HangoutViewThumbnailWidget(const ClientEntity &client, QWidget *parent);
+  RemoteClientVideoWidget* remoteVideoWidget() const { return _videoWidget; }
 
 signals:
   void clicked();
@@ -96,7 +111,9 @@ protected:
 
 private:
   bool _mouseDown;
-  QWidget *_videoWidget;
+  RemoteClientVideoWidget *_videoWidget;
 };
+
+///////////////////////////////////////////////////////////////////////
 
 #endif

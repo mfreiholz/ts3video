@@ -1,12 +1,14 @@
 #include "hangoutviewwidget_p.h"
 
 #include <QDebug>
+#include <QTimer>
 #include <QBoxLayout>
 #include <QGridLayout>
 #include <QFrame>
 #include <QScrollArea>
 #include <QScrollBar>
 #include <QSizeGrip>
+#include <QResizeEvent>
 #include <QGraphicsDropShadowEffect>
 
 #include "cliententity.h"
@@ -22,6 +24,7 @@ HangoutViewWidget::HangoutViewWidget(QWidget *parent) :
   d(new HangoutViewWidgetPrivate(this))
 {
   auto pal = palette();
+  d->thumbnailWidgetSize.scale(250, 250, Qt::KeepAspectRatio);
 
   // Full view area.
   d->fullViewContainer = new QWidget(this);
@@ -49,7 +52,7 @@ HangoutViewWidget::HangoutViewWidget(QWidget *parent) :
   d->thumbnailScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
   d->thumbnailScrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
   d->thumbnailScrollArea->setWidgetResizable(true);
-  d->thumbnailScrollArea->setFrameShape(QFrame::StyledPanel);
+  d->thumbnailScrollArea->setFrameShape(QFrame::NoFrame);
   d->thumbnailScrollArea->setFrameShadow(QFrame::Plain);
   d->thumbnailScrollArea->setWidget(d->thumbnailContainer);
   d->thumbnailScrollArea->setMinimumHeight(d->thumbnailWidgetSize.height() + d->thumbnailScrollArea->horizontalScrollBar()->height() + 9);
@@ -68,8 +71,6 @@ HangoutViewWidget::HangoutViewWidget(QWidget *parent) :
 
 HangoutViewWidget::~HangoutViewWidget()
 {
-  d->cameraWidget->setVisible(false);
-  d->cameraWidget->setParent(nullptr);
 }
 
 void HangoutViewWidget::setCameraWidget(QWidget *w)
@@ -81,23 +82,25 @@ void HangoutViewWidget::setCameraWidget(QWidget *w)
 void HangoutViewWidget::addClient(const ClientEntity &client, const ChannelEntity &channel)
 {
   // Create thumbnail widget.
-  auto hw = new HangoutViewThumbnailWidget(d->thumbnailContainer);
+  auto hw = new HangoutViewThumbnailWidget(client, d->thumbnailContainer);
   hw->setFixedSize(d->thumbnailWidgetSize);
-
-  auto videoWidget = createVideoWidget(client, hw);
-  videoWidget->setMouseTracking(true);
-  hw->setWidget(videoWidget);
 
   // Add to thumbnail area.
   d->thumbnailContainerLayout->insertWidget(d->thumbnailContainerLayout->count() - 1, hw);
 
   // Mappings.
   d->thumbnailWidgets.insert(client.id, hw);
-  d->videoWidgets.insert(client.id, videoWidget);
+  d->videoWidgets.insert(client.id, hw->remoteVideoWidget());
 
-  QObject::connect(hw, &HangoutViewThumbnailWidget::clicked, [client] () -> void {
+  QObject::connect(hw, &HangoutViewThumbnailWidget::clicked, [this, client] () -> void {
     qDebug() << QString("Clicked %1").arg(client.id);
+    d->fullViewClientId = client.id;
   });
+
+  // Create full-view video-widget.
+  if (d->fullViewClientId == -1) {
+    d->fullViewClientId = client.id;
+  }
 }
 
 void HangoutViewWidget::removeClient(const ClientEntity &client, const ChannelEntity &channel)
@@ -122,6 +125,12 @@ void HangoutViewWidget::updateClientVideo(YuvFrameRefPtr frame, int senderId)
   if (!videoWidget) {
     //HL_WARN(HL, QString("Received video frame for unknown client (client-id=%1)").arg(senderId).toStdString());
     return;
+  }
+  if (senderId == d->fullViewClientId) {
+    auto w = d->fullViewWidget->remoteVideoWidget();
+    if (w) {
+      w->videoWidget()->setFrame(frame);
+    }
   }
   videoWidget->videoWidget()->setFrame(frame);
 }
@@ -178,7 +187,7 @@ void HangoutViewWidgetPrivate::doCameraLayout()
 
   const auto spacing = 12;
 
-  d->cameraWidget->resize(cameraWidgetSize);
+  //d->cameraWidget->resize(cameraWidgetSize);
 
   auto pos = d->fullViewContainer->rect().bottomRight();
   pos.setX(pos.x() - spacing - d->cameraWidget->width());
@@ -191,8 +200,13 @@ void HangoutViewWidgetPrivate::doCameraLayout()
 ///////////////////////////////////////////////////////////////////////
 
 HangoutViewFullViewWidget::HangoutViewFullViewWidget(QWidget *parent) :
-  QFrame(parent)
+  QFrame(parent),
+  _videoWidget(nullptr)
 {
+  auto pal = palette();
+  pal.setColor(QPalette::Background, Qt::white);
+  setPalette(pal);
+
   setAutoFillBackground(true);
   setFrameShape(QFrame::StyledPanel);
 
@@ -200,10 +214,21 @@ HangoutViewFullViewWidget::HangoutViewFullViewWidget(QWidget *parent) :
   dropShadow->setOffset(0, 0);
   dropShadow->setBlurRadius(5);
   setGraphicsEffect(dropShadow);
+
+  QTimer::singleShot(1, this, SLOT(createRemoteVideoWidget()));
 }
 
-HangoutViewFullViewWidget::~HangoutViewFullViewWidget()
+void HangoutViewFullViewWidget::createRemoteVideoWidget()
 {
+  // Content.
+  _videoWidget = ViewBase::createRemoteVideoWidget(ClientEntity(), this);
+
+  // Layout.
+  auto l = new QBoxLayout(QBoxLayout::TopToBottom);
+  l->setContentsMargins(0, 0, 0, 0);
+  l->setSpacing(0);
+  l->addWidget(_videoWidget);
+  setLayout(l);
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -219,9 +244,9 @@ HangoutViewCameraWidget::HangoutViewCameraWidget(QWidget *parent) :
   setAutoFillBackground(true);
   setFrameShape(QFrame::StyledPanel);
   setWindowFlags(Qt::SubWindow);
+  setMinimumSize(_minSize);
 
   _sizeGrip = new QSizeGrip(this);
-  _sizeGrip->setVisible(true);
 }
 
 HangoutViewCameraWidget::~HangoutViewCameraWidget()
@@ -255,7 +280,7 @@ void HangoutViewCameraWidget::setWidget(QWidget *w)
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
 
-HangoutViewThumbnailWidget::HangoutViewThumbnailWidget(QWidget *parent) :
+HangoutViewThumbnailWidget::HangoutViewThumbnailWidget(const ClientEntity &client, QWidget *parent) :
   QFrame(parent),
   _mouseDown(false),
   _videoWidget(nullptr)
@@ -268,21 +293,11 @@ HangoutViewThumbnailWidget::HangoutViewThumbnailWidget(QWidget *parent) :
   dropShadow->setOffset(0, 0);
   dropShadow->setBlurRadius(5);
   setGraphicsEffect(dropShadow);
-}
 
-HangoutViewThumbnailWidget::~HangoutViewThumbnailWidget()
-{
-}
+  // Content.
+  _videoWidget = ViewBase::createRemoteVideoWidget(client, this);
 
-void HangoutViewThumbnailWidget::setWidget(QWidget *w)
-{
-  if (_videoWidget) {
-    _videoWidget->setVisible(false);
-    _videoWidget->setParent(nullptr);
-  }
-  _videoWidget = w;
-  _videoWidget->setParent(this);
- 
+  // Layout.
   auto l = new QBoxLayout(QBoxLayout::TopToBottom);
   l->setContentsMargins(0, 0, 0, 0);
   l->setSpacing(0);
