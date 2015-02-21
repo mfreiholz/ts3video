@@ -27,7 +27,7 @@ public:
     fullViewContainer(nullptr),
     fullViewWidget(nullptr),
     fullViewClientId(-1),
-    thumbnailWidgetSize(160, 113),
+    thumbnailWidgetSize(4, 3),
     thumbnailScrollArea(nullptr),
     thumbnailContainer(nullptr),
     thumbnailContainerLayout(nullptr),

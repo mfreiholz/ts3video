@@ -15,6 +15,10 @@
 
 #include "remoteclientvideowidget.h"
 
+static QColor __lightBackgroundColor(45, 45, 48);
+static QColor __darkBackgroundColor(30, 30, 30);
+static QColor __frameColor(63, 63, 70);
+
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
@@ -24,12 +28,14 @@ HangoutViewWidget::HangoutViewWidget(QWidget *parent) :
   d(new HangoutViewWidgetPrivate(this))
 {
   auto pal = palette();
-  d->thumbnailWidgetSize.scale(250, 250, Qt::KeepAspectRatio);
+  d->thumbnailWidgetSize.scale(200, 200, Qt::KeepAspectRatio);
 
   // Full view area.
   d->fullViewContainer = new QWidget(this);
-  d->fullViewContainer->setObjectName("fullViewContainer");
-  //d->fullViewContainer->setStyleSheet("#fullViewContainer { background: qlineargradient(spread:pad, x1:0.514, y1:0, x2:1, y2:1, stop:0 rgba(0, 0, 81, 255), stop:1 rgba(0, 0, 25, 255)); }");
+  d->fullViewContainer->setAutoFillBackground(true);
+  pal = d->fullViewContainer->palette();
+  pal.setColor(QPalette::Background, __darkBackgroundColor);
+  d->fullViewContainer->setPalette(pal);
 
   d->fullViewWidget = new HangoutViewFullViewWidget(d->fullViewContainer);
 
@@ -39,7 +45,7 @@ HangoutViewWidget::HangoutViewWidget(QWidget *parent) :
   // Thumbnail area.
   d->thumbnailContainer = new QWidget(this);
   pal = d->thumbnailContainer->palette();
-  pal.setColor(QPalette::Background, Qt::lightGray);
+  pal.setColor(QPalette::Background, __lightBackgroundColor);
   d->thumbnailContainer->setPalette(pal);
 
   d->thumbnailContainerLayout = new QBoxLayout(QBoxLayout::LeftToRight);
@@ -49,13 +55,23 @@ HangoutViewWidget::HangoutViewWidget(QWidget *parent) :
   d->thumbnailContainer->setLayout(d->thumbnailContainerLayout);
 
   d->thumbnailScrollArea = new QScrollArea(this);
+  pal = d->thumbnailScrollArea->palette();
+  pal.setColor(QPalette::Foreground, __frameColor);
+  d->thumbnailScrollArea->setPalette(pal);
   d->thumbnailScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
   d->thumbnailScrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
   d->thumbnailScrollArea->setWidgetResizable(true);
-  d->thumbnailScrollArea->setFrameShape(QFrame::NoFrame);
+  d->thumbnailScrollArea->setFrameShape(QFrame::Box);
   d->thumbnailScrollArea->setFrameShadow(QFrame::Plain);
   d->thumbnailScrollArea->setWidget(d->thumbnailContainer);
   d->thumbnailScrollArea->setMinimumHeight(d->thumbnailWidgetSize.height() + d->thumbnailScrollArea->horizontalScrollBar()->height() + 9);
+  d->thumbnailScrollArea->setStyleSheet(
+    "QScrollBar { background: black; }"
+    "QScrollBar:horizontal { height: 10px; }"
+    "QScrollBar::add-line, QScrollBar::sub-line { background: none; }"
+    "QScrollBar::add-page, QScrollBar::sub-page { background: none; }"
+    "QScrollBar::handle { border: 1px solid #ccc; }"
+  );
 
   // Layout.
   auto mainLayout = new QBoxLayout(QBoxLayout::TopToBottom);
@@ -205,10 +221,11 @@ HangoutViewFullViewWidget::HangoutViewFullViewWidget(QWidget *parent) :
 {
   auto pal = palette();
   pal.setColor(QPalette::Background, Qt::white);
+  pal.setColor(QPalette::Foreground, __frameColor);
   setPalette(pal);
 
   setAutoFillBackground(true);
-  setFrameShape(QFrame::StyledPanel);
+  setFrameShape(QFrame::Box);
 
   auto dropShadow = new QGraphicsDropShadowEffect(this);
   dropShadow->setOffset(0, 0);
@@ -240,9 +257,13 @@ HangoutViewCameraWidget::HangoutViewCameraWidget(QWidget *parent) :
   _minSize(160, 113),
   _widget(nullptr)
 {
+  auto pal = palette();
+  pal.setColor(QPalette::Foreground, __frameColor);
+  setPalette(pal);
+
   setMouseTracking(true);
   setAutoFillBackground(true);
-  setFrameShape(QFrame::StyledPanel);
+  setFrameShape(QFrame::Box);
   setWindowFlags(Qt::SubWindow);
   setMinimumSize(_minSize);
 
@@ -285,9 +306,13 @@ HangoutViewThumbnailWidget::HangoutViewThumbnailWidget(const ClientEntity &clien
   _mouseDown(false),
   _videoWidget(nullptr)
 {
+  auto pal = palette();
+  pal.setColor(QPalette::Foreground, __frameColor);
+  setPalette(pal);
+
   setMouseTracking(true);
   setAutoFillBackground(true);
-  setFrameShape(QFrame::StyledPanel);
+  setFrameShape(QFrame::Box);
 
   auto dropShadow = new QGraphicsDropShadowEffect(this);
   dropShadow->setOffset(0, 0);
