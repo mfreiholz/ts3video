@@ -147,7 +147,7 @@ void HangoutViewWidgetPrivate::doFullViewVideoLayout()
   if (!d->fullViewWidget)
     return;
 
-  auto spacing = 12;
+  auto spacing = 9;
   auto rect = d->fullViewContainer->rect();
   auto widgetPos = QPoint(0, 0);
   auto widgetSize = QSize(4, 3);
@@ -185,7 +185,7 @@ void HangoutViewWidgetPrivate::doCameraLayout()
   if (!d->cameraWidget)
     return;
 
-  const auto spacing = 12;
+  const auto spacing = 9;
 
   //d->cameraWidget->resize(cameraWidgetSize);
 
