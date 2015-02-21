@@ -19,7 +19,7 @@
 
 #include "clientcameravideowidget.h"
 #include "remoteclientvideowidget.h"
-#include "videocollectionwidget.h"
+#include "hangoutviewwidget.h"
 
 HUMBLE_LOGGER(HL, "client.logic");
 
@@ -40,7 +40,7 @@ ClientAppLogic::Options::Options() :
 ClientAppLogic::ClientAppLogic(const Options &opts, QObject *parent) :
   QObject(parent),
   _opts(opts),
-  _containerWidget(nullptr),
+  _view(nullptr),
   _cameraWidget(nullptr),
   _progressBox(nullptr)
 {
@@ -59,14 +59,8 @@ ClientAppLogic::~ClientAppLogic()
 {
   hideProgress();
 
-  if (_containerWidget) {
-    _containerWidget->close();
-    delete _containerWidget;
-  }
-
-  while (!_clientWidgets.isEmpty()) {
-    auto w = _clientWidgets.take(_clientWidgets.begin().key());
-    delete w;
+  if (_view) {
+    delete _view;
   }
 
   if (_cameraWidget) {
@@ -152,40 +146,32 @@ void ClientAppLogic::onError(QAbstractSocket::SocketError socketError)
 void ClientAppLogic::onClientJoinedChannel(const ClientEntity &client, const ChannelEntity &channel)
 {
   HL_INFO(HL, QString("Client joined channel (client-id=%1; channel-id=%2)").arg(client.id).arg(channel.id).toStdString());
-  auto w = _clientWidgets.value(client.id);
-  if (!w && client.id != _ts3vc.clientEntity().id) {
-    w = createClientWidget(client);
-    _clientWidgets.insert(client.id, w);
+  if (client.id != _ts3vc.clientEntity().id) {
+    _view->addClient(client, channel);
   }
 }
 
 void ClientAppLogic::onClientLeftChannel(const ClientEntity &client, const ChannelEntity &channel)
 {
   HL_INFO(HL, QString("Client left channel (client-id=%1; channel-id=%2)").arg(client.id).arg(channel.id).toStdString());
-  deleteClientWidget(client);
+  _view->removeClient(client, channel);
 }
 
 void ClientAppLogic::onClientDisconnected(const ClientEntity &client)
 {
   HL_INFO(HL, QString("Client disconnected (client-id=%1)").arg(client.id).toStdString());
-  deleteClientWidget(client);
+  _view->removeClient(client, ChannelEntity());
 }
 
 void ClientAppLogic::onNewVideoFrame(YuvFrameRefPtr frame, int senderId)
 {
-  auto w = _clientWidgets.value(senderId);
-  if (!w) {
-    HL_WARN(HL, QString("Received video frame for unknown client (client-id=%1)").arg(senderId).toStdString());
-    return;
-  }
-  w->videoWidget()->setFrame(frame);
+  _view->updateClientVideo(frame, senderId);
 }
 
 void ClientAppLogic::initGui()
 {
-  _containerWidget = new VideoCollectionWidget(nullptr);
-  _containerWidget->show();
-  createCameraWidget();
+  _view = new HangoutViewWidget(nullptr);
+  _view->setCameraWidget(createCameraWidget());
 }
 
 QWidget* ClientAppLogic::createCameraWidget()
@@ -197,29 +183,8 @@ QWidget* ClientAppLogic::createCameraWidget()
       break;
     }
   }
-
   _cameraWidget = new ClientCameraVideoWidget(&_ts3vc, cameraInfo, nullptr);
-  _containerWidget->addWidget(_cameraWidget);
   return _cameraWidget;
-}
-
-RemoteClientVideoWidget* ClientAppLogic::createClientWidget(const ClientEntity &client)
-{
-  auto w = new RemoteClientVideoWidget(nullptr);
-  w->setClient(client);
-  _containerWidget->addWidget(w);
-  return w;
-}
-
-void ClientAppLogic::deleteClientWidget(const ClientEntity &client)
-{
-  auto w = _clientWidgets.take(client.id);
-  if (!w) {
-    return;
-  }
-  _containerWidget->removeWidget(w);
-  w->close();
-  w->deleteLater();
 }
 
 void ClientAppLogic::showProgress(const QString &text)

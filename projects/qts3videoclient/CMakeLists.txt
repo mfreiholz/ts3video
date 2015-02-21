@@ -12,6 +12,7 @@ find_package(Qt5OpenGL REQUIRED)
 
 # Sources
 set(headers
+  src/viewbase.h
 )
 
 set(qheaders
@@ -46,6 +47,7 @@ set(sources
   src/vp8decoder.cpp
   src/startupwidget.cpp
   src/hangoutviewwidget.cpp
+  src/viewbase.cpp
 )
 
 set(qforms

@@ -119,15 +119,44 @@ int runVideoCollectionTest(QApplication &a)
 int runHangoutViewTest(QApplication &a)
 {
   a.setQuitOnLastWindowClosed(true);
-  QList<QWidget *> widgets;
-  for (auto i = 0; i < 8; ++i) {
-    auto w = new ClientVideoWidget();
-    widgets.append(w);
-  }
+
   HangoutViewWidget hang(nullptr);
-  hang.setWidgets(widgets);
+  hang.setCameraWidget(new ClientVideoWidget());
   hang.resize(800, 600);
   hang.setVisible(true);
+
+  int addClientId = 1;
+  int removeClientId = 1;
+  int clientsCount = 0;
+
+  // Add widgets.
+  QTimer t;
+  t.setInterval(2000);
+  t.start();
+  QObject::connect(&t, &QTimer::timeout, [&hang, &addClientId, &clientsCount] () {
+    if (clientsCount >= 5)
+      return;
+    ClientEntity client;
+    client.id = ++addClientId;
+    ChannelEntity channel;
+    channel.id = 0;
+    hang.addClient(client, channel);
+    ++clientsCount;
+  });
+
+  // Remove widgets.
+  QTimer t2;
+  t2.setInterval(5000);
+  t2.start();
+  QObject::connect(&t2, &QTimer::timeout, [&hang, &removeClientId, &clientsCount] () {
+    ClientEntity client;
+    client.id = ++removeClientId;
+    ChannelEntity channel;
+    channel.id = 0;
+    hang.removeClient(client, channel);
+    --clientsCount;
+  });
+
   return a.exec();
 }
 

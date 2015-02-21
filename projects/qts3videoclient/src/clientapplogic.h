@@ -12,7 +12,7 @@
 
 class QWidget;
 class QProgressDialog;
-class VideoCollectionWidget;
+class ViewBase;
 class ClientCameraVideoWidget;
 class RemoteClientVideoWidget;
 
@@ -49,8 +49,6 @@ private slots:
 protected:
   void initGui();
   QWidget* createCameraWidget();
-  RemoteClientVideoWidget* createClientWidget(const ClientEntity &client);
-  void deleteClientWidget(const ClientEntity &client);
   void showProgress(const QString &text);
   void hideProgress();
   void showError(const QString &shortText, const QString &longText = QString());
@@ -59,11 +57,9 @@ private:
   Options _opts;
   TS3VideoClient _ts3vc;
 
-  VideoCollectionWidget *_containerWidget;
+  ViewBase *_view;
   ClientCameraVideoWidget *_cameraWidget; ///< Local user's camera widget.
-  QHash<int, RemoteClientVideoWidget*> _clientWidgets; ///< Remote client widgets.
-
-  QProgressDialog *_progressBox;
+  QProgressDialog *_progressBox; ///< Global progress dialog.
 };
 
 #endif
