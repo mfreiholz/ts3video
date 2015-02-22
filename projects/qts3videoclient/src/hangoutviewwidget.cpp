@@ -2,6 +2,7 @@
 
 #include <QDebug>
 #include <QTimer>
+#include <QSettings>
 #include <QBoxLayout>
 #include <QGridLayout>
 #include <QFrame>
@@ -182,6 +183,18 @@ void HangoutViewWidget::resizeEvent(QResizeEvent *ev)
 {
   d->doFullViewVideoLayout();
   d->doCameraLayout();
+}
+
+void HangoutViewWidget::showEvent(QShowEvent *)
+{
+  QSettings settings;
+  restoreGeometry(settings.value("UI/HangoutViewWidget-Geometry").toByteArray());
+}
+
+void HangoutViewWidget::closeEvent(QCloseEvent *)
+{
+  QSettings settings;
+  settings.setValue("UI/HangoutViewWidget-Geometry", saveGeometry());
 }
 
 void HangoutViewWidgetPrivate::doFullViewVideoLayout()

@@ -23,7 +23,9 @@ public:
   virtual void updateClientVideo(YuvFrameRefPtr frame, int senderId) override;
 
 protected:
-  void resizeEvent(QResizeEvent *);
+  virtual void resizeEvent(QResizeEvent *);
+  virtual void showEvent(QShowEvent *);
+  virtual void closeEvent(QCloseEvent *);
 };
 
 #endif
