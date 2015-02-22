@@ -9,15 +9,31 @@
 #include <QScrollBar>
 #include <QSizeGrip>
 #include <QResizeEvent>
+#include <QToolButton>
 #include <QGraphicsDropShadowEffect>
 
 #include "cliententity.h"
 
 #include "remoteclientvideowidget.h"
 
+///////////////////////////////////////////////////////////////////////
+
 static QColor __lightBackgroundColor(45, 45, 48);
 static QColor __darkBackgroundColor(30, 30, 30);
 static QColor __frameColor(63, 63, 70);
+static QColor __frameColorActive(0, 122, 204);
+
+///////////////////////////////////////////////////////////////////////
+
+QGraphicsEffect* addDropShadowEffect(QWidget *widget)
+{
+  auto dropShadow = new QGraphicsDropShadowEffect(widget);
+  dropShadow->setOffset(0, 0);
+  dropShadow->setBlurRadius(5);
+  dropShadow->setColor(QColor(Qt::black));
+  widget->setGraphicsEffect(dropShadow);
+  return dropShadow;
+}
 
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
@@ -66,11 +82,11 @@ HangoutViewWidget::HangoutViewWidget(QWidget *parent) :
   d->thumbnailScrollArea->setWidget(d->thumbnailContainer);
   d->thumbnailScrollArea->setMinimumHeight(d->thumbnailWidgetSize.height() + d->thumbnailScrollArea->horizontalScrollBar()->height() + 9);
   d->thumbnailScrollArea->setStyleSheet(
-    "QScrollBar { background: black; }"
+    "QScrollBar { background: rgb(30, 30, 30); }"
     "QScrollBar:horizontal { height: 10px; }"
     "QScrollBar::add-line, QScrollBar::sub-line { background: none; }"
     "QScrollBar::add-page, QScrollBar::sub-page { background: none; }"
-    "QScrollBar::handle { border: 1px solid #ccc; }"
+    "QScrollBar::handle { background: rgb(63, 63, 70); border: 1px solid rgb(63, 63, 70); }"
   );
 
   // Layout.
@@ -110,12 +126,12 @@ void HangoutViewWidget::addClient(const ClientEntity &client, const ChannelEntit
 
   QObject::connect(hw, &HangoutViewThumbnailWidget::clicked, [this, client] () -> void {
     qDebug() << QString("Clicked %1").arg(client.id);
-    d->fullViewClientId = client.id;
+    d->setActiveThumbnail(client.id);
   });
 
   // Create full-view video-widget.
   if (d->fullViewClientId == -1) {
-    d->fullViewClientId = client.id;
+    d->setActiveThumbnail(client.id);
   }
 }
 
@@ -133,6 +149,17 @@ void HangoutViewWidget::removeClient(const ClientEntity &client, const ChannelEn
   hw->setVisible(false);
   d->thumbnailContainerLayout->removeWidget(hw);
   delete hw;
+
+  // Update current full view video.
+  if (d->fullViewClientId == client.id) {
+    if (d->thumbnailWidgets.size() > 0) {
+      auto i = d->thumbnailWidgets.begin();
+      d->setActiveThumbnail(i.key());
+    } else {
+      d->setActiveThumbnail(-1);
+      d->fullViewWidget->remoteVideoWidget()->videoWidget()->setFrame(YuvFrameRefPtr());
+    }
+  }
 }
 
 void HangoutViewWidget::updateClientVideo(YuvFrameRefPtr frame, int senderId)
@@ -211,6 +238,21 @@ void HangoutViewWidgetPrivate::doCameraLayout()
   d->cameraWidget->move(pos);
 }
 
+void HangoutViewWidgetPrivate::setActiveThumbnail(int id)
+{
+  auto d = this;
+  QHashIterator<int, HangoutViewThumbnailWidget*> itr(d->thumbnailWidgets);
+  while (itr.hasNext()) {
+    itr.next();
+    if (itr.key() == id) {
+      itr.value()->setActive(true);
+      d->fullViewClientId = id;
+    } else {
+      itr.value()->setActive(false);
+    }
+  }
+}
+
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
@@ -226,11 +268,7 @@ HangoutViewFullViewWidget::HangoutViewFullViewWidget(QWidget *parent) :
 
   setAutoFillBackground(true);
   setFrameShape(QFrame::Box);
-
-  auto dropShadow = new QGraphicsDropShadowEffect(this);
-  dropShadow->setOffset(0, 0);
-  dropShadow->setBlurRadius(5);
-  setGraphicsEffect(dropShadow);
+  addDropShadowEffect(this);
 
   QTimer::singleShot(1, this, SLOT(createRemoteVideoWidget()));
 }
@@ -304,6 +342,7 @@ void HangoutViewCameraWidget::setWidget(QWidget *w)
 HangoutViewThumbnailWidget::HangoutViewThumbnailWidget(const ClientEntity &client, QWidget *parent) :
   QFrame(parent),
   _mouseDown(false),
+  _active(false),
   _videoWidget(nullptr)
 {
   auto pal = palette();
@@ -313,11 +352,7 @@ HangoutViewThumbnailWidget::HangoutViewThumbnailWidget(const ClientEntity &clien
   setMouseTracking(true);
   setAutoFillBackground(true);
   setFrameShape(QFrame::Box);
-
-  auto dropShadow = new QGraphicsDropShadowEffect(this);
-  dropShadow->setOffset(0, 0);
-  dropShadow->setBlurRadius(5);
-  setGraphicsEffect(dropShadow);
+  addDropShadowEffect(this);
 
   // Content.
   _videoWidget = ViewBase::createRemoteVideoWidget(client, this);
@@ -328,6 +363,25 @@ HangoutViewThumbnailWidget::HangoutViewThumbnailWidget(const ClientEntity &clien
   l->setSpacing(0);
   l->addWidget(_videoWidget);
   setLayout(l);
+}
+
+void HangoutViewThumbnailWidget::setActive(bool b)
+{
+  _active = b;
+  if (_active) {
+    auto pal = palette();
+    pal.setColor(QPalette::Foreground, __frameColorActive);
+    setPalette(pal);
+  } else {
+    auto pal = palette();
+    pal.setColor(QPalette::Foreground, __frameColor);
+    setPalette(pal);
+  }
+}
+
+bool HangoutViewThumbnailWidget::isActive() const
+{
+  return _active;
 }
 
 void HangoutViewThumbnailWidget::mousePressEvent(QMouseEvent *ev)

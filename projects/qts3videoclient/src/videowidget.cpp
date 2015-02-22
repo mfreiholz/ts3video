@@ -71,7 +71,9 @@ void ClientVideoWidget::setFrame(YuvFrameRefPtr frame)
 #endif
     case CPU:
       if (d->cpuImageImpl) {
-        auto image = frame->toQImage();
+        QImage image;
+        if (!frame.isNull())
+          image = frame->toQImage();
         d->cpuImageImpl->setFrame(image);
       }
       break;

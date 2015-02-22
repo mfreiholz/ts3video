@@ -37,6 +37,7 @@ public:
 
   void doFullViewVideoLayout();
   void doCameraLayout();
+  void setActiveThumbnail(int id);
   
 public:
   HangoutViewWidget *owner;
@@ -101,6 +102,8 @@ class HangoutViewThumbnailWidget : public QFrame
 public:
   HangoutViewThumbnailWidget(const ClientEntity &client, QWidget *parent);
   RemoteClientVideoWidget* remoteVideoWidget() const { return _videoWidget; }
+  void setActive(bool b);
+  bool isActive() const;
 
 signals:
   void clicked();
@@ -111,6 +114,7 @@ protected:
 
 private:
   bool _mouseDown;
+  bool _active;
   RemoteClientVideoWidget *_videoWidget;
 };
 
