@@ -27,6 +27,11 @@ set(vpx_LIBRARIES
   debug "${PROJECT_SOURCE_DIR}/thirdparty/vpx/lib-win-x86-vc11-debug/vpxmdd.lib"
 )
 
+# Third party (ts3pluginsdk)
+set(ts3pluginsdk_INCLUDE_DIRS
+  ${PROJECT_SOURCE_DIR}/thirdparty/ts3pluginsdk/include/ts3
+)
+
 # Third party (external projects)
 #include(CMakeThirdParty.txt)
 
@@ -46,6 +51,9 @@ add_subdirectory(projects/qcorlib)
 add_subdirectory(projects/qts3videocorelib)
 add_subdirectory(projects/qts3videoserver)
 add_subdirectory(projects/qts3videoclient)
+
+# TS3 Client Plugin
+add_subdirectory(projects/qts3videoclientplugin)
 
 # Obsolete
 #add_subdirectory(projects/qswserverlib)
