@@ -4,3 +4,6 @@
 [submodule "thirdparty/vpx"]
 	path = thirdparty/vpx
 	url = git@git.insanefactory.com:/opt/git/ts3video-vpx.git
+[submodule "thirdparty/teamspeak3-clientpluginsdk"]
+	path = thirdparty/teamspeak3-clientpluginsdk
+	url = git@git.insanefactory.com:/opt/git/ts3video-teamspeak3-clientpluginsdk.git
