@@ -9,7 +9,7 @@ set(headers
 
 set(sources
   src/plugin.c
-  src/plugin.cpp
+  src/impl.cpp
 )
 
 # Defines

@@ -37,7 +37,7 @@ set(vpx_LIBRARIES
 
 # Third party (ts3pluginsdk)
 set(ts3pluginsdk_INCLUDE_DIRS
-  ${PROJECT_SOURCE_DIR}/thirdparty/ts3pluginsdk/include/ts3
+  ${PROJECT_SOURCE_DIR}/thirdparty/teamspeak3-clientpluginsdk/pluginsdk-3.0.16/include
 )
 
 # Third party (external projects)
