@@ -1,6 +1,14 @@
 cmake_minimum_required(VERSION 2.8)
 project(source)
 
+# Architecture
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+	set(ARCH "x64")
+else(CMAKE_SIZEOF_VOID_P EQUAL 8)
+	set(ARCH "x86")
+endif(CMAKE_SIZEOF_VOID_P EQUAL 8)
+
+# Global compiler flags.
 if(CMAKE_COMPILER_IS_GNUCC)
   set(CMAKE_CXX_FLAGS "-std=c++11")
 endif(CMAKE_COMPILER_IS_GNUCC)
@@ -23,8 +31,8 @@ set(vpx_INCLUDE_DIRS
   ${PROJECT_SOURCE_DIR}/thirdparty/vpx/include
 )
 set(vpx_LIBRARIES
-  optimized "${PROJECT_SOURCE_DIR}/thirdparty/vpx/lib-win-x86-vc11-release/vpxmd.lib"
-  debug "${PROJECT_SOURCE_DIR}/thirdparty/vpx/lib-win-x86-vc11-debug/vpxmdd.lib"
+  optimized "${PROJECT_SOURCE_DIR}/thirdparty/vpx/lib-win-${ARCH}-vc12-release/vpxmd.lib"
+  debug "${PROJECT_SOURCE_DIR}/thirdparty/vpx/lib-win-${ARCH}-vc12-debug/vpxmdd.lib"
 )
 
 # Third party (ts3pluginsdk)
