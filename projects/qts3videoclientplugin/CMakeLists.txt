@@ -5,6 +5,7 @@ find_package(Qt5Core REQUIRED)
 # Sources
 set(headers
   src/plugin.h
+  src/impl.h
 )
 
 set(sources
@@ -27,9 +28,4 @@ add_library(
   SHARED
   ${headers}
   ${sources}
-)
-
-target_link_libraries(
-  qts3videoclientplugin
-  Qt5::Core
 )

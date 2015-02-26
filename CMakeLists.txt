@@ -43,6 +43,9 @@ set(ts3pluginsdk_INCLUDE_DIRS
 # Third party (external projects)
 #include(CMakeThirdParty.txt)
 
+# Global compiler flags.
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wextra")
+
 # Local projects.
 add_subdirectory(projects/corlib) # TCP protocol lib
 add_subdirectory(projects/medlib) # UDP protocol lib

@@ -19,6 +19,7 @@
 #include "public_rare_definitions.h"
 #include "ts3_functions.h"
 #include "plugin.h"
+#include "impl.h"
 
 static struct TS3Functions ts3Functions;
 
@@ -64,14 +65,14 @@ const char* ts3plugin_name() {
 	/* TeamSpeak expects UTF-8 encoded characters. Following demonstrates a possibility how to convert UTF-16 wchar_t into UTF-8. */
 	static char* result = NULL;  /* Static variable so it's allocated only once */
 	if(!result) {
-		const wchar_t* name = L"TTS3 Video";
+		const wchar_t* name = L"iF.TS3Video";
 		if(wcharToUtf8(name, &result) == -1) {  /* Convert name into UTF-8 encoded result */
-			result = "TS3 Video";  /* Conversion failed, fallback here */
+			result = "iF.TS3Video";  /* Conversion failed, fallback here */
 		}
 	}
 	return result;
 #else
-	return "TS3 Video";
+	return "iF.TS3Video";
 #endif
 }
 
@@ -94,7 +95,7 @@ const char* ts3plugin_author() {
 /* Plugin description */
 const char* ts3plugin_description() {
 	/* If you want to use wchar_t, see ts3plugin_name() on how to use */
-    return "This plugin provides video conferencing.";
+    return "This plugin provides video conferencing for Teamspeak 3.\n\nCheckout the plugin's website for more information:\nhttp://ts3video.insanefactory.com/";
 }
 
 /* Set TeamSpeak 3 callback functions */
@@ -507,13 +508,7 @@ static struct PluginMenuItem* createMenuItem(enum PluginMenuType type, int id, c
  * These IDs are freely choosable by the plugin author. It's not really needed to use an enum, it just looks prettier.
  */
 enum {
-	MENU_ID_CLIENT_1 = 1,
-	MENU_ID_CLIENT_2,
-	MENU_ID_CHANNEL_1,
-	MENU_ID_CHANNEL_2,
-	MENU_ID_CHANNEL_3,
-	MENU_ID_GLOBAL_1,
-	MENU_ID_GLOBAL_2
+  MENU_ID_CHANNEL_STARTHANGOUT = 1
 };
 
 /*
@@ -540,14 +535,8 @@ void ts3plugin_initMenus(struct PluginMenuItem*** menuItems, char** menuIcon) {
 	 * e.g. for "test_plugin.dll", icon "1.png" is loaded from <TeamSpeak 3 Client install dir>\plugins\test_plugin\1.png
 	 */
 
-	BEGIN_CREATE_MENUS(7);  /* IMPORTANT: Number of menu items must be correct! */
-	CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_CLIENT,  MENU_ID_CLIENT_1,  "Client item 1",  "1.png");
-	CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_CLIENT,  MENU_ID_CLIENT_2,  "Client item 2",  "2.png");
-	CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_CHANNEL, MENU_ID_CHANNEL_1, "Channel item 1", "1.png");
-	CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_CHANNEL, MENU_ID_CHANNEL_2, "Channel item 2", "2.png");
-	CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_CHANNEL, MENU_ID_CHANNEL_3, "Channel item 3", "3.png");
-	CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL,  MENU_ID_GLOBAL_1,  "Global item 1",  "1.png");
-	CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL,  MENU_ID_GLOBAL_2,  "Global item 2",  "2.png");
+	BEGIN_CREATE_MENUS(1);  /* IMPORTANT: Number of menu items must be correct! */
+	CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_CHANNEL, MENU_ID_CHANNEL_STARTHANGOUT, "Start", "1.png");
 	END_CREATE_MENUS;  /* Includes an assert checking if the number of menu items matched */
 
 	/*
@@ -1062,12 +1051,6 @@ void ts3plugin_onMenuItemEvent(uint64 serverConnectionHandlerID, enum PluginMenu
 		case PLUGIN_MENU_TYPE_GLOBAL:
 			/* Global menu item was triggered. selectedItemID is unused and set to zero. */
 			switch(menuItemID) {
-				case MENU_ID_GLOBAL_1:
-					/* Menu global 1 was triggered */
-					break;
-				case MENU_ID_GLOBAL_2:
-					/* Menu global 2 was triggered */
-					break;
 				default:
 					break;
 			}
@@ -1075,15 +1058,25 @@ void ts3plugin_onMenuItemEvent(uint64 serverConnectionHandlerID, enum PluginMenu
 		case PLUGIN_MENU_TYPE_CHANNEL:
 			/* Channel contextmenu item was triggered. selectedItemID is the channelID of the selected channel */
 			switch(menuItemID) {
-				case MENU_ID_CHANNEL_1:
-					/* Menu channel 1 was triggered */
+        case MENU_ID_CHANNEL_STARTHANGOUT: {
+          anyID clientId = 0;
+          char clientName[255];
+          char *serverAddress = NULL;
+
+          if (ts3Functions.getClientID(serverConnectionHandlerID, &clientId) == ERROR_ok
+            && ts3Functions.getClientDisplayName(serverConnectionHandlerID, clientId, clientName, 255) == ERROR_ok
+            && ts3Functions.getConnectionVariableAsString(serverConnectionHandlerID, clientId, CONNECTION_SERVER_IP, &serverAddress) == ERROR_ok
+            ) {
+            // Start video chat now.
+            if (runClient(serverAddress, 6000, clientName) != 0) {
+              printf("PLUGIN: Start hangout failed.");
+            }
+          }
+
+          // Clean up allocated memory.
+          ts3Functions.freeMemory(serverAddress);
 					break;
-				case MENU_ID_CHANNEL_2:
-					/* Menu channel 2 was triggered */
-					break;
-				case MENU_ID_CHANNEL_3:
-					/* Menu channel 3 was triggered */
-					break;
+        }
 				default:
 					break;
 			}
@@ -1091,12 +1084,6 @@ void ts3plugin_onMenuItemEvent(uint64 serverConnectionHandlerID, enum PluginMenu
 		case PLUGIN_MENU_TYPE_CLIENT:
 			/* Client contextmenu item was triggered. selectedItemID is the clientID of the selected client */
 			switch(menuItemID) {
-				case MENU_ID_CLIENT_1:
-					/* Menu client 1 was triggered */
-					break;
-				case MENU_ID_CLIENT_2:
-					/* Menu client 2 was triggered */
-					break;
 				default:
 					break;
 			}

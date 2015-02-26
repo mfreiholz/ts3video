@@ -1,25 +1,25 @@
-#ifdef _WIN32
-#include <cstdio>
-#include <Windows.h>
-#define GetCurrentWorking
-#endif
-
-#ifdef __linux__
-#include <cstdio>
-#endif
-
-#include "QtCore/QString"
-#include "QtCore/QList"
-#include "QtCore/QProcess"
-#include "QtCore/QFile"
-#include "QtCore/QDir"
-
-#include "public_errors.h"
-#include "public_errors_rare.h"
-#include "public_definitions.h"
-#include "public_rare_definitions.h"
-#include "ts3_functions.h"
-#include "plugin.h"
+//#ifdef _WIN32
+//#include <cstdio>
+//#include <Windows.h>
+//#define GetCurrentWorking
+//#endif
+//
+//#ifdef __linux__
+//#include <cstdio>
+//#endif
+//
+//#include "QtCore/QString"
+//#include "QtCore/QList"
+//#include "QtCore/QProcess"
+//#include "QtCore/QFile"
+//#include "QtCore/QDir"
+//
+//#include "public_errors.h"
+//#include "public_errors_rare.h"
+//#include "public_definitions.h"
+//#include "public_rare_definitions.h"
+//#include "ts3_functions.h"
+//#include "plugin.h"
 /*
 static QFile *_log_file = 0;
 
@@ -117,3 +117,81 @@ void sw_log(const char *message)
 ///////////////////////////////////////////////////////////////////////////////
 
 //ShellExecute(NULL, L"open", proc_file_path.toStdWString().c_str(), proc_parameters.toStdWString().c_str(), NULL, SW_SHOWNORMAL);
+
+///////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+
+#include <string>
+#include <stdio.h>
+#include <Windows.h>
+#include "impl.h"
+#define PATH_MAX_LENGTH 4096
+
+// Logging ////////////////////////////////////////////////////////////
+
+
+
+// Common /////////////////////////////////////////////////////////////
+
+/**
+ * Gets the path to the TS3VideoClient.exe.
+ * @return char* Ownership goes to caller.
+ */
+char* findClientExeFilePath()
+{
+#ifdef _WIN32
+  char *moduleFilePath = new char[PATH_MAX_LENGTH]; ///< Path to teamspeak3client.exe
+  if (GetModuleFileName(NULL, moduleFilePath, PATH_MAX_LENGTH) <= 0) {
+    delete[] moduleFilePath;
+    return NULL;
+  }
+#endif
+  // Build path to client.exe.
+  return strcat(moduleFilePath, "/plugins/ts3video/qts3videoclient.exe");
+}
+
+/**
+ * Starts the ts3video plugin as an separate process.
+ * @return 0 = OK; Everything else indicates an error.
+ */
+int runClient(const char *serverAddress, unsigned short serverPort, const char *username)
+{
+  // Find client executable.
+  char *filePath = findClientExeFilePath();
+  if (!filePath) {
+    return 1;
+  }
+
+  // Command line parameters.
+  // e.g.: --server-address 0.0.0.0 --server-port 6000 --username "Foo Bar"
+  char params[PATH_MAX_LENGTH];
+  params[0] = 0;
+  strcat(params, " --xserver-address ");
+  strcat(params, serverAddress);
+  strcat(params, " --xserver-port ");
+  strcat(params, " 6000 ");
+  strcat(params, " --username ");
+  strcat(params, " \"");
+  strcat(params, username);
+  strcat(params, "\" ");
+
+#ifdef _WIN32
+  SHELLEXECUTEINFO execInfo;
+  memset(&execInfo, 0, sizeof(execInfo));
+  execInfo.cbSize = sizeof(execInfo);
+  execInfo.hwnd = NULL;
+  execInfo.lpVerb = "open";
+  execInfo.lpFile = filePath;
+  execInfo.lpParameters = params;
+  execInfo.lpDirectory = NULL;
+  execInfo.nShow = SW_SHOWNORMAL;
+  if (!ShellExecuteEx(&execInfo)) {
+    delete[] filePath;
+    return 2;
+  }
+#endif
+
+  delete[] filePath;
+  return 0;
+}
