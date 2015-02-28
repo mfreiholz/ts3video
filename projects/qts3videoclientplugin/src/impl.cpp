@@ -141,13 +141,31 @@ void sw_log(const char *message)
 char* findClientExeFilePath()
 {
 #ifdef _WIN32
-  char *moduleFilePath = new char[PATH_MAX_LENGTH]; ///< Path to teamspeak3client.exe
+  char moduleFilePath[PATH_MAX_LENGTH]; ///< Path to teamspeak3client.exe
   if (GetModuleFileName(NULL, moduleFilePath, PATH_MAX_LENGTH) <= 0) {
     delete[] moduleFilePath;
     return NULL;
   }
+  
+  // Found last occurance of "\".
+  char *offset = moduleFilePath;
+  while (true) {
+    char *p = strstr(offset, "\\");
+    if (!p) {
+      break;
+    }
+    offset = ++p;
+  }
+  if (offset) {
+    memset(offset, 0, sizeof(char));
+  }
+
+  char *path = new char[PATH_MAX_LENGTH];
+  path[0] = 0;
+  strcat(path, moduleFilePath);
+  strcat(path, "plugins\\ts3video\\qts3videoclient.exe");
+  return path;
 #endif
-  return strcat(moduleFilePath, "\\plugins\\ts3video\\qts3videoclient.exe");
 }
 
 // API 1.0 ////////////////////////////////////////////////////////////
@@ -205,7 +223,6 @@ int runClient(const char *serverAddress, unsigned short serverPort, const char *
   execInfo.hwnd = NULL;
   execInfo.lpVerb = "open";
   execInfo.lpFile = filePath;
-  //execInfo.lpFile = "G:\\Source\\ts3video\\build\\projects\\qts3videoclient\\Debug\\qts3videoclient.exe";
   execInfo.lpParameters = params;
   execInfo.lpDirectory = NULL;
   execInfo.nShow = SW_SHOWNORMAL;
