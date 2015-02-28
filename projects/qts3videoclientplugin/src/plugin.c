@@ -1062,17 +1062,22 @@ void ts3plugin_onMenuItemEvent(uint64 serverConnectionHandlerID, enum PluginMenu
           anyID clientId = 0;
           char clientName[255];
           char *serverAddress = NULL;
+          uint64 channelId = selectedItemID;
 
           if (ts3Functions.getClientID(serverConnectionHandlerID, &clientId) == ERROR_ok
             && ts3Functions.getClientDisplayName(serverConnectionHandlerID, clientId, clientName, 255) == ERROR_ok
             && ts3Functions.getConnectionVariableAsString(serverConnectionHandlerID, clientId, CONNECTION_SERVER_IP, &serverAddress) == ERROR_ok
             ) {
+            // Collect info.
+            TS3Data data;
+            data.clientId = clientId;
+            data.channelId = channelId;
+
             // Start video chat now.
-            if (runClient(serverAddress, 6000, clientName) != 0) {
+            if (runClient(serverAddress, 6000, clientName, &data) != 0) {
               printf("PLUGIN: Start hangout failed.");
             }
           }
-
           // Clean up allocated memory.
           ts3Functions.freeMemory(serverAddress);
 					break;

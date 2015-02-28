@@ -147,15 +147,16 @@ char* findClientExeFilePath()
     return NULL;
   }
 #endif
-  // Build path to client.exe.
-  return strcat(moduleFilePath, "/plugins/ts3video/qts3videoclient.exe");
+  return strcat(moduleFilePath, "\\plugins\\ts3video\\qts3videoclient.exe");
 }
+
+// API 1.0 ////////////////////////////////////////////////////////////
 
 /**
  * Starts the ts3video plugin as an separate process.
  * @return 0 = OK; Everything else indicates an error.
  */
-int runClient(const char *serverAddress, unsigned short serverPort, const char *username)
+int runClient(const char *serverAddress, unsigned short serverPort, const char *username, TS3Data *ts3data)
 {
   // Find client executable.
   char *filePath = findClientExeFilePath();
@@ -167,14 +168,35 @@ int runClient(const char *serverAddress, unsigned short serverPort, const char *
   // e.g.: --server-address 0.0.0.0 --server-port 6000 --username "Foo Bar"
   char params[PATH_MAX_LENGTH];
   params[0] = 0;
+
   strcat(params, " --xserver-address ");
   strcat(params, serverAddress);
+
+  char serverPortString[64];
+  itoa(serverPort, serverPortString, 10);
   strcat(params, " --xserver-port ");
-  strcat(params, " 6000 ");
+  strcat(params, " ");
+  strcat(params, serverPortString);
+  strcat(params, " ");
+
   strcat(params, " --username ");
   strcat(params, " \"");
   strcat(params, username);
   strcat(params, "\" ");
+
+  char ts3ClientId[64];
+  ltoa(ts3data->clientId, ts3ClientId, 10);
+  strcat(params, " --ts3-clientid ");
+  strcat(params, " ");
+  strcat(params, ts3ClientId);
+  strcat(params, " ");
+
+  char ts3ChannelId[64];
+  ltoa(ts3data->channelId, ts3ChannelId, 10);
+  strcat(params, " --ts3-channelid ");
+  strcat(params, " ");
+  strcat(params, ts3ChannelId);
+  strcat(params, " ");
 
 #ifdef _WIN32
   SHELLEXECUTEINFO execInfo;
@@ -183,6 +205,7 @@ int runClient(const char *serverAddress, unsigned short serverPort, const char *
   execInfo.hwnd = NULL;
   execInfo.lpVerb = "open";
   execInfo.lpFile = filePath;
+  //execInfo.lpFile = "G:\\Source\\ts3video\\build\\projects\\qts3videoclient\\Debug\\qts3videoclient.exe";
   execInfo.lpParameters = params;
   execInfo.lpDirectory = NULL;
   execInfo.nShow = SW_SHOWNORMAL;
