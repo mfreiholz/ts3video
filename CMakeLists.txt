@@ -13,6 +13,9 @@ if(CMAKE_COMPILER_IS_GNUCC)
   set(CMAKE_CXX_FLAGS "-std=c++11")
 endif(CMAKE_COMPILER_IS_GNUCC)
 
+# Default prefix.
+set(CMAKE_INSTALL_PREFIX "${PROJECT_SOURCE_DIR}/install")
+
 # Third party (HumbleLogging)
 add_subdirectory(thirdparty/humblelogging)
 set(humblelogging_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/thirdparty/humblelogging/include)
