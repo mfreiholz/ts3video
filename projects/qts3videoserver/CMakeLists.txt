@@ -1,3 +1,6 @@
+cmake_minimum_required(VERSION 2.8)
+project(qts3videoserver)
+cmake_policy(SET CMP0020 NEW)
 
 # Qt5
 find_package(Qt5Core REQUIRED)

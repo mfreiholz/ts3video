@@ -1,0 +1,14 @@
+
+# Architecture
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+	set(ARCH "x64")
+else(CMAKE_SIZEOF_VOID_P EQUAL 8)
+	set(ARCH "x86")
+endif(CMAKE_SIZEOF_VOID_P EQUAL 8)
+
+
+# Linux
+if(CMAKE_COMPILER_IS_GNUCC)
+  set(CMAKE_CXX_FLAGS "-std=c++11")
+  #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wextra")
+endif(CMAKE_COMPILER_IS_GNUCC)
