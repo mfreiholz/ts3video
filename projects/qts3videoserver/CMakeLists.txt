@@ -73,3 +73,5 @@ target_link_libraries(
 )
 
 humblelogging_POSTBUILD(qts3videoserver)
+
+install(TARGETS qts3videoserver DESTINATION bin)

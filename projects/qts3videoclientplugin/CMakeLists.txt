@@ -29,3 +29,7 @@ add_library(
   ${headers}
   ${sources}
 )
+
+# Install
+install(DIRECTORY package DESTINATION ts3plugin)
+install(TARGETS qts3videoclientplugin DESTINATION ts3plugin/package/plugins)

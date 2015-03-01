@@ -1,3 +1,6 @@
+cmake_minimum_required(VERSION 2.8)
+project(qts3videoclient)
+cmake_policy(SET CMP0020 NEW)
 
 option(IncludeOpenGLSupport "IncludeOpenGLSupport" ON)
 
@@ -126,3 +129,5 @@ if(IncludeOpenGLSupport)
 endif()
 
 humblelogging_POSTBUILD(qts3videoclient)
+
+install(TARGETS qts3videoclient DESTINATION bin)

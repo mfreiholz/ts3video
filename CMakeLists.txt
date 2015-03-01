@@ -24,7 +24,8 @@ macro(humblelogging_POSTBUILD target_)
   add_custom_command(
     TARGET ${target_} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
-      "${PROJECT_SOURCE_DIR}/build/thirdparty/humblelogging/bin/$<CONFIGURATION>/humblelogging.dll"
+      #"${PROJECT_SOURCE_DIR}/build/thirdparty/humblelogging/bin/$<CONFIGURATION>/humblelogging.dll"
+      $<TARGET_FILE_DIR:humblelogging>/humblelogging.dll
       $<TARGET_FILE_DIR:${target_}>/humblelogging.dll
   )
 endmacro(humblelogging_POSTBUILD)
