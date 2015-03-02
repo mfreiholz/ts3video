@@ -97,8 +97,8 @@ void MediaSocketHandler::onReadyRead()
 
         UDP::VideoFrameRecoveryDatagram dgrec;
         in >> dgrec.sender;
-        in >> dgrec.frameId;
-        in >> dgrec.index;
+        //in >> dgrec.frameId;
+        //in >> dgrec.index;
 
         // Send to specific receiver only.
         const auto &receiver = _recipients.clientid2receiver[dgrec.sender];
