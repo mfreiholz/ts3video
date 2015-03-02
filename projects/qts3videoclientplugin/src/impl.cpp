@@ -25,6 +25,7 @@ char* findClientExeFilePath()
   }
   
   // Found last occurance of "\".
+  // TODO Convert \ to /.
   char *offset = moduleFilePath;
   while (true) {
     char *p = strstr(offset, "\\");
@@ -45,6 +46,28 @@ char* findClientExeFilePath()
 #endif
 }
 
+char* getParentPath(const char *path)
+{
+  char *parentPath = new char[PATH_MAX_LENGTH];
+  memset(parentPath, 0, PATH_MAX_LENGTH);
+  strcpy(parentPath, path);
+
+  // Found last occurance of "\".
+  // TODO Convert \ to /.
+  char *offset = parentPath;
+  while (true) {
+    char *p = strstr(offset, "\\");
+    if (!p) {
+      break;
+    }
+    offset = ++p;
+  }
+  if (offset && --offset) {
+    memset(offset, 0, sizeof(char));
+  }
+  return parentPath;
+}
+
 // API 1.0 ////////////////////////////////////////////////////////////
 
 /**
@@ -57,6 +80,12 @@ int runClient(const char *serverAddress, unsigned short serverPort, const char *
   char *filePath = findClientExeFilePath();
   if (!filePath) {
     return 1;
+  }
+
+  // Define working directory.
+  char *workingDirectory = getParentPath(filePath);
+  if (!workingDirectory) {
+    return 2;
   }
 
   // Command line parameters.
@@ -101,14 +130,16 @@ int runClient(const char *serverAddress, unsigned short serverPort, const char *
   execInfo.lpVerb = "open";
   execInfo.lpFile = filePath;
   execInfo.lpParameters = params;
-  execInfo.lpDirectory = NULL;
+  execInfo.lpDirectory = workingDirectory;
   execInfo.nShow = SW_SHOWNORMAL;
   if (!ShellExecuteEx(&execInfo)) {
+    delete[] workingDirectory;
     delete[] filePath;
-    return 2;
+    return 3;
   }
 #endif
 
+  delete[] workingDirectory;
   delete[] filePath;
   return 0;
 }
