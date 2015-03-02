@@ -1,10 +1,10 @@
+cmake_minimum_required(VERSION 2.8)
+project(qcorlib)
+cmake_policy(SET CMP0020 NEW)
 
 # Qt5
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Network REQUIRED)
-if(POLICY CMP0020)
-  cmake_policy(SET CMP0020 NEW)
-endif()
 
 # Sources
 set(headers

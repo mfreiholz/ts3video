@@ -13,10 +13,14 @@ add_subdirectory(projects/medlib)
 add_subdirectory(projects/qcorlib)
 add_subdirectory(projects/qts3videocorelib)
 add_subdirectory(projects/qts3videoserver)
-add_subdirectory(projects/qts3videoclient)
+if(WIN32)
+  add_subdirectory(projects/qts3videoclient)
+endif(WIN32)
 
 # TS3 Client Plugin
-add_subdirectory(projects/qts3videoclientplugin)
+if(WIN32)
+  add_subdirectory(projects/qts3videoclientplugin)
+endif(WIN32)
 
 # Obsolete
 #add_subdirectory(projects/qswserverlib)
