@@ -25,7 +25,7 @@ ClientCameraVideoWidget::ClientCameraVideoWidget(TS3VideoClient *ts3vc, const QC
   camera->start();
 
   auto grabber = new CameraFrameGrabber(this);
-  auto videoWidget = new VideoWidget(VideoWidget::CPU);
+  auto videoWidget = new VideoWidget(VideoWidget::OpenGL_ImageWidget);
   camera->setViewfinder(grabber);
 
   auto mainLayout = new QBoxLayout(QBoxLayout::TopToBottom);

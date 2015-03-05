@@ -13,37 +13,36 @@ VideoWidget::VideoWidget(Type type, QWidget *parent) :
   d(new VideoWidgetPrivate(this))
 {
   d->type = type;
-  d->frameWidget = nullptr;
-  d->cpuImageImpl = nullptr;
-#ifdef INCLUDE_OPENGL_VIDEOWIDGET_SUPPORT
-  d->oglWindow = nullptr;
-#elif INCLUDE_OPENGL_VIDEOWIDGET2_SUPPORT
-  d->yuvWindow = nullptr;
-#elif INCLUDE_OPENGL_VIDEOWIDGET3_SUPPORT
-  d->glVideoWidget = nullptr;
-#endif
 
   switch (d->type) {
-    case OpenGL:
-#ifdef INCLUDE_OPENGL_VIDEOWIDGET_SUPPORT
-      d->oglWindow = new OpenGLWindow();
-      d->oglWindow->setRenderMode(OpenGLWindow::RM_CROPPED);
-      d->oglWindow->setBackgroundColor(QColor(Qt::black));
-      d->frameWidget = d->oglWindow->widget();
-      break;
-#elif INCLUDE_OPENGL_VIDEOWIDGET2_SUPPORT
-      d->yuvWindow = new YuvVideoWindowSub(nullptr);
-      d->frameWidget = QWidget::createWindowContainer(d->yuvWindow, this);
-      break;
-#elif INCLUDE_OPENGL_VIDEOWIDGET3_SUPPORT
-      d->glVideoWidget = new GLVideoWidget(this);
-      d->frameWidget = d->glVideoWidget;
-      break;
-#endif
-    case CPU:
-      d->cpuImageImpl = new VideoFrame_CpuImpl(this);
-      d->frameWidget = d->cpuImageImpl;
-      break;
+  case CPU:
+    d->cpuImageImpl = new VideoFrame_CpuImpl(this);
+    d->frameWidget = d->cpuImageImpl;
+    break;
+  case OpenGL_ImageWidget:
+    d->glImageImpl = new VideoFrame_OpenGL(this);
+    d->frameWidget = d->glImageImpl;
+    break;
+//    case OpenGL:
+//#ifdef INCLUDE_OPENGL_VIDEOWIDGET_SUPPORT
+//      d->oglWindow = new OpenGLWindow();
+//      d->oglWindow->setRenderMode(OpenGLWindow::RM_CROPPED);
+//      d->oglWindow->setBackgroundColor(QColor(Qt::black));
+//      d->frameWidget = d->oglWindow->widget();
+//      break;
+//#elif INCLUDE_OPENGL_VIDEOWIDGET2_SUPPORT
+//      d->yuvWindow = new YuvVideoWindowSub(nullptr);
+//      d->frameWidget = QWidget::createWindowContainer(d->yuvWindow, this);
+//      break;
+//#elif INCLUDE_OPENGL_VIDEOWIDGET3_SUPPORT
+//      d->glVideoWidget = new GLVideoWidget(this);
+//      d->frameWidget = d->glVideoWidget;
+//      break;
+//#endif
+  }
+
+  if (!d->frameWidget) {
+    return;
   }
 
   d->frameWidget->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
@@ -57,76 +56,97 @@ VideoWidget::VideoWidget(Type type, QWidget *parent) :
 
 VideoWidget::~VideoWidget()
 {
-#if INCLUDE_OPENGL_VIDEOWIDGET_SUPPORT
+  delete d->cpuImageImpl;
+  delete d->glImageImpl;
   delete d->oglWindow;
-#elif INCLUDE_OPENGL_VIDEOWIDGET2_SUPPORT
   delete d->yuvWindow;
-#elif INCLUDE_OPENGL_VIDEOWIDGET3_SUPPORT
   delete d->glVideoWidget;
-#endif
 }
 
 void VideoWidget::setFrame(YuvFrameRefPtr frame)
 {
   switch (d->type) {
-    case OpenGL:
-#ifdef INCLUDE_OPENGL_VIDEOWIDGET_SUPPORT
-      if (d->oglWindow) d->oglWindow->setData(frame);
-      break;
-#elif INCLUDE_OPENGL_VIDEOWIDGET2_SUPPORT
-      if (d->yuvWindow) d->yuvWindow->setFrame(frame);
-      break;
-#elif INCLUDE_OPENGL_VIDEOWIDGET3_SUPPORT
-      if (d->glVideoWidget) d->glVideoWidget->setFrame(frame);
-      break;
-#endif
-    case CPU:
-      if (d->cpuImageImpl) {
-        QImage image;
-        if (!frame.isNull())
-          image = frame->toQImage();
-        d->cpuImageImpl->setFrame(image);
-      }
-      break;
+  case CPU:
+    if (d->cpuImageImpl) {
+      QImage image;
+      if (!frame.isNull())
+        image = frame->toQImage();
+      d->cpuImageImpl->setFrame(image);
+    }
+    break;
+  case OpenGL_ImageWidget:
+    if (d->glImageImpl) {
+      QImage image;
+      if (!frame.isNull())
+        image = frame->toQImage();
+      d->glImageImpl->setFrame(image);
+    }
+    break;
+//    case OpenGL:
+//#ifdef INCLUDE_OPENGL_VIDEOWIDGET_SUPPORT
+//      if (d->oglWindow) d->oglWindow->setData(frame);
+//      break;
+//#elif INCLUDE_OPENGL_VIDEOWIDGET2_SUPPORT
+//      if (d->yuvWindow) d->yuvWindow->setFrame(frame);
+//      break;
+//#elif INCLUDE_OPENGL_VIDEOWIDGET3_SUPPORT
+//      if (d->glVideoWidget) d->glVideoWidget->setFrame(frame);
+//      break;
+//#endif
   }
 }
 
 void VideoWidget::setFrame(const QImage &frame)
 {
   switch (d->type) {
-    case OpenGL:
-#ifdef INCLUDE_OPENGL_VIDEOWIDGET_SUPPORT
-      if (d->oglWindow) d->oglWindow->setData(YuvFrameRefPtr(YuvFrame::fromQImage(frame)));
-      break;
-#elif INCLUDE_OPENGL_VIDEOWIDGET2_SUPPORT
-      if (d->yuvWindow) d->yuvWindow->setFrame(YuvFrameRefPtr(YuvFrame::fromQImage(frame)));
-      break;
-#elif INCLUDE_OPENGL_VIDEOWIDGET3_SUPPORT
-      if (d->glVideoWidget) d->glVideoWidget->setFrame(YuvFrameRefPtr(YuvFrame::fromQImage(frame)));
-      break;
-#endif
-    case CPU:
-      if (d->cpuImageImpl) {
-        d->cpuImageImpl->setFrame(frame);
-      }
-      break;
+  case CPU:
+    if (d->cpuImageImpl) {
+      d->cpuImageImpl->setFrame(frame);
+    }
+    break;
+  case OpenGL_ImageWidget:
+    if (d->glImageImpl) {
+      d->glImageImpl->setFrame(frame);
+    }
+    break;
+//    case OpenGL:
+//#ifdef INCLUDE_OPENGL_VIDEOWIDGET_SUPPORT
+//      if (d->oglWindow) d->oglWindow->setData(YuvFrameRefPtr(YuvFrame::fromQImage(frame)));
+//      break;
+//#elif INCLUDE_OPENGL_VIDEOWIDGET2_SUPPORT
+//      if (d->yuvWindow) d->yuvWindow->setFrame(YuvFrameRefPtr(YuvFrame::fromQImage(frame)));
+//      break;
+//#elif INCLUDE_OPENGL_VIDEOWIDGET3_SUPPORT
+//      if (d->glVideoWidget) d->glVideoWidget->setFrame(YuvFrameRefPtr(YuvFrame::fromQImage(frame)));
+//      break;
+//#endif
   }
 }
 
 void VideoWidget::setAvatar(const QPixmap &pm)
 {
-  if (d->cpuImageImpl) {
-    d->cpuImageImpl->setAvatar(pm);
+  switch (d->type) {
+  case CPU:
+    if (d->cpuImageImpl) {
+      d->cpuImageImpl->setAvatar(pm);
+    }
+    break;
   }
 }
 
 void VideoWidget::setText(const QString &text)
 {
-  if (d->cpuImageImpl) {
-    d->cpuImageImpl->setText(text);
+  switch (d->type) {
+  case CPU:
+    if (d->cpuImageImpl) {
+      d->cpuImageImpl->setText(text);
+    }
+    break;
   }
 }
 
+///////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
 
 VideoFrame_CpuImpl::VideoFrame_CpuImpl(QWidget *parent) :
@@ -212,6 +232,51 @@ void VideoFrame_CpuImpl::paintEvent(QPaintEvent *)
   //p.setPen(Qt::darkGray);
   //p.drawRect(borderRect);
 }
+
+///////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+
+VideoFrame_OpenGL::VideoFrame_OpenGL(QWidget *parent, const QGLWidget *shareWidget, Qt::WindowFlags f) :
+  QGLWidget(parent, shareWidget, f)
+{
+}
+
+void VideoFrame_OpenGL::setFrame(const QImage &image)
+{
+  _image = image;
+  update();
+}
+
+void VideoFrame_OpenGL::paintEvent(QPaintEvent *)
+{
+  QPainter p(this);
+
+  // Paint background.
+  if (_image.isNull()) {
+    p.setPen(Qt::black);
+    p.fillRect(rect(), Qt::SolidPattern);
+  }
+
+  // Paint frame.
+  if (!_image.isNull()) {
+    // Scale and center image.
+    if (true) {
+      auto imageRect = _image.rect();
+      auto offset = QPoint(0, 0);
+      ELWS::calcScaledAndCenterizedImageRect(rect(), imageRect, offset);
+      auto scaledImage = _image.scaled(imageRect.size()); ///< TODO This does cost performance on CPU!
+      p.drawImage(QPoint(-offset.x(), -offset.y()), scaledImage, scaledImage.rect());
+    }
+    // Basic scale.
+    else {
+      p.drawImage(rect(), _image);
+    }
+  }
+
+  p.end();
+}
+
 
 /*
 

@@ -89,7 +89,7 @@ bool TS3VideoServer::init()
 
 void TS3VideoServer::updateMediaRecipients()
 {
-  bool sendBackOwnVideo = true;
+  bool sendBackOwnVideo = false;
   MediaRecipients recips;
   auto clients = _clients.values();
   foreach(auto client, clients) {

@@ -1,9 +1,8 @@
-#ifndef CLIENTVIDEOWIDGET_H
-#define CLIENTVIDEOWIDGET_H
+#ifndef VIDEOWIDGET_H
+#define VIDEOWIDGET_H
 
 #include <QScopedPointer>
 #include <QWidget>
-
 #include "yuvframe.h"
 
 class VideoWidgetPrivate;
@@ -13,14 +12,20 @@ class VideoWidget : public QWidget
   QScopedPointer<VideoWidgetPrivate> d;
 
 public:
-  enum Type { OpenGL, CPU };
+  enum Type {
+    CPU,                      ///< Paints everything on via CPU (Converts YUV->RGB)
+    OpenGL_ImageWidget,       ///< Paints everything via OpenGL (Converts YUV->RGB)
+    OpenGL_RenderThread,      ///< Paints everything via OpenGL in a separate thread (Converts YUV->RGB with shader on GPU)
+    OpenGL_WindowSurface,     ///< Paints everything via OpenGL based on QOpenGLSurface (Converts YUV->RGB with shader on GPU)
+    OpenGL_YuvWidget          ///< Paints everything via OpenGL based on QGLWidget (Converts YUV->RGB with shader GPU)
+  };
 
   explicit VideoWidget(Type type = CPU, QWidget *parent = 0);
   ~VideoWidget();
 
 public slots:
-  void setFrame(YuvFrameRefPtr frame); ///< Optimized for OpenGL type.
-  void setFrame(const QImage &frame); ///< Optimized for CPU type.
+  void setFrame(YuvFrameRefPtr frame);
+  void setFrame(const QImage &frame);
 
   void setAvatar(const QPixmap &pm);
   void setText(const QString &text);

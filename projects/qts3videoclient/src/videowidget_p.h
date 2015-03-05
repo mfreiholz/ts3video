@@ -8,38 +8,49 @@
 
 #include "yuvframe.h"
 
-#ifdef INCLUDE_OPENGL_VIDEOWIDGET_SUPPORT
 #include "opengl/openglrenderthread.h"
 #include "opengl/openglwindow.h"
-#elif INCLUDE_OPENGL_VIDEOWIDGET2_SUPPORT
 #include "opengl2/yuvvideowindow.h"
-#elif INCLUDE_OPENGL_VIDEOWIDGET3_SUPPORT
 #include "opengl3/glvideowidget.h"
-#endif
 
 class VideoFrame_CpuImpl;
+class VideoFrame_OpenGL;
 
 /*!
  */
 class VideoWidgetPrivate
 {
 public:
-  VideoWidgetPrivate(VideoWidget *o) : owner(o) {}
+  VideoWidgetPrivate(VideoWidget *o) :
+    owner(o),
+    type(VideoWidget::CPU),
+    frameWidget(nullptr),
+    cpuImageImpl(nullptr),
+    oglWindow(nullptr),
+    yuvWindow(nullptr),
+    glVideoWidget(nullptr),
+    glImageImpl(nullptr)
+  {}
 
 public:
   VideoWidget *owner;
   VideoWidget::Type type;
   QWidget *frameWidget;
 
-  // Implementations for the "this->frameWidget".
+  // CPU
   VideoFrame_CpuImpl *cpuImageImpl;
-#ifdef INCLUDE_OPENGL_VIDEOWIDGET_SUPPORT
+
+  // OpenGL_ImageWidget
+  VideoFrame_OpenGL *glImageImpl;
+
+  // OpenGL_RenderThread
   OpenGLWindow *oglWindow;
-#elif INCLUDE_OPENGL_VIDEOWIDGET2_SUPPORT
+
+  // OpenGL_WindowSurface
   YuvVideoWindowSub *yuvWindow;
-#elif INCLUDE_OPENGL_VIDEOWIDGET3_SUPPORT
+
+  // OpenGL_YuvWidget
   GLVideoWidget *glVideoWidget;
-#endif
 };
 
 /*!
@@ -62,6 +73,25 @@ private:
   QImage _frameImage; ///< Holds the real QImage, in case we need it later.
   QPixmap _avatar;
   QString _text;
+};
+
+/*!
+  Video frame rendering based on OpenGL
+ */
+#include <QGLWidget>
+class VideoFrame_OpenGL : public QGLWidget
+{
+  Q_OBJECT
+
+public:
+  VideoFrame_OpenGL(QWidget *parent = 0, const QGLWidget *shareWidget = 0, Qt::WindowFlags f = 0);
+  void setFrame(const QImage &image);
+
+protected:
+  virtual void paintEvent(QPaintEvent *ev);
+
+private:
+  QImage _image;
 };
 
 #endif

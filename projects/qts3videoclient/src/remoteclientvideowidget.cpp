@@ -7,7 +7,7 @@
 RemoteClientVideoWidget::RemoteClientVideoWidget(QWidget *parent) :
   QFrame(parent)
 {
-  _videoWidget = new VideoWidget(VideoWidget::CPU, this);
+  _videoWidget = new VideoWidget(VideoWidget::OpenGL_ImageWidget, this);
 
   auto mainLayout = new QBoxLayout(QBoxLayout::TopToBottom);
   mainLayout->setContentsMargins(0, 0, 0, 0);
@@ -18,7 +18,6 @@ RemoteClientVideoWidget::RemoteClientVideoWidget(QWidget *parent) :
 
 RemoteClientVideoWidget::~RemoteClientVideoWidget()
 {
-
 }
 
 void RemoteClientVideoWidget::setClient(const ClientEntity &client)
