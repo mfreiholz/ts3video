@@ -31,7 +31,7 @@ HUMBLE_LOGGER(HL, "client");
 
 QWidget* createVideoWidget()
 {
-  auto w = new ClientVideoWidget();
+  auto w = new VideoWidget();
   w->setWindowFlags(Qt::FramelessWindowHint);
   w->setWindowTitle("Manuel");
   w->show();
@@ -60,7 +60,7 @@ int runGuiTest(QApplication &a)
       pixmapsIndex = 0;
     }
     foreach (auto w, widgets) {
-      //((ClientVideoWidget*)w)->setFrame(pixmaps.at(pixmapsIndex));
+      //((VideoWidget*)w)->setFrame(pixmaps.at(pixmapsIndex));
     }
   });
   t0.start(66); // 66 = ~15fps
@@ -107,7 +107,7 @@ int runVideoCollectionTest(QApplication &a)
 
   QList<QWidget *> widgets;
   for (auto i = 0; i < 3; ++i) {
-    auto w = new ClientVideoWidget();
+    auto w = new VideoWidget();
     widgets.append(w);
   }
   VideoCollectionWidget coll;
@@ -121,7 +121,7 @@ int runHangoutViewTest(QApplication &a)
   a.setQuitOnLastWindowClosed(true);
 
   HangoutViewWidget hang(nullptr);
-  hang.setCameraWidget(new ClientVideoWidget());
+  hang.setCameraWidget(new VideoWidget());
   hang.resize(800, 600);
   hang.setVisible(true);
 

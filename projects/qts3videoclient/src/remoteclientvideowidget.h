@@ -15,11 +15,11 @@ public:
   RemoteClientVideoWidget(QWidget *parent);
   ~RemoteClientVideoWidget();
   void setClient(const ClientEntity &client);
-  ClientVideoWidget* videoWidget() const;
+  VideoWidget* videoWidget() const;
 
 private:
   ClientEntity _client;
-  ClientVideoWidget *_videoWidget;
+  VideoWidget *_videoWidget;
 };
 
 #endif

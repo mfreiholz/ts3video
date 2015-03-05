@@ -2,13 +2,12 @@
 #define CLIENTVIDEOWIDGET_H
 
 #include <QScopedPointer>
-
 #include <QWidget>
 
 #include "yuvframe.h"
 
 class VideoWidgetPrivate;
-class ClientVideoWidget : public QWidget
+class VideoWidget : public QWidget
 {
   Q_OBJECT
   QScopedPointer<VideoWidgetPrivate> d;
@@ -16,8 +15,8 @@ class ClientVideoWidget : public QWidget
 public:
   enum Type { OpenGL, CPU };
 
-  explicit ClientVideoWidget(Type type = CPU, QWidget *parent = 0);
-  ~ClientVideoWidget();
+  explicit VideoWidget(Type type = CPU, QWidget *parent = 0);
+  ~VideoWidget();
 
 public slots:
   void setFrame(YuvFrameRefPtr frame); ///< Optimized for OpenGL type.
@@ -27,4 +26,4 @@ public slots:
   void setText(const QString &text);
 };
 
-#endif // CLIENTVIDEOWIDGET_H
+#endif

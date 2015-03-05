@@ -8,7 +8,7 @@
 
 ///////////////////////////////////////////////////////////////////////
 
-ClientVideoWidget::ClientVideoWidget(Type type, QWidget *parent) :
+VideoWidget::VideoWidget(Type type, QWidget *parent) :
   QWidget(parent),
   d(new VideoWidgetPrivate(this))
 {
@@ -55,7 +55,7 @@ ClientVideoWidget::ClientVideoWidget(Type type, QWidget *parent) :
   setLayout(mainLayout);
 }
 
-ClientVideoWidget::~ClientVideoWidget()
+VideoWidget::~VideoWidget()
 {
 #if INCLUDE_OPENGL_VIDEOWIDGET_SUPPORT
   delete d->oglWindow;
@@ -66,7 +66,7 @@ ClientVideoWidget::~ClientVideoWidget()
 #endif
 }
 
-void ClientVideoWidget::setFrame(YuvFrameRefPtr frame)
+void VideoWidget::setFrame(YuvFrameRefPtr frame)
 {
   switch (d->type) {
     case OpenGL:
@@ -91,7 +91,7 @@ void ClientVideoWidget::setFrame(YuvFrameRefPtr frame)
   }
 }
 
-void ClientVideoWidget::setFrame(const QImage &frame)
+void VideoWidget::setFrame(const QImage &frame)
 {
   switch (d->type) {
     case OpenGL:
@@ -113,14 +113,14 @@ void ClientVideoWidget::setFrame(const QImage &frame)
   }
 }
 
-void ClientVideoWidget::setAvatar(const QPixmap &pm)
+void VideoWidget::setAvatar(const QPixmap &pm)
 {
   if (d->cpuImageImpl) {
     d->cpuImageImpl->setAvatar(pm);
   }
 }
 
-void ClientVideoWidget::setText(const QString &text)
+void VideoWidget::setText(const QString &text)
 {
   if (d->cpuImageImpl) {
     d->cpuImageImpl->setText(text);

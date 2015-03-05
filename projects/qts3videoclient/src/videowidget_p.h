@@ -24,11 +24,11 @@ class VideoFrame_CpuImpl;
 class VideoWidgetPrivate
 {
 public:
-  VideoWidgetPrivate(ClientVideoWidget *o) : owner(o) {}
+  VideoWidgetPrivate(VideoWidget *o) : owner(o) {}
 
 public:
-  ClientVideoWidget *owner;
-  ClientVideoWidget::Type type;
+  VideoWidget *owner;
+  VideoWidget::Type type;
   QWidget *frameWidget;
 
   // Implementations for the "this->frameWidget".
