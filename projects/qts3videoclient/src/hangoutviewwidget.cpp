@@ -14,6 +14,7 @@
 #include <QGraphicsDropShadowEffect>
 
 #include "cliententity.h"
+#include "channelentity.h"
 
 #include "remoteclientvideowidget.h"
 
@@ -168,6 +169,8 @@ void HangoutViewWidget::updateClientVideo(YuvFrameRefPtr frame, int senderId)
   auto videoWidget = d->videoWidgets.value(senderId);
   if (!videoWidget) {
     //HL_WARN(HL, QString("Received video frame for unknown client (client-id=%1)").arg(senderId).toStdString());
+    ClientEntity c; c.id = senderId; c.name = "unknown";
+    addClient(c, ChannelEntity());
     return;
   }
   if (senderId == d->fullViewClientId) {
@@ -283,7 +286,8 @@ HangoutViewFullViewWidget::HangoutViewFullViewWidget(QWidget *parent) :
   setFrameShape(QFrame::Box);
   addDropShadowEffect(this);
 
-  QTimer::singleShot(1, this, SLOT(createRemoteVideoWidget()));
+  createRemoteVideoWidget();
+  //QTimer::singleShot(300, this, SLOT(createRemoteVideoWidget()));
 }
 
 void HangoutViewFullViewWidget::createRemoteVideoWidget()

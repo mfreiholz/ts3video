@@ -64,6 +64,7 @@ set(qresources
 if(IncludeOpenGLSupport)
   add_definitions(-DINCLUDE_OPENGL_VIDEOWIDGET_SUPPORT)
   #add_definitions(-DINCLUDE_OPENGL_VIDEOWIDGET2_SUPPORT)
+  #add_definitions(-DINCLUDE_OPENGL_VIDEOWIDGET3_SUPPORT)
   list(APPEND qheaders src/opengl/openglrenderthread.h)
   list(APPEND qheaders src/opengl/openglwindow.h)
   list(APPEND sources src/opengl/openglrenderthread.cpp)
@@ -71,6 +72,10 @@ if(IncludeOpenGLSupport)
 
   list(APPEND qheaders src/opengl2/yuvvideowindow.h)
   list(APPEND sources src/opengl2/yuvvideowindow.cpp)
+
+  list(APPEND qheaders src/opengl3/glvideowidget.h)
+  list(APPEND qheaders src/opengl3/glvideowidget_p.h)
+  list(APPEND sources src/opengl3/glvideowidget.cpp)
 endif()
 
 if(WIN32)

@@ -13,6 +13,8 @@
 #include "opengl/openglwindow.h"
 #elif INCLUDE_OPENGL_VIDEOWIDGET2_SUPPORT
 #include "opengl2/yuvvideowindow.h"
+#elif INCLUDE_OPENGL_VIDEOWIDGET3_SUPPORT
+#include "opengl3/glvideowidget.h"
 #endif
 
 class VideoFrame_CpuImpl;
@@ -35,6 +37,8 @@ public:
   OpenGLWindow *oglWindow;
 #elif INCLUDE_OPENGL_VIDEOWIDGET2_SUPPORT
   YuvVideoWindowSub *yuvWindow;
+#elif INCLUDE_OPENGL_VIDEOWIDGET3_SUPPORT
+  GLVideoWidget *glVideoWidget;
 #endif
 };
 

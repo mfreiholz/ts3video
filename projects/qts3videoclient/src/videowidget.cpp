@@ -19,6 +19,8 @@ ClientVideoWidget::ClientVideoWidget(Type type, QWidget *parent) :
   d->oglWindow = nullptr;
 #elif INCLUDE_OPENGL_VIDEOWIDGET2_SUPPORT
   d->yuvWindow = nullptr;
+#elif INCLUDE_OPENGL_VIDEOWIDGET3_SUPPORT
+  d->glVideoWidget = nullptr;
 #endif
 
   switch (d->type) {
@@ -32,6 +34,10 @@ ClientVideoWidget::ClientVideoWidget(Type type, QWidget *parent) :
 #elif INCLUDE_OPENGL_VIDEOWIDGET2_SUPPORT
       d->yuvWindow = new YuvVideoWindowSub(nullptr);
       d->frameWidget = QWidget::createWindowContainer(d->yuvWindow, this);
+      break;
+#elif INCLUDE_OPENGL_VIDEOWIDGET3_SUPPORT
+      d->glVideoWidget = new GLVideoWidget(this);
+      d->frameWidget = d->glVideoWidget;
       break;
 #endif
     case CPU:
@@ -55,6 +61,8 @@ ClientVideoWidget::~ClientVideoWidget()
   delete d->oglWindow;
 #elif INCLUDE_OPENGL_VIDEOWIDGET2_SUPPORT
   delete d->yuvWindow;
+#elif INCLUDE_OPENGL_VIDEOWIDGET3_SUPPORT
+  delete d->glVideoWidget;
 #endif
 }
 
@@ -67,6 +75,9 @@ void ClientVideoWidget::setFrame(YuvFrameRefPtr frame)
       break;
 #elif INCLUDE_OPENGL_VIDEOWIDGET2_SUPPORT
       if (d->yuvWindow) d->yuvWindow->setFrame(frame);
+      break;
+#elif INCLUDE_OPENGL_VIDEOWIDGET3_SUPPORT
+      if (d->glVideoWidget) d->glVideoWidget->setFrame(frame);
       break;
 #endif
     case CPU:
@@ -89,6 +100,9 @@ void ClientVideoWidget::setFrame(const QImage &frame)
       break;
 #elif INCLUDE_OPENGL_VIDEOWIDGET2_SUPPORT
       if (d->yuvWindow) d->yuvWindow->setFrame(YuvFrameRefPtr(YuvFrame::fromQImage(frame)));
+      break;
+#elif INCLUDE_OPENGL_VIDEOWIDGET3_SUPPORT
+      if (d->glVideoWidget) d->glVideoWidget->setFrame(YuvFrameRefPtr(YuvFrame::fromQImage(frame)));
       break;
 #endif
     case CPU:

@@ -209,6 +209,11 @@ int runTestClient(QApplication &a)
   return a.exec();
 }
 
+int runVideoRecorderTest(QApplication &a)
+{
+  return a.exec();
+}
+
 int runRegisterUriHandler(QApplication &a)
 {
   // TODO Run with elevated privileges!

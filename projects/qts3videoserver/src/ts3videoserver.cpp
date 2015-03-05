@@ -89,8 +89,7 @@ bool TS3VideoServer::init()
 
 void TS3VideoServer::updateMediaRecipients()
 {
-  // TODO Currently everyone sends to everyone, thats not the end scenario!
-  bool sendBackOwnVideo = false;
+  bool sendBackOwnVideo = true;
   MediaRecipients recips;
   auto clients = _clients.values();
   foreach(auto client, clients) {
