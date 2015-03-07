@@ -286,8 +286,8 @@ HangoutViewFullViewWidget::HangoutViewFullViewWidget(QWidget *parent) :
   setFrameShape(QFrame::Box);
   addDropShadowEffect(this);
 
-  createRemoteVideoWidget();
-  //QTimer::singleShot(300, this, SLOT(createRemoteVideoWidget()));
+  //createRemoteVideoWidget();
+  QTimer::singleShot(300, this, SLOT(createRemoteVideoWidget()));
 }
 
 void HangoutViewFullViewWidget::createRemoteVideoWidget()

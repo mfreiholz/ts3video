@@ -517,7 +517,7 @@ void VideoEncodingThread::run()
 {
   const int fps = 15;
   const int fpsTimeMs = 1000 / fps;
-  const int bitRate = 50;
+  const int bitRate = 100;
   const QSize dim(640, 480);
 
   QHash<int, VP8Encoder*> encoders;

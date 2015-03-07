@@ -3,7 +3,6 @@
 
 #include <QScopedPointer>
 #include <QGLWidget>
-#include <QOpenGLFunctions>
 
 #include "yuvframe.h"
 

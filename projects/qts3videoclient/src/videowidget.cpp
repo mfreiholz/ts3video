@@ -23,22 +23,20 @@ VideoWidget::VideoWidget(Type type, QWidget *parent) :
     d->glImageImpl = new VideoFrame_OpenGL(this);
     d->frameWidget = d->glImageImpl;
     break;
-//    case OpenGL:
-//#ifdef INCLUDE_OPENGL_VIDEOWIDGET_SUPPORT
-//      d->oglWindow = new OpenGLWindow();
-//      d->oglWindow->setRenderMode(OpenGLWindow::RM_CROPPED);
-//      d->oglWindow->setBackgroundColor(QColor(Qt::black));
-//      d->frameWidget = d->oglWindow->widget();
-//      break;
-//#elif INCLUDE_OPENGL_VIDEOWIDGET2_SUPPORT
-//      d->yuvWindow = new YuvVideoWindowSub(nullptr);
-//      d->frameWidget = QWidget::createWindowContainer(d->yuvWindow, this);
-//      break;
-//#elif INCLUDE_OPENGL_VIDEOWIDGET3_SUPPORT
-//      d->glVideoWidget = new GLVideoWidget(this);
-//      d->frameWidget = d->glVideoWidget;
-//      break;
-//#endif
+  case OpenGL_RenderThread:
+    d->oglWindow = new OpenGLWindow(nullptr);
+    d->oglWindow->setRenderMode(OpenGLWindow::RM_CROPPED);
+    d->oglWindow->setBackgroundColor(QColor(Qt::black));
+    d->frameWidget = d->oglWindow->widget();
+    break;
+  case OpenGL_WindowSurface:
+    d->yuvWindow = new YuvVideoWindowSub(nullptr);
+    d->frameWidget = QWidget::createWindowContainer(d->yuvWindow, this);
+    break;
+  case OpenGL_YuvWidget:
+    d->glVideoWidget = new GLVideoWidget(this);
+    d->frameWidget = d->glVideoWidget;
+    break;
   }
 
   if (!d->frameWidget) {
@@ -82,17 +80,21 @@ void VideoWidget::setFrame(YuvFrameRefPtr frame)
       d->glImageImpl->setFrame(image);
     }
     break;
-//    case OpenGL:
-//#ifdef INCLUDE_OPENGL_VIDEOWIDGET_SUPPORT
-//      if (d->oglWindow) d->oglWindow->setData(frame);
-//      break;
-//#elif INCLUDE_OPENGL_VIDEOWIDGET2_SUPPORT
-//      if (d->yuvWindow) d->yuvWindow->setFrame(frame);
-//      break;
-//#elif INCLUDE_OPENGL_VIDEOWIDGET3_SUPPORT
-//      if (d->glVideoWidget) d->glVideoWidget->setFrame(frame);
-//      break;
-//#endif
+  case OpenGL_RenderThread:
+    if (d->oglWindow) {
+      d->oglWindow->setData(frame);
+    }
+    break;
+  case OpenGL_WindowSurface:
+    if (d->yuvWindow) {
+      d->yuvWindow->setFrame(frame);
+    }
+    break;
+  case OpenGL_YuvWidget:
+    if (d->glVideoWidget){
+      d->glVideoWidget->setFrame(frame);
+    }
+    break;
   }
 }
 
@@ -109,17 +111,21 @@ void VideoWidget::setFrame(const QImage &frame)
       d->glImageImpl->setFrame(frame);
     }
     break;
-//    case OpenGL:
-//#ifdef INCLUDE_OPENGL_VIDEOWIDGET_SUPPORT
-//      if (d->oglWindow) d->oglWindow->setData(YuvFrameRefPtr(YuvFrame::fromQImage(frame)));
-//      break;
-//#elif INCLUDE_OPENGL_VIDEOWIDGET2_SUPPORT
-//      if (d->yuvWindow) d->yuvWindow->setFrame(YuvFrameRefPtr(YuvFrame::fromQImage(frame)));
-//      break;
-//#elif INCLUDE_OPENGL_VIDEOWIDGET3_SUPPORT
-//      if (d->glVideoWidget) d->glVideoWidget->setFrame(YuvFrameRefPtr(YuvFrame::fromQImage(frame)));
-//      break;
-//#endif
+  case OpenGL_RenderThread:
+    if (d->oglWindow) {
+      d->oglWindow->setData(YuvFrameRefPtr(YuvFrame::fromQImage(frame)));
+    }
+    break;
+  case OpenGL_WindowSurface:
+    if (d->yuvWindow) {
+      d->yuvWindow->setFrame(YuvFrameRefPtr(YuvFrame::fromQImage(frame)));
+    }
+    break;
+  case OpenGL_YuvWidget:
+    if (d->glVideoWidget) {
+      d->glVideoWidget->setFrame(YuvFrameRefPtr(YuvFrame::fromQImage(frame)));
+    }
+    break;
   }
 }
 

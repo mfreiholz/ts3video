@@ -3,6 +3,7 @@
 #include <QOpenGLContext>
 #include <QOpenGLShader>
 #include <QOpenGLShaderProgram>
+#include <QOpenGLFunctions>
 
 #include "humblelogging/api.h"
 
@@ -96,19 +97,19 @@ void GLVideoWidget::paintGL()
   d->program->setUniformValue("height", (GLfloat)frame->height);
 
   // Set texture: U plane
-  //glActiveTexture(GL_TEXTURE1);
+  gl->glActiveTexture(GL_TEXTURE1);
   glBindTexture(GL_TEXTURE_RECTANGLE_ARB, d->textureIds[1]);
   glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, GL_LUMINANCE, frame->width >> 1, frame->height >> 1, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, frame->u);
   d->program->setUniformValue("texU", 1);
 
   // Set texture: V plane
-  //glActiveTexture(GL_TEXTURE2);
+  gl->glActiveTexture(GL_TEXTURE2);
   glBindTexture(GL_TEXTURE_RECTANGLE_ARB, d->textureIds[2]);
   glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, GL_LUMINANCE, frame->width >> 1, frame->height >> 1, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, frame->v);
   d->program->setUniformValue("texV", 2);
 
   // Set texture: Y plane
-  //glActiveTexture(GL_TEXTURE3);
+  gl->glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_RECTANGLE_ARB, d->textureIds[0]);
   glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, GL_LUMINANCE, frame->width, frame->height, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, frame->y);
   d->program->setUniformValue("texY", 0);
