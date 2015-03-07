@@ -323,6 +323,8 @@ HangoutViewCameraWidget::HangoutViewCameraWidget(QWidget *parent) :
   setMinimumSize(_minSize);
 
   _sizeGrip = new QSizeGrip(this);
+
+  addDropShadowEffect(this);
 }
 
 HangoutViewCameraWidget::~HangoutViewCameraWidget()
