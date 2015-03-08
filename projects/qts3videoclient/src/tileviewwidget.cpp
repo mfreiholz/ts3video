@@ -181,9 +181,23 @@ void TileViewWidget::setTileSize(const QSize &size)
 void TileViewWidget::wheelEvent(QWheelEvent *e)
 {
   if (e->modifiers() != Qt::ControlModifier) {
+    e->ignore();
     return;
   }
-
+  auto delta = e->angleDelta();
+  if (delta.y() > 0) {
+    auto newSize = d->tilesCurrentSize;
+    newSize += QSize(25, 25);
+    newSize = d->tilesAspectRatio.scaled(newSize, Qt::KeepAspectRatio);
+    setTileSize(newSize);
+    d->tilesLayout->update();
+  }
+  else if (delta.y() < 0) {
+    auto newSize = d->tilesCurrentSize;
+    newSize -= QSize(25, 25);
+    newSize = d->tilesAspectRatio.scaled(newSize, Qt::KeepAspectRatio);
+    setTileSize(newSize);
+  }
 }
 
 void TileViewWidget::showEvent(QShowEvent *e)
