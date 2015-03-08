@@ -21,6 +21,7 @@
 #include "clientapplogic.h"
 #include "startupwidget.h"
 #include "hangoutviewwidget.h"
+#include "tileviewwidget.h"
 
 HUMBLE_LOGGER(HL, "client");
 
@@ -155,6 +156,37 @@ int runHangoutViewTest(QApplication &a)
     channel.id = 0;
     hang.removeClient(client, channel);
     --clientsCount;
+  });
+
+  return a.exec();
+}
+
+int runTileViewTest(QApplication &a)
+{
+  a.setQuitOnLastWindowClosed(true);
+
+  TileViewWidget view;
+  view.setCameraWidget(new VideoWidget());
+  view.resize(800, 600);
+  view.setVisible(true);
+
+  int addClientId = 1;
+  int removeClientId = 1;
+  int clientsCount = 0;
+
+  // Add widgets.
+  QTimer t;
+  t.setInterval(2000);
+  t.start();
+  QObject::connect(&t, &QTimer::timeout, [&view, &addClientId, &clientsCount]() {
+    if (clientsCount >= 5)
+      return;
+    ClientEntity client;
+    client.id = ++addClientId;
+    ChannelEntity channel;
+    channel.id = 0;
+    view.addClient(client, channel);
+    ++clientsCount;
   });
 
   return a.exec();
@@ -330,6 +362,9 @@ int main(int argc, char *argv[])
   }
   else if (mode == QString("test-gui3")) {
     return runHangoutViewTest(a);
+  }
+  else if (mode == QString("test-gui4")) {
+    return runTileViewTest(a);
   }
   else if (mode == QString("install-uri-handler")) {
     return runRegisterUriHandler(a);

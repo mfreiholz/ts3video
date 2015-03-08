@@ -19,6 +19,7 @@ public:
   virtual void updateClientVideo(YuvFrameRefPtr frame, int senderId) = 0;
 
   static RemoteClientVideoWidget* createRemoteVideoWidget(const ClientEntity &client, QWidget *parent = nullptr);
+  static void addDropShadowEffect(QWidget *widget);
 };
 
 #endif

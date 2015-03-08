@@ -34,6 +34,9 @@ set(qheaders
   src/startupwidget.h
   src/hangoutviewwidget.h
   src/hangoutviewwidget_p.h
+  src/tileviewwidget.h
+  src/tileviewwidget_p.h
+  src/flowlayout.h
 )
 
 set(sources
@@ -51,6 +54,8 @@ set(sources
   src/startupwidget.cpp
   src/hangoutviewwidget.cpp
   src/viewbase.cpp
+  src/tileviewwidget.cpp
+  src/flowlayout.cpp
 )
 
 set(qforms
@@ -62,9 +67,6 @@ set(qresources
 )
 
 if(IncludeOpenGLSupport)
-  add_definitions(-DINCLUDE_OPENGL_VIDEOWIDGET_SUPPORT)
-  #add_definitions(-DINCLUDE_OPENGL_VIDEOWIDGET2_SUPPORT)
-  #add_definitions(-DINCLUDE_OPENGL_VIDEOWIDGET3_SUPPORT)
   list(APPEND qheaders src/opengl/openglrenderthread.h)
   list(APPEND qheaders src/opengl/openglwindow.h)
   list(APPEND sources src/opengl/openglrenderthread.cpp)

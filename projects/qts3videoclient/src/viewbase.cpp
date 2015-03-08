@@ -1,5 +1,8 @@
 #include "viewbase.h"
 
+#include <QWidget>
+#include <QGraphicsDropShadowEffect>
+
 #include "remoteclientvideowidget.h"
 
 ///////////////////////////////////////////////////////////////////////
@@ -11,4 +14,13 @@ RemoteClientVideoWidget* ViewBase::createRemoteVideoWidget(const ClientEntity &c
     w->setClient(client);
   }
   return w;
+}
+
+void ViewBase::addDropShadowEffect(QWidget *widget)
+{
+  auto dropShadow = new QGraphicsDropShadowEffect(widget);
+  dropShadow->setOffset(0, 0);
+  dropShadow->setBlurRadius(5);
+  dropShadow->setColor(QColor(Qt::black));
+  widget->setGraphicsEffect(dropShadow);
 }
