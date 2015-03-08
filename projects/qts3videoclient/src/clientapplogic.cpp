@@ -20,6 +20,7 @@
 #include "clientcameravideowidget.h"
 #include "remoteclientvideowidget.h"
 #include "hangoutviewwidget.h"
+#include "tileviewwidget.h"
 
 HUMBLE_LOGGER(HL, "client.logic");
 
@@ -170,7 +171,8 @@ void ClientAppLogic::onNewVideoFrame(YuvFrameRefPtr frame, int senderId)
 
 void ClientAppLogic::initGui()
 {
-  _view = new HangoutViewWidget(nullptr);
+  //_view = new HangoutViewWidget(nullptr);
+  _view = new TileViewWidget(nullptr);
   _view->setCameraWidget(createCameraWidget());
 }
 

@@ -115,6 +115,9 @@ TileViewWidget::TileViewWidget(QWidget *parent, Qt::WindowFlags f) :
     about->setWindowFlags(Qt::Dialog);
     about->show();
   });
+
+  resize(800, 600);
+  setVisible(true);
 }
 
 TileViewWidget::~TileViewWidget()
