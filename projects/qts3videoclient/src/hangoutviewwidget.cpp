@@ -84,12 +84,12 @@ HangoutViewWidget::HangoutViewWidget(QWidget *parent) :
   d->thumbnailScrollArea->setWidget(d->thumbnailContainer);
   d->thumbnailScrollArea->setMinimumHeight(d->thumbnailWidgetSize.height() + d->thumbnailScrollArea->horizontalScrollBar()->height() + 9);
   d->thumbnailScrollArea->setStyleSheet(
-    "QScrollBar { background: rgb(30, 30, 30); }"
-    "QScrollBar:horizontal { height: 10px; }"
-    "QScrollBar::add-line, QScrollBar::sub-line { background: none; }"
-    "QScrollBar::add-page, QScrollBar::sub-page { background: none; }"
-    "QScrollBar::handle { background: rgb(63, 63, 70); border: 1px solid rgb(63, 63, 70); }"
-  );
+      "QScrollBar { background: rgb(30, 30, 30); }"
+      "QScrollBar:horizontal { height: 10px; }"
+      "QScrollBar::add-line, QScrollBar::sub-line { background: none; }"
+      "QScrollBar::add-page, QScrollBar::sub-page { background: none; }"
+      "QScrollBar::handle { background: rgb(63, 63, 70); border: 1px solid rgb(63, 63, 70); }"
+    );
 
   // Layout.
   auto mainLayout = new QBoxLayout(QBoxLayout::TopToBottom);

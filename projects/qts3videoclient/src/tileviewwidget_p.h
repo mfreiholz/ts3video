@@ -8,6 +8,7 @@
 #include <QObject>
 #include <QFrame>
 
+class QPushButton;
 class FlowLayout;
 class RemoteClientVideoWidget;
 class TileViewTileWidget;
@@ -25,7 +26,9 @@ public:
     tilesLayout(nullptr),
     tilesAspectRatio(4, 3),
     tilesCurrentSize(tilesAspectRatio),
-    cameraWidget(nullptr)
+    cameraWidget(nullptr),
+    zoomInButton(nullptr),
+    zoomOutButton(nullptr)
   {}
 
 public:
@@ -35,6 +38,8 @@ public:
   QSize tilesAspectRatio;
   QSize tilesCurrentSize;
   TileViewCameraWidget *cameraWidget;
+  QPushButton *zoomInButton;
+  QPushButton *zoomOutButton;
 
   QHash<int, TileViewTileWidget*> tilesMap; ///< Maps client's ID to it's widget.
 };
@@ -47,7 +52,7 @@ class TileViewCameraWidget : public QFrame
   friend class TileViewWidget;
 
 public:
-  TileViewCameraWidget(QWidget *parent);
+  TileViewCameraWidget(QWidget *parent = nullptr);
   ~TileViewCameraWidget();
   void setWidget(QWidget *w);
 

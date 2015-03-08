@@ -20,6 +20,14 @@ public:
   virtual void addClient(const ClientEntity &client, const ChannelEntity &channel);
   virtual void removeClient(const ClientEntity &client, const ChannelEntity &channel);
   virtual void updateClientVideo(YuvFrameRefPtr frame, int senderId);
+
+public slots:
+  void setTileSize(const QSize &size);
+
+protected:
+  virtual void wheelEvent(QWheelEvent *e);
+  virtual void showEvent(QShowEvent *e);
+  virtual void closeEvent(QCloseEvent *e);
 };
 
 #endif
