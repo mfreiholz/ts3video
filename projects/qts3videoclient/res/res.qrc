@@ -18,6 +18,7 @@
         <file>ic_add_circle_outline_grey600_48dp.png</file>
         <file>ic_remove_circle_outline_grey600_48dp.png</file>
         <file>ic_info_outline_grey600_48dp.png</file>
+        <file>insanefactory-77x128.png</file>
     </qresource>
     <qresource prefix="/opengl">
         <file>vertex.vsh</file>

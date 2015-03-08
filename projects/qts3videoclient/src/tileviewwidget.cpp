@@ -11,6 +11,7 @@
 
 #include "flowlayout.h"
 #include "remoteclientvideowidget.h"
+#include "aboutwidget.h"
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -110,7 +111,9 @@ TileViewWidget::TileViewWidget(QWidget *parent, Qt::WindowFlags f) :
     setTileSize(newSize);
   });
   QObject::connect(aboutButton, &QPushButton::clicked, [this]() {
-    
+    auto about = new AboutWidget(this);
+    about->setWindowFlags(Qt::Dialog);
+    about->show();
   });
 }
 

@@ -37,6 +37,7 @@ set(qheaders
   src/tileviewwidget.h
   src/tileviewwidget_p.h
   src/flowlayout.h
+  src/aboutwidget.h
 )
 
 set(sources
@@ -56,10 +57,12 @@ set(sources
   src/viewbase.cpp
   src/tileviewwidget.cpp
   src/flowlayout.cpp
+  src/aboutwidget.cpp
 )
 
 set(qforms
   src/startupwidget.ui
+  src/aboutwidget.ui
 )
 
 set(qresources
