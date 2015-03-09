@@ -38,6 +38,7 @@ set(qheaders
   src/tileviewwidget_p.h
   src/flowlayout.h
   src/aboutwidget.h
+  src/movablewidgetcontainer.h
 )
 
 set(sources
@@ -58,6 +59,7 @@ set(sources
   src/tileviewwidget.cpp
   src/flowlayout.cpp
   src/aboutwidget.cpp
+  src/movablewidgetcontainer.cpp
 )
 
 set(qforms

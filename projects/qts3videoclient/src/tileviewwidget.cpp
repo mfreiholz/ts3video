@@ -12,6 +12,7 @@
 #include "flowlayout.h"
 #include "remoteclientvideowidget.h"
 #include "aboutwidget.h"
+#include "movablewidgetcontainer.h"
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -35,10 +36,17 @@ TileViewWidget::TileViewWidget(QWidget *parent, Qt::WindowFlags f) :
   d->tilesCurrentSize.scale(200, 200, Qt::KeepAspectRatio);
 
   // Tiles.
-  auto scrollAreaContent = new QWidget();
+  //auto scrollAreaContent = new QWidget();
+  auto scrollAreaContent = new MovableWidgetContainer(nullptr, 0);
   pal = scrollAreaContent->palette();
   pal.setColor(QPalette::Background, __darkBackgroundColor);
   scrollAreaContent->setPalette(pal);
+
+  //d->tilesLayout = new FlowLayout(nullptr, 6, 6, 6);
+  //d->tilesLayout->setContentsMargins(6, 6, 6, 6);
+  //d->tilesLayout->setSpacing(6);
+  d->tilesLayout = static_cast<FlowLayout*>(scrollAreaContent->layout());
+  scrollAreaContent->setLayout(d->tilesLayout);
 
   auto scrollArea = new QScrollArea();
   scrollArea->setFrameStyle(QFrame::NoFrame);
@@ -53,11 +61,6 @@ TileViewWidget::TileViewWidget(QWidget *parent, Qt::WindowFlags f) :
       "QScrollBar::add-page, QScrollBar::sub-page { background: none; }"
       "QScrollBar::handle { background: rgb(63, 63, 70); border: 1px solid rgb(63, 63, 70); }"
     );
-
-  d->tilesLayout = new FlowLayout(nullptr, 6, 6, 6);
-  d->tilesLayout->setContentsMargins(6, 6, 6, 6);
-  d->tilesLayout->setSpacing(6);
-  scrollArea->widget()->setLayout(d->tilesLayout);
 
   // Camera.
   d->cameraWidget = new TileViewCameraWidget();
