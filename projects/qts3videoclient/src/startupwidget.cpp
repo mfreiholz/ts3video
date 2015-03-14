@@ -27,9 +27,7 @@ StartupDialog::StartupDialog(QWidget *parent) :
   d->ui.cameraComboBox->clear();
   d->ui.usernameLineEdit->clear();
   d->ui.serverAddress->clear();
-
-  d->ui.serverAddressLabel->setVisible(false);
-  d->ui.serverAddress->setVisible(false);
+  d->ui.serverPort->clear();
 
   auto cameraInfos = QCameraInfo::availableCameras();
   foreach (auto ci, cameraInfos) {
@@ -41,6 +39,7 @@ StartupDialog::StartupDialog(QWidget *parent) :
   QObject::connect(d->ui.cameraComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(validate()));
   QObject::connect(d->ui.usernameLineEdit, SIGNAL(textEdited(const QString&)), this, SLOT(validate()));
   QObject::connect(d->ui.serverAddress, SIGNAL(textEdited(const QString&)), this, SLOT(validate()));
+  QObject::connect(d->ui.serverPort, SIGNAL(textEdited(const QString&)), this, SLOT(validate()));
   QObject::connect(d->ui.okButton, &QPushButton::clicked, this, &StartupDialog::onAccept);
   QObject::connect(d->ui.cancelButton, &QPushButton::clicked, this, &QDialog::reject);
 }
@@ -56,6 +55,7 @@ StartupDialogValues StartupDialog::values() const
   v.cameraDeviceName = d->ui.cameraComboBox->currentData().toString();
   v.username = d->ui.usernameLineEdit->text();
   v.serverAddress = d->ui.serverAddress->text();
+  v.serverPort = d->ui.serverPort->text().toUInt();
   return v;
 }
 
@@ -67,6 +67,7 @@ void StartupDialog::setValues(const StartupDialogValues &v)
   }
   d->ui.usernameLineEdit->setText(v.username);
   d->ui.serverAddress->setText(v.serverAddress);
+  d->ui.serverPort->setText(QString::number(v.serverPort));
   d->validateUi();
 }
 
@@ -97,6 +98,9 @@ bool StartupDialogPrivate::validateUi()
     valid = false;
   }
   if (d->ui.serverAddress->text().isEmpty()) {
+    valid = false;
+  }
+  if (d->ui.serverPort->text().isEmpty() || d->ui.serverPort->text().toUInt() <= 0) {
     valid = false;
   }
 

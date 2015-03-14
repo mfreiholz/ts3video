@@ -11,6 +11,7 @@ public:
   QString cameraDeviceName;
   QString username;
   QString serverAddress;
+  quint16 serverPort;
 };
 
 class StartupDialogPrivate;

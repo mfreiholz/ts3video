@@ -329,7 +329,8 @@ int runClientAppLogic(QApplication &a)
   // The values from dialog will modify the ClientAppLogic::Options.
   if (true) {
     StartupDialogValues v;
-    v.serverAddress = opts.serverAddress.toString() + QString(":") + QString::number(opts.serverPort);
+    v.serverAddress = opts.serverAddress.toString();
+    v.serverPort = opts.serverPort;
     v.username = opts.username;
     StartupDialog dialog(nullptr);
     dialog.setValues(v);
@@ -340,7 +341,8 @@ int runClientAppLogic(QApplication &a)
     v = dialog.values();
     opts.username = v.username;
     opts.cameraDeviceId = v.cameraDeviceName;
-    // TODO opts.serverAddress = v.serverAddress;
+    opts.serverAddress = v.serverAddress;
+    opts.serverPort = v.serverPort;
   }
 
   ClientAppLogic logic(opts, nullptr);
