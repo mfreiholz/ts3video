@@ -19,11 +19,17 @@ int main(int argc, char *argv[])
   hlFactory.registerAppender(new humble::logging::ConsoleAppender());
   hlFactory.registerAppender(new humble::logging::FileAppender(std::string("ts3videoserver.log"), true));
   hlFactory.changeGlobalLogLevel(humble::logging::LogLevel::Debug);
+
+  // Initialize server options.
+  TS3VideoServerOptions opts;
+
+  // TODO Override server options by license.
+  // ...
   
   HL_INFO(HL, QString("Server startup (version=%1)").arg(a.applicationVersion()).toStdString());
 
   // Startup server.
-  TS3VideoServer server(nullptr);
+  TS3VideoServer server(opts);
   if (!server.init()) {
     return 1;
   }

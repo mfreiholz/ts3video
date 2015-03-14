@@ -4,10 +4,13 @@
 #define TS3VIDEOSERVER_VERSION 1
 #define TS3VIDEOSERVER_PORT 6000
 
+#include <limits.h>
+
 #include <QObject>
 #include <QList>
 #include <QHash>
 #include <QSet>
+#include <QHostAddress>
 
 #include "qcorserver.h"
 
@@ -18,6 +21,27 @@ class ClientConnectionHandler;
 class ClientEntity;
 class ChannelEntity;
 
+/*!
+ * Options to run a TS3VideoServer instance.
+ */
+class TS3VideoServerOptions
+{
+public:
+  // The address and port on which the server listens for new connections.
+  QHostAddress address = QHostAddress::Any;
+  quint16 port = 6001;
+
+  // The maximum number of parallel client connections.
+  int connectionLimit = std::numeric_limits<int>::max();
+
+  // The maximum bandwidth the server may use.
+  // New connections will be blocked, if the server's bandwidth
+  // usage reaches this value.
+  double bandwidthLimit = std::numeric_limits<double>::max();
+};
+
+/*!
+ */
 class TS3VideoServer : public QObject
 {
   Q_OBJECT
@@ -25,7 +49,7 @@ class TS3VideoServer : public QObject
   friend class WebSocketStatusServer;
 
 public:
-  TS3VideoServer(QObject *parent);
+  TS3VideoServer(const TS3VideoServerOptions &opts, QObject *parent = nullptr);
   ~TS3VideoServer();
   bool init();
 
@@ -37,6 +61,8 @@ private:
   QList<int> getSiblingClientIds(int clientId) const;
 
 private:
+  TS3VideoServerOptions _opts;
+
   // Listens for new client connections.
   QCorServer _corServer;
 

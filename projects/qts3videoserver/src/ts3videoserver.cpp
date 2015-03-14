@@ -13,8 +13,9 @@ HUMBLE_LOGGER(HL, "server");
 
 ///////////////////////////////////////////////////////////////////////
 
-TS3VideoServer::TS3VideoServer(QObject *parent) :
+TS3VideoServer::TS3VideoServer(const TS3VideoServerOptions &opts, QObject *parent) :
   QObject(parent),
+  _opts(opts),
   _corServer(this),
   _connections(),
   _nextClientId(0),

@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QAbstractSocket>
+#include <QTime>
 
 #include "qcorframe.h"
 
@@ -43,6 +44,7 @@ public:
 private slots:
   void onStateChanged(QAbstractSocket::SocketState state);
   void onNewIncomingRequest(QCorFrameRefPtr frame);
+  void updateStatistics();
 
 private:
   TS3VideoServer *_server;
@@ -51,6 +53,15 @@ private:
 
   // Status information.
   bool _authenticated;
+
+  // Statistics.
+  quint64 _bytesRead; ///< Total number of bytes received from client.
+  quint64 _bytesWritten; ///< Total number of bytes written to client.
+
+  QTime _bytesReadTime;
+  quint64 _bytesReadSince;
+  QTime _bytesWrittenTime;
+  quint64 _bytesWrittenSince;
 };
 
 #endif

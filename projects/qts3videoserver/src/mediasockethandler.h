@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QUdpSocket>
 #include <QVector>
+#include <QTime>
 
 class MediaSenderEntity;
 class MediaReceiverEntity;
@@ -50,7 +51,16 @@ public:
   void setRecipients(const MediaRecipients &rec);
 
 signals:
+  /**
+   * Emits for every incoming authentication from a client.
+   */
   void tokenAuthentication(const QString &token, const QHostAddress &address, quint16 port);
+
+  /**
+   * Emits whenever the transfer rates have been recalculated and updated.
+   * It gets calculated every X seconds by an internal timer.
+   */
+  void transferRatesChanged(double bytesReadRate, double bytesWriteRate);
 
 private slots:
   void onReadyRead();
@@ -59,6 +69,17 @@ private:
   quint16 _port;
   QUdpSocket _socket;
   MediaRecipients _recipients;
+
+  // Bandwidth stats.
+  quint64 _bytesRead; ///< Number of bytes read.
+  quint64 _bytesWritten; ///< Number of bytes written.
+
+  double _transferRateRead;
+  double _transferRateWrite;
+  
+  QTime _bandwidthCalcTime;
+  quint64 _bandwidthBytesReadTemp;
+  quint64 _bandwidthBytesWrittenTemp;
 };
 
 #endif

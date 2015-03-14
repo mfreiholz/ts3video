@@ -1,6 +1,7 @@
 #include "clientconnectionhandler.h"
 
 #include <QDateTime>
+#include <QTimer>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
@@ -27,7 +28,11 @@ ClientConnectionHandler::ClientConnectionHandler(TS3VideoServer *server, QCorCon
   _server(server),
   _connection(connection),
   _authenticated(false),
-  _clientEntity(nullptr)
+  _clientEntity(nullptr),
+  _bytesRead(0),
+  _bytesWritten(0),
+  _bytesReadSince(0),
+  _bytesWrittenSince(0)
 {
   _clientEntity = new ClientEntity();
   _clientEntity->id = ++_server->_nextClientId;
@@ -36,8 +41,27 @@ ClientConnectionHandler::ClientConnectionHandler(TS3VideoServer *server, QCorCon
   _server->_connections.insert(_clientEntity->id, this);
   connect(_connection, &QCorConnection::stateChanged, this, &ClientConnectionHandler::onStateChanged);
   connect(_connection, &QCorConnection::newIncomingRequest, this, &ClientConnectionHandler::onNewIncomingRequest);
-
   onStateChanged(QAbstractSocket::ConnectedState);
+
+  // Prepare statistics.
+  auto statisticTimer = new QTimer(this);
+  statisticTimer->setInterval(1500);
+  statisticTimer->start();
+  connect(statisticTimer, &QTimer::timeout, this, &ClientConnectionHandler::updateStatistics);
+  _bytesReadTime.start();
+  _bytesWrittenTime.start();
+
+  // Handle: Max number of connections (Connection limit).
+  if (_server->_connections.size() > _server->_opts.connectionLimit) {
+    HL_WARN(HL, QString("Maximum allowed connections exceeded. (max=%1)").arg(_server->_opts.connectionLimit).toStdString());
+    QCorFrame req;
+    QJsonObject params;
+    params["message"] = "Maximum allowed connections exceeded.";
+    req.setData(JsonProtocolHelper::createJsonRequest("error", QJsonObject()));
+    auto reply = _connection->sendRequest(req);
+    connect(reply, &QCorReply::finished, reply, &QCorReply::deleteLater);
+    _connection->disconnectFromHost();
+  }
 }
 
 ClientConnectionHandler::~ClientConnectionHandler()
@@ -153,7 +177,15 @@ void ClientConnectionHandler::onNewIncomingRequest(QCorFrameRefPtr frame)
     return;
   }
 
-  if (action == "joinchannel") {
+  if (action == "heartbeat") {
+    // Send response.
+    QCorFrame res;
+    res.initResponse(*frame.data());
+    res.setData(JsonProtocolHelper::createJsonResponse(QJsonObject()));
+    _connection->sendResponse(res);
+    return;
+  }
+  else if (action == "joinchannel") {
     auto channelId = params["channelid"].toInt();
     if (channelId <= 0) {
       // Send error: Missing channel id.
@@ -237,4 +269,31 @@ void ClientConnectionHandler::onNewIncomingRequest(QCorFrameRefPtr frame)
   res.setData(JsonProtocolHelper::createJsonResponseError(4, QString("Unknown action.")));
   _connection->sendResponse(res);
   return;
+}
+
+void ClientConnectionHandler::updateStatistics()
+{
+  // Calculate READ transfer rate.
+  double readRate = 0.0;
+  auto elapsedms = _bytesReadTime.elapsed();
+  if (elapsedms > 0) {
+    auto diff = _bytesRead - _bytesReadSince;
+    if (diff > 0) {
+      readRate = ((double)diff / elapsedms) * 1000;
+    }
+    _bytesReadSince = _bytesRead;
+    _bytesReadTime.restart();
+  }
+
+  // Calculate WRITE transfer rate.
+  double writeRate = 0.0;
+  elapsedms = _bytesWrittenTime.elapsed();
+  if (elapsedms > 0) {
+    auto diff = _bytesWritten - _bytesWrittenSince;
+    if (diff > 0) {
+      writeRate = ((double)diff / elapsedms) * 1000;
+    }
+    _bytesWrittenSince = _bytesWritten;
+    _bytesWrittenTime.restart();
+  }
 }
