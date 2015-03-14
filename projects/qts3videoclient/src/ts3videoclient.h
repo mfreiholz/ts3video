@@ -14,6 +14,7 @@
 class QHostAddress;
 class ClientEntity;
 class ChannelEntity;
+class NetworkUsageEntity;
 
 class TS3VideoClientPrivate;
 class TS3VideoClient : public QObject
@@ -42,6 +43,7 @@ public:
   /*!
     Authenticates with the server.
     This action has to be performed as first step, as soon as the connection is established.
+    If the client doesn't authenticate within X seconds, the server will drop the connection.
     \see connected()
     \return QCorReply* Ownership goes over to caller who needs to delete it with "deleteLater()".
   */
@@ -75,6 +77,9 @@ signals:
   void clientLeftChannel(const ClientEntity &client, const ChannelEntity &channel);
   void clientDisconnected(const ClientEntity &client);
   void newVideoFrame(YuvFrameRefPtr frame, int senderId);
+
+  // Periodically updated information to display.
+  void networkUsageUpdated(const NetworkUsageEntity &networkUsage);
 
 private slots:
   void onStateChanged(QAbstractSocket::SocketState state);

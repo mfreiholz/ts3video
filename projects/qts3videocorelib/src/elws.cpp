@@ -88,3 +88,49 @@ void ELWS::calcScaledAndCenterizedImageRect(const QRect &surfaceRect, QRect &ima
   offset.setX(x);
   offset.setY(y);
 }
+
+QString ELWS::humanReadableSize(quint64 bytes)
+{
+  // Geopbyte   (>= 1267650600228229401496703205376)
+  // Brontobyte (>= 1237940039285380274899124224)
+  // Yottabyte  (>= 1208925819614629174706176)
+  // Zettabyte  (>= 1180591620717411303424)
+  // Exabyte
+  if (bytes >= 1152921504606846976) {
+    auto eb = bytes / 1152921504606846976.0;
+    return QString("%1 EB").arg(eb, 0, 'f', 2);
+  }
+  // Petabyte
+  else if (bytes >= 1125899906842624) {
+    auto pb = bytes / 1125899906842624.0;
+    return QString("%1 PB").arg(pb, 0, 'f', 2);
+  }
+  // Terabyte
+  else if (bytes >= 1099511627776) {
+    auto tb = bytes / 1099511627776.0;
+    return QString("%1 TB").arg(tb, 0, 'f', 2);
+  }
+  // Gigabyte
+  else if (bytes >= 1073741824) {
+    auto gb = bytes / 1073741824.0;
+    return QString("%1 GB").arg(gb, 0, 'f', 2);
+  }
+  // Megabyte
+  else if (bytes >= 1048576) {
+    auto mb = bytes / 1048576.0;
+    return QString("%1 MB").arg(mb, 0, 'f', 2);
+  }
+  // Kilobyte
+  else if (bytes >= 1024) {
+    auto kb = bytes / 1024.0;
+    return QString("%1 KB").arg(kb, 0, 'f', 2);
+  }
+  if (bytes > 1)
+    return QString("%1 Bytes").arg(bytes);
+  return QString("%1 Byte").arg(bytes);
+}
+
+QString ELWS::humanReadableBandwidth(quint64 bytesPerSecond)
+{
+  return humanReadableSize(bytesPerSecond) + QString("/s");
+}

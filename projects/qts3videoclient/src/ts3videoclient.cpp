@@ -9,7 +9,7 @@
 #include <QUdpSocket>
 #include <QTcpSocket>
 #include <QHostAddress>
-#include <QTime>
+#include <QTimer>
 
 #include "humblelogging/api.h"
 
@@ -125,6 +125,7 @@ QCorReply* TS3VideoClient::auth(const QString &name)
       d->_mediaSocket = new MediaSocket(authtoken, d->q_ptr);
       d->_mediaSocket->connectToHost(d->_connection->socket()->peerAddress(), d->_connection->socket()->peerPort());
       QObject::connect(d->_mediaSocket, &MediaSocket::newVideoFrame, d->q_ptr, &TS3VideoClient::newVideoFrame);
+      QObject::connect(d->_mediaSocket, &MediaSocket::networkUsageUpdated, d->q_ptr, &TS3VideoClient::networkUsageUpdated);
     }
   });
 
@@ -235,7 +236,9 @@ MediaSocket::MediaSocket(const QString &token, QObject *parent) :
   _authenticationTimerId(-1),
   _videoEncodingThread(new VideoEncodingThread(this)),
   _videoDecodingThread(new VideoDecodingThread(this)),
-  _lastFrameRequestTimestamp(0)
+  _lastFrameRequestTimestamp(0),
+  _bandwidthReadTemp(0),
+  _bandwidthWrittenTemp(0)
 {
   connect(this, &MediaSocket::stateChanged, this, &MediaSocket::onSocketStateChanged);
   connect(this, &MediaSocket::readyRead, this, &MediaSocket::onReadyRead);
@@ -248,6 +251,33 @@ MediaSocket::MediaSocket(const QString &token, QObject *parent) :
   
   _videoDecodingThread->start();
   connect(_videoDecodingThread, &VideoDecodingThread::decoded, this, &MediaSocket::newVideoFrame);
+
+  // Network usage calculation.
+  auto timer = new QTimer(this);
+  timer->setInterval(1500);
+  timer->start();
+  _bandwidthCalcTime.start();
+  QObject::connect(timer, &QTimer::timeout, [this] () {
+    auto elapsedms = _bandwidthCalcTime.elapsed();
+    _bandwidthCalcTime.restart();
+    // Calculate READ transfer rate.
+    if (elapsedms > 0) {
+      auto diff = _networkUsage.bytesRead - _bandwidthReadTemp;
+      if (diff > 0) {
+        _networkUsage.bandwidthRead = ((double)diff / elapsedms) * 1000;
+      }
+      _bandwidthReadTemp = _networkUsage.bytesRead;
+    }
+    // Calculate WRITE transfer rate.
+    if (elapsedms > 0) {
+      auto diff = _networkUsage.bytesWritten - _bandwidthWrittenTemp;
+      if (diff > 0) {
+        _networkUsage.bandwidthWrite = ((double)diff / elapsedms) * 1000;
+      }
+      _bandwidthWrittenTemp = _networkUsage.bytesWritten;
+    }
+    emit networkUsageUpdated(_networkUsage);
+  });
 }
 
 MediaSocket::~MediaSocket()
@@ -314,7 +344,9 @@ void MediaSocket::sendAuthTokenDatagram(const QString &token)
   out << dgauth.type;
   out << dgauth.size;
   out.writeRawData((char*)dgauth.data, dgauth.size);
-  writeDatagram(datagram, peerAddress(), peerPort());
+  auto written = writeDatagram(datagram, peerAddress(), peerPort());
+  if (written > 0)
+    _networkUsage.bytesWritten += written;
 }
 
 void MediaSocket::sendVideoFrame(const QByteArray &frame_, quint64 frameId_, quint32 senderId_)
@@ -347,7 +379,9 @@ void MediaSocket::sendVideoFrame(const QByteArray &frame_, quint64 frameId_, qui
     out << dgvideo.count;
     out << dgvideo.size;
     out.writeRawData((char*)dgvideo.data, dgvideo.size);
-    writeDatagram(datagram, peerAddress(), peerPort());
+    auto written = writeDatagram(datagram, peerAddress(), peerPort());
+    if (written > 0)
+      _networkUsage.bytesWritten += written;
   }
   UDP::VideoFrameDatagram::freeData(datagrams, datagramsLength);
 }
@@ -370,7 +404,9 @@ void MediaSocket::sendVideoFrameRecoveryDatagram(quint64 frameId_, quint32 fromS
   out << dgrec.sender;
   out << dgrec.frameId;
   out << dgrec.index;
-  writeDatagram(datagram, peerAddress(), peerPort());
+  auto written = writeDatagram(datagram, peerAddress(), peerPort());
+  if (written > 0)
+    _networkUsage.bytesWritten += written;
 }
 
 void MediaSocket::timerEvent(QTimerEvent *ev)
@@ -401,7 +437,9 @@ void MediaSocket::onReadyRead()
     QHostAddress senderAddress;
     quint16 senderPort;
     data.resize(pendingDatagramSize());
-    readDatagram(data.data(), data.size(), &senderAddress, &senderPort);
+    auto read = readDatagram(data.data(), data.size(), &senderAddress, &senderPort);
+    if (read > 0)
+      _networkUsage.bytesRead += read;
 
     QDataStream in(data);
     in.setByteOrder(QDataStream::BigEndian);
@@ -453,7 +491,6 @@ void MediaSocket::onReadyRead()
         auto waitForType = decoder->getWaitsForType();
         if (frame) {
           _videoDecodingThread->enqueue(frame, senderId);
-          //delete frame;//REMOVE
         }
 
         // Handle the case, that the UDP decoder requires some special data.

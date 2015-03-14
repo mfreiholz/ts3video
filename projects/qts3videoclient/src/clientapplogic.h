@@ -46,6 +46,7 @@ private slots:
   void onClientLeftChannel(const ClientEntity &client, const ChannelEntity &channel);
   void onClientDisconnected(const ClientEntity &client);
   void onNewVideoFrame(YuvFrameRefPtr frame, int senderId);
+  void onNetworkUsageUpdated(const NetworkUsageEntity &networkUsage);
 
 protected:
   void initGui();

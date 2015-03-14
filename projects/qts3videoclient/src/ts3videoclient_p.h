@@ -8,9 +8,11 @@
 #include <QMutex>
 #include <QWaitCondition>
 #include <QQueue>
+#include <QTime>
 
 #include "cliententity.h"
 #include "channelentity.h"
+#include "networkusageentity.h"
 #include "jsonprotocolhelper.h"
 
 #include "vp8frame.h"
@@ -58,6 +60,10 @@ signals:
    */
   void newVideoFrame(YuvFrameRefPtr frame, int senderId);
 
+  /*! Emits periodically with newest calculated network-usage information.
+   */
+  void networkUsageUpdated(const NetworkUsageEntity &networkUsage);
+
 protected:
   void sendAuthTokenDatagram(const QString &token);
   void sendVideoFrame(const QByteArray &frame, quint64 frameId, quint32 senderId);
@@ -80,6 +86,12 @@ private:
   // Decoding.
   QHash<int, VideoFrameUdpDecoder*> _videoFrameDatagramDecoders; ///< Maps client-id to it's decoder.
   class VideoDecodingThread *_videoDecodingThread;
+
+  // Network usage.
+  NetworkUsageEntity _networkUsage;
+  QTime _bandwidthCalcTime;
+  quint64 _bandwidthReadTemp;
+  quint64 _bandwidthWrittenTemp;
 };
 
 /*!

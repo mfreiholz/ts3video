@@ -16,6 +16,9 @@ public:
   static bool unregisterURISchemeHandler(const QString &scheme);
 
   static void calcScaledAndCenterizedImageRect(const QRect &surfaceRect, QRect &imageRect, QPoint &offset);
+
+  static QString humanReadableSize(quint64 bytes);
+  static QString humanReadableBandwidth(quint64 bytesPerSecond);
 };
 
 #endif

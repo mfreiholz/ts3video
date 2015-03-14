@@ -16,6 +16,7 @@ set(headers
   src/vp8frame.h
   src/imageutil.h
   src/timeutil.h
+  src/networkusageentity.h
 )
 
 set(qheaders
@@ -30,6 +31,7 @@ set(sources
   src/vp8frame.cpp
   src/imageutil.cpp
   src/timeutil.cpp
+  src/networkusageentity.cpp
 )
 
 set(qforms

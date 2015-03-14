@@ -13,8 +13,10 @@
 #include "qcorreply.h"
 #include "qcorframe.h"
 
+#include "elws.h"
 #include "cliententity.h"
 #include "channelentity.h"
+#include "networkusageentity.h"
 #include "jsonprotocolhelper.h"
 
 #include "clientcameravideowidget.h"
@@ -55,6 +57,7 @@ ClientAppLogic::ClientAppLogic(const Options &opts, QObject *parent) :
   connect(&_ts3vc, &TS3VideoClient::clientLeftChannel, this, &ClientAppLogic::onClientLeftChannel);
   connect(&_ts3vc, &TS3VideoClient::clientDisconnected, this, &ClientAppLogic::onClientDisconnected);
   connect(&_ts3vc, &TS3VideoClient::newVideoFrame, this, &ClientAppLogic::onNewVideoFrame);
+  connect(&_ts3vc, &TS3VideoClient::networkUsageUpdated, this, &ClientAppLogic::onNetworkUsageUpdated);
 }
 
 ClientAppLogic::~ClientAppLogic()
@@ -174,6 +177,19 @@ void ClientAppLogic::onClientDisconnected(const ClientEntity &client)
 void ClientAppLogic::onNewVideoFrame(YuvFrameRefPtr frame, int senderId)
 {
   _view->updateClientVideo(frame, senderId);
+}
+
+void ClientAppLogic::onNetworkUsageUpdated(const NetworkUsageEntity &networkUsage)
+{
+  QWidget *w = nullptr;
+  if (_view && (w = dynamic_cast<QWidget*>(_view)) != nullptr) {
+    auto s = QString("Received=%1; Sent=%2; D=%3; U=%4")
+      .arg(ELWS::humanReadableSize(networkUsage.bytesRead))
+      .arg(ELWS::humanReadableSize(networkUsage.bytesWritten))
+      .arg(ELWS::humanReadableBandwidth(networkUsage.bandwidthRead))
+      .arg(ELWS::humanReadableBandwidth(networkUsage.bandwidthWrite));
+    w->setWindowTitle(s);
+  }
 }
 
 void ClientAppLogic::initGui()

@@ -48,7 +48,7 @@ MediaSocketHandler::MediaSocketHandler(quint16 port, QObject *parent) :
       if (diff > 0) {
         _transferRateWrite = ((double)diff / elapsedms) * 1000;
       }
-      _bandwidthBytesWrittenTemp = _bytesRead;
+      _bandwidthBytesWrittenTemp = _bytesWritten;
     }
     emit transferRatesChanged(_transferRateRead, _transferRateWrite);
   });
