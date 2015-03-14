@@ -7,6 +7,7 @@ class QWidget;
 class RemoteClientVideoWidget;
 class ClientEntity;
 class ChannelEntity;
+class NetworkUsageEntity;
 
 class ViewBase
 {

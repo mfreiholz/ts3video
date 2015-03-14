@@ -266,6 +266,9 @@ MediaSocket::MediaSocket(const QString &token, QObject *parent) :
       if (diff > 0) {
         _networkUsage.bandwidthRead = ((double)diff / elapsedms) * 1000;
       }
+      else {
+        _networkUsage.bandwidthRead = 0.0;
+      }
       _bandwidthReadTemp = _networkUsage.bytesRead;
     }
     // Calculate WRITE transfer rate.
@@ -273,6 +276,9 @@ MediaSocket::MediaSocket(const QString &token, QObject *parent) :
       auto diff = _networkUsage.bytesWritten - _bandwidthWrittenTemp;
       if (diff > 0) {
         _networkUsage.bandwidthWrite = ((double)diff / elapsedms) * 1000;
+      }
+      else {
+        _networkUsage.bandwidthWrite = 0.0;
       }
       _bandwidthWrittenTemp = _networkUsage.bytesWritten;
     }

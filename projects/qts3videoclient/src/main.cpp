@@ -5,6 +5,10 @@
 #include <QJsonObject>
 #include <QUrl>
 #include <QUrlQuery>
+#include <QCamera>
+#include <QCameraInfo>
+#include <QMediaRecorder>
+#include <QVideoWidget>
 
 #include "humblelogging/api.h"
 
@@ -248,6 +252,26 @@ int runTestClient(QApplication &a)
 
 int runVideoRecorderTest(QApplication &a)
 {
+  a.setQuitOnLastWindowClosed(true);
+
+  auto camera = new QCamera(QCameraInfo::defaultCamera());
+  camera->start();
+
+  auto recorder = new QMediaRecorder(camera);
+  
+  QVideoEncoderSettings videoSettings;
+  videoSettings.setCodec("video/mpeg2");
+  videoSettings.setResolution(640, 480);
+  
+  recorder->setVideoSettings(videoSettings);
+  recorder->setOutputLocation(QUrl::fromLocalFile("D:/Temp/myvideo.avi"));
+  recorder->record();
+
+  auto videoWidget = new QVideoWidget();
+  camera->setViewfinder(videoWidget);
+  videoWidget->show();
+  videoWidget->resize(640, 480);
+
   return a.exec();
 }
 
@@ -378,6 +402,9 @@ int main(int argc, char *argv[])
   }
   else if (mode == QString("uninstall-uri-handler")) {
     return runUnregisterUriHandler(a);
+  }
+  else if (mode == QString("record-video")) {
+    return runVideoRecorderTest(a);
   }
   return runClientAppLogic(a);
 }

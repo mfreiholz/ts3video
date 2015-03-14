@@ -181,7 +181,12 @@ void ClientAppLogic::onNewVideoFrame(YuvFrameRefPtr frame, int senderId)
 
 void ClientAppLogic::onNetworkUsageUpdated(const NetworkUsageEntity &networkUsage)
 {
+  TileViewWidget *tileView = nullptr;
   QWidget *w = nullptr;
+
+  if (_view && (tileView = dynamic_cast<TileViewWidget*>(_view)) != nullptr) {
+    tileView->updateNetworkUsage(networkUsage);
+  }
   if (_view && (w = dynamic_cast<QWidget*>(_view)) != nullptr) {
     auto s = QString("Received=%1; Sent=%2; D=%3; U=%4")
       .arg(ELWS::humanReadableSize(networkUsage.bytesRead))

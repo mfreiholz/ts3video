@@ -9,6 +9,7 @@
 #include <QFrame>
 
 class QPushButton;
+class QLabel;
 class FlowLayout;
 class RemoteClientVideoWidget;
 class TileViewTileWidget;
@@ -40,6 +41,8 @@ public:
   TileViewCameraWidget *cameraWidget;
   QPushButton *zoomInButton;
   QPushButton *zoomOutButton;
+  QLabel *bandwidthRead;
+  QLabel *bandwidthWrite;
 
   QHash<int, TileViewTileWidget*> tilesMap; ///< Maps client's ID to it's widget.
 };

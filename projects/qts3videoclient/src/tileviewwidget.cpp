@@ -6,8 +6,10 @@
 #include <QPushButton>
 #include <QScrollArea>
 
+#include "elws.h"
 #include "cliententity.h"
 #include "channelentity.h"
+#include "networkusageentity.h"
 
 #include "flowlayout.h"
 #include "remoteclientvideowidget.h"
@@ -18,8 +20,10 @@
 
 static QColor __lightBackgroundColor(45, 45, 48);
 static QColor __darkBackgroundColor(30, 30, 30);
+static QColor __lightForegroundColor(200, 200, 200);
 static QColor __frameColor(63, 63, 70);
 static QColor __frameColorActive(0, 122, 204);
+static QSize  __sideBarIconSize(52, 52);
 
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
@@ -36,17 +40,20 @@ TileViewWidget::TileViewWidget(QWidget *parent, Qt::WindowFlags f) :
   d->tilesCurrentSize.scale(200, 200, Qt::KeepAspectRatio);
 
   // Tiles.
-  //auto scrollAreaContent = new QWidget();
-  auto scrollAreaContent = new MovableWidgetContainer(nullptr, 0);
-  pal = scrollAreaContent->palette();
-  pal.setColor(QPalette::Background, __darkBackgroundColor);
-  scrollAreaContent->setPalette(pal);
-
-  //d->tilesLayout = new FlowLayout(nullptr, 6, 6, 6);
-  //d->tilesLayout->setContentsMargins(6, 6, 6, 6);
-  //d->tilesLayout->setSpacing(6);
-  d->tilesLayout = static_cast<FlowLayout*>(scrollAreaContent->layout());
-  scrollAreaContent->setLayout(d->tilesLayout);
+  QWidget *scrollAreaContent = nullptr;
+  if (false) {
+    scrollAreaContent = new QWidget();
+    d->tilesLayout = new FlowLayout(nullptr, 6, 6, 6);
+    d->tilesLayout->setContentsMargins(6, 6, 6, 6);
+    d->tilesLayout->setSpacing(6);
+  } else {
+    scrollAreaContent = new MovableWidgetContainer(nullptr, 0);
+    pal = scrollAreaContent->palette();
+    pal.setColor(QPalette::Background, __darkBackgroundColor);
+    scrollAreaContent->setPalette(pal);
+    d->tilesLayout = static_cast<FlowLayout*>(scrollAreaContent->layout());
+    scrollAreaContent->setLayout(d->tilesLayout);
+  }
 
   auto scrollArea = new QScrollArea();
   scrollArea->setFrameStyle(QFrame::NoFrame);
@@ -70,26 +77,48 @@ TileViewWidget::TileViewWidget(QWidget *parent, Qt::WindowFlags f) :
   // Buttons.
   d->zoomInButton = new QPushButton();
   d->zoomInButton->setIcon(QIcon(":/ic_add_circle_outline_grey600_48dp.png"));
-  d->zoomInButton->setIconSize(QSize(24, 24));
+  d->zoomInButton->setIconSize(__sideBarIconSize);
   d->zoomInButton->setFlat(true);
   d->zoomInButton->setToolTip(tr("Zoom-in video"));
 
   d->zoomOutButton = new QPushButton();
   d->zoomOutButton->setIcon(QIcon(":/ic_remove_circle_outline_grey600_48dp.png"));
-  d->zoomOutButton->setIconSize(QSize(24, 24));
+  d->zoomOutButton->setIconSize(__sideBarIconSize);
   d->zoomOutButton->setFlat(true);
   d->zoomOutButton->setToolTip(tr("Zoom-out video"));
 
   auto aboutButton = new QPushButton();
   aboutButton->setIcon(QIcon(":/ic_info_outline_grey600_48dp.png"));
-  aboutButton->setIconSize(QSize(24, 24));
+  aboutButton->setIconSize(__sideBarIconSize);
   aboutButton->setFlat(true);
+
+  // Download and upload indicators.
+  auto bandwidthContainer = new QWidget();
+  auto bandwidthContainerLayout = new QBoxLayout(QBoxLayout::TopToBottom);
+  bandwidthContainerLayout->setContentsMargins(3, 3, 3, 3);
+  bandwidthContainer->setLayout(bandwidthContainerLayout);
+
+  d->bandwidthRead = new QLabel("D: 0.0 KB/s");
+  bandwidthContainerLayout->addWidget(d->bandwidthRead);
+
+  d->bandwidthWrite = new QLabel("U: 0.0 KB/s");
+  bandwidthContainerLayout->addWidget(d->bandwidthWrite);
+
+  auto font = d->bandwidthRead->font();
+  font.setPointSize(7);
+  pal = d->bandwidthRead->palette();
+  pal.setColor(QPalette::Foreground, __lightForegroundColor);
+  d->bandwidthRead->setFont(font);
+  d->bandwidthRead->setPalette(pal);
+  d->bandwidthWrite->setFont(font);
+  d->bandwidthWrite->setPalette(pal);
 
   // Layout
   auto buttonLayout = new QBoxLayout(QBoxLayout::TopToBottom);
   buttonLayout->addWidget(d->zoomInButton);
   buttonLayout->addWidget(d->zoomOutButton);
   buttonLayout->addStretch(1);
+  buttonLayout->addWidget(bandwidthContainer);
   buttonLayout->addWidget(aboutButton);
 
   auto mainLayout = new QBoxLayout(QBoxLayout::LeftToRight);
@@ -167,6 +196,12 @@ void TileViewWidget::updateClientVideo(YuvFrameRefPtr frame, int senderId)
     return;
   }
   tileWidget->_videoWidget->videoWidget()->setFrame(frame);
+}
+
+void TileViewWidget::updateNetworkUsage(const NetworkUsageEntity &networkUsage)
+{
+  d->bandwidthRead->setText(QString("D: %1").arg(ELWS::humanReadableBandwidth(networkUsage.bandwidthRead)));
+  d->bandwidthWrite->setText(QString("U: %1").arg(ELWS::humanReadableBandwidth(networkUsage.bandwidthWrite)));
 }
 
 void TileViewWidget::setTileSize(const QSize &size)

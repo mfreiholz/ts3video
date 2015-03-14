@@ -20,6 +20,7 @@ public:
   virtual void addClient(const ClientEntity &client, const ChannelEntity &channel);
   virtual void removeClient(const ClientEntity &client, const ChannelEntity &channel);
   virtual void updateClientVideo(YuvFrameRefPtr frame, int senderId);
+  virtual void updateNetworkUsage(const NetworkUsageEntity &networkUsage); // TODO Implement from super class
 
 public slots:
   void setTileSize(const QSize &size);
