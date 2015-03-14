@@ -56,11 +56,12 @@ ClientConnectionHandler::ClientConnectionHandler(TS3VideoServer *server, QCorCon
     HL_WARN(HL, QString("Maximum allowed connections exceeded. (max=%1)").arg(_server->_opts.connectionLimit).toStdString());
     QCorFrame req;
     QJsonObject params;
+    params["code"] = 1;
     params["message"] = "Maximum allowed connections exceeded.";
-    req.setData(JsonProtocolHelper::createJsonRequest("error", QJsonObject()));
+    req.setData(JsonProtocolHelper::createJsonRequest("error", params));
     auto reply = _connection->sendRequest(req);
     connect(reply, &QCorReply::finished, reply, &QCorReply::deleteLater);
-    _connection->disconnectFromHost();
+    QMetaObject::invokeMethod(_connection, "disconnectFromHost", Qt::QueuedConnection);
   }
 }
 

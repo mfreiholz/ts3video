@@ -50,6 +50,7 @@ ClientAppLogic::ClientAppLogic(const Options &opts, QObject *parent) :
   connect(&_ts3vc, &TS3VideoClient::connected, this, &ClientAppLogic::onConnected);
   connect(&_ts3vc, &TS3VideoClient::disconnected, this, &ClientAppLogic::onDisconnected);
   connect(&_ts3vc, &TS3VideoClient::error, this, &ClientAppLogic::onError);
+  connect(&_ts3vc, &TS3VideoClient::serverError, this, &ClientAppLogic::onServerError);
   connect(&_ts3vc, &TS3VideoClient::clientJoinedChannel, this, &ClientAppLogic::onClientJoinedChannel);
   connect(&_ts3vc, &TS3VideoClient::clientLeftChannel, this, &ClientAppLogic::onClientLeftChannel);
   connect(&_ts3vc, &TS3VideoClient::clientDisconnected, this, &ClientAppLogic::onClientDisconnected);
@@ -144,6 +145,12 @@ void ClientAppLogic::onError(QAbstractSocket::SocketError socketError)
   showError(tr("Network socket error."), _ts3vc.socket()->errorString());
 }
 
+void ClientAppLogic::onServerError(int code, const QString &message)
+{
+  HL_INFO(HL, QString("Server error (error=%1; message=%2)").arg(code).arg(message).toStdString());
+  //showError(tr("Server error."),  QString("%1: %2").arg(code).arg(message));
+}
+
 void ClientAppLogic::onClientJoinedChannel(const ClientEntity &client, const ChannelEntity &channel)
 {
   HL_INFO(HL, QString("Client joined channel (client-id=%1; channel-id=%2)").arg(client.id).arg(channel.id).toStdString());
@@ -222,5 +229,6 @@ void ClientAppLogic::showError(const QString &shortText, const QString &longText
   box.setDetailedText(longText);
   box.setMinimumWidth(400);
   box.exec();
+
   qApp->quit();
 }

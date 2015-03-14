@@ -2,7 +2,6 @@
 #define TS3VIDEOSERVER_H
 
 #define TS3VIDEOSERVER_VERSION 1
-#define TS3VIDEOSERVER_PORT 6000
 
 #include <limits.h>
 
@@ -29,7 +28,7 @@ class TS3VideoServerOptions
 public:
   // The address and port on which the server listens for new connections.
   QHostAddress address = QHostAddress::Any;
-  quint16 port = 6001;
+  quint16 port = 6000;
 
   // The maximum number of parallel client connections.
   int connectionLimit = std::numeric_limits<int>::max();

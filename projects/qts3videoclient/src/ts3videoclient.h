@@ -64,9 +64,13 @@ public:
   void sendVideoFrame(const QImage &image);
 
 signals:
+  // Connection based signals.
   void connected();
   void disconnected();
   void error(QAbstractSocket::SocketError socketError);
+
+  // Protocol based signals.
+  void serverError(int errorCode, const QString &errorMessage);
   void clientJoinedChannel(const ClientEntity &client, const ChannelEntity &channel);
   void clientLeftChannel(const ClientEntity &client, const ChannelEntity &channel);
   void clientDisconnected(const ClientEntity &client);

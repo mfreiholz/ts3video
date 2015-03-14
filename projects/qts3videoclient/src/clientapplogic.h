@@ -41,6 +41,7 @@ private slots:
   void onConnected();
   void onDisconnected();
   void onError(QAbstractSocket::SocketError socketError);
+  void onServerError(int code, const QString &message);
   void onClientJoinedChannel(const ClientEntity &client, const ChannelEntity &channel);
   void onClientLeftChannel(const ClientEntity &client, const ChannelEntity &channel);
   void onClientDisconnected(const ClientEntity &client);

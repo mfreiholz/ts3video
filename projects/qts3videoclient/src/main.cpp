@@ -217,6 +217,8 @@ int runTestClient(QApplication &a)
     ts3vc->setMediaEnabled(false);
     ts3vc->connectToHost(QHostAddress(serverAddress), serverPort);
     ts3vconns.append(ts3vc);
+
+    // Connected.
     QObject::connect(ts3vc, &TS3VideoClient::connected, [ts3vc, &ts3vconns]() {
       // Auth.
       auto reply = ts3vc->auth(QString("Test Client #%1").arg(ts3vconns.size()));
@@ -232,8 +234,11 @@ int runTestClient(QApplication &a)
         });
       });
     });
-    QObject::connect(ts3vc, &TS3VideoClient::disconnected, [ts3vc]() {
-      qApp->quit();
+
+    // Disconnected.
+    QObject::connect(ts3vc, &TS3VideoClient::disconnected, [ts3vc, &ts3vconns]() {
+      ts3vconns.removeAll(ts3vc);
+      ts3vc->deleteLater();
     });
 
   });

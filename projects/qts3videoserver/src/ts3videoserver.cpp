@@ -38,7 +38,7 @@ TS3VideoServer::~TS3VideoServer()
 bool TS3VideoServer::init()
 {
   // Init QCorServer listening for new client connections.
-  const quint16 port = TS3VIDEOSERVER_PORT;
+  const quint16 port = _opts.port;
   if (!_corServer.listen(QHostAddress::Any, port)) {
     HL_ERROR(HL, QString("Can not bind to TCP port (port=%1)").arg(port).toStdString());
     return false;

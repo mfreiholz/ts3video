@@ -202,6 +202,11 @@ void TS3VideoClient::onNewIncomingRequest(QCorFrameRefPtr frame)
     clientEntity.fromQJsonObject(parameters["client"].toObject());
     emit clientDisconnected(clientEntity);
   }
+  else if (action == "error") {
+    auto errorCode = parameters["code"].toInt();
+    auto errorMessage = parameters["message"].toString();
+    emit serverError(errorCode, errorMessage);
+  }
 
   // Response with error.
   QCorFrame res;
@@ -515,7 +520,7 @@ void VideoEncodingThread::enqueueRecovery()
 
 void VideoEncodingThread::run()
 {
-  const int fps = 15;
+  const int fps = 30;
   const int fpsTimeMs = 1000 / fps;
   const int bitRate = 100;
   const QSize dim(640, 480);
