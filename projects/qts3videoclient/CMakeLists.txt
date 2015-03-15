@@ -19,6 +19,7 @@ set(headers
 )
 
 set(qheaders
+  src/cameraframegrabber.h
   src/videowidget.h
   src/videowidget_p.h
   src/gridviewwidgetarranger.h
@@ -43,6 +44,7 @@ set(qheaders
 
 set(sources
   src/main.cpp
+  src/cameraframegrabber.cpp
   src/videowidget.cpp
   src/gridviewwidgetarranger.cpp
   src/videocollectionwidget.cpp

@@ -9,6 +9,8 @@
 #include <QCameraInfo>
 #include <QMediaRecorder>
 #include <QVideoWidget>
+#include <QMediaPlayer>
+#include <QDir>
 
 #include "humblelogging/api.h"
 
@@ -18,6 +20,7 @@
 #include "cliententity.h"
 #include "channelentity.h"
 
+#include "cameraframegrabber.h"
 #include "videowidget.h"
 #include "gridviewwidgetarranger.h"
 #include "videocollectionwidget.h"
@@ -218,7 +221,7 @@ int runTestClient(QApplication &a)
 
     // Create a new connecion to the TS3VideoServer.
     auto ts3vc = new TS3VideoClient(nullptr);
-    ts3vc->setMediaEnabled(false);
+    ts3vc->setMediaEnabled(true);
     ts3vc->connectToHost(QHostAddress(serverAddress), serverPort);
     ts3vconns.append(ts3vc);
 
@@ -234,7 +237,34 @@ int runTestClient(QApplication &a)
         QObject::connect(reply2, &QCorReply::finished, [ts3vc, reply2]() {
           reply2->deleteLater();
           HL_DEBUG(HL, QString(reply2->frame()->data()).toStdString());
-          // OPT We might start a timer to disconnect.
+          
+          // Send video.
+          if (true) {
+            auto baseDir = QDir("D:\\Temp\\camera");
+            static auto frameNo = 0;
+
+            //auto videoWidget = new VideoWidget();
+            //videoWidget->resize(640, 480);
+            //videoWidget->show();
+
+            auto t = new QTimer();
+            t->setInterval(1000 / 15);
+            t->start();
+            QObject::connect(t, &QTimer::timeout, [t, baseDir, ts3vc]() {
+              auto path = baseDir.filePath(QString("frame-%1.png").arg(frameNo++, 5, 10, QChar('0')));
+              QImage image;
+              image.load(path, "PNG");
+              if (image.isNull()) {
+                frameNo = 0;
+                return;
+              }
+              image.scaled(640, 480);
+              //videoWidget->setFrame(image);
+              if (ts3vc->isReadyForStreaming())
+                ts3vc->sendVideoFrame(image);
+            });
+          }
+
         });
       });
     });
@@ -250,6 +280,10 @@ int runTestClient(QApplication &a)
   return a.exec();
 }
 
+/*!
+  It seems like that it doesn't work under Windows.
+  TODO Test under Linux
+ */
 int runVideoRecorderTest(QApplication &a)
 {
   a.setQuitOnLastWindowClosed(true);
@@ -260,17 +294,108 @@ int runVideoRecorderTest(QApplication &a)
   auto recorder = new QMediaRecorder(camera);
   
   QVideoEncoderSettings videoSettings;
-  videoSettings.setCodec("video/mpeg2");
+  //videoSettings.setCodec("video/mpeg2");
   videoSettings.setResolution(640, 480);
+  videoSettings.setQuality(QMultimedia::VeryHighQuality);
+  videoSettings.setFrameRate(30.0);
   
   recorder->setVideoSettings(videoSettings);
-  recorder->setOutputLocation(QUrl::fromLocalFile("D:/Temp/myvideo.avi"));
+  recorder->setOutputLocation(QUrl::fromLocalFile("D:\\Temp\\myvideo.mp4"));
   recorder->record();
 
   auto videoWidget = new QVideoWidget();
   camera->setViewfinder(videoWidget);
   videoWidget->show();
   videoWidget->resize(640, 480);
+
+  QObject::connect(recorder, static_cast<void(QMediaRecorder::*)(QMediaRecorder::Error)>(&QMediaRecorder::error), [camera, recorder](QMediaRecorder::Error error) {
+    qDebug() << QString("Error: %1").arg(recorder->errorString());
+  });
+
+  QTimer timer;
+  timer.setSingleShot(true);
+  timer.start(3000);
+  QObject::connect(&timer, &QTimer::timeout, [camera, recorder](){
+    recorder->stop();
+    camera->stop();
+  });
+
+  return a.exec();
+}
+
+/*!
+  Records a video from QCamera and saves each frame as a *.png file to disk.
+  Names the files by incrementing names (e.g.: frame-00001.png, frame-00002.png, ...)
+ */
+int runRecordPlainCameraImages(QApplication &a)
+{
+  a.setQuitOnLastWindowClosed(true);
+
+  auto baseDir = QDir("D:\\Temp\\camera");
+  auto frameNo = 0;
+
+  auto camera = new QCamera(QCameraInfo::defaultCamera());
+  camera->start();
+
+  auto grabber = new CameraFrameGrabber(nullptr);
+  camera->setViewfinder(grabber);
+
+  auto videoWidget = new VideoWidget();
+  videoWidget->resize(640, 480);
+  videoWidget->show();
+
+  QObject::connect(grabber, &CameraFrameGrabber::newQImage, [baseDir, &frameNo, videoWidget](const QImage &image) {
+    auto path = baseDir.filePath(QString("frame-%1.png").arg(frameNo++, 5, 10, QChar('0')));
+    image.save(path, "PNG");
+    videoWidget->setFrame(image);
+  });
+
+  return a.exec();
+}
+
+/*!
+  Plays a video from plain frames read from *.png files on disk.
+ */
+int runPlayPlainCameraImages(QApplication &a)
+{
+  a.setQuitOnLastWindowClosed(true);
+
+  auto baseDir = QDir("D:\\Temp\\camera");
+  auto frameNo = 0;
+
+  auto videoWidget = new VideoWidget();
+  videoWidget->resize(640, 480);
+  videoWidget->show();
+
+  QTimer t;
+  t.setInterval(1000 / 15);
+  t.start();
+  QObject::connect(&t, &QTimer::timeout, [&t, &baseDir, &frameNo, videoWidget] () {
+    auto path = baseDir.filePath(QString("frame-%1.png").arg(frameNo++, 5, 10, QChar('0')));
+    QImage image;
+    image.load(path, "PNG");
+    if (image.isNull()) {
+      frameNo = 0;
+      return;
+    }
+    videoWidget->setFrame(image);
+  });
+
+  return a.exec();
+}
+
+int runVideoPlayerTest(QApplication &a)
+{
+  a.setQuitOnLastWindowClosed(true);
+
+  auto videoWidget = new QVideoWidget();
+  videoWidget->show();
+
+  auto player = new QMediaPlayer();
+  player->setMedia(QUrl::fromLocalFile("D:/Temp/video.mp4"));
+  player->setVolume(50);
+  player->setVideoOutput(videoWidget);
+  player->play();
 
   return a.exec();
 }
@@ -405,6 +530,15 @@ int main(int argc, char *argv[])
   }
   else if (mode == QString("record-video")) {
     return runVideoRecorderTest(a);
+  }
+  else if (mode == QString("play-video")) {
+    return runVideoPlayerTest(a);
+  }
+  else if (mode == QString("record-plain-video")) {
+    return runRecordPlainCameraImages(a);
+  }
+  else if (mode == QString("play-plain-video")) {
+    return runPlayPlainCameraImages(a);
   }
   return runClientAppLogic(a);
 }
