@@ -9,6 +9,7 @@
 #include <QWaitCondition>
 #include <QQueue>
 #include <QTime>
+#include <QTimer>
 
 #include "cliententity.h"
 #include "channelentity.h"
@@ -36,6 +37,7 @@ public:
   // Connection objects.
   QCorConnection *corSocket;
   MediaSocket *mediaSocket;
+  QTimer heartbeatTimer;
 
   // Common data.
   ClientEntity clientEntity;

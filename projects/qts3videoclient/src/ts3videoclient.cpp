@@ -43,6 +43,9 @@ TS3VideoClient::TS3VideoClient(QObject *parent) :
   connect(d->corSocket, &QCorConnection::stateChanged, this, &TS3VideoClient::onStateChanged);
   connect(d->corSocket, &QCorConnection::error, this, &TS3VideoClient::error);
   connect(d->corSocket, &QCorConnection::newIncomingRequest, this, &TS3VideoClient::onNewIncomingRequest);
+
+  d->heartbeatTimer.setInterval(10000);
+  QObject::connect(&d->heartbeatTimer, &QTimer::timeout, this, &TS3VideoClient::sendHeartbeat);
 }
 
 TS3VideoClient::~TS3VideoClient()
@@ -143,13 +146,24 @@ void TS3VideoClient::sendVideoFrame(const QImage &image)
   }
 }
 
+void TS3VideoClient::sendHeartbeat()
+{
+  Q_ASSERT(d->corSocket->socket()->state() == QAbstractSocket::ConnectedState);
+  QCorFrame req;
+  req.setData(JsonProtocolHelper::createJsonRequest("heartbeat", QJsonObject()));
+  auto reply = d->corSocket->sendRequest(req);
+  QObject::connect(reply, &QCorReply::finished, reply, &QCorReply::deleteLater);
+}
+
 void TS3VideoClient::onStateChanged(QAbstractSocket::SocketState state)
 {
   switch (state) {
     case QAbstractSocket::ConnectedState:
+      d->heartbeatTimer.start();
       emit connected();
       break;
     case QAbstractSocket::UnconnectedState:
+      d->heartbeatTimer.stop();
       emit disconnected();
       break;
   }

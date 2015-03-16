@@ -82,6 +82,7 @@ signals:
   void networkUsageUpdated(const NetworkUsageEntity &networkUsage);
 
 private slots:
+  void sendHeartbeat();
   void onStateChanged(QAbstractSocket::SocketState state);
   void onNewIncomingRequest(QCorFrameRefPtr frame);
 };

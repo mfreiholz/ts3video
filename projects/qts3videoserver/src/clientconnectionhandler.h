@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QAbstractSocket>
 #include <QTime>
+#include <QTimer>
 
 #include "qcorframe.h"
 
@@ -48,10 +49,13 @@ private slots:
 
 private:
   TS3VideoServer *_server;
+
+  // Connection data.
   QCorConnection *_connection;
-  ClientEntity *_clientEntity;
+  QTimer _timeoutTimer;
 
   // Status information.
+  ClientEntity *_clientEntity;
   bool _authenticated;
 
   // Statistics.

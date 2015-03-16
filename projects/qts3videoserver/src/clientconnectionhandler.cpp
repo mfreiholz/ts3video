@@ -43,6 +43,20 @@ ClientConnectionHandler::ClientConnectionHandler(TS3VideoServer *server, QCorCon
   connect(_connection, &QCorConnection::newIncomingRequest, this, &ClientConnectionHandler::onNewIncomingRequest);
   onStateChanged(QAbstractSocket::ConnectedState);
 
+  // Initialize connection timeout timer.
+  _timeoutTimer.start(20000);
+  QObject::connect(&_timeoutTimer, &QTimer::timeout, [this]() {
+    HL_WARN(HL, QString("Client connection timed out. No heartbeat since 20 seconds.").toStdString());
+    QCorFrame req;
+    QJsonObject params;
+    params["code"] = 1;
+    params["message"] = "Connection timed out.";
+    req.setData(JsonProtocolHelper::createJsonRequest("error", params));
+    auto reply = _connection->sendRequest(req);
+    QObject::connect(reply, &QCorReply::finished, reply, &QCorReply::deleteLater);
+    QMetaObject::invokeMethod(_connection, "disconnectFromHost", Qt::QueuedConnection);
+  });
+
   // Prepare statistics.
   auto statisticTimer = new QTimer(this);
   statisticTimer->setInterval(1500);
@@ -184,6 +198,8 @@ void ClientConnectionHandler::onNewIncomingRequest(QCorFrameRefPtr frame)
     res.initResponse(*frame.data());
     res.setData(JsonProtocolHelper::createJsonResponse(QJsonObject()));
     _connection->sendResponse(res);
+    _timeoutTimer.stop();
+    _timeoutTimer.start(20000);
     return;
   }
   else if (action == "joinchannel") {
