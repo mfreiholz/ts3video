@@ -34,49 +34,44 @@ HUMBLE_LOGGER(HL, "client.ts3videoclient");
 
 TS3VideoClient::TS3VideoClient(QObject *parent) :
   QObject(parent),
-  d_ptr(new TS3VideoClientPrivate(this))
+  d(new TS3VideoClientPrivate(this))
 {
-  Q_D(TS3VideoClient);
   qRegisterMetaType<YuvFrameRefPtr>("YuvFrameRefPtr");
+  qRegisterMetaType<NetworkUsageEntity>("NetworkUsageEntity");
 
-  d->_connection = new QCorConnection(this);
-  connect(d->_connection, &QCorConnection::stateChanged, this, &TS3VideoClient::onStateChanged);
-  connect(d->_connection, &QCorConnection::error, this, &TS3VideoClient::error);
-  connect(d->_connection, &QCorConnection::newIncomingRequest, this, &TS3VideoClient::onNewIncomingRequest);
+  d->corSocket = new QCorConnection(this);
+  connect(d->corSocket, &QCorConnection::stateChanged, this, &TS3VideoClient::onStateChanged);
+  connect(d->corSocket, &QCorConnection::error, this, &TS3VideoClient::error);
+  connect(d->corSocket, &QCorConnection::newIncomingRequest, this, &TS3VideoClient::onNewIncomingRequest);
 }
 
 TS3VideoClient::~TS3VideoClient()
 {
-  Q_D(TS3VideoClient);
-  delete d->_connection;
-  delete d->_mediaSocket;
+  delete d->corSocket;
+  delete d->mediaSocket;
 }
 
 void TS3VideoClient::setMediaEnabled(bool yesno)
 {
-  Q_D(TS3VideoClient);
   d->useMediaSocket = yesno;
 }
 
 const QAbstractSocket* TS3VideoClient::socket() const
 {
-  Q_D(const TS3VideoClient);
-  return d->_connection->socket();
+  return d->corSocket->socket();
 }
 
 const ClientEntity& TS3VideoClient::clientEntity() const
 {
-  Q_D(const TS3VideoClient);
-  return d->_clientEntity;
+  return d->clientEntity;
 }
 
 bool TS3VideoClient::isReadyForStreaming() const
 {
-  Q_D(const TS3VideoClient);
-  if (!d->_mediaSocket || d->_mediaSocket->state() != QAbstractSocket::ConnectedState) {
+  if (!d->mediaSocket || d->mediaSocket->state() != QAbstractSocket::ConnectedState) {
     return false;
   }
-  if (!d->_mediaSocket->isAuthenticated()) {
+  if (!d->mediaSocket->isAuthenticated()) {
     return false;
   }
   return true;
@@ -84,27 +79,25 @@ bool TS3VideoClient::isReadyForStreaming() const
 
 void TS3VideoClient::connectToHost(const QHostAddress &address, qint16 port)
 {
-  Q_D(TS3VideoClient);
   Q_ASSERT(!address.isNull());
   Q_ASSERT(port > 0);
-  d->_connection->connectTo(address, port);
+  d->corSocket->connectTo(address, port);
 }
 
 QCorReply* TS3VideoClient::auth(const QString &name)
 {
-  Q_D(TS3VideoClient);
   Q_ASSERT(!name.isEmpty());
-  Q_ASSERT(d->_connection->socket()->state() == QAbstractSocket::ConnectedState);
+  Q_ASSERT(d->corSocket->socket()->state() == QAbstractSocket::ConnectedState);
 
   QJsonObject params;
   params["version"] = 1;
   params["username"] = name;
   QCorFrame req;
   req.setData(JsonProtocolHelper::createJsonRequest("auth", params));
-  auto reply = d->_connection->sendRequest(req);
+  auto reply = d->corSocket->sendRequest(req);
 
   // Authentication response: Automatically connect media socket, if authentication was successful.
-  connect(reply, &QCorReply::finished, [this, d, reply] () {
+  connect(reply, &QCorReply::finished, [this, reply] () {
     int status = 0;
     QJsonObject params;
     if (!JsonProtocolHelper::fromJsonResponse(reply->frame()->data(), status, params)) {
@@ -115,17 +108,17 @@ QCorReply* TS3VideoClient::auth(const QString &name)
     auto client = params["client"].toObject();
     auto authtoken = params["authtoken"].toString();
     // Get self client info from response.
-    d->_clientEntity.fromQJsonObject(client);
+    d->clientEntity.fromQJsonObject(client);
     // Create new media socket.
     if (d->useMediaSocket) {
-      if (d->_mediaSocket) {
-        d->_mediaSocket->close();
-        delete d->_mediaSocket;
+      if (d->mediaSocket) {
+        d->mediaSocket->close();
+        delete d->mediaSocket;
       }
-      d->_mediaSocket = new MediaSocket(authtoken, d->q_ptr);
-      d->_mediaSocket->connectToHost(d->_connection->socket()->peerAddress(), d->_connection->socket()->peerPort());
-      QObject::connect(d->_mediaSocket, &MediaSocket::newVideoFrame, d->q_ptr, &TS3VideoClient::newVideoFrame);
-      QObject::connect(d->_mediaSocket, &MediaSocket::networkUsageUpdated, d->q_ptr, &TS3VideoClient::networkUsageUpdated);
+      d->mediaSocket = new MediaSocket(authtoken, this);
+      d->mediaSocket->connectToHost(d->corSocket->socket()->peerAddress(), d->corSocket->socket()->peerPort());
+      QObject::connect(d->mediaSocket, &MediaSocket::newVideoFrame, this, &TS3VideoClient::newVideoFrame);
+      QObject::connect(d->mediaSocket, &MediaSocket::networkUsageUpdated, this, &TS3VideoClient::networkUsageUpdated);
     }
   });
 
@@ -134,21 +127,19 @@ QCorReply* TS3VideoClient::auth(const QString &name)
 
 QCorReply* TS3VideoClient::joinChannel(int id)
 {
-  Q_D(TS3VideoClient);
-  Q_ASSERT(d->_connection->socket()->state() == QAbstractSocket::ConnectedState);
+  Q_ASSERT(d->corSocket->socket()->state() == QAbstractSocket::ConnectedState);
   QJsonObject params;
   params["channelid"] = id;
   QCorFrame req;
   req.setData(JsonProtocolHelper::createJsonRequest("joinchannel", params));
-  return d->_connection->sendRequest(req);
+  return d->corSocket->sendRequest(req);
 }
 
 void TS3VideoClient::sendVideoFrame(const QImage &image)
 {
-  Q_D(TS3VideoClient);
-  Q_ASSERT(d->_mediaSocket);
-  if (d->_mediaSocket) {
-    d->_mediaSocket->sendVideoFrame(image, d->_clientEntity.id);
+  Q_ASSERT(d->mediaSocket);
+  if (d->mediaSocket) {
+    d->mediaSocket->sendVideoFrame(image, d->clientEntity.id);
   }
 }
 
@@ -166,7 +157,6 @@ void TS3VideoClient::onStateChanged(QAbstractSocket::SocketState state)
 
 void TS3VideoClient::onNewIncomingRequest(QCorFrameRefPtr frame)
 {
-  Q_D(TS3VideoClient);
   Q_ASSERT(!frame.isNull());
   HL_DEBUG(HL, QString("Incoming request (size=%1): %2").arg(frame->data().size()).arg(QString(frame->data())).toStdString());
   
@@ -177,12 +167,12 @@ void TS3VideoClient::onNewIncomingRequest(QCorFrameRefPtr frame)
     QCorFrame res;
     res.initResponse(*frame.data());
     res.setData(JsonProtocolHelper::createJsonResponseError(500, "Invalid protocol format."));
-    d->_connection->sendResponse(res);
+    d->corSocket->sendResponse(res);
     return;
   }
 
   if (action == "notify.mediaauthsuccess") {
-    d->_mediaSocket->setAuthenticated(true);
+    d->mediaSocket->setAuthenticated(true);
   }
   else if (action == "notify.clientjoinedchannel") {
     ChannelEntity channelEntity;
@@ -213,18 +203,7 @@ void TS3VideoClient::onNewIncomingRequest(QCorFrameRefPtr frame)
   QCorFrame res;
   res.initResponse(*frame.data());
   res.setData(JsonProtocolHelper::createJsonResponse(QJsonObject()));
-  d->_connection->sendResponse(res);
-}
-
-///////////////////////////////////////////////////////////////////////
-
-TS3VideoClientPrivate::TS3VideoClientPrivate(TS3VideoClient *owner) :
-  q_ptr(owner),
-  _connection(nullptr),
-  _mediaSocket(nullptr),
-  _clientEntity(),
-  useMediaSocket(true)
-{
+  d->corSocket->sendResponse(res);
 }
 
 ///////////////////////////////////////////////////////////////////////

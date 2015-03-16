@@ -20,11 +20,11 @@ class TS3VideoClientPrivate;
 class TS3VideoClient : public QObject
 {
   Q_OBJECT
-  Q_DECLARE_PRIVATE(TS3VideoClient)
-  QScopedPointer<TS3VideoClientPrivate> const d_ptr;
+  friend class TS3VideoClientPrivate;
+  QScopedPointer<TS3VideoClientPrivate> d;
 
 public:
-  TS3VideoClient(QObject *parent = 0);
+  TS3VideoClient(QObject *parent = nullptr);
   TS3VideoClient(const TS3VideoClient &other);
   ~TS3VideoClient();
 

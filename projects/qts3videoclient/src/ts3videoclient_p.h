@@ -24,15 +24,21 @@
 class QCorConnection;
 class MediaSocket;
 
-class TS3VideoClientPrivate {
-  Q_DISABLE_COPY(TS3VideoClientPrivate)
-  Q_DECLARE_PUBLIC(TS3VideoClient)
-  TS3VideoClientPrivate(TS3VideoClient*);
-  TS3VideoClient * const q_ptr;
+class TS3VideoClientPrivate
+{
+public:
+  TS3VideoClientPrivate(TS3VideoClient *o) : owner(o), corSocket(nullptr), mediaSocket(nullptr), useMediaSocket(true) {}
+  TS3VideoClientPrivate(const TS3VideoClientPrivate &);
 
-  QCorConnection *_connection;
-  MediaSocket *_mediaSocket;
-  ClientEntity _clientEntity;
+public:
+  TS3VideoClient *owner;
+
+  // Connection objects.
+  QCorConnection *corSocket;
+  MediaSocket *mediaSocket;
+
+  // Common data.
+  ClientEntity clientEntity;
 
   bool useMediaSocket; ///< TODO Remove me (DEV ONLY)
 };
