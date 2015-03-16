@@ -204,7 +204,7 @@ void ClientConnectionHandler::onNewIncomingRequest(QCorFrameRefPtr frame)
   }
   else if (action == "joinchannel") {
     auto channelId = params["channelid"].toInt();
-    if (channelId <= 0) {
+    if (channelId <= 0 || (!_server->_opts.validChannels.isEmpty() && !_server->_opts.validChannels.contains(channelId))) {
       // Send error: Missing channel id.
       QCorFrame res;
       res.initResponse(*frame.data());
@@ -298,6 +298,9 @@ void ClientConnectionHandler::updateStatistics()
     if (diff > 0) {
       readRate = ((double)diff / elapsedms) * 1000;
     }
+    else {
+      readRate = 0.0;
+    }
     _bytesReadSince = _bytesRead;
     _bytesReadTime.restart();
   }
@@ -309,6 +312,9 @@ void ClientConnectionHandler::updateStatistics()
     auto diff = _bytesWritten - _bytesWrittenSince;
     if (diff > 0) {
       writeRate = ((double)diff / elapsedms) * 1000;
+    }
+    else {
+      writeRate = 0.0;
     }
     _bytesWrittenSince = _bytesWritten;
     _bytesWrittenTime.restart();

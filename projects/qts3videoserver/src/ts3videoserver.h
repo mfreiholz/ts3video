@@ -37,6 +37,10 @@ public:
   // New connections will be blocked, if the server's bandwidth
   // usage reaches this value.
   double bandwidthLimit = std::numeric_limits<double>::max();
+
+  // List of valid TS3 channel IDs users are allowed to join.
+  // Leave empty for no restrictions on channel-ids.
+  QList<quint64> validChannels;
 };
 
 /*!
