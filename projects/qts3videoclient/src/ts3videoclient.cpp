@@ -542,7 +542,7 @@ void VideoEncodingThread::enqueueRecovery()
 
 void VideoEncodingThread::run()
 {
-  const int fps = 30;
+  const int fps = 20;
   const int fpsTimeMs = 1000 / fps;
   const int bitRate = 100;
   const QSize dim(640, 480);

@@ -8,6 +8,7 @@ find_package(Qt5Gui REQUIRED)
 
 # Sources
 set(headers
+  src/ts3video.h
   src/cliententity.h
   src/channelentity.h
   src/jsonprotocolhelper.h

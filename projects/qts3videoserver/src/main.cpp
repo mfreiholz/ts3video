@@ -2,6 +2,8 @@
 
 #include "humblelogging/api.h"
 
+#include "ts3video.h"
+
 #include "ts3videoserver.h"
 
 HUMBLE_LOGGER(HL, "server");
@@ -11,8 +13,8 @@ int main(int argc, char *argv[])
   QCoreApplication a(argc, argv);
   a.setOrganizationName("insaneFactory");
   a.setOrganizationDomain("http://www.insanefactory.com/");
-  a.setApplicationName("iF.TS3VideoServer");
-  a.setApplicationVersion("1.0 ALPHA");
+  a.setApplicationName("TS3 Video Server");
+  a.setApplicationVersion(QString("%1 %2 (Build %3)").arg(IFVS_SOFTWARE_VERSION).arg(IFVS_SOFTWARE_VERSION_POSTFIX).arg(IFVS_SOFTWARE_VERSION_BUILD));
 
   // Initialize logging.
   auto& hlFactory = humble::logging::Factory::getInstance();

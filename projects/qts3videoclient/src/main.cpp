@@ -16,6 +16,7 @@
 
 #include "qcorreply.h"
 
+#include "ts3video.h"
 #include "elws.h"
 #include "cliententity.h"
 #include "channelentity.h"
@@ -446,12 +447,11 @@ int runUnregisterUriHandler(QApplication &a)
 */
 int runClientAppLogic(QApplication &a)
 {
-  a.setApplicationName("TS3 Video Client");
-  a.setApplicationDisplayName("TS3 Video Client");
-  a.setApplicationVersion("1.0 ALPHA");
-  a.setQuitOnLastWindowClosed(true);
   a.setOrganizationName("insaneFactory");
   a.setOrganizationDomain("http://www.insanefactory.com/ts3video");
+  a.setApplicationName("TS3 Video Client");
+  a.setApplicationVersion(QString("%1 %2 (Build %3)").arg(IFVS_SOFTWARE_VERSION).arg(IFVS_SOFTWARE_VERSION_POSTFIX).arg(IFVS_SOFTWARE_VERSION_BUILD));
+  a.setQuitOnLastWindowClosed(true);
 
   // Prepare startup options.
   ClientAppLogic::Options opts;
