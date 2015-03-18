@@ -97,9 +97,7 @@ private:
 
   // Network usage.
   NetworkUsageEntity _networkUsage;
-  QTime _bandwidthCalcTime;
-  quint64 _bandwidthReadTemp;
-  quint64 _bandwidthWrittenTemp;
+  NetworkUsageEntityHelper _networkUsageHelper;
 };
 
 /*!

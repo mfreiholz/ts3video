@@ -230,8 +230,8 @@ MediaSocket::MediaSocket(const QString &token, QObject *parent) :
   _videoEncodingThread(new VideoEncodingThread(this)),
   _videoDecodingThread(new VideoDecodingThread(this)),
   _lastFrameRequestTimestamp(0),
-  _bandwidthReadTemp(0),
-  _bandwidthWrittenTemp(0)
+  _networkUsage(),
+  _networkUsageHelper(_networkUsage)
 {
   connect(this, &MediaSocket::stateChanged, this, &MediaSocket::onSocketStateChanged);
   connect(this, &MediaSocket::readyRead, this, &MediaSocket::onReadyRead);
@@ -246,35 +246,11 @@ MediaSocket::MediaSocket(const QString &token, QObject *parent) :
   connect(_videoDecodingThread, &VideoDecodingThread::decoded, this, &MediaSocket::newVideoFrame);
 
   // Network usage calculation.
-  auto timer = new QTimer(this);
-  timer->setInterval(1500);
-  timer->start();
-  _bandwidthCalcTime.start();
-  QObject::connect(timer, &QTimer::timeout, [this] () {
-    auto elapsedms = _bandwidthCalcTime.elapsed();
-    _bandwidthCalcTime.restart();
-    // Calculate READ transfer rate.
-    if (elapsedms > 0) {
-      auto diff = _networkUsage.bytesRead - _bandwidthReadTemp;
-      if (diff > 0) {
-        _networkUsage.bandwidthRead = ((double)diff / elapsedms) * 1000;
-      }
-      else {
-        _networkUsage.bandwidthRead = 0.0;
-      }
-      _bandwidthReadTemp = _networkUsage.bytesRead;
-    }
-    // Calculate WRITE transfer rate.
-    if (elapsedms > 0) {
-      auto diff = _networkUsage.bytesWritten - _bandwidthWrittenTemp;
-      if (diff > 0) {
-        _networkUsage.bandwidthWrite = ((double)diff / elapsedms) * 1000;
-      }
-      else {
-        _networkUsage.bandwidthWrite = 0.0;
-      }
-      _bandwidthWrittenTemp = _networkUsage.bytesWritten;
-    }
+  auto bandwidthTimer = new QTimer(this);
+  bandwidthTimer->setInterval(1500);
+  bandwidthTimer->start();
+  QObject::connect(bandwidthTimer, &QTimer::timeout, [this] () {
+    _networkUsageHelper.recalculate();
     emit networkUsageUpdated(_networkUsage);
   });
 }
