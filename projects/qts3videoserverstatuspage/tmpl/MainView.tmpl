@@ -58,6 +58,22 @@
         </div>
       </div>
     </div>
+    
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h1 class="panel-title">Bandwidth usage</h1>
+      </div>
+      <div class="panel-body">
+        <div class="row">
+          <div class="col-xs-6"><b>Bytes read</b><br/>{{>~bytesAsReadableSize(bandwidth.bytesread)}}</div>
+          <div class="col-xs-6"><b>Bytes read</b><br/>{{>~bytesAsReadableSize(bandwidth.byteswritten)}}</div>
+        </div>
+        <div class="row">
+          <div class="col-xs-6"><b>Read rate</b><br/>{{>~bytesAsReadableSize(bandwidth.bandwidthread)}}</div>
+          <div class="col-xs-6"><b>Write rate</b><br/>{{>~bytesAsReadableSize(bandwidth.bandwidthwrite)}}</div>
+        </div>
+      </div>
+    </div>
 
     <h3>Clients ({{>clients.length}})</h3>
     <div class="table-responsive">

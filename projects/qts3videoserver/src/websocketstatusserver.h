@@ -28,6 +28,7 @@ private slots:
 private:
   QJsonValue getAppInfo() const;
   QJsonValue getMemoryUsageInfo() const;
+  QJsonValue getBandwidthInfo() const;
   QJsonValue getClientsInfo() const;
   QJsonValue getChannelsInfo() const;
   QJsonValue getWebSocketsInfo() const;

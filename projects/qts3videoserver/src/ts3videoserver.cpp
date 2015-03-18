@@ -79,6 +79,9 @@ bool TS3VideoServer::init()
     }
     this->updateMediaRecipients();
   });
+  QObject::connect(_mediaSocketHandler, &MediaSocketHandler::networkUsageUpdated, [this](const NetworkUsageEntity &networkUsage) {
+    _networkUsageMediaSocket = networkUsage;
+  });
 
   // Init status web-socket.
   if (!_wsStatusServer.init()) {

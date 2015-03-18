@@ -66,6 +66,7 @@ void WebSocketStatusServer::onTextMessage(const QString &message)
   QJsonObject root;
   root.insert("info", getAppInfo());
   root.insert("memory", getMemoryUsageInfo());
+  root.insert("bandwidth", getBandwidthInfo());
   root.insert("clients", getClientsInfo());
   root.insert("channels", getChannelsInfo());
   root.insert("websockets", getWebSocketsInfo());
@@ -113,6 +114,11 @@ QJsonValue WebSocketStatusServer::getMemoryUsageInfo() const
   jsMemory.insert("privateusage", (qint64)pmc.PrivateUsage);
 #endif
   return jsMemory;
+}
+
+QJsonValue WebSocketStatusServer::getBandwidthInfo() const
+{
+  return _server->_networkUsageMediaSocket.toQJsonObject();
 }
 
 QJsonValue WebSocketStatusServer::getClientsInfo() const
