@@ -6,10 +6,14 @@
 #include <QVector>
 #include <QTime>
 
+#include "networkusageentity.h"
+
 class MediaSenderEntity;
 class MediaReceiverEntity;
 class MediaRecipients;
 
+/*!
+ */
 class MediaSenderEntity
 {
 public:
@@ -25,6 +29,8 @@ public:
   QVector<MediaReceiverEntity> receivers;
 };
 
+/*!
+ */
 class MediaReceiverEntity
 {
 public:
@@ -33,6 +39,8 @@ public:
   quint16 port;
 };
 
+/*!
+ */
 class MediaRecipients
 {
 public:
@@ -40,6 +48,8 @@ public:
   QHash<int, MediaReceiverEntity> clientid2receiver; ///< Maps a receiver's client-id to itself.
 };
 
+/*! Receives video-streams and forwards them to all clients in the same channel.
+ */
 class MediaSocketHandler : public QObject
 {
   Q_OBJECT
@@ -51,16 +61,14 @@ public:
   void setRecipients(const MediaRecipients &rec);
 
 signals:
-  /**
-   * Emits for every incoming authentication from a client.
+  /*! Emits for every incoming authentication from a client.
    */
   void tokenAuthentication(const QString &token, const QHostAddress &address, quint16 port);
 
-  /**
-   * Emits whenever the transfer rates have been recalculated and updated.
-   * It gets calculated every X seconds by an internal timer.
+  /*! Emits whenever the transfer rates have been recalculated and updated.
+      It gets calculated every X seconds by an internal timer.
    */
-  void transferRatesChanged(double bytesReadRate, double bytesWriteRate);
+  void networkUsageUpdated(const NetworkUsageEntity &);
 
 private slots:
   void onReadyRead();
@@ -70,16 +78,9 @@ private:
   QUdpSocket _socket;
   MediaRecipients _recipients;
 
-  // Bandwidth stats.
-  quint64 _bytesRead; ///< Number of bytes read.
-  quint64 _bytesWritten; ///< Number of bytes written.
-
-  double _transferRateRead;
-  double _transferRateWrite;
-  
-  QTime _bandwidthCalcTime;
-  quint64 _bandwidthBytesReadTemp;
-  quint64 _bandwidthBytesWrittenTemp;
+  // Network usage.
+  NetworkUsageEntity _networkUsage;
+  NetworkUsageEntityHelper _networkUsageHelper;
 };
 
 #endif

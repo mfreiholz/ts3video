@@ -18,12 +18,8 @@ MediaSocketHandler::MediaSocketHandler(quint16 port, QObject *parent) :
   QObject(parent),
   _port(port),
   _socket(this),
-  _bytesRead(0),
-  _bytesWritten(0),
-  _transferRateRead(0.0),
-  _transferRateWrite(0.0),
-  _bandwidthBytesReadTemp(0),
-  _bandwidthBytesWrittenTemp(0)
+  _networkUsage(),
+  _networkUsageHelper(_networkUsage)
 {
   connect(&_socket, &QUdpSocket::readyRead, this, &MediaSocketHandler::onReadyRead);
 
@@ -32,25 +28,8 @@ MediaSocketHandler::MediaSocketHandler(quint16 port, QObject *parent) :
   bandwidthTimer->setInterval(1500);
   bandwidthTimer->start();
   QObject::connect(bandwidthTimer, &QTimer::timeout, [this]() {
-    auto elapsedms = _bandwidthCalcTime.elapsed();
-    _bandwidthCalcTime.restart();
-    // Calculate READ transfer rate.
-    if (elapsedms > 0) {
-      auto diff = _bytesRead - _bandwidthBytesReadTemp;
-      if (diff > 0) {
-        _transferRateRead = ((double)diff / elapsedms) * 1000;
-      }
-      _bandwidthBytesReadTemp = _bytesRead;
-    }
-    // Calculate WRITE transfer rate.
-    if (elapsedms > 0) {
-      auto diff = _bytesWritten - _bandwidthBytesWrittenTemp;
-      if (diff > 0) {
-        _transferRateWrite = ((double)diff / elapsedms) * 1000;
-      }
-      _bandwidthBytesWrittenTemp = _bytesWritten;
-    }
-    emit transferRatesChanged(_transferRateRead, _transferRateWrite);
+    _networkUsageHelper.recalculate();
+    emit networkUsageUpdated(_networkUsage);
   });
 }
 
@@ -82,7 +61,7 @@ void MediaSocketHandler::onReadyRead()
     quint16 senderPort;
     data.resize(_socket.pendingDatagramSize());
     _socket.readDatagram(data.data(), data.size(), &senderAddress, &senderPort);
-    _bytesRead += data.size();
+    _networkUsage.bytesRead += data.size();
 
     // Check magic.
     QDataStream in(data);
@@ -120,7 +99,7 @@ void MediaSocketHandler::onReadyRead()
         for (auto i = 0; i < senderEntity.receivers.size(); ++i) {
           const auto &receiverEntity = senderEntity.receivers[i];
           _socket.writeDatagram(data, receiverEntity.address, receiverEntity.port);
-          _bytesWritten += data.size();
+          _networkUsage.bytesWritten += data.size();
         }
         break;
       }
@@ -141,7 +120,7 @@ void MediaSocketHandler::onReadyRead()
           continue;
         }
         _socket.writeDatagram(data, receiver.address, receiver.port);
-        _bytesWritten += data.size();
+        _networkUsage.bytesWritten += data.size();
         break;
       }
     }

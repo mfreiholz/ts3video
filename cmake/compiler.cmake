@@ -6,6 +6,8 @@ else(CMAKE_SIZEOF_VOID_P EQUAL 8)
 	set(ARCH "x86")
 endif(CMAKE_SIZEOF_VOID_P EQUAL 8)
 
+# Windows
+add_definitions(-DNOMINMAX) # Required for bug in QDateTime header (min())
 
 # Linux
 if(CMAKE_COMPILER_IS_GNUCC)

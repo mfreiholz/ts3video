@@ -8,6 +8,8 @@
 
 #include "qcorframe.h"
 
+#include "networkusageentity.h"
+
 class QCorConnection;
 class TS3VideoServer;
 class ClientEntity;
@@ -47,25 +49,25 @@ private slots:
   void onNewIncomingRequest(QCorFrameRefPtr frame);
   void updateStatistics();
 
+signals:
+  void networkUsageUpdated(const NetworkUsageEntity &networkUsage);
+
 private:
   TS3VideoServer *_server;
 
   // Connection data.
   QCorConnection *_connection;
-  QTimer _timeoutTimer;
+  QTimer _connectionTimeoutTimer;
 
   // Status information.
   ClientEntity *_clientEntity;
   bool _authenticated;
 
-  // Statistics.
-  quint64 _bytesRead; ///< Total number of bytes received from client.
-  quint64 _bytesWritten; ///< Total number of bytes written to client.
-
-  QTime _bytesReadTime;
-  quint64 _bytesReadSince;
-  QTime _bytesWrittenTime;
-  quint64 _bytesWrittenSince;
+  // Network usage.
+  NetworkUsageEntity _networkUsage;
+  QTime _bandwidthCalcTime;
+  quint64 _bandwidthReadTemp;
+  quint64 _bandwidthWrittenTemp;
 };
 
 #endif

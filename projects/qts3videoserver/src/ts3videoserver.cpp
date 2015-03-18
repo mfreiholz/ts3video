@@ -46,7 +46,7 @@ bool TS3VideoServer::init()
   HL_INFO(HL, QString("Listening for new client connections (protocol=TCP; port=%1)").arg(port).toStdString());
   // Accepting new connections.
   connect(&_corServer, &QCorServer::newConnection, [this](QCorConnection *connection) {
-    new ClientConnectionHandler(this, connection, this);
+    auto conn = new ClientConnectionHandler(this, connection, this);
   });
 
   // Init media socket.

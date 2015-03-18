@@ -29,10 +29,8 @@ ClientConnectionHandler::ClientConnectionHandler(TS3VideoServer *server, QCorCon
   _connection(connection),
   _authenticated(false),
   _clientEntity(nullptr),
-  _bytesRead(0),
-  _bytesWritten(0),
-  _bytesReadSince(0),
-  _bytesWrittenSince(0)
+  _bandwidthReadTemp(0),
+  _bandwidthWrittenTemp(0)
 {
   _clientEntity = new ClientEntity();
   _clientEntity->id = ++_server->_nextClientId;
@@ -44,8 +42,8 @@ ClientConnectionHandler::ClientConnectionHandler(TS3VideoServer *server, QCorCon
   onStateChanged(QAbstractSocket::ConnectedState);
 
   // Initialize connection timeout timer.
-  _timeoutTimer.start(20000);
-  QObject::connect(&_timeoutTimer, &QTimer::timeout, [this]() {
+  _connectionTimeoutTimer.start(20000);
+  QObject::connect(&_connectionTimeoutTimer, &QTimer::timeout, [this]() {
     HL_WARN(HL, QString("Client connection timed out. No heartbeat since 20 seconds.").toStdString());
     QCorFrame req;
     QJsonObject params;
@@ -62,8 +60,7 @@ ClientConnectionHandler::ClientConnectionHandler(TS3VideoServer *server, QCorCon
   statisticTimer->setInterval(1500);
   statisticTimer->start();
   connect(statisticTimer, &QTimer::timeout, this, &ClientConnectionHandler::updateStatistics);
-  _bytesReadTime.start();
-  _bytesWrittenTime.start();
+  _bandwidthCalcTime.start();
 
   // Handle: Max number of connections (Connection limit).
   if (_server->_connections.size() > _server->_opts.connectionLimit) {
@@ -128,6 +125,7 @@ void ClientConnectionHandler::onStateChanged(QAbstractSocket::SocketState state)
 void ClientConnectionHandler::onNewIncomingRequest(QCorFrameRefPtr frame)
 {
   HL_TRACE(HL, QString("New incoming request (size=%1; content=%2)").arg(frame->data().size()).arg(QString(frame->data())).toStdString());
+  _networkUsage.bytesRead += frame->data().size(); // TODO Not correct, we need to get values from QCORLIB to include bytes of cor_frame (same for write).
 
   QString action;
   QJsonObject params;
@@ -198,8 +196,8 @@ void ClientConnectionHandler::onNewIncomingRequest(QCorFrameRefPtr frame)
     res.initResponse(*frame.data());
     res.setData(JsonProtocolHelper::createJsonResponse(QJsonObject()));
     _connection->sendResponse(res);
-    _timeoutTimer.stop();
-    _timeoutTimer.start(20000);
+    _connectionTimeoutTimer.stop();
+    _connectionTimeoutTimer.start(20000);
     return;
   }
   else if (action == "joinchannel") {
@@ -290,33 +288,29 @@ void ClientConnectionHandler::onNewIncomingRequest(QCorFrameRefPtr frame)
 
 void ClientConnectionHandler::updateStatistics()
 {
+  auto elapsedms = _bandwidthCalcTime.elapsed();
+  _bandwidthCalcTime.restart();
   // Calculate READ transfer rate.
-  double readRate = 0.0;
-  auto elapsedms = _bytesReadTime.elapsed();
   if (elapsedms > 0) {
-    auto diff = _bytesRead - _bytesReadSince;
+    auto diff = _networkUsage.bytesRead - _bandwidthReadTemp;
     if (diff > 0) {
-      readRate = ((double)diff / elapsedms) * 1000;
+      _networkUsage.bandwidthRead = ((double)diff / elapsedms) * 1000;
     }
     else {
-      readRate = 0.0;
+      _networkUsage.bandwidthRead = 0.0;
     }
-    _bytesReadSince = _bytesRead;
-    _bytesReadTime.restart();
+    _bandwidthReadTemp = _networkUsage.bytesRead;
   }
-
   // Calculate WRITE transfer rate.
-  double writeRate = 0.0;
-  elapsedms = _bytesWrittenTime.elapsed();
   if (elapsedms > 0) {
-    auto diff = _bytesWritten - _bytesWrittenSince;
+    auto diff = _networkUsage.bytesWritten - _bandwidthWrittenTemp;
     if (diff > 0) {
-      writeRate = ((double)diff / elapsedms) * 1000;
+      _networkUsage.bandwidthWrite = ((double)diff / elapsedms) * 1000;
     }
     else {
-      writeRate = 0.0;
+      _networkUsage.bandwidthWrite = 0.0;
     }
-    _bytesWrittenSince = _bytesWritten;
-    _bytesWrittenTime.restart();
+    _bandwidthWrittenTemp = _networkUsage.bytesWritten;
   }
+  emit networkUsageUpdated(_networkUsage);
 }
