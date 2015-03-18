@@ -47,7 +47,6 @@ public:
 private slots:
   void onStateChanged(QAbstractSocket::SocketState state);
   void onNewIncomingRequest(QCorFrameRefPtr frame);
-  void updateStatistics();
 
 signals:
   void networkUsageUpdated(const NetworkUsageEntity &networkUsage);
@@ -65,9 +64,7 @@ private:
 
   // Network usage.
   NetworkUsageEntity _networkUsage;
-  QTime _bandwidthCalcTime;
-  quint64 _bandwidthReadTemp;
-  quint64 _bandwidthWrittenTemp;
+  NetworkUsageEntityHelper _networkUsageHelper;
 };
 
 #endif

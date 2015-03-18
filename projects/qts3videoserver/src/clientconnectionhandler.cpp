@@ -29,8 +29,8 @@ ClientConnectionHandler::ClientConnectionHandler(TS3VideoServer *server, QCorCon
   _connection(connection),
   _authenticated(false),
   _clientEntity(nullptr),
-  _bandwidthReadTemp(0),
-  _bandwidthWrittenTemp(0)
+  _networkUsage(),
+  _networkUsageHelper(_networkUsage)
 {
   _clientEntity = new ClientEntity();
   _clientEntity->id = ++_server->_nextClientId;
@@ -59,8 +59,10 @@ ClientConnectionHandler::ClientConnectionHandler(TS3VideoServer *server, QCorCon
   auto statisticTimer = new QTimer(this);
   statisticTimer->setInterval(1500);
   statisticTimer->start();
-  connect(statisticTimer, &QTimer::timeout, this, &ClientConnectionHandler::updateStatistics);
-  _bandwidthCalcTime.start();
+  connect(statisticTimer, &QTimer::timeout, [this] () {
+    _networkUsageHelper.recalculate();
+    emit networkUsageUpdated(_networkUsage);
+  });
 
   // Handle: Max number of connections (Connection limit).
   if (_server->_connections.size() > _server->_opts.connectionLimit) {
@@ -284,33 +286,4 @@ void ClientConnectionHandler::onNewIncomingRequest(QCorFrameRefPtr frame)
   res.setData(JsonProtocolHelper::createJsonResponseError(4, QString("Unknown action.")));
   _connection->sendResponse(res);
   return;
-}
-
-void ClientConnectionHandler::updateStatistics()
-{
-  auto elapsedms = _bandwidthCalcTime.elapsed();
-  _bandwidthCalcTime.restart();
-  // Calculate READ transfer rate.
-  if (elapsedms > 0) {
-    auto diff = _networkUsage.bytesRead - _bandwidthReadTemp;
-    if (diff > 0) {
-      _networkUsage.bandwidthRead = ((double)diff / elapsedms) * 1000;
-    }
-    else {
-      _networkUsage.bandwidthRead = 0.0;
-    }
-    _bandwidthReadTemp = _networkUsage.bytesRead;
-  }
-  // Calculate WRITE transfer rate.
-  if (elapsedms > 0) {
-    auto diff = _networkUsage.bytesWritten - _bandwidthWrittenTemp;
-    if (diff > 0) {
-      _networkUsage.bandwidthWrite = ((double)diff / elapsedms) * 1000;
-    }
-    else {
-      _networkUsage.bandwidthWrite = 0.0;
-    }
-    _bandwidthWrittenTemp = _networkUsage.bytesWritten;
-  }
-  emit networkUsageUpdated(_networkUsage);
 }
