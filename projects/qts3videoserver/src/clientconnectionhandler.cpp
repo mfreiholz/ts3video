@@ -13,6 +13,7 @@
 #include "qcorconnection.h"
 #include "qcorreply.h"
 
+#include "elws.h"
 #include "cliententity.h"
 #include "channelentity.h"
 #include "jsonprotocolhelper.h"
@@ -64,13 +65,26 @@ ClientConnectionHandler::ClientConnectionHandler(TS3VideoServer *server, QCorCon
     emit networkUsageUpdated(_networkUsage);
   });
 
-  // Handle: Max number of connections (Connection limit).
+  // Max number of connections (Connection limit).
   if (_server->_connections.size() > _server->_opts.connectionLimit) {
-    HL_WARN(HL, QString("Maximum allowed connections exceeded. (max=%1)").arg(_server->_opts.connectionLimit).toStdString());
+    HL_WARN(HL, QString("Server connection limit exceeded. (max=%1)").arg(_server->_opts.connectionLimit).toStdString());
     QCorFrame req;
     QJsonObject params;
     params["code"] = 1;
-    params["message"] = "Maximum allowed connections exceeded.";
+    params["message"] = "Server connection limit exceeded.";
+    req.setData(JsonProtocolHelper::createJsonRequest("error", params));
+    auto reply = _connection->sendRequest(req);
+    connect(reply, &QCorReply::finished, reply, &QCorReply::deleteLater);
+    QMetaObject::invokeMethod(_connection, "disconnectFromHost", Qt::QueuedConnection);
+  }
+
+  // Max bandwidth usage (Bandwidth limit).
+  if (_server->_networkUsageMediaSocket.bandwidthRead > _server->_opts.bandwidthReadLimit || _server->_networkUsageMediaSocket.bandwidthWrite > _server->_opts.bandwidthWriteLimit) {
+    HL_WARN(HL, QString("Server bandwidth limit exceeded.").toStdString());
+    QCorFrame req;
+    QJsonObject params;
+    params["code"] = 1;
+    params["message"] = "Server bandwidth limit exceeded.";
     req.setData(JsonProtocolHelper::createJsonRequest("error", params));
     auto reply = _connection->sendRequest(req);
     connect(reply, &QCorReply::finished, reply, &QCorReply::deleteLater);

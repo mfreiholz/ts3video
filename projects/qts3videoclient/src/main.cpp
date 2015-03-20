@@ -451,7 +451,7 @@ int runClientAppLogic(QApplication &a)
   a.setOrganizationName("insaneFactory");
   a.setOrganizationDomain("http://www.insanefactory.com/ts3video");
   a.setApplicationName("TS3 Video Client");
-  a.setApplicationVersion(QString("%1 %2 (Build %3)").arg(IFVS_SOFTWARE_VERSION).arg(IFVS_SOFTWARE_VERSION_POSTFIX).arg(IFVS_SOFTWARE_VERSION_BUILD));
+  a.setApplicationVersion(IFVS_SOFTWARE_VERSION_QSTRING);
   a.setQuitOnLastWindowClosed(true);
 
   // Prepare startup options.
@@ -502,12 +502,20 @@ int runClientAppLogic(QApplication &a)
 int main(int argc, char *argv[])
 {
   QApplication a(argc, argv);
-  AllocConsole();
 
+  // Initialize logging.
   auto& fac = humble::logging::Factory::getInstance();
   fac.registerAppender(new humble::logging::FileAppender(std::string("ts3videoclient.log"), true));
   fac.changeGlobalLogLevel(humble::logging::LogLevel::Debug);
 
+  // Show console window?
+  if (ELWS::getArgsValue("--console", false).toBool()) {
+#ifdef _WIN32
+    AllocConsole();
+#endif
+  }
+
+  // Run a specific mode.
   const auto mode = ELWS::getArgsValue("--mode").toString();
   if (mode == QString("test-multi-client")) {
     return runTestClient(a);

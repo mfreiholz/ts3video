@@ -27,7 +27,6 @@ TS3VideoServer::TS3VideoServer(const TS3VideoServerOptions &opts, QObject *paren
   _tokens(),
   _wsStatusServer(this)
 {
-
 }
 
 TS3VideoServer::~TS3VideoServer()

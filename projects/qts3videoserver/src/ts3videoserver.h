@@ -36,7 +36,8 @@ public:
   // The maximum bandwidth the server may use.
   // New connections will be blocked, if the server's bandwidth
   // usage reaches this value.
-  double bandwidthLimit = std::numeric_limits<double>::max();
+  double bandwidthReadLimit = std::numeric_limits<double>::max();
+  double bandwidthWriteLimit = std::numeric_limits<double>::max();
 
   // List of valid TS3 channel IDs users are allowed to join.
   // Leave empty for no restrictions on channel-ids.
