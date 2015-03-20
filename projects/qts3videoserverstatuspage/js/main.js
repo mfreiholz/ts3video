@@ -35,8 +35,8 @@
     
     this.websocket.onmessage = function (ev) {
       var data = JSON.parse(ev.data);
-      brite.display("MainView", "#AppMain", data, { emptyParent: true })
-        .done(function () {
+      brite.display("MainView", "#AppMain", data, { emptyParent: true });
+        /*.done(function () {
           setTimeout(function () {
             if (that.websocket !== null) {
               that.websocket.send("/status");
@@ -44,7 +44,7 @@
           }, 1500); // TODO (The server should send update instead of requesting it!)
         })
         .fail(function () {
-        });
+        });*/
     };
   };
   

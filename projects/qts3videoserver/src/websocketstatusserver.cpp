@@ -26,7 +26,8 @@ HUMBLE_LOGGER(HL, "server.status");
 WebSocketStatusServer::WebSocketStatusServer(TS3VideoServer *server) :
   QObject(server),
   _server(server),
-  _wsServer(new QWebSocketServer(QString(), QWebSocketServer::NonSecureMode, this))
+  _wsServer(new QWebSocketServer(QString(), QWebSocketServer::NonSecureMode, this)),
+  _maxUpdateRate(2000)
 {
   QObject::connect(_wsServer, &QWebSocketServer::newConnection, this, &WebSocketStatusServer::onNewConnection);
   QObject::connect(_wsServer, &QWebSocketServer::closed, this, &WebSocketStatusServer::closed);
@@ -45,7 +46,28 @@ bool WebSocketStatusServer::init()
     return false;
   }
   HL_INFO(HL, QString("Listening for new client status web-socket connections (protocol=TCP; port=%1)").arg(6002).toStdString());
+  _lastUpdateTime.start();
+
+  // DEV Run a timer to send periodical updates as long as we can't do it by events from server-object.
+  auto broadcastTimer = new QTimer(this);
+  broadcastTimer->setInterval(250);
+  broadcastTimer->start();
+  QObject::connect(broadcastTimer, &QTimer::timeout, this, &WebSocketStatusServer::broadcastAllInfo);
+
   return true;
+}
+
+void WebSocketStatusServer::broadcastAllInfo()
+{
+  if (_lastUpdateTime.elapsed() <= _maxUpdateRate)
+    return;
+  _lastUpdateTime.restart();
+
+  auto root = getAllInfo().toObject();
+  auto rootData = QJsonDocument(root).toJson(QJsonDocument::Compact);
+  foreach(QWebSocket *socket, _sockets) {
+    socket->sendTextMessage(rootData);
+  }
 }
 
 void WebSocketStatusServer::onNewConnection()
@@ -55,6 +77,9 @@ void WebSocketStatusServer::onNewConnection()
     QObject::connect(socket, &QWebSocket::textMessageReceived, this, &WebSocketStatusServer::onTextMessage);
     QObject::connect(socket, &QWebSocket::disconnected, this, &WebSocketStatusServer::onDisconnected);
     _sockets.append(socket);
+
+    // Send all-info to new connected client.
+    socket->sendTextMessage(QJsonDocument(getAllInfo().toObject()).toJson(QJsonDocument::Compact));
   }
 }
 
@@ -62,16 +87,7 @@ void WebSocketStatusServer::onTextMessage(const QString &message)
 {
   auto socket = qobject_cast<QWebSocket*>(sender());
   HL_TRACE(HL, QString("Incoming text message (message=%1)").arg(message).toStdString());
-
-  QJsonObject root;
-  root.insert("info", getAppInfo());
-  root.insert("memory", getMemoryUsageInfo());
-  root.insert("bandwidth", getBandwidthInfo());
-  root.insert("clients", getClientsInfo());
-  root.insert("channels", getChannelsInfo());
-  root.insert("websockets", getWebSocketsInfo());
-
-  socket->sendTextMessage(QJsonDocument(root).toJson(QJsonDocument::Compact));
+  //socket->sendTextMessage(QJsonDocument(root).toJson(QJsonDocument::Compact));
 }
 
 void WebSocketStatusServer::onDisconnected()
@@ -81,6 +97,18 @@ void WebSocketStatusServer::onDisconnected()
     _sockets.removeAll(socket);
     socket->deleteLater();
   }
+}
+
+QJsonValue WebSocketStatusServer::getAllInfo() const
+{
+  QJsonObject root;
+  root.insert("info", getAppInfo());
+  root.insert("memory", getMemoryUsageInfo());
+  root.insert("bandwidth", getBandwidthInfo());
+  root.insert("clients", getClientsInfo());
+  root.insert("channels", getChannelsInfo());
+  root.insert("websockets", getWebSocketsInfo());
+  return root;
 }
 
 QJsonValue WebSocketStatusServer::getAppInfo() const

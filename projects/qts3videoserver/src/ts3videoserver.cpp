@@ -105,7 +105,10 @@ void TS3VideoServer::updateMediaRecipients()
     sender.address = QHostAddress(client->mediaAddress);
     sender.port = client->mediaPort;
     sender.id = MediaSenderEntity::createID(sender.address, sender.port);
-    foreach(auto client2, clients) {
+
+    auto siblingClientIds = getSiblingClientIds(client->id);
+    foreach(auto siblingClientId, siblingClientIds) {
+      auto client2 = _clients.value(siblingClientId);
       if (!client2 || (!sendBackOwnVideo && client2 == client) || client2->mediaAddress.isEmpty() || client2->mediaPort <= 0) {
         continue;
       }

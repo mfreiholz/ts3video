@@ -66,11 +66,11 @@
       <div class="panel-body">
         <div class="row">
           <div class="col-xs-6"><b>Bytes read</b><br/>{{>~bytesAsReadableSize(bandwidth.bytesread)}}</div>
-          <div class="col-xs-6"><b>Bytes read</b><br/>{{>~bytesAsReadableSize(bandwidth.byteswritten)}}</div>
+          <div class="col-xs-6"><b>Bytes written</b><br/>{{>~bytesAsReadableSize(bandwidth.byteswritten)}}</div>
         </div>
         <div class="row">
-          <div class="col-xs-6"><b>Read rate</b><br/>{{>~bytesAsReadableSize(bandwidth.bandwidthread)}}</div>
-          <div class="col-xs-6"><b>Write rate</b><br/>{{>~bytesAsReadableSize(bandwidth.bandwidthwrite)}}</div>
+          <div class="col-xs-6"><b>Read rate</b><br/>{{>~bytesAsReadableSize(bandwidth.bandwidthread)}}/s</div>
+          <div class="col-xs-6"><b>Write rate</b><br/>{{>~bytesAsReadableSize(bandwidth.bandwidthwrite)}}/s</div>
         </div>
       </div>
     </div>

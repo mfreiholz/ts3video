@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QList>
+#include <QTime>
 
 class QWebSocketServer;
 class QWebSocket;
@@ -17,6 +18,9 @@ public:
   virtual ~WebSocketStatusServer();
   bool init();
 
+public slots:
+  void broadcastAllInfo();
+
 signals:
   void closed();
 
@@ -26,6 +30,7 @@ private slots:
   void onDisconnected();
   
 private:
+  QJsonValue getAllInfo() const;
   QJsonValue getAppInfo() const;
   QJsonValue getMemoryUsageInfo() const;
   QJsonValue getBandwidthInfo() const;
@@ -37,6 +42,10 @@ private:
   TS3VideoServer *_server;
   QWebSocketServer *_wsServer;
   QList<QWebSocket*> _sockets;
+  
+  // Restricts the  socket to send updates with a maxium rate.
+  QTime _lastUpdateTime;
+  unsigned int _maxUpdateRate;
 };
 
 #endif

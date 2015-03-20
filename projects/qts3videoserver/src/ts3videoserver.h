@@ -87,7 +87,7 @@ private:
   // Web-socket status server.
   WebSocketStatusServer _wsStatusServer;
 
-  // Network usage.
+  // Network usages (COR, Media, WebSocket, ...)
   NetworkUsageEntity _networkUsageMediaSocket;
 };
 

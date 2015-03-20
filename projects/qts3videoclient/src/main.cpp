@@ -209,11 +209,12 @@ int runTestClient(QApplication &a)
   timer->start();
 
   QList<TS3VideoClient*> ts3vconns;
-  auto maxConns = ELWS::getArgsValue("--max", 6).toInt();
+  auto maxConns = ELWS::getArgsValue("--max", 1).toInt();
   auto serverAddress = ELWS::getArgsValue("--server-address", DEFAULT_SERVER_ADDRESS).toString();
   auto serverPort = ELWS::getArgsValue("--server-port", DEFAULT_SERVER_PORT).toUInt();
+  auto sendVideo = ELWS::getArgsValue("--video", "false").toBool();
 
-  QObject::connect(timer, &QTimer::timeout, [timer, &maxConns, &ts3vconns, serverAddress, serverPort] () {
+  QObject::connect(timer, &QTimer::timeout, [timer, &maxConns, &ts3vconns, serverAddress, serverPort, sendVideo] () {
     // Stop creating new connections.
     if (maxConns != -1 && ts3vconns.size() >= maxConns) {
       timer->stop();
@@ -227,20 +228,20 @@ int runTestClient(QApplication &a)
     ts3vconns.append(ts3vc);
 
     // Connected.
-    QObject::connect(ts3vc, &TS3VideoClient::connected, [ts3vc, &ts3vconns]() {
+    QObject::connect(ts3vc, &TS3VideoClient::connected, [ts3vc, &ts3vconns, sendVideo]() {
       // Auth.
       auto reply = ts3vc->auth(QString("Test Client #%1").arg(ts3vconns.size()));
-      QObject::connect(reply, &QCorReply::finished, [ts3vc, reply]() {
+      QObject::connect(reply, &QCorReply::finished, [ts3vc, reply, sendVideo]() {
         reply->deleteLater();
         HL_DEBUG(HL, QString(reply->frame()->data()).toStdString());
         // Join channel.
         auto reply2 = ts3vc->joinChannel(42);
-        QObject::connect(reply2, &QCorReply::finished, [ts3vc, reply2]() {
+        QObject::connect(reply2, &QCorReply::finished, [ts3vc, reply2, sendVideo]() {
           reply2->deleteLater();
           HL_DEBUG(HL, QString(reply2->frame()->data()).toStdString());
           
           // Send video.
-          if (true) {
+          if (sendVideo) {
             auto baseDir = QDir("D:\\Temp\\camera");
             static auto frameNo = 0;
 
@@ -501,6 +502,7 @@ int runClientAppLogic(QApplication &a)
 int main(int argc, char *argv[])
 {
   QApplication a(argc, argv);
+  AllocConsole();
 
   auto& fac = humble::logging::Factory::getInstance();
   fac.registerAppender(new humble::logging::FileAppender(std::string("ts3videoclient.log"), true));
