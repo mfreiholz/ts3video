@@ -140,6 +140,17 @@ QJsonValue WebSocketStatusServer::getMemoryUsageInfo() const
   jsMemory.insert("pagefileusage", (qint64)pmc.PagefileUsage);
   jsMemory.insert("peakpagefileusage", (qint64)pmc.PeakPagefileUsage);
   jsMemory.insert("privateusage", (qint64)pmc.PrivateUsage);
+#else
+  jsMemory.insert("pagefaultcount", (qint64)-1);
+  jsMemory.insert("peakworkingsetsize", (qint64)-1);
+  jsMemory.insert("workingsetsize", (qint64)-1);
+  jsMemory.insert("quotapeakpagedpoolusage", (qint64)-1);
+  jsMemory.insert("quotapagedpoolusage", (qint64)-1);
+  jsMemory.insert("quotapeaknonpagedpoolusage", (qint64)-1);
+  jsMemory.insert("quotanonpagedpoolusage", (qint64)-1);
+  jsMemory.insert("pagefileusage", (qint64)-1);
+  jsMemory.insert("peakpagefileusage", (qint64)-1);
+  jsMemory.insert("privateusage", (qint64)-1);
 #endif
   return jsMemory;
 }
