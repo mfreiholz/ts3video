@@ -1,0 +1,194 @@
+html, body {
+  font-family: "Roboto", sans-serif;
+  font-size: 14px;
+}
+
+body {
+  background-color: #fff;
+  margin: 0;
+  padding: 0;
+}
+
+h1, h2, h3, p, section {
+  margin: 0;
+  padding: 0;
+}
+
+dl {
+  margin: 0;
+  padding: 0;
+}
+
+/* <table> */
+table {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+table thead th {
+  border-width: 0 0 1px 0;
+  border-style: solid;
+  border-color: #999;
+  font-weight: bold;
+  text-align: left;
+  padding: 6px;
+}
+
+table td,
+table tbody td {
+  padding: 6px;
+  border-width: 0 0 1px 0;
+  border-style: solid;
+  border-color: #ddd;
+}
+
+/*
+  Header
+*/
+
+.header {
+  background-color: #fff;
+  display: block;
+  width: 100%;
+  line-height: 4.0em;
+}
+
+.header h1 {
+  display: inline;
+  float: left;
+  font-size: 1.5em;
+  font-weight: bold;
+  margin: 0 0 0 3.0em;
+  padding: 0;
+}
+
+.header h1 a {
+  color: #000;
+  text-decoration: none;
+}
+
+.header .nav-links a {
+  color: #666;
+  display: inline;
+  float: left;
+  margin: 0 0 0 2.5em;
+  text-decoration: none;
+}
+
+.header .nav-links a:hover {
+  color: #000;
+}
+
+/*
+  Content
+*/
+
+.main-content {
+  margin: 0;
+  padding: 0;
+  display: block;
+  width: 100%;
+}
+
+.content {
+  width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+section {
+  display: block;
+}
+
+section h1 {
+  font-size: 2.5em;
+  font-weight: bold;
+}
+
+hr {
+  border-width: 1px 0 0 0;
+  border-style: solid;
+  border-color: #eee;
+  margin: 0;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0;
+  width: 80%;
+}
+
+.clearfix {
+  float: none;
+  clear: both;
+  margin: 0;
+  padding: 0;
+}
+
+/** Section: Welcome **/
+
+section.welcome {
+  background: #eee;
+}
+
+.slogan {
+  font-size: 2.5em;
+  letter-spacing: 3px;
+  text-align: center;
+  padding: 1.3em 0;
+  line-height: 1.4em;
+}
+
+.preview {
+  text-align: center;
+}
+
+/** Section: Features **/
+
+section.features {
+  background: #fff;
+  padding: 30px 0px;
+}
+
+/** Section: Downloads **/
+
+section.downloads {
+  background: #fff;
+  padding: 30px 0px;
+}
+
+section.downloads table {
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 10px;
+  width: 90%;
+}
+
+/** Section: License **/
+
+section.license {
+  background: #fff;
+  padding: 15px 0px;
+}
+
+section.license dt {
+  color: #999;
+  display: block;
+  font-size: 1.2em;
+  font-weight: bold;
+  padding: 6px 0;
+}
+
+section.license dd {
+  display: block;
+  margin: 0;
+  padding: 6px 0;
+}
+
+/** Section: Footer **/
+
+section.footer {
+  background: #eee;
+  color: #999;
+  padding: 15px 0px;
+  text-align: center;
+}
