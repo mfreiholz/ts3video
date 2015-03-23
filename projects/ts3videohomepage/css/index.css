@@ -99,11 +99,15 @@ table tbody td {
 
 section {
   display: block;
+  margin: 0;
+  padding: 0;
+  line-height: 1.5em;
 }
 
 section h1 {
   font-size: 2.5em;
   font-weight: bold;
+  line-height: 1.5em;
 }
 
 hr {
@@ -133,20 +137,28 @@ section.welcome {
 .slogan {
   font-size: 2.5em;
   letter-spacing: 3px;
+  line-height: 1.5em;
   text-align: center;
-  padding: 1.3em 0;
-  line-height: 1.4em;
+  padding: 1.3em 0 0.5em 0;
 }
 
 .preview {
   text-align: center;
+  line-height: 0;
 }
 
 /** Section: Features **/
 
 section.features {
   background: #fff;
+  font-size: 1.2em;
   padding: 30px 0px;
+}
+
+.bam {
+  font-style: italic;
+  font-weight: bold;
+  padding: 10px;
 }
 
 /** Section: Downloads **/
@@ -163,11 +175,23 @@ section.downloads table {
   width: 90%;
 }
 
+section.downloads .hash {
+  color: #777;
+  display: block;
+  font-size: 0.8em;
+}
+
+section.downloads .notes {
+  color: #777;
+  padding: 10px;
+  text-align: center;
+}
+
 /** Section: License **/
 
 section.license {
   background: #fff;
-  padding: 15px 0px;
+  padding: 30px 0px;
 }
 
 section.license dt {
