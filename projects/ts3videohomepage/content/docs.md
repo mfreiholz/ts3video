@@ -1,15 +1,15 @@
-# TS3VIDEO Documentation
+<!--
+title: Documentation
+-->
+# Documentation
 
-* Client plugin
+* [Client](#client)
   * Installation
-    * Windows
-    * Linux (Debian, Ubuntu, ...)
 
-* Server
+* [Server](#server)
   * Installation
   * Configuration
 
---------------------------------------------------------------
 
 # Client
 
@@ -18,17 +18,16 @@ After downloading the plugin from the website you can simply double click the *.
 
 (TODO: Insert Screenshot of plugin installer here...)
 
-__Linux:__ The client plugin for Linux is in development.  
+__Linux:__ The client plugin for Linux is in development.
 __Mac:__ I still don't have a Mac.
 
---------------------------------------------------------------
 
 # Server
 
 ## Installation
 The downloaded server package is usually a simple ZIP archive, which can be extracted wherever you want it.
 
-__Windows:__ `C:\ts3video-server`  
+__Windows:__ `C:\ts3video-server`
 __Linux:__ `/opt/ts3video-server`
 
 ## Configuration
