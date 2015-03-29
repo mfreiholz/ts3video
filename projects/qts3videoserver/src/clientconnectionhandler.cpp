@@ -162,6 +162,7 @@ void ClientConnectionHandler::onNewIncomingRequest(QCorFrameRefPtr frame)
       res.initResponse(*frame.data());
       res.setData(JsonProtocolHelper::createJsonResponseError(3, QString("Incompatible version (client=%1; server=%2)").arg(version).arg(TS3VIDEOSERVER_VERSION)));
       _connection->sendResponse(res);
+      QMetaObject::invokeMethod(_connection, "disconnectFromHost", Qt::QueuedConnection);
       return;
     }
     // Authenticate.
@@ -170,6 +171,7 @@ void ClientConnectionHandler::onNewIncomingRequest(QCorFrameRefPtr frame)
       res.initResponse(*frame.data());
       res.setData(JsonProtocolHelper::createJsonResponseError(4, QString("Authentication failed")));
       _connection->sendResponse(res);
+      QMetaObject::invokeMethod(_connection, "disconnectFromHost", Qt::QueuedConnection);
       return;
     }
     _authenticated = true;
