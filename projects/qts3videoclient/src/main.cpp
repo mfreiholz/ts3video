@@ -33,7 +33,7 @@
 
 HUMBLE_LOGGER(HL, "client");
 
-#define DEFAULT_SERVER_ADDRESS "85.214.204.236"
+#define DEFAULT_SERVER_ADDRESS "h2377348.stratoserver.net"
 #define DEFAULT_SERVER_PORT 6000
 
 ///////////////////////////////////////////////////////////////////////
@@ -442,9 +442,6 @@ int runUnregisterUriHandler(QApplication &a)
   By using the "--uri" parameter its possible to define those parameters with a URI.
   e.g.:
     ts3video://127.0.0.1:6000/?ts3clientid=13&ts3channelid=42&username=mfreiholz
-
-
-  \todo DNS lookups for server address. Currently only IP addresses work (See QHostInfo).
 */
 int runClientAppLogic(QApplication &a)
 {
