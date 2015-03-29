@@ -173,6 +173,7 @@ void ClientConnectionHandler::onNewIncomingRequest(QCorFrameRefPtr frame)
   if (action == "auth") {
     auto version = params["version"].toString();
     auto username = params["username"].toString();
+    auto password = params["password"].toString();
     // Compare client version against server version compatibility.
     if (!ELWS::isVersionSupported(version, IFVS_SERVER_SUPPORTED_CLIENT_VERSIONS)) {
       QCorFrame res;
@@ -183,10 +184,11 @@ void ClientConnectionHandler::onNewIncomingRequest(QCorFrameRefPtr frame)
       return;
     }
     // Authenticate.
-    if (username.isEmpty()) {
+    if (username.isEmpty() || (!_server->_opts.password.isEmpty() && _server->_opts.password != password)) {
+      HL_WARN(HL, QString("Authentication failed by user (user=%1)").arg(username).toStdString());
       QCorFrame res;
       res.initResponse(*frame.data());
-      res.setData(JsonProtocolHelper::createJsonResponseError(4, QString("Authentication failed: Empty username.")));
+      res.setData(JsonProtocolHelper::createJsonResponseError(4, QString("Authentication failed")));
       _connection->sendResponse(res);
       QMetaObject::invokeMethod(_connection, "disconnectFromHost", Qt::QueuedConnection);
       return;

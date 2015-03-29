@@ -48,6 +48,9 @@ public:
   // List of valid TS3 channel IDs users are allowed to join.
   // Leave empty for no restrictions on channel-ids.
   QList<quint64> validChannels;
+
+  // Global server password.
+  QString password;
 };
 
 /*!

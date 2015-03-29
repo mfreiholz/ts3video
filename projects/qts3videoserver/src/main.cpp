@@ -31,6 +31,8 @@ int updateOptionsByConfig(TS3VideoServerOptions &opts, const QString &filePath)
   opts.connectionLimit = conf.value("connectionlimit", opts.connectionLimit).toInt();
   opts.bandwidthReadLimit = conf.value("bandwidthreadlimit", opts.bandwidthReadLimit).toULongLong();
   opts.bandwidthWriteLimit = conf.value("bandwidthwritelimit", opts.bandwidthWriteLimit).toULongLong();
+  opts.validChannels = opts.validChannels;
+  opts.password = conf.value("password", opts.password).toString();
   conf.endGroup();
   return 0;
 }
@@ -66,6 +68,8 @@ int main(int argc, char *argv[])
   opts.connectionLimit = ELWS::getArgsValue("--connection-limit", opts.connectionLimit).toInt();
   opts.bandwidthReadLimit = ELWS::getArgsValue("--bandwidth-read-limit", opts.bandwidthReadLimit).toULongLong();
   opts.bandwidthWriteLimit = ELWS::getArgsValue("--bandwidth-write-limit", opts.bandwidthWriteLimit).toULongLong();
+  opts.validChannels.clear();
+  opts.password = ELWS::getArgsValue("--password", opts.password).toString();
 
   // Override server options by config.
   auto configFilePath = ELWS::getArgsValue("--config").toString();

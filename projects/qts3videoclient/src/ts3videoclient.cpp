@@ -82,7 +82,7 @@ void TS3VideoClient::connectToHost(const QHostAddress &address, qint16 port)
   d->corSocket->connectTo(address, port);
 }
 
-QCorReply* TS3VideoClient::auth(const QString &name)
+QCorReply* TS3VideoClient::auth(const QString &name, const QString &password)
 {
   Q_ASSERT(!name.isEmpty());
   Q_ASSERT(d->corSocket->socket()->state() == QAbstractSocket::ConnectedState);
@@ -90,6 +90,7 @@ QCorReply* TS3VideoClient::auth(const QString &name)
   QJsonObject params;
   params["version"] = IFVS_SOFTWARE_VERSION;
   params["username"] = name;
+  params["password"] = password;
   QCorFrame req;
   req.setData(JsonProtocolHelper::createJsonRequest("auth", params));
   auto reply = d->corSocket->sendRequest(req);

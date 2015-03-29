@@ -227,7 +227,7 @@ int runTestClient(QApplication &a)
     // Connected.
     QObject::connect(ts3vc, &TS3VideoClient::connected, [ts3vc, &ts3vconns, sendVideo]() {
       // Auth.
-      auto reply = ts3vc->auth(QString("Test Client #%1").arg(ts3vconns.size()));
+      auto reply = ts3vc->auth(QString("Test Client #%1").arg(ts3vconns.size()), "");
       QObject::connect(reply, &QCorReply::finished, [ts3vc, reply, sendVideo]() {
         reply->deleteLater();
         HL_DEBUG(HL, QString(reply->frame()->data()).toStdString());
@@ -484,6 +484,7 @@ int runClientAppLogic(QApplication &a)
     }
     v = dialog.values();
     opts.username = v.username;
+    opts.password = v.password;
     opts.cameraDeviceId = v.cameraDeviceName;
     opts.serverAddress = v.serverAddress;
     opts.serverPort = v.serverPort;

@@ -10,6 +10,7 @@ class StartupDialogValues
 public:
   QString cameraDeviceName;
   QString username;
+  QString password;
   QString serverAddress;
   quint16 serverPort;
 };

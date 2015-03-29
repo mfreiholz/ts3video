@@ -35,6 +35,7 @@ public:
     
     // The visible username of the client.
     QString username = QString();
+    QString password = QString();
 
     // The internal Teamspeak client- and channel-id.
     // The TS3VideoClient will automatically join the channel.

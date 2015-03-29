@@ -26,8 +26,10 @@ StartupDialog::StartupDialog(QWidget *parent) :
 
   d->ui.cameraComboBox->clear();
   d->ui.usernameLineEdit->clear();
+  d->ui.passwordLineEdit->clear();
   d->ui.serverAddress->clear();
   d->ui.serverPort->clear();
+  d->ui.cameraComboBox->addItem(tr("No camera"));
 
   auto cameraInfos = QCameraInfo::availableCameras();
   foreach (auto ci, cameraInfos) {
@@ -46,7 +48,6 @@ StartupDialog::StartupDialog(QWidget *parent) :
 
 StartupDialog::~StartupDialog()
 {
-
 }
 
 StartupDialogValues StartupDialog::values() const
@@ -54,6 +55,7 @@ StartupDialogValues StartupDialog::values() const
   StartupDialogValues v;
   v.cameraDeviceName = d->ui.cameraComboBox->currentData().toString();
   v.username = d->ui.usernameLineEdit->text();
+  v.password = d->ui.passwordLineEdit->text();
   v.serverAddress = d->ui.serverAddress->text();
   v.serverPort = d->ui.serverPort->text().toUInt();
   return v;
@@ -66,6 +68,7 @@ void StartupDialog::setValues(const StartupDialogValues &v)
     d->ui.cameraComboBox->setCurrentIndex(index);
   }
   d->ui.usernameLineEdit->setText(v.username);
+  d->ui.passwordLineEdit->setText(v.password);
   d->ui.serverAddress->setText(v.serverAddress);
   d->ui.serverPort->setText(QString::number(v.serverPort));
   d->validateUi();

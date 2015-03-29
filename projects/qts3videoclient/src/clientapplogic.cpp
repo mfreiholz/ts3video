@@ -93,11 +93,10 @@ void ClientAppLogic::onConnected()
 {
   auto ts3clientId = _opts.ts3clientId;
   auto ts3channelId = _opts.ts3channelId;
-  auto username = _opts.username;
 
   // Authenticate.
   showProgress(tr("Authenticating..."));
-  auto reply = _ts3vc.auth(username);
+  auto reply = _ts3vc.auth(_opts.username, _opts.password);
   QObject::connect(reply, &QCorReply::finished, [this, reply, ts3clientId, ts3channelId] () {
     HL_DEBUG(HL, QString("Auth answer: %1").arg(QString(reply->frame()->data())).toStdString());
     reply->deleteLater();
