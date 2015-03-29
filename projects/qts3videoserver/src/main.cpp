@@ -66,8 +66,8 @@ int main(int argc, char *argv[])
   opts.address = ELWS::getArgsValue("--address", opts.address.toString()).toString();
   opts.port = ELWS::getArgsValue("--server-port", opts.port).toUInt();
   opts.connectionLimit = ELWS::getArgsValue("--connection-limit", opts.connectionLimit).toInt();
-  opts.bandwidthReadLimit = ELWS::getArgsValue("--bandwidth-read-limit", opts.bandwidthReadLimit).toDouble();
-  opts.bandwidthWriteLimit = ELWS::getArgsValue("--bandwidth-write-limit", opts.bandwidthWriteLimit).toDouble();
+  opts.bandwidthReadLimit = ELWS::getArgsValue("--bandwidth-read-limit", opts.bandwidthReadLimit).toULongLong();
+  opts.bandwidthWriteLimit = ELWS::getArgsValue("--bandwidth-write-limit", opts.bandwidthWriteLimit).toULongLong();
 
   // Override server options by config.
   auto configFilePath = ELWS::getArgsValue("--config").toString();
