@@ -29,18 +29,6 @@ HUMBLE_LOGGER(HL, "client.logic");
 
 ///////////////////////////////////////////////////////////////////////
 
-ClientAppLogic::Options::Options() :
-  serverAddress(),
-  serverPort(0),
-  ts3clientId(0),
-  ts3channelId(0),
-  username(),
-  cameraDeviceId()
-{
-}
-
-///////////////////////////////////////////////////////////////////////
-
 ClientAppLogic::ClientAppLogic(const Options &opts, QObject *parent) :
   QObject(parent),
   _opts(opts),

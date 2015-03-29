@@ -4,6 +4,9 @@
 #include <QObject>
 #include <QList>
 #include <QTime>
+#include <QHostAddress>
+
+#include "ts3video.h"
 
 class QWebSocketServer;
 class QWebSocket;
@@ -14,7 +17,16 @@ class WebSocketStatusServer : public QObject
   Q_OBJECT
 
 public:
-  WebSocketStatusServer(TS3VideoServer *server);
+  class Options
+  {
+  public:
+    // Address and port to listen for new connections.
+    QHostAddress address = QHostAddress::LocalHost;
+    quint16 port = IFVS_SERVER_WSSTATUS_PORT;
+  };
+
+public:
+  WebSocketStatusServer(const WebSocketStatusServer::Options &opts, TS3VideoServer *server);
   virtual ~WebSocketStatusServer();
   bool init();
 
@@ -39,6 +51,7 @@ private:
   QJsonValue getWebSocketsInfo() const;
 
 private:
+  Options _opts;
   TS3VideoServer *_server;
   QWebSocketServer *_wsServer;
   QList<QWebSocket*> _sockets;

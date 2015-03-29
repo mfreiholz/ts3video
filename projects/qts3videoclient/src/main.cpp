@@ -33,9 +33,6 @@
 
 HUMBLE_LOGGER(HL, "client");
 
-#define DEFAULT_SERVER_ADDRESS "h2377348.stratoserver.net"
-#define DEFAULT_SERVER_PORT 6000
-
 ///////////////////////////////////////////////////////////////////////
 
 QWidget* createVideoWidget()
@@ -210,8 +207,8 @@ int runTestClient(QApplication &a)
 
   QList<TS3VideoClient*> ts3vconns;
   auto maxConns = ELWS::getArgsValue("--max", 1).toInt();
-  auto serverAddress = ELWS::getArgsValue("--server-address", DEFAULT_SERVER_ADDRESS).toString();
-  auto serverPort = ELWS::getArgsValue("--server-port", DEFAULT_SERVER_PORT).toUInt();
+  auto serverAddress = ELWS::getArgsValue("--server-address", IFVS_SERVER_ADDRESS).toString();
+  auto serverPort = ELWS::getArgsValue("--server-port", IFVS_SERVER_CONNECTION_PORT).toUInt();
   auto sendVideo = ELWS::getArgsValue("--video", "false").toBool();
 
   QObject::connect(timer, &QTimer::timeout, [timer, &maxConns, &ts3vconns, serverAddress, serverPort, sendVideo] () {
@@ -453,10 +450,10 @@ int runClientAppLogic(QApplication &a)
 
   // Prepare startup options.
   ClientAppLogic::Options opts;
-  opts.serverAddress = ELWS::getArgsValue("--server-address", DEFAULT_SERVER_ADDRESS).toString();
-  opts.serverPort = ELWS::getArgsValue("--server-port", DEFAULT_SERVER_PORT).toUInt();
-  opts.ts3clientId = ELWS::getArgsValue("--ts3-clientid", 0).toUInt();
-  opts.ts3channelId = ELWS::getArgsValue("--ts3-channelid", 42).toUInt();
+  opts.serverAddress = ELWS::getArgsValue("--server-address", opts.serverAddress).toString();
+  opts.serverPort = ELWS::getArgsValue("--server-port", opts.serverPort).toUInt();
+  opts.ts3clientId = ELWS::getArgsValue("--ts3-clientid", opts.ts3clientId).toUInt();
+  opts.ts3channelId = ELWS::getArgsValue("--ts3-channelid", opts.ts3channelId).toUInt();
   opts.username = ELWS::getArgsValue("--username", ELWS::getUserName()).toString();
 
   QUrl url(ELWS::getArgsValue("--uri").toString(), QUrl::StrictMode);

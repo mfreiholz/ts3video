@@ -25,24 +25,25 @@ TS3VideoServer::TS3VideoServer(const TS3VideoServerOptions &opts, QObject *paren
   _participants(),
   _mediaSocketHandler(nullptr),
   _tokens(),
-  _wsStatusServer(this)
+  _wsStatusServer(nullptr)
 {
 }
 
 TS3VideoServer::~TS3VideoServer()
 {
   delete _mediaSocketHandler;
+  delete _wsStatusServer;
 }
 
 bool TS3VideoServer::init()
 {
   // Init QCorServer listening for new client connections.
   const quint16 port = _opts.port;
-  if (!_corServer.listen(QHostAddress::Any, port)) {
+  if (!_corServer.listen(_opts.address, port)) {
     HL_ERROR(HL, QString("Can not bind to TCP port (port=%1)").arg(port).toStdString());
     return false;
   }
-  HL_INFO(HL, QString("Listening for new client connections (protocol=TCP; port=%1)").arg(port).toStdString());
+  HL_INFO(HL, QString("Listening for new client connections (protocol=TCP; address=%1; port=%2)").arg(_opts.address.toString()).arg(port).toStdString());
   // Accepting new connections.
   connect(&_corServer, &QCorServer::newConnection, [this](QCorConnection *connection) {
     auto conn = new ClientConnectionHandler(this, connection, this);
@@ -53,7 +54,7 @@ bool TS3VideoServer::init()
   if (!_mediaSocketHandler->init()) {
     return false;
   }
-  HL_INFO(HL, QString("Listening for media data (protocol=UDP; port=%1)").arg(port).toStdString());
+  HL_INFO(HL, QString("Listening for media data (protocol=UDP; address=%1; port=%2)").arg(_opts.address.toString()).arg(port).toStdString());
   // Handle media authentications.
   // Note: This lambda slot is not thread-safe. If MediaSocketHandler should run in a separate thread, we need to reimplement this function.
   connect(_mediaSocketHandler, &MediaSocketHandler::tokenAuthentication, [this](const QString &token, const QHostAddress &address, quint16 port) {
@@ -83,7 +84,11 @@ bool TS3VideoServer::init()
   });
 
   // Init status web-socket.
-  if (!_wsStatusServer.init()) {
+  WebSocketStatusServer::Options wsopts;
+  wsopts.address = _opts.wsStatusAddress;
+  wsopts.port = _opts.wsStatusPort;
+  _wsStatusServer = new WebSocketStatusServer(wsopts, this);
+  if (!_wsStatusServer->init()) {
     return false;
   }
 

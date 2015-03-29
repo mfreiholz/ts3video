@@ -18,17 +18,12 @@
 #include "qcorconnection.h"
 #include "qcorreply.h"
 
+#include "ts3video.h"
 #include "vp8encoder.h"
 #include "vp8decoder.h"
 #include "timeutil.h"
 
 HUMBLE_LOGGER(HL, "client.ts3videoclient");
-
-/*
-  Notes
-  =====
-  - Reading UDP datagrams in same thread may cause the GUI to hang, if there are a lot of clients?
-*/
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -93,7 +88,7 @@ QCorReply* TS3VideoClient::auth(const QString &name)
   Q_ASSERT(d->corSocket->socket()->state() == QAbstractSocket::ConnectedState);
 
   QJsonObject params;
-  params["version"] = 1;
+  params["version"] = IFVS_SOFTWARE_VERSION;
   params["username"] = name;
   QCorFrame req;
   req.setData(JsonProtocolHelper::createJsonRequest("auth", params));

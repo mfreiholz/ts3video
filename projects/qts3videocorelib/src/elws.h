@@ -19,6 +19,8 @@ public:
 
   static QString humanReadableSize(quint64 bytes);
   static QString humanReadableBandwidth(quint64 bytesPerSecond);
+
+  static bool isVersionSupported(const QString &version, const QString &supportedVersions);
 };
 
 #endif

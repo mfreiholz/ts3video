@@ -6,6 +6,7 @@
 #include <QHash>
 #include <QHostAddress>
 
+#include "ts3video.h"
 #include "yuvframe.h"
 
 #include "ts3videoclient.h"
@@ -16,6 +17,9 @@ class ViewBase;
 class ClientCameraVideoWidget;
 class RemoteClientVideoWidget;
 
+/*!
+  Logic to control the GUI and connection on client-side.
+ */
 class ClientAppLogic : public QObject
 {
   Q_OBJECT
@@ -24,19 +28,27 @@ public:
   class Options
   {
   public:
-    Options();
-    QString serverAddress;
-    quint16 serverPort;
-    quint64 ts3clientId;
-    quint64 ts3channelId;
-    QString username;
-    QString cameraDeviceId;
+    // The address and port of the remote server.
+    // The address can either be a name like "myhost.com" or and IPv4/IPv6 address.
+    QString serverAddress = IFVS_SERVER_ADDRESS;
+    quint16 serverPort = IFVS_SERVER_CONNECTION_PORT;
+    
+    // The visible username of the client.
+    QString username = QString();
+
+    // The internal Teamspeak client- and channel-id.
+    // The TS3VideoClient will automatically join the channel.
+    quint64 ts3clientId = 0;
+    quint64 ts3channelId = 0;
+    
+    // The camera's device ID to stream video.
+    QString cameraDeviceId = QString();
   };
 
+public:
   ClientAppLogic(const Options &opts, QObject *parent);
   ~ClientAppLogic();
   bool init();
-
   TS3VideoClient& ts3client();
 
 private slots:

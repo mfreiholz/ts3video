@@ -13,6 +13,8 @@
 
 #include "qcorserver.h"
 
+#include "ts3video.h"
+
 #include "mediasockethandler.h"
 #include "websocketstatusserver.h"
 
@@ -28,7 +30,11 @@ class TS3VideoServerOptions
 public:
   // The address and port on which the server listens for new connections.
   QHostAddress address = QHostAddress::Any;
-  quint16 port = 6000;
+  quint16 port = IFVS_SERVER_CONNECTION_PORT;
+
+  // The address and port of server's status and control WebSocket.
+  QHostAddress wsStatusAddress = QHostAddress::LocalHost;
+  quint16 wsStatusPort = IFVS_SERVER_WSSTATUS_PORT;
 
   // The maximum number of parallel client connections.
   int connectionLimit = std::numeric_limits<int>::max();
@@ -86,7 +92,7 @@ private:
   QHash<QString, int> _tokens; ///< Maps auth-tokens to client-ids.
 
   // Web-socket status server.
-  WebSocketStatusServer _wsStatusServer;
+  WebSocketStatusServer *_wsStatusServer;
 
   // Network usages (COR, Media, WebSocket, ...)
   NetworkUsageEntity _networkUsageMediaSocket;
