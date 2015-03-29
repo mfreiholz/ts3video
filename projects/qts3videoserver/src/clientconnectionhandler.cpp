@@ -43,9 +43,25 @@ ClientConnectionHandler::ClientConnectionHandler(TS3VideoServer *server, QCorCon
   connect(_connection, &QCorConnection::newIncomingRequest, this, &ClientConnectionHandler::onNewIncomingRequest);
   onStateChanged(QAbstractSocket::ConnectedState);
 
-  // Initialize connection timeout timer.
+  // Authentication timeout.
+  // Close connection if it doesn't authentication within X seconds.
+  QTimer::singleShot(5000, [this] () {
+    if (!_authenticated) {
+      HL_WARN(HL, QString("Client did not authenticate within X seconds. Dropping connection...").toStdString());
+      QCorFrame req;
+      QJsonObject params;
+      params["code"] = 1;
+      params["message"] = "Authentication timed out.";
+      req.setData(JsonProtocolHelper::createJsonRequest("error", params));
+      auto reply = _connection->sendRequest(req);
+      QObject::connect(reply, &QCorReply::finished, reply, &QCorReply::deleteLater);
+      QMetaObject::invokeMethod(_connection, "disconnectFromHost", Qt::QueuedConnection);
+    }
+  });
+
+  // Connection timeout.
   _connectionTimeoutTimer.start(20000);
-  QObject::connect(&_connectionTimeoutTimer, &QTimer::timeout, [this]() {
+  QObject::connect(&_connectionTimeoutTimer, &QTimer::timeout, [this] () {
     HL_WARN(HL, QString("Client connection timed out. No heartbeat since 20 seconds.").toStdString());
     QCorFrame req;
     QJsonObject params;
