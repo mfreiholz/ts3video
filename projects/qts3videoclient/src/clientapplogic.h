@@ -25,7 +25,7 @@ public:
   {
   public:
     Options();
-    QHostAddress serverAddress;
+    QString serverAddress;
     quint16 serverPort;
     quint64 ts3clientId;
     quint64 ts3channelId;
@@ -35,6 +35,8 @@ public:
 
   ClientAppLogic(const Options &opts, QObject *parent);
   ~ClientAppLogic();
+  bool init();
+
   TS3VideoClient& ts3client();
 
 private slots:

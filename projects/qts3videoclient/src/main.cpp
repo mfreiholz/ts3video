@@ -479,7 +479,7 @@ int runClientAppLogic(QApplication &a)
   // The values from dialog will modify the ClientAppLogic::Options.
   if (true) {
     StartupDialogValues v;
-    v.serverAddress = opts.serverAddress.toString();
+    v.serverAddress = opts.serverAddress;
     v.serverPort = opts.serverPort;
     v.username = opts.username;
     StartupDialog dialog(nullptr);
@@ -495,8 +495,21 @@ int runClientAppLogic(QApplication &a)
     opts.serverPort = v.serverPort;
   }
 
+  HL_INFO(HL, QString("Client startup (version=%1)").arg(a.applicationVersion()).toStdString());
+  HL_INFO(HL, QString("Address: %1").arg(opts.serverAddress).toStdString());
+  HL_INFO(HL, QString("Port: %1").arg(opts.serverPort).toStdString());
+  HL_INFO(HL, QString("Username: %1").arg(opts.username).toStdString());
+  HL_INFO(HL, QString("TS3 channel id: %1").arg(opts.ts3channelId).toStdString());
+  HL_INFO(HL, QString("TS3 client id: %1").arg(opts.ts3clientId).toStdString());
+  HL_INFO(HL, QString("Camera device ID: %1").arg(opts.cameraDeviceId).toStdString());
+
   ClientAppLogic logic(opts, nullptr);
-  return a.exec();
+  if (!logic.init()) {
+    return 1;
+  }
+  auto returnCode = a.exec();
+  HL_INFO(HL, QString("Client shutdown (code=%1)").arg(returnCode).toStdString());
+  return returnCode;
 }
 
 int main(int argc, char *argv[])

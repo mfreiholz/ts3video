@@ -7,6 +7,7 @@
 #include <QMessageBox>
 #include <QProgressDialog>
 #include <QCameraInfo>
+#include <QHostInfo>
 
 #include "humblelogging/api.h"
 
@@ -47,8 +48,6 @@ ClientAppLogic::ClientAppLogic(const Options &opts, QObject *parent) :
   _cameraWidget(nullptr),
   _progressBox(nullptr)
 {
-  showProgress(tr("Connecting to server %1:%2").arg(_opts.serverAddress.toString()).arg(_opts.serverPort));
-  _ts3vc.connectToHost(_opts.serverAddress, _opts.serverPort);
   connect(&_ts3vc, &TS3VideoClient::connected, this, &ClientAppLogic::onConnected);
   connect(&_ts3vc, &TS3VideoClient::disconnected, this, &ClientAppLogic::onDisconnected);
   connect(&_ts3vc, &TS3VideoClient::error, this, &ClientAppLogic::onError);
@@ -63,15 +62,38 @@ ClientAppLogic::ClientAppLogic(const Options &opts, QObject *parent) :
 ClientAppLogic::~ClientAppLogic()
 {
   hideProgress();
-
   if (_view) {
     delete _view;
   }
-
   if (_cameraWidget) {
     _cameraWidget->close();
     delete _cameraWidget;
   }
+}
+
+bool ClientAppLogic::init()
+{
+  // DNS lookup in case of named-address.
+  HL_DEBUG(HL, QString("Lookup server address (address=%1)").arg(_opts.serverAddress).toStdString());
+  auto address = QHostAddress(_opts.serverAddress);
+  if (address.isNull()) {
+    auto hostInfo = QHostInfo::fromName(_opts.serverAddress);
+    if (hostInfo.addresses().size() == 0) {
+      HL_ERROR(HL, QString("Can not resolve server address (address=%1)").arg(_opts.serverAddress).toStdString());
+      return false;
+    }
+    address = hostInfo.addresses().first();
+  }
+  if (address.isNull()) {
+    HL_ERROR(HL, QString("Invalid server address (address=%1)").arg(_opts.serverAddress).toStdString());
+    return false;
+  }
+  HL_INFO(HL, QString("Resolved server address (name=%1; ip=%2)").arg(_opts.serverAddress).arg(address.toString()).toStdString());
+
+  // Connect to remote server.
+  showProgress(tr("Connecting to server %1:%2 (IP=%3)").arg(_opts.serverAddress).arg(_opts.serverPort).arg(address.toString()));
+  _ts3vc.connectToHost(address, _opts.serverPort);
+  return true;
 }
 
 TS3VideoClient& ClientAppLogic::ts3client()
