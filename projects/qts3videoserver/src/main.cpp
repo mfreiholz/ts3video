@@ -25,15 +25,13 @@ int updateOptionsByConfig(TS3VideoServerOptions &opts, const QString &filePath)
     return 2;
   }
   QSettings conf(filePath, QSettings::IniFormat);
-  if (conf.contains("default")) {
-    conf.beginGroup("default");
-    opts.address = conf.value("address", "0.0.0.0").toString();
-    opts.port = conf.value("port", opts.port).toUInt();
-    opts.connectionLimit = conf.value("connectionlimit", opts.connectionLimit).toInt();
-    opts.bandwidthReadLimit = conf.value("bandwidthreadlimit", opts.bandwidthReadLimit).toULongLong();
-    opts.bandwidthWriteLimit = conf.value("bandwidthwritelimit", opts.bandwidthWriteLimit).toULongLong();
-    conf.endGroup();
-  }
+  conf.beginGroup("default");
+  opts.address = conf.value("address", opts.address.toString()).toString();
+  opts.port = conf.value("port", opts.port).toUInt();
+  opts.connectionLimit = conf.value("connectionlimit", opts.connectionLimit).toInt();
+  opts.bandwidthReadLimit = conf.value("bandwidthreadlimit", opts.bandwidthReadLimit).toULongLong();
+  opts.bandwidthWriteLimit = conf.value("bandwidthwritelimit", opts.bandwidthWriteLimit).toULongLong();
+  conf.endGroup();
   return 0;
 }
 
