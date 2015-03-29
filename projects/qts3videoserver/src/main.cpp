@@ -1,4 +1,6 @@
 #include <QCoreApplication>
+#include <QSettings>
+#include <QFile>
 
 #include "humblelogging/api.h"
 
@@ -8,6 +10,42 @@
 #include "ts3videoserver.h"
 
 HUMBLE_LOGGER(HL, "server");
+
+/*!
+  \return 0 = OK;
+ */
+int updateOptionsByConfig(TS3VideoServerOptions &opts, const QString &filePath)
+{
+  if (filePath.isEmpty()) {
+    HL_WARN(HL, QString("No config file specified").toStdString());
+    return 1;
+  }
+  if (!QFile::exists(filePath)) {
+    HL_WARN(HL, QString("Config file does not exist (path=%1)").arg(filePath).toStdString());
+    return 2;
+  }
+  QSettings conf(filePath, QSettings::IniFormat);
+  if (conf.contains("default")) {
+    conf.beginGroup("default");
+    opts.address = conf.value("address", "0.0.0.0").toString();
+    opts.port = conf.value("port", opts.port).toUInt();
+    opts.connectionLimit = conf.value("connectionlimit", opts.connectionLimit).toInt();
+    opts.bandwidthReadLimit = conf.value("bandwidthreadlimit", opts.bandwidthReadLimit).toULongLong();
+    opts.bandwidthWriteLimit = conf.value("bandwidthwritelimit", opts.bandwidthWriteLimit).toULongLong();
+    conf.endGroup();
+  }
+  return 0;
+}
+
+/*!
+  Updates server options by license.
+  \return 0 = OK; 1 = No valid license; 
+ */
+bool updateOptionsByLicense(TS3VideoServerOptions &opts)
+{
+  // Load settings from license.
+  return 0;
+}
 
 int main(int argc, char *argv[])
 {
@@ -25,13 +63,23 @@ int main(int argc, char *argv[])
 
   // Initialize server options (from ARGS).
   TS3VideoServerOptions opts;
+  opts.address = ELWS::getArgsValue("--address", opts.address.toString()).toString();
   opts.port = ELWS::getArgsValue("--server-port", opts.port).toUInt();
   opts.connectionLimit = ELWS::getArgsValue("--connection-limit", opts.connectionLimit).toInt();
   opts.bandwidthReadLimit = ELWS::getArgsValue("--bandwidth-read-limit", opts.bandwidthReadLimit).toDouble();
   opts.bandwidthWriteLimit = ELWS::getArgsValue("--bandwidth-write-limit", opts.bandwidthWriteLimit).toDouble();
 
-  // TODO Override server options by license.
-  // ...
+  // Override server options by config.
+  auto configFilePath = ELWS::getArgsValue("--config").toString();
+  if (!configFilePath.isEmpty() && updateOptionsByConfig(opts, configFilePath) != 0) {
+    return 1;
+  }
+
+  // Override server options by license.
+  if (updateOptionsByLicense(opts) != 0) {
+    HL_FATAL(HL, QString("No valid license!").toStdString());
+    return 7353;
+  }
   
   HL_INFO(HL, QString("Server startup (version=%1)").arg(a.applicationVersion()).toStdString());
   HL_INFO(HL, QString("Connection limit: %1").arg(opts.connectionLimit).toStdString());
