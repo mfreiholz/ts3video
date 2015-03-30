@@ -5,6 +5,7 @@
 #include <QVariant>
 #include <QRect>
 #include <QPoint>
+#include <QHostAddress>
 
 class ELWS
 {
@@ -21,6 +22,8 @@ public:
   static QString humanReadableBandwidth(quint64 bytesPerSecond);
 
   static bool isVersionSupported(const QString &version, const QString &supportedVersions);
+
+  static QHostAddress getQHostAddressFromString(const QString &s);
 };
 
 #endif

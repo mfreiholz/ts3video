@@ -26,8 +26,10 @@ int updateOptionsByConfig(TS3VideoServerOptions &opts, const QString &filePath)
   }
   QSettings conf(filePath, QSettings::IniFormat);
   conf.beginGroup("default");
-  opts.address = conf.value("address", opts.address.toString()).toString();
+  opts.address = ELWS::getQHostAddressFromString(conf.value("address", opts.address.toString()).toString());
   opts.port = conf.value("port", opts.port).toUInt();
+  opts.wsStatusAddress = ELWS::getQHostAddressFromString(conf.value("wsstatus-address", opts.wsStatusAddress.toString()).toString());
+  opts.wsStatusPort = conf.value("wsstatus-port", opts.wsStatusPort).toUInt();
   opts.connectionLimit = conf.value("connectionlimit", opts.connectionLimit).toInt();
   opts.bandwidthReadLimit = conf.value("bandwidthreadlimit", opts.bandwidthReadLimit).toULongLong();
   opts.bandwidthWriteLimit = conf.value("bandwidthwritelimit", opts.bandwidthWriteLimit).toULongLong();
@@ -63,8 +65,10 @@ int main(int argc, char *argv[])
 
   // Initialize server options (from ARGS).
   TS3VideoServerOptions opts;
-  opts.address = ELWS::getArgsValue("--address", opts.address.toString()).toString();
-  opts.port = ELWS::getArgsValue("--server-port", opts.port).toUInt();
+  opts.address = ELWS::getQHostAddressFromString(ELWS::getArgsValue("--address", opts.address.toString()).toString());
+  opts.port = ELWS::getArgsValue("--port", opts.port).toUInt();
+  opts.wsStatusAddress = ELWS::getQHostAddressFromString(ELWS::getArgsValue("--wsstatus-address", opts.wsStatusAddress.toString()).toString());
+  opts.wsStatusPort = ELWS::getArgsValue("--wsstatus-port", opts.wsStatusPort).toUInt();
   opts.connectionLimit = ELWS::getArgsValue("--connection-limit", opts.connectionLimit).toInt();
   opts.bandwidthReadLimit = ELWS::getArgsValue("--bandwidth-read-limit", opts.bandwidthReadLimit).toULongLong();
   opts.bandwidthWriteLimit = ELWS::getArgsValue("--bandwidth-write-limit", opts.bandwidthWriteLimit).toULongLong();

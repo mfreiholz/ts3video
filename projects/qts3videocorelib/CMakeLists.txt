@@ -5,6 +5,7 @@ cmake_policy(SET CMP0020 NEW)
 # Qt5
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Gui REQUIRED)
+find_package(Qt5Network REQUIRED)
 
 # Sources
 set(headers
@@ -71,4 +72,5 @@ target_link_libraries(
   qts3videocorelib
   Qt5::Core
   Qt5::Gui
+  Qt5::Network
 )

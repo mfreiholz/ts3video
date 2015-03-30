@@ -39,7 +39,7 @@ ClientAppLogic::ClientAppLogic(const Options &opts, QWidget *parent, Qt::WindowF
 {
   d->opts = opts;
 
-  // Progress dialog.
+  // Global progress dialog.
   d->progressDialog = new QProgressDialog(this, 0);
   d->progressDialog->setCancelButton(nullptr);
   d->progressDialog->setAutoClose(false);
@@ -175,7 +175,7 @@ void ClientAppLogic::onDisconnected()
 void ClientAppLogic::onError(QAbstractSocket::SocketError socketError)
 {
   HL_INFO(HL, QString("Socket error (error=%1; message=%2)").arg(socketError).arg(d->ts3vc.socket()->errorString()).toStdString());
-  showError(tr("Network socket error."), d->ts3vc.socket()->errorString());
+  showError(tr("Network socket error."), d->ts3vc.socket()->errorString(), true);
 }
 
 void ClientAppLogic::onServerError(int code, const QString &message)

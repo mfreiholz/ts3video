@@ -145,3 +145,11 @@ bool ELWS::isVersionSupported(const QString &version, const QString &supportedVe
   }
   return false;
 }
+
+QHostAddress ELWS::getQHostAddressFromString(const QString &s)
+{
+  if (s.compare("any", Qt::CaseInsensitive) == 0) {
+    return QHostAddress(QHostAddress::Any);
+  }
+  return QHostAddress(s);
+}
