@@ -36,6 +36,7 @@ TileViewWidget::TileViewWidget(QWidget *parent, Qt::WindowFlags f) :
   auto pal = palette();
   pal.setColor(QPalette::Background, __darkBackgroundColor);
   setPalette(pal);
+  setAutoFillBackground(true);
 
   d->tilesCurrentSize.scale(200, 200, Qt::KeepAspectRatio);
 

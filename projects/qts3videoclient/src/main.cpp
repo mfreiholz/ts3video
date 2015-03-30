@@ -498,10 +498,11 @@ int runClientAppLogic(QApplication &a)
   HL_INFO(HL, QString("TS3 client id: %1").arg(opts.ts3clientId).toStdString());
   HL_INFO(HL, QString("Camera device ID: %1").arg(opts.cameraDeviceId).toStdString());
 
-  ClientAppLogic logic(opts, nullptr);
-  if (!logic.init()) {
-    return 1;
-  }
+  ClientAppLogic win(opts, nullptr, 0);
+  win.resize(600, 400);
+  win.show();
+  win.init();
+
   auto returnCode = a.exec();
   HL_INFO(HL, QString("Client shutdown (code=%1)").arg(returnCode).toStdString());
   return returnCode;

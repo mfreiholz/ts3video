@@ -12,6 +12,7 @@ find_package(Qt5Network REQUIRED)
 find_package(Qt5Multimedia REQUIRED)
 find_package(Qt5MultimediaWidgets REQUIRED)
 find_package(Qt5OpenGL REQUIRED)
+find_package(Qt5Concurrent REQUIRED)
 
 # Sources
 set(headers
@@ -27,6 +28,7 @@ set(qheaders
   src/ts3videoclient.h
   src/ts3videoclient_p.h
   src/clientapplogic.h
+  src/clientapplogic_p.h
   src/clientcameravideowidget.h
   src/udpvideoframedecoder.h
   src/remoteclientvideowidget.h
@@ -131,6 +133,7 @@ target_link_libraries(
   Qt5::Multimedia
   Qt5::MultimediaWidgets
   Qt5::OpenGL
+  Qt5::Concurrent
   qcorlib
   qts3videocorelib
   medlib

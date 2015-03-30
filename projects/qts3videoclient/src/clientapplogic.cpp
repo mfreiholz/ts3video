@@ -1,5 +1,6 @@
-#include "clientapplogic.h"
+#include "clientapplogic_p.h"
 
+#include <QSettings>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
@@ -8,6 +9,9 @@
 #include <QProgressDialog>
 #include <QCameraInfo>
 #include <QHostInfo>
+#include <QtConcurrent>
+#include <QFuture>
+#include <QFutureWatcher>
 
 #include "humblelogging/api.h"
 
@@ -29,74 +33,91 @@ HUMBLE_LOGGER(HL, "client.logic");
 
 ///////////////////////////////////////////////////////////////////////
 
-ClientAppLogic::ClientAppLogic(const Options &opts, QObject *parent) :
-  QObject(parent),
-  _opts(opts),
-  _view(nullptr),
-  _cameraWidget(nullptr),
-  _progressBox(nullptr)
+ClientAppLogic::ClientAppLogic(const Options &opts, QWidget *parent, Qt::WindowFlags flags) :
+  QMainWindow(parent, flags),
+  d(new ClientAppLogicPrivate(this))
 {
-  connect(&_ts3vc, &TS3VideoClient::connected, this, &ClientAppLogic::onConnected);
-  connect(&_ts3vc, &TS3VideoClient::disconnected, this, &ClientAppLogic::onDisconnected);
-  connect(&_ts3vc, &TS3VideoClient::error, this, &ClientAppLogic::onError);
-  connect(&_ts3vc, &TS3VideoClient::serverError, this, &ClientAppLogic::onServerError);
-  connect(&_ts3vc, &TS3VideoClient::clientJoinedChannel, this, &ClientAppLogic::onClientJoinedChannel);
-  connect(&_ts3vc, &TS3VideoClient::clientLeftChannel, this, &ClientAppLogic::onClientLeftChannel);
-  connect(&_ts3vc, &TS3VideoClient::clientDisconnected, this, &ClientAppLogic::onClientDisconnected);
-  connect(&_ts3vc, &TS3VideoClient::newVideoFrame, this, &ClientAppLogic::onNewVideoFrame);
-  connect(&_ts3vc, &TS3VideoClient::networkUsageUpdated, this, &ClientAppLogic::onNetworkUsageUpdated);
+  d->opts = opts;
+
+  // Progress dialog.
+  d->progressDialog = new QProgressDialog(this, 0);
+  d->progressDialog->setCancelButton(nullptr);
+  d->progressDialog->setAutoClose(false);
+  d->progressDialog->setAutoReset(false);
+  d->progressDialog->setRange(0, 0);
+  d->progressDialog->setModal(true);
+  d->progressDialog->setVisible(false);
+
+  // Network connection events.
+  connect(&d->ts3vc, &TS3VideoClient::connected, this, &ClientAppLogic::onConnected);
+  connect(&d->ts3vc, &TS3VideoClient::disconnected, this, &ClientAppLogic::onDisconnected);
+  connect(&d->ts3vc, &TS3VideoClient::error, this, &ClientAppLogic::onError);
+  connect(&d->ts3vc, &TS3VideoClient::serverError, this, &ClientAppLogic::onServerError);
+  connect(&d->ts3vc, &TS3VideoClient::clientJoinedChannel, this, &ClientAppLogic::onClientJoinedChannel);
+  connect(&d->ts3vc, &TS3VideoClient::clientLeftChannel, this, &ClientAppLogic::onClientLeftChannel);
+  connect(&d->ts3vc, &TS3VideoClient::clientDisconnected, this, &ClientAppLogic::onClientDisconnected);
+  connect(&d->ts3vc, &TS3VideoClient::newVideoFrame, this, &ClientAppLogic::onNewVideoFrame);
+  connect(&d->ts3vc, &TS3VideoClient::networkUsageUpdated, this, &ClientAppLogic::onNetworkUsageUpdated);
 }
 
 ClientAppLogic::~ClientAppLogic()
 {
   hideProgress();
-  if (_view) {
-    delete _view;
+  if (d->view) {
+    delete d->view;
   }
-  if (_cameraWidget) {
-    _cameraWidget->close();
-    delete _cameraWidget;
+  if (d->cameraWidget) {
+    d->cameraWidget->close();
+    delete d->cameraWidget;
   }
 }
 
-bool ClientAppLogic::init()
+void ClientAppLogic::init()
 {
-  // DNS lookup in case of named-address.
-  HL_DEBUG(HL, QString("Lookup server address (address=%1)").arg(_opts.serverAddress).toStdString());
-  auto address = QHostAddress(_opts.serverAddress);
-  if (address.isNull()) {
-    auto hostInfo = QHostInfo::fromName(_opts.serverAddress);
-    if (hostInfo.addresses().size() == 0) {
-      HL_ERROR(HL, QString("Can not resolve server address (address=%1)").arg(_opts.serverAddress).toStdString());
-      return false;
-    }
-    address = hostInfo.addresses().first();
+  // If the address is already an IP, we don't need a lookup.
+  auto address = QHostAddress(d->opts.serverAddress);
+  if (!address.isNull()) {
+    showProgress(tr("Connecting to server %1:%2 (address=%3)").arg(d->opts.serverAddress).arg(d->opts.serverPort).arg(address.toString()));
+    d->ts3vc.connectToHost(address, d->opts.serverPort);
+    return;
   }
-  if (address.isNull()) {
-    HL_ERROR(HL, QString("Invalid server address (address=%1)").arg(_opts.serverAddress).toStdString());
-    return false;
-  }
-  HL_INFO(HL, QString("Resolved server address (name=%1; ip=%2)").arg(_opts.serverAddress).arg(address.toString()).toStdString());
 
-  // Connect to remote server.
-  showProgress(tr("Connecting to server %1:%2 (IP=%3)").arg(_opts.serverAddress).arg(_opts.serverPort).arg(address.toString()));
-  _ts3vc.connectToHost(address, _opts.serverPort);
-  return true;
+  // Async DNS lookup.
+  showProgress(tr("DNS lookup server %1").arg(d->opts.serverAddress));
+  auto watcher = new QFutureWatcher<QHostInfo>(this);
+  auto future = QtConcurrent::run([this] () -> QHostInfo
+  {
+      auto hostInfo = QHostInfo::fromName(d->opts.serverAddress);
+      return hostInfo;
+  });
+  QObject::connect(watcher, &QFutureWatcher<QHostInfo>::finished, [this, watcher] ()
+  {
+    watcher->deleteLater();
+    auto hostInfo = watcher->future().result();
+    if (hostInfo.error() != QHostInfo::NoError || hostInfo.addresses().isEmpty()) {
+      showError(tr("DNS lookup failed"), hostInfo.errorString(), true);
+      return;
+    }
+    auto address = hostInfo.addresses().first();
+    showProgress(tr("Connecting to server %1:%2 (address=%3)").arg(d->opts.serverAddress).arg(d->opts.serverPort).arg(address.toString()));
+    d->ts3vc.connectToHost(address, d->opts.serverPort);
+  });
+  watcher->setFuture(future);
 }
 
 TS3VideoClient& ClientAppLogic::ts3client()
 {
-  return _ts3vc;
+  return d->ts3vc;
 }
 
 void ClientAppLogic::onConnected()
 {
-  auto ts3clientId = _opts.ts3clientId;
-  auto ts3channelId = _opts.ts3channelId;
+  auto ts3clientId = d->opts.ts3clientId;
+  auto ts3channelId = d->opts.ts3channelId;
 
   // Authenticate.
   showProgress(tr("Authenticating..."));
-  auto reply = _ts3vc.auth(_opts.username, _opts.password);
+  auto reply = d->ts3vc.auth(d->opts.username, d->opts.password);
   QObject::connect(reply, &QCorReply::finished, [this, reply, ts3clientId, ts3channelId] () {
     HL_DEBUG(HL, QString("Auth answer: %1").arg(QString(reply->frame()->data())).toStdString());
     reply->deleteLater();
@@ -113,7 +134,7 @@ void ClientAppLogic::onConnected()
 
     // Join channel.
     showProgress(tr("Joining channel..."));
-    auto reply2 = _ts3vc.joinChannel(ts3channelId);
+    auto reply2 = d->ts3vc.joinChannel(ts3channelId);
     QObject::connect(reply2, &QCorReply::finished, [this, reply2] () {
       HL_DEBUG(HL, QString("Join channel answer: %1").arg(QString(reply2->frame()->data())).toStdString());
       reply2->deleteLater();
@@ -153,8 +174,8 @@ void ClientAppLogic::onDisconnected()
 
 void ClientAppLogic::onError(QAbstractSocket::SocketError socketError)
 {
-  HL_INFO(HL, QString("Socket error (error=%1; message=%2)").arg(socketError).arg(_ts3vc.socket()->errorString()).toStdString());
-  showError(tr("Network socket error."), _ts3vc.socket()->errorString());
+  HL_INFO(HL, QString("Socket error (error=%1; message=%2)").arg(socketError).arg(d->ts3vc.socket()->errorString()).toStdString());
+  showError(tr("Network socket error."), d->ts3vc.socket()->errorString());
 }
 
 void ClientAppLogic::onServerError(int code, const QString &message)
@@ -166,26 +187,26 @@ void ClientAppLogic::onServerError(int code, const QString &message)
 void ClientAppLogic::onClientJoinedChannel(const ClientEntity &client, const ChannelEntity &channel)
 {
   HL_INFO(HL, QString("Client joined channel (client-id=%1; channel-id=%2)").arg(client.id).arg(channel.id).toStdString());
-  if (client.id != _ts3vc.clientEntity().id) {
-    _view->addClient(client, channel);
+  if (client.id != d->ts3vc.clientEntity().id) {
+    d->view->addClient(client, channel);
   }
 }
 
 void ClientAppLogic::onClientLeftChannel(const ClientEntity &client, const ChannelEntity &channel)
 {
   HL_INFO(HL, QString("Client left channel (client-id=%1; channel-id=%2)").arg(client.id).arg(channel.id).toStdString());
-  _view->removeClient(client, channel);
+  d->view->removeClient(client, channel);
 }
 
 void ClientAppLogic::onClientDisconnected(const ClientEntity &client)
 {
   HL_INFO(HL, QString("Client disconnected (client-id=%1)").arg(client.id).toStdString());
-  _view->removeClient(client, ChannelEntity());
+  d->view->removeClient(client, ChannelEntity());
 }
 
 void ClientAppLogic::onNewVideoFrame(YuvFrameRefPtr frame, int senderId)
 {
-  _view->updateClientVideo(frame, senderId);
+  d->view->updateClientVideo(frame, senderId);
 }
 
 void ClientAppLogic::onNetworkUsageUpdated(const NetworkUsageEntity &networkUsage)
@@ -193,10 +214,10 @@ void ClientAppLogic::onNetworkUsageUpdated(const NetworkUsageEntity &networkUsag
   TileViewWidget *tileView = nullptr;
   QWidget *w = nullptr;
 
-  if (_view && (tileView = dynamic_cast<TileViewWidget*>(_view)) != nullptr) {
+  if (d->view && (tileView = dynamic_cast<TileViewWidget*>(d->view)) != nullptr) {
     tileView->updateNetworkUsage(networkUsage);
   }
-  if (_view && (w = dynamic_cast<QWidget*>(_view)) != nullptr) {
+  if (d->view && (w = dynamic_cast<QWidget*>(d->view)) != nullptr) {
     auto s = QString("Received=%1; Sent=%2; D=%3; U=%4")
       .arg(ELWS::humanReadableSize(networkUsage.bytesRead))
       .arg(ELWS::humanReadableSize(networkUsage.bytesWritten))
@@ -206,53 +227,57 @@ void ClientAppLogic::onNetworkUsageUpdated(const NetworkUsageEntity &networkUsag
   }
 }
 
+void ClientAppLogic::showEvent(QShowEvent *e)
+{
+  QSettings settings;
+  restoreGeometry(settings.value("UI/ClientApp-Geometry").toByteArray());
+}
+
+void ClientAppLogic::closeEvent(QCloseEvent *e)
+{
+  QSettings settings;
+  settings.setValue("UI/ClientApp-Geometry", saveGeometry());
+}
+
 void ClientAppLogic::initGui()
 {
-  //_view = new HangoutViewWidget(nullptr);
-  _view = new TileViewWidget(nullptr);
-  _view->setCameraWidget(createCameraWidget());
+  auto viewWidget = new TileViewWidget(this);
+  d->view = viewWidget;
+  d->view->setCameraWidget(createCameraWidget());
+  setCentralWidget(viewWidget);
 }
 
 QWidget* ClientAppLogic::createCameraWidget()
 {
   auto cameraInfo = QCameraInfo::defaultCamera();
   foreach (auto ci, QCameraInfo::availableCameras()) {
-    if (ci.deviceName() == _opts.cameraDeviceId) {
+    if (ci.deviceName() == d->opts.cameraDeviceId) {
       cameraInfo = ci;
       break;
     }
   }
-  _cameraWidget = new ClientCameraVideoWidget(&_ts3vc, cameraInfo, nullptr);
-  return _cameraWidget;
+  d->cameraWidget = new ClientCameraVideoWidget(&d->ts3vc, cameraInfo, nullptr);
+  return d->cameraWidget;
 }
 
 void ClientAppLogic::showProgress(const QString &text)
 {
-  if (!_progressBox) {
-    _progressBox = new QProgressDialog(nullptr);
-    _progressBox->setMinimumWidth(400);
-    _progressBox->setWindowFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
-    _progressBox->setCancelButton(nullptr);
-    _progressBox->setAutoClose(false);
-    _progressBox->setAutoReset(false);
-    _progressBox->setRange(0, 0);
-  }
-  _progressBox->setLabelText(text);
-  _progressBox->show();
+  d->progressDialog->setLabelText(text);
+  d->progressDialog->setVisible(true);
 }
 
 void ClientAppLogic::hideProgress()
 {
-  if (_progressBox) {
-    _progressBox->hide();
-  }
+  d->progressDialog->setLabelText(QString());
+  d->progressDialog->setVisible(false);
+  d->progressDialog->close();
 }
 
-void ClientAppLogic::showError(const QString &shortText, const QString &longText)
+void ClientAppLogic::showError(const QString &shortText, const QString &longText, bool exitApp)
 {
   hideProgress();
 
-  QMessageBox box(qApp->activeWindow());
+  QMessageBox box(this);
   box.setIcon(QMessageBox::Critical);
   box.addButton(QMessageBox::Ok);
   box.setText(shortText);
@@ -260,5 +285,8 @@ void ClientAppLogic::showError(const QString &shortText, const QString &longText
   box.setMinimumWidth(400);
   box.exec();
 
-  qApp->quit();
+  if (exitApp) {
+    close();
+    qApp->quit();
+  }
 }

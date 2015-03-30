@@ -29,12 +29,13 @@ StartupDialog::StartupDialog(QWidget *parent) :
   d->ui.passwordLineEdit->clear();
   d->ui.serverAddress->clear();
   d->ui.serverPort->clear();
-  d->ui.cameraComboBox->addItem(tr("No camera"));
 
   auto cameraInfos = QCameraInfo::availableCameras();
   foreach (auto ci, cameraInfos) {
     d->ui.cameraComboBox->addItem(ci.description(), ci.deviceName());
   }
+  d->ui.cameraComboBox->addItem(tr("No camera"));
+  
   d->validateUi();
   adjustSize();
 

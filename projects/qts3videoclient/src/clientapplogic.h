@@ -1,10 +1,11 @@
 #ifndef CLIENTAPPLOGIC_H
 #define CLIENTAPPLOGIC_H
 
-#include <QObject>
+#include <QScopedPointer>
 #include <QString>
 #include <QHash>
 #include <QHostAddress>
+#include <QMainWindow>
 
 #include "ts3video.h"
 #include "yuvframe.h"
@@ -20,9 +21,12 @@ class RemoteClientVideoWidget;
 /*!
   Logic to control the GUI and connection on client-side.
  */
-class ClientAppLogic : public QObject
+class ClientAppLogicPrivate;
+class ClientAppLogic : public QMainWindow
 {
   Q_OBJECT
+  friend class ClientAppLogicPrivate;
+  QScopedPointer<ClientAppLogicPrivate> d;
 
 public:
   class Options
@@ -47,10 +51,12 @@ public:
   };
 
 public:
-  ClientAppLogic(const Options &opts, QObject *parent);
+  ClientAppLogic(const Options &opts, QWidget *parent, Qt::WindowFlags flags);
   ~ClientAppLogic();
-  bool init();
   TS3VideoClient& ts3client();
+
+public slots:
+  void init();
 
 private slots:
   void onConnected();
@@ -64,19 +70,13 @@ private slots:
   void onNetworkUsageUpdated(const NetworkUsageEntity &networkUsage);
 
 protected:
+  virtual void showEvent(QShowEvent *e);
+  virtual void closeEvent(QCloseEvent *e);
   void initGui();
   QWidget* createCameraWidget();
   void showProgress(const QString &text);
   void hideProgress();
-  void showError(const QString &shortText, const QString &longText = QString());
-
-private:
-  Options _opts;
-  TS3VideoClient _ts3vc;
-
-  ViewBase *_view;
-  ClientCameraVideoWidget *_cameraWidget; ///< Local user's camera widget.
-  QProgressDialog *_progressBox; ///< Global progress dialog.
+  void showError(const QString &shortText, const QString &longText = QString(), bool exitApp = false);
 };
 
 #endif
