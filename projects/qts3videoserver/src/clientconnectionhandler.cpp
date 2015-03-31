@@ -178,7 +178,7 @@ void ClientConnectionHandler::onNewIncomingRequest(QCorFrameRefPtr frame)
     if (!ELWS::isVersionSupported(version, IFVS_SERVER_SUPPORTED_CLIENT_VERSIONS)) {
       QCorFrame res;
       res.initResponse(*frame.data());
-      res.setData(JsonProtocolHelper::createJsonResponseError(3, QString("Incompatible version (client=%1; server=%2)").arg(version).arg(TS3VIDEOSERVER_VERSION)));
+      res.setData(JsonProtocolHelper::createJsonResponseError(3, QString("Incompatible version (client=%1; server=%2)").arg(version).arg(IFVS_SOFTWARE_VERSION)));
       _connection->sendResponse(res);
       QMetaObject::invokeMethod(_connection, "disconnectFromHost", Qt::QueuedConnection);
       return;

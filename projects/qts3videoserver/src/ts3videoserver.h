@@ -1,8 +1,6 @@
 #ifndef TS3VIDEOSERVER_H
 #define TS3VIDEOSERVER_H
 
-#define TS3VIDEOSERVER_VERSION 1
-
 #include <limits.h>
 
 #include <QObject>
