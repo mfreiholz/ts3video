@@ -43,7 +43,7 @@ bool TS3VideoServer::init()
     HL_ERROR(HL, QString("Can not bind to TCP port (port=%1)").arg(port).toStdString());
     return false;
   }
-  HL_INFO(HL, QString("Listening for new client connections (protocol=TCP; address=%1; port=%2)").arg(_opts.address.toString()).arg(port).toStdString());
+  HL_INFO(HL, QString("Listening for client connections (protocol=TCP; address=%1; port=%2)").arg(_opts.address.toString()).arg(port).toStdString());
   // Accepting new connections.
   connect(&_corServer, &QCorServer::newConnection, [this](QCorConnection *connection) {
     auto conn = new ClientConnectionHandler(this, connection, this);
@@ -89,8 +89,10 @@ bool TS3VideoServer::init()
   wsopts.port = _opts.wsStatusPort;
   _wsStatusServer = new WebSocketStatusServer(wsopts, this);
   if (!_wsStatusServer->init()) {
+    HL_ERROR(HL, QString("Can not bind to TCP port (port=%1)").arg(wsopts.port).toStdString());
     return false;
   }
+  HL_INFO(HL, QString("Listening for web-socket status connections (protocol=TCP; address=%1; port=%2)").arg(wsopts.address.toString()).arg(wsopts.port).toStdString());
 
   return true;
 }

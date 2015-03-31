@@ -43,10 +43,8 @@ WebSocketStatusServer::~WebSocketStatusServer()
 bool WebSocketStatusServer::init()
 {
   if (!_wsServer->listen(_opts.address, _opts.port)) {
-    HL_ERROR(HL, QString("Can not bind to TCP port (port=%1)").arg(6002).toStdString());
     return false;
   }
-  HL_INFO(HL, QString("Listening for new client status web-socket connections (protocol=TCP; address=%1; port=%2)").arg(_opts.address.toString()).arg(_opts.port).toStdString());
   _lastUpdateTime.start();
 
   // DEV Run a timer to send periodical updates as long as we can't do it by events from server-object.
