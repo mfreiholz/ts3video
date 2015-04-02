@@ -18,11 +18,11 @@
 
 ///////////////////////////////////////////////////////////////////////
 
-static QColor __lightBackgroundColor(45, 45, 48);
-static QColor __darkBackgroundColor(30, 30, 30);
-static QColor __lightForegroundColor(200, 200, 200);
-static QColor __frameColor(63, 63, 70);
-static QColor __frameColorActive(0, 122, 204);
+//static QColor __lightBackgroundColor(45, 45, 48);
+//static QColor __darkBackgroundColor(30, 30, 30);
+//static QColor __lightForegroundColor(200, 200, 200);
+//static QColor __frameColor(63, 63, 70);
+//static QColor __frameColorActive(0, 122, 204);
 static QSize  __sideBarIconSize(52, 52);
 
 ///////////////////////////////////////////////////////////////////////
@@ -33,18 +33,10 @@ TileViewWidget::TileViewWidget(QWidget *parent, Qt::WindowFlags f) :
   QWidget(parent),
   d(new TileViewWidgetPrivate(this))
 {
-  auto pal = palette();
-  pal.setColor(QPalette::Background, __darkBackgroundColor);
-  setPalette(pal);
-  setAutoFillBackground(true);
-
   d->tilesCurrentSize.scale(200, 200, Qt::KeepAspectRatio);
 
   // Scroll area content widget.
   auto scrollAreaContent = new QWidget();
-  pal = scrollAreaContent->palette();
-  pal.setColor(QPalette::Background, __darkBackgroundColor);
-  scrollAreaContent->setPalette(pal);
   auto scrollAreaContentLayout = new QBoxLayout(QBoxLayout::TopToBottom);
   scrollAreaContent->setLayout(scrollAreaContentLayout);
 
@@ -61,13 +53,6 @@ TileViewWidget::TileViewWidget(QWidget *parent, Qt::WindowFlags f) :
   scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
   scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
   scrollArea->setWidget(scrollAreaContent);
-  scrollArea->setStyleSheet(
-      "QScrollBar { background: rgb(30, 30, 30); }"
-      "QScrollBar:vertical { width: 10px; }"
-      "QScrollBar::add-line, QScrollBar::sub-line { background: none; }"
-      "QScrollBar::add-page, QScrollBar::sub-page { background: none; }"
-      "QScrollBar::handle { background: rgb(63, 63, 70); border: 1px solid rgb(63, 63, 70); }"
-    );
 
   // Camera.
   d->cameraWidget = new TileViewCameraWidget();
@@ -109,15 +94,6 @@ TileViewWidget::TileViewWidget(QWidget *parent, Qt::WindowFlags f) :
 
   d->bandwidthWrite = new QLabel("U: 0.0 KB/s");
   bandwidthContainerLayout->addWidget(d->bandwidthWrite);
-
-  auto font = d->bandwidthRead->font();
-  font.setPointSize(7);
-  pal = d->bandwidthRead->palette();
-  pal.setColor(QPalette::Foreground, __lightForegroundColor);
-  d->bandwidthRead->setFont(font);
-  d->bandwidthRead->setPalette(pal);
-  d->bandwidthWrite->setFont(font);
-  d->bandwidthWrite->setPalette(pal);
 
   // Layout
   auto buttonLayout = new QBoxLayout(QBoxLayout::TopToBottom);
@@ -268,11 +244,6 @@ TileViewCameraWidget::TileViewCameraWidget(QWidget *parent) :
   QFrame(parent),
   _widget(nullptr)
 {
-  auto pal = palette();
-  pal.setColor(QPalette::Foreground, __frameColor);
-  setPalette(pal);
-  setAutoFillBackground(true);
-  setFrameShape(QFrame::Box);
   ViewBase::addDropShadowEffect(this);
 }
 
@@ -308,11 +279,6 @@ void TileViewCameraWidget::setWidget(QWidget *w)
 TileViewTileWidget::TileViewTileWidget(const ClientEntity &client, QWidget *parent) :
   QFrame(parent)
 {
-  auto pal = palette();
-  pal.setColor(QPalette::Foreground, __frameColor);
-  setPalette(pal);
-  setAutoFillBackground(true);
-  setFrameShape(QFrame::Box);
   ViewBase::addDropShadowEffect(this);
 
   _videoWidget = ViewBase::createRemoteVideoWidget(client, this);

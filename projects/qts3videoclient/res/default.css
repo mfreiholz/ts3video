@@ -1,0 +1,27 @@
+/*
+
+*/
+TileViewWidget,
+TileViewWidget QScrollArea QWidget {
+  background: rgb(30, 30, 30);
+}
+
+TileViewWidget QLabel {
+  color: rgb(200, 200, 200);
+  font-size: 7pt;
+}
+
+
+TileViewWidget QScrollBar { background: rgb(30, 30, 30); }
+TileViewWidget QScrollBar:vertical { width: 10px; }
+TileViewWidget QScrollBar::add-line, QScrollBar::sub-line { background: none; }
+TileViewWidget QScrollBar::add-page, QScrollBar::sub-page { background: none; }
+TileViewWidget QScrollBar::handle { background: rgb(63, 63, 70); border: 1px solid rgb(63, 63, 70); }
+
+TileViewCameraWidget,
+TileViewTileWidget {
+  background: black;
+  border-color: rgb(63, 63, 70);
+  border-width: 1px;
+  border-style: solid;
+}
