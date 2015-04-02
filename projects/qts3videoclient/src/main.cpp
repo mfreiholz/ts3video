@@ -188,6 +188,8 @@ int runTileViewTest(QApplication &a)
       return;
     ClientEntity client;
     client.id = ++addClientId;
+    client.name = QString("Clientname #%1").arg(client.id);
+    client.videoEnabled = true;
     ChannelEntity channel;
     channel.id = 0;
     view.addClient(client, channel);

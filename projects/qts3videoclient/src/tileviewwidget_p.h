@@ -36,11 +36,13 @@ public:
   TileViewWidget *owner;
 
   FlowLayout *tilesLayout;
+  FlowLayout *noVideoTilesLayout;
   QSize tilesAspectRatio;
   QSize tilesCurrentSize;
   TileViewCameraWidget *cameraWidget;
   QPushButton *zoomInButton;
   QPushButton *zoomOutButton;
+  QPushButton *userListButton;
   QLabel *bandwidthRead;
   QLabel *bandwidthWrite;
 

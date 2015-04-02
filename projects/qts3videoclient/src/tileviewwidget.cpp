@@ -40,21 +40,20 @@ TileViewWidget::TileViewWidget(QWidget *parent, Qt::WindowFlags f) :
 
   d->tilesCurrentSize.scale(200, 200, Qt::KeepAspectRatio);
 
-  // Tiles.
-  QWidget *scrollAreaContent = nullptr;
-  if (false) {
-    scrollAreaContent = new QWidget();
-    d->tilesLayout = new FlowLayout(nullptr, 6, 6, 6);
-    d->tilesLayout->setContentsMargins(6, 6, 6, 6);
-    d->tilesLayout->setSpacing(6);
-  } else {
-    scrollAreaContent = new MovableWidgetContainer(nullptr, 0);
-    pal = scrollAreaContent->palette();
-    pal.setColor(QPalette::Background, __darkBackgroundColor);
-    scrollAreaContent->setPalette(pal);
-    d->tilesLayout = static_cast<FlowLayout*>(scrollAreaContent->layout());
-    scrollAreaContent->setLayout(d->tilesLayout);
-  }
+  // Scroll area content widget.
+  auto scrollAreaContent = new QWidget();
+  pal = scrollAreaContent->palette();
+  pal.setColor(QPalette::Background, __darkBackgroundColor);
+  scrollAreaContent->setPalette(pal);
+  auto scrollAreaContentLayout = new QBoxLayout(QBoxLayout::TopToBottom);
+  scrollAreaContent->setLayout(scrollAreaContentLayout);
+
+  // Video tiles container.
+  auto tilesContainer = new MovableWidgetContainer(nullptr, 0);
+  auto tilesContainerLayout = static_cast<FlowLayout*>(tilesContainer->layout());
+  tilesContainer->setLayout(tilesContainerLayout);
+  scrollAreaContentLayout->addWidget(tilesContainer, 1);
+  d->tilesLayout = tilesContainerLayout;
 
   auto scrollArea = new QScrollArea();
   scrollArea->setFrameStyle(QFrame::NoFrame);
@@ -88,6 +87,12 @@ TileViewWidget::TileViewWidget(QWidget *parent, Qt::WindowFlags f) :
   d->zoomOutButton->setFlat(true);
   d->zoomOutButton->setToolTip(tr("Zoom-out video"));
 
+  d->userListButton = new QPushButton();
+  d->userListButton->setIcon(QIcon(":/ic_supervisor_account_grey600_48dp.png"));
+  d->userListButton->setIconSize(__sideBarIconSize);
+  d->userListButton->setFlat(true);
+  d->userListButton->setToolTip(tr("User list"));
+
   auto aboutButton = new QPushButton();
   aboutButton->setIcon(QIcon(":/ic_info_outline_grey600_48dp.png"));
   aboutButton->setIconSize(__sideBarIconSize);
@@ -118,6 +123,7 @@ TileViewWidget::TileViewWidget(QWidget *parent, Qt::WindowFlags f) :
   auto buttonLayout = new QBoxLayout(QBoxLayout::TopToBottom);
   buttonLayout->addWidget(d->zoomInButton);
   buttonLayout->addWidget(d->zoomOutButton);
+  buttonLayout->addWidget(d->userListButton);
   buttonLayout->addStretch(1);
   buttonLayout->addWidget(bandwidthContainer);
   buttonLayout->addWidget(aboutButton);
@@ -164,14 +170,12 @@ void TileViewWidget::setCameraWidget(QWidget *w)
 
 void TileViewWidget::addClient(const ClientEntity &client, const ChannelEntity &channel)
 {
-  auto tileWidget = new TileViewTileWidget(client, this);
-  tileWidget->setFixedSize(d->tilesCurrentSize);
-
-  // Add to layout.
-  d->tilesLayout->addWidget(tileWidget);
-
-  // Mappings.
-  d->tilesMap.insert(client.id, tileWidget);
+  if (client.videoEnabled) {
+    auto tileWidget = new TileViewTileWidget(client, this);
+    tileWidget->setFixedSize(d->tilesCurrentSize);
+    d->tilesLayout->addWidget(tileWidget);
+    d->tilesMap.insert(client.id, tileWidget);
+  }
 }
 
 void TileViewWidget::removeClient(const ClientEntity &client, const ChannelEntity &channel)
