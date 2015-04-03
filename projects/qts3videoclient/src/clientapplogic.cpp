@@ -29,6 +29,7 @@
 #include "remoteclientvideowidget.h"
 #include "hangoutviewwidget.h"
 #include "tileviewwidget.h"
+#include "model/clientlistmodel.h"
 
 HUMBLE_LOGGER(HL, "client.logic");
 
@@ -39,6 +40,7 @@ ClientAppLogic::ClientAppLogic(const Options &opts, QWidget *parent, Qt::WindowF
   d(new ClientAppLogicPrivate(this))
 {
   d->opts = opts;
+  d->clientListModel = new ClientListModel(this);
 
   // Global progress dialog.
   d->progressDialog = new QProgressDialog(this, 0);
@@ -123,7 +125,8 @@ void ClientAppLogic::onConnected()
   // Authenticate.
   showProgress(tr("Authenticating..."));
   auto reply = d->ts3vc.auth(d->opts.username, d->opts.password, !d->opts.cameraDeviceId.isEmpty());
-  QObject::connect(reply, &QCorReply::finished, [this, reply, ts3clientId, ts3channelId] () {
+  QObject::connect(reply, &QCorReply::finished, [this, reply, ts3clientId, ts3channelId] ()
+  {
     HL_DEBUG(HL, QString("Auth answer: %1").arg(QString(reply->frame()->data())).toStdString());
     reply->deleteLater();
 
@@ -140,7 +143,8 @@ void ClientAppLogic::onConnected()
     // Join channel.
     showProgress(tr("Joining channel..."));
     auto reply2 = d->ts3vc.joinChannel(ts3channelId);
-    QObject::connect(reply2, &QCorReply::finished, [this, reply2] () {
+    QObject::connect(reply2, &QCorReply::finished, [this, reply2] ()
+    {
       HL_DEBUG(HL, QString("Join channel answer: %1").arg(QString(reply2->frame()->data())).toStdString());
       reply2->deleteLater();
       
@@ -195,18 +199,21 @@ void ClientAppLogic::onClientJoinedChannel(const ClientEntity &client, const Cha
   if (client.id != d->ts3vc.clientEntity().id) {
     d->view->addClient(client, channel);
   }
+  d->clientListModel->addClient(client);
 }
 
 void ClientAppLogic::onClientLeftChannel(const ClientEntity &client, const ChannelEntity &channel)
 {
   HL_INFO(HL, QString("Client left channel (client-id=%1; channel-id=%2)").arg(client.id).arg(channel.id).toStdString());
   d->view->removeClient(client, channel);
+  d->clientListModel->removeClient(client);
 }
 
 void ClientAppLogic::onClientDisconnected(const ClientEntity &client)
 {
   HL_INFO(HL, QString("Client disconnected (client-id=%1)").arg(client.id).toStdString());
   d->view->removeClient(client, ChannelEntity());
+  d->clientListModel->removeClient(client);
 }
 
 void ClientAppLogic::onNewVideoFrame(YuvFrameRefPtr frame, int senderId)
@@ -248,12 +255,14 @@ void ClientAppLogic::initGui()
 {
   // Create main view.
   auto viewWidget = new TileViewWidget(this);
-  d->view = viewWidget;
-  setCentralWidget(viewWidget);
-
+  viewWidget->setClientListModel(d->clientListModel);
+  
   // Start camera.
   if (!d->opts.cameraDeviceId.isEmpty())
-    d->view->setCameraWidget(createCameraWidget());
+    viewWidget->setCameraWidget(createCameraWidget());
+
+  setCentralWidget(viewWidget);
+  d->view = viewWidget;
 }
 
 QWidget* ClientAppLogic::createCameraWidget()

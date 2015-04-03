@@ -20,6 +20,10 @@ TileViewWidget #leftPanelContainer {
   min-width: 90px;
 }
 
+TileViewWidget #leftPanelContainer QPushButton:checked {
+  background: rgb(25, 26, 27)
+}
+
 TileViewWidget QScrollArea QWidget {
   background: rgb(30, 30, 30);
 }
@@ -43,4 +47,35 @@ TileViewTileWidget {
   border-color: rgb(63, 63, 70);
   border-width: 1px;
   border-style: solid;
+}
+
+TileViewWidget #rightPanelContainer {
+  background: rgb(18, 19, 20);
+  width: 150px;
+  max-width: 150px;
+}
+
+TileViewUserListWidget QListView {
+  background: transparent;
+  border: none;
+  color: rgb(200, 200, 200);
+}
+
+TileViewWidget #rightPanelContainer QLineEdit {
+  background: transparent;
+  border: 1px solid rgb(63, 63, 70);
+  border-radius: 2px;
+  color: rgb(200, 200, 200);
+  margin: 2px;
+  padding: 2px;
+}
+
+TileViewWidget #userCount {
+  border-color: rgb(63, 63, 70);
+  border-style: solid;
+  border-width: 1px;
+  border-radius: 2px;
+  color: rgb(200, 200, 200);
+  margin: 7px 0 0 5px;
+  padding: 2px;
 }

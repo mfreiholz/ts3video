@@ -5,6 +5,8 @@
 #include <QWheelEvent>
 #include <QPushButton>
 #include <QScrollArea>
+#include <QListView>
+#include <QLineEdit>
 
 #include "elws.h"
 #include "cliententity.h"
@@ -15,6 +17,7 @@
 #include "remoteclientvideowidget.h"
 #include "aboutwidget.h"
 #include "movablewidgetcontainer.h"
+#include "model/clientlistmodel.h"
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -78,6 +81,7 @@ TileViewWidget::TileViewWidget(QWidget *parent, Qt::WindowFlags f) :
   d->userListButton->setIconSize(__sideBarIconSize);
   d->userListButton->setFlat(true);
   d->userListButton->setToolTip(tr("User list"));
+  d->userListButton->setCheckable(true);
 
   auto aboutButton = new QPushButton();
   aboutButton->setIcon(QIcon(":/ic_info_outline_grey600_48dp.png"));
@@ -98,6 +102,17 @@ TileViewWidget::TileViewWidget(QWidget *parent, Qt::WindowFlags f) :
   d->bandwidthWrite->setObjectName("bandwidthWrite");
   bandwidthContainerLayout->addWidget(d->bandwidthWrite);
 
+  // User list.
+  auto userListWidget = new TileViewUserListWidget();
+  d->userListWidget = userListWidget;
+
+  // User count label over user list toggle button.
+  auto userCountLabel = new QLabel(d->userListButton);
+  userCountLabel->setObjectName("userCount");
+  userCountLabel->setText(QString::number(0));
+  d->userListButton->stackUnder(userCountLabel);
+  d->userCountLabel = userCountLabel;
+
   // Layout
   auto leftPanel = new QWidget();
   leftPanel->setObjectName("leftPanelContainer");
@@ -112,11 +127,21 @@ TileViewWidget::TileViewWidget(QWidget *parent, Qt::WindowFlags f) :
   leftPanelLayout->addWidget(aboutButton);
   leftPanel->setLayout(leftPanelLayout);
 
+  auto rightPanel = new QWidget();
+  rightPanel->setObjectName("rightPanelContainer");
+  auto rightPanelLayout = new QBoxLayout(QBoxLayout::TopToBottom);
+  rightPanelLayout->setContentsMargins(0, 0, 0, 0);
+  rightPanelLayout->setSpacing(0);
+  rightPanelLayout->addWidget(userListWidget);
+  rightPanel->setLayout(rightPanelLayout);
+  rightPanel->setVisible(false);
+
   auto mainLayout = new QBoxLayout(QBoxLayout::LeftToRight, this);
   mainLayout->setContentsMargins(0, 0, 0, 0);
   mainLayout->setSpacing(0);
   mainLayout->addWidget(leftPanel, 0);
   mainLayout->addWidget(scrollArea, 1);
+  mainLayout->addWidget(rightPanel, 0);
   setLayout(mainLayout);
 
   // Connections.
@@ -133,6 +158,9 @@ TileViewWidget::TileViewWidget(QWidget *parent, Qt::WindowFlags f) :
     newSize = d->tilesAspectRatio.scaled(newSize, Qt::KeepAspectRatio);
     setTileSize(newSize);
   });
+  QObject::connect(d->userListButton, &QPushButton::toggled, [this, rightPanel](bool checked) {
+    rightPanel->setVisible(checked);
+  });
   QObject::connect(aboutButton, &QPushButton::clicked, [this]() {
     auto about = new AboutWidget(this);
     about->setWindowFlags(Qt::Dialog);
@@ -145,6 +173,25 @@ TileViewWidget::TileViewWidget(QWidget *parent, Qt::WindowFlags f) :
 
 TileViewWidget::~TileViewWidget()
 {
+}
+
+void TileViewWidget::setClientListModel(ClientListModel *model)
+{
+  // Use sorted model.
+  auto proxyModel = new SortFilterClientListProxyModel(this);
+  proxyModel->setSourceModel(model);
+  proxyModel->sort(0, Qt::AscendingOrder);
+  proxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
+
+  // Set and handle model actions.
+  QAbstractItemModel *m = proxyModel;
+  d->userListWidget->_listView->setModel(m);
+  QObject::connect(m, &ClientListModel::rowsInserted, [this, m](const QModelIndex&, int, int) {
+    d->userCountLabel->setText(QString::number(m->rowCount()));
+  });
+  QObject::connect(m, &ClientListModel::rowsRemoved, [this, m](const QModelIndex&, int, int) {
+    d->userCountLabel->setText(QString::number(m->rowCount()));
+  });
 }
 
 void TileViewWidget::setCameraWidget(QWidget *w)
@@ -297,4 +344,38 @@ TileViewTileWidget::TileViewTileWidget(const ClientEntity &client, QWidget *pare
   mainLayout->setSpacing(0);
   mainLayout->addWidget(_videoWidget);
   setLayout(mainLayout);
+}
+
+///////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+
+TileViewUserListWidget::TileViewUserListWidget(QWidget *parent) :
+  QFrame(parent)
+{
+  auto mainLayout = new QBoxLayout(QBoxLayout::TopToBottom);
+  mainLayout->setContentsMargins(0, 0, 0, 0);
+  mainLayout->setSpacing(0);
+  setLayout(mainLayout);
+
+  auto filterEdit = new QLineEdit();
+  filterEdit->setPlaceholderText(tr("Filter..."));
+  filterEdit->setClearButtonEnabled(true);
+  mainLayout->addWidget(filterEdit);
+
+  auto listView = new QListView();
+  mainLayout->addWidget(listView);
+
+  _listView = listView;
+
+  QObject::connect(filterEdit, &QLineEdit::textChanged, [listView](const QString &text)
+  {
+    auto m = listView->model();
+    if (!m)
+      return;
+    auto pm = qobject_cast<QSortFilterProxyModel*>(m);
+    if (!pm)
+      return;
+    pm->setFilterWildcard(text);
+  });
 }

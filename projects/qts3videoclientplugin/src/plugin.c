@@ -1074,7 +1074,7 @@ void ts3plugin_onMenuItemEvent(uint64 serverConnectionHandlerID, enum PluginMenu
             data.channelId = channelId;
 
             // Start video chat now.
-            if (runClient(/*serverAddress*/"85.214.204.236", 6000, clientName, &data) != 0) {
+            if (runClient(/*serverAddress*/"h2377348.stratoserver.net", 13370, clientName, &data) != 0) {
               printf("PLUGIN: Start hangout failed.");
             }
           }

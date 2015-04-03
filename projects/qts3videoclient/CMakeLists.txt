@@ -42,6 +42,8 @@ set(qheaders
   src/flowlayout.h
   src/aboutwidget.h
   src/movablewidgetcontainer.h
+  src/model/clientlistmodel.h
+  src/model/clientlistmodel_p.h
 )
 
 set(sources
@@ -64,6 +66,7 @@ set(sources
   src/flowlayout.cpp
   src/aboutwidget.cpp
   src/movablewidgetcontainer.cpp
+  src/model/clientlistmodel.cpp
 )
 
 set(qforms

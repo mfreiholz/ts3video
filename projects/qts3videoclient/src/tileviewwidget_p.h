@@ -14,6 +14,7 @@ class FlowLayout;
 class RemoteClientVideoWidget;
 class TileViewTileWidget;
 class TileViewCameraWidget;
+class TileViewUserListWidget;
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -39,10 +40,12 @@ public:
   FlowLayout *noVideoTilesLayout;
   QSize tilesAspectRatio;
   QSize tilesCurrentSize;
+  TileViewUserListWidget *userListWidget;
   TileViewCameraWidget *cameraWidget;
   QPushButton *zoomInButton;
   QPushButton *zoomOutButton;
   QPushButton *userListButton;
+  QLabel *userCountLabel;
   QLabel *bandwidthRead;
   QLabel *bandwidthWrite;
 
@@ -80,5 +83,17 @@ private:
 };
 
 ///////////////////////////////////////////////////////////////////////
+
+class TileViewUserListWidget : public QFrame
+{
+  Q_OBJECT
+  friend class TileViewWidget;
+
+public:
+  TileViewUserListWidget(QWidget *parent = nullptr);
+
+private:
+  class QListView *_listView;
+};
 
 #endif
