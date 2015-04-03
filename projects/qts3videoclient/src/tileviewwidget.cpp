@@ -58,6 +58,7 @@ TileViewWidget::TileViewWidget(QWidget *parent, Qt::WindowFlags f) :
   d->cameraWidget = new TileViewCameraWidget();
   d->cameraWidget->setFixedSize(d->tilesCurrentSize);
   d->tilesLayout->addWidget(d->cameraWidget);
+  d->cameraWidget->setVisible(false);
 
   // Buttons.
   d->zoomInButton = new QPushButton();
@@ -90,24 +91,31 @@ TileViewWidget::TileViewWidget(QWidget *parent, Qt::WindowFlags f) :
   bandwidthContainer->setLayout(bandwidthContainerLayout);
 
   d->bandwidthRead = new QLabel("D: 0.0 KB/s");
+  d->bandwidthRead->setObjectName("bandwidthRead");
   bandwidthContainerLayout->addWidget(d->bandwidthRead);
 
   d->bandwidthWrite = new QLabel("U: 0.0 KB/s");
+  d->bandwidthWrite->setObjectName("bandwidthWrite");
   bandwidthContainerLayout->addWidget(d->bandwidthWrite);
 
   // Layout
-  auto buttonLayout = new QBoxLayout(QBoxLayout::TopToBottom);
-  buttonLayout->addWidget(d->zoomInButton);
-  buttonLayout->addWidget(d->zoomOutButton);
-  buttonLayout->addWidget(d->userListButton);
-  buttonLayout->addStretch(1);
-  buttonLayout->addWidget(bandwidthContainer);
-  buttonLayout->addWidget(aboutButton);
+  auto leftPanel = new QWidget();
+  leftPanel->setObjectName("leftPanelContainer");
+  auto leftPanelLayout = new QBoxLayout(QBoxLayout::TopToBottom);
+  leftPanelLayout->setContentsMargins(0, 0, 0, 0);
+  leftPanelLayout->setSpacing(0);
+  leftPanelLayout->addWidget(d->zoomInButton);
+  leftPanelLayout->addWidget(d->zoomOutButton);
+  leftPanelLayout->addWidget(d->userListButton);
+  leftPanelLayout->addStretch(1);
+  leftPanelLayout->addWidget(bandwidthContainer);
+  leftPanelLayout->addWidget(aboutButton);
+  leftPanel->setLayout(leftPanelLayout);
 
-  auto mainLayout = new QBoxLayout(QBoxLayout::LeftToRight);
+  auto mainLayout = new QBoxLayout(QBoxLayout::LeftToRight, this);
   mainLayout->setContentsMargins(0, 0, 0, 0);
   mainLayout->setSpacing(0);
-  mainLayout->addLayout(buttonLayout, 0);
+  mainLayout->addWidget(leftPanel, 0);
   mainLayout->addWidget(scrollArea, 1);
   setLayout(mainLayout);
 
@@ -142,6 +150,7 @@ TileViewWidget::~TileViewWidget()
 void TileViewWidget::setCameraWidget(QWidget *w)
 {
   d->cameraWidget->setWidget(w);
+  d->cameraWidget->setVisible(true);
 }
 
 void TileViewWidget::addClient(const ClientEntity &client, const ChannelEntity &channel)

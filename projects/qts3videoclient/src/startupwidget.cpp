@@ -34,7 +34,7 @@ StartupDialog::StartupDialog(QWidget *parent) :
   foreach (auto ci, cameraInfos) {
     d->ui.cameraComboBox->addItem(ci.description(), ci.deviceName());
   }
-  d->ui.cameraComboBox->addItem(tr("No camera"));
+  d->ui.cameraComboBox->addItem(tr("No camera (Viewer mode)"));
   
   d->validateUi();
   adjustSize();
@@ -95,9 +95,9 @@ bool StartupDialogPrivate::validateUi()
   auto d = this;
   auto valid = true;
   
-  if (d->ui.cameraComboBox->currentData().toString().isEmpty()) {
-    valid = false;
-  }
+  //if (d->ui.cameraComboBox->currentData().toString().isEmpty()) {
+  //  valid = false;
+  //}
   if (d->ui.usernameLineEdit->text().isEmpty()) {
     valid = false;
   }

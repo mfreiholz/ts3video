@@ -180,6 +180,7 @@ void ClientConnectionHandler::onNewIncomingRequest(QCorFrameRefPtr frame)
     auto version = params["version"].toString();
     auto username = params["username"].toString();
     auto password = params["password"].toString();
+    auto videoEnabled = params["videoenabled"].toBool();
     // Compare client version against server version compatibility.
     if (!ELWS::isVersionSupported(version, IFVS_SERVER_SUPPORTED_CLIENT_VERSIONS)) {
       QCorFrame res;
@@ -201,6 +202,7 @@ void ClientConnectionHandler::onNewIncomingRequest(QCorFrameRefPtr frame)
     }
     _authenticated = true;
     _clientEntity->name = username;
+    _clientEntity->videoEnabled = videoEnabled;
     auto token = QString("%1-%2").arg(_clientEntity->id).arg(QDateTime::currentDateTimeUtc().toString());
     _server->_tokens.insert(token, _clientEntity->id);
     // Send response.

@@ -1,16 +1,35 @@
-/*
 
-*/
-TileViewWidget,
+/*********************************************************************/
+/* Basics
+/*********************************************************************/
+
+QMainWindow {
+  background: rgb(30, 30, 30);
+}
+
+QMainWindow QStatusBar {
+  background: rgb(18, 19, 20);
+}
+
+/*********************************************************************/
+/* TileView
+/*********************************************************************/
+
+TileViewWidget #leftPanelContainer {
+  background: rgb(18, 19, 20);
+  min-width: 90px;
+}
+
 TileViewWidget QScrollArea QWidget {
   background: rgb(30, 30, 30);
 }
 
-TileViewWidget QLabel {
+TileViewWidget QLabel#bandwidthRead,
+TileViewWidget QLabel#bandwidthWrite {
   color: rgb(200, 200, 200);
   font-size: 7pt;
+  qproperty-alignment: AlignCenter;
 }
-
 
 TileViewWidget QScrollBar { background: rgb(30, 30, 30); }
 TileViewWidget QScrollBar:vertical { width: 10px; }

@@ -3,7 +3,7 @@
 #include <QStringList>
 
 ClientEntity::ClientEntity() :
-  id(0), name(), mediaAddress(), mediaPort(0), videoEnabled(true)
+  id(0), name(), mediaAddress(), mediaPort(0), videoEnabled(false)
 {}
 
 ClientEntity::ClientEntity(const ClientEntity &other)

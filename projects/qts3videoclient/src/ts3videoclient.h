@@ -47,7 +47,7 @@ public:
     \see connected()
     \return QCorReply* Ownership goes over to caller who needs to delete it with "deleteLater()".
   */
-  QCorReply* auth(const QString &name, const QString &password);
+  QCorReply* auth(const QString &name, const QString &password, bool videoEnabled = true);
 
   /*!
     Joins a channel/room/conference.

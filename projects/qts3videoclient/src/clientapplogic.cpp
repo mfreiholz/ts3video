@@ -12,6 +12,7 @@
 #include <QtConcurrent>
 #include <QFuture>
 #include <QFutureWatcher>
+#include <QStatusBar>
 
 #include "humblelogging/api.h"
 
@@ -47,6 +48,10 @@ ClientAppLogic::ClientAppLogic(const Options &opts, QWidget *parent, Qt::WindowF
   d->progressDialog->setRange(0, 0);
   d->progressDialog->setModal(true);
   d->progressDialog->setVisible(false);
+
+  //// Status bar.
+  //auto statusBar = new QStatusBar(this);
+  //setStatusBar(statusBar);
 
   // Network connection events.
   connect(&d->ts3vc, &TS3VideoClient::connected, this, &ClientAppLogic::onConnected);
@@ -117,7 +122,7 @@ void ClientAppLogic::onConnected()
 
   // Authenticate.
   showProgress(tr("Authenticating..."));
-  auto reply = d->ts3vc.auth(d->opts.username, d->opts.password);
+  auto reply = d->ts3vc.auth(d->opts.username, d->opts.password, !d->opts.cameraDeviceId.isEmpty());
   QObject::connect(reply, &QCorReply::finished, [this, reply, ts3clientId, ts3channelId] () {
     HL_DEBUG(HL, QString("Auth answer: %1").arg(QString(reply->frame()->data())).toStdString());
     reply->deleteLater();
@@ -241,10 +246,14 @@ void ClientAppLogic::closeEvent(QCloseEvent *e)
 
 void ClientAppLogic::initGui()
 {
+  // Create main view.
   auto viewWidget = new TileViewWidget(this);
   d->view = viewWidget;
-  d->view->setCameraWidget(createCameraWidget());
   setCentralWidget(viewWidget);
+
+  // Start camera.
+  if (!d->opts.cameraDeviceId.isEmpty())
+    d->view->setCameraWidget(createCameraWidget());
 }
 
 QWidget* ClientAppLogic::createCameraWidget()
