@@ -21,6 +21,7 @@
         <file>insanefactory-77x128.png</file>
         <file>ic_supervisor_account_grey600_48dp.png</file>
         <file>default.css</file>
+        <file>ic_public_black_48dp.png</file>
     </qresource>
     <qresource prefix="/opengl">
         <file>vertex.vsh</file>

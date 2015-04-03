@@ -2,6 +2,7 @@
 #include "ui_startupwidget.h"
 
 #include <QCameraInfo>
+#include <QSettings>
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -31,7 +32,7 @@ StartupDialog::StartupDialog(QWidget *parent) :
   d->ui.serverPort->clear();
 
   auto cameraInfos = QCameraInfo::availableCameras();
-  foreach (auto ci, cameraInfos) {
+  foreach (const auto &ci, cameraInfos) {
     d->ui.cameraComboBox->addItem(ci.description(), ci.deviceName());
   }
   d->ui.cameraComboBox->addItem(tr("No camera (Viewer mode)"));
@@ -45,10 +46,23 @@ StartupDialog::StartupDialog(QWidget *parent) :
   QObject::connect(d->ui.serverPort, SIGNAL(textEdited(const QString&)), this, SLOT(validate()));
   QObject::connect(d->ui.okButton, &QPushButton::clicked, this, &StartupDialog::onAccept);
   QObject::connect(d->ui.cancelButton, &QPushButton::clicked, this, &QDialog::reject);
+
+  // Restore from config.
+  QSettings conf;
+  const auto camID = conf.value("UI/StartupDialog-CameraDeviceID");
+  for (auto i = 0; i < d->ui.cameraComboBox->count(); ++i) {
+    if (d->ui.cameraComboBox->itemData(i).toString() == camID) {
+      d->ui.cameraComboBox->setCurrentIndex(i);
+      break;
+    }
+  }
 }
 
 StartupDialog::~StartupDialog()
 {
+  QSettings conf;
+  auto v = values();
+  conf.setValue("UI/StartupDialog-CameraDeviceID", v.cameraDeviceName); 
 }
 
 StartupDialogValues StartupDialog::values() const
