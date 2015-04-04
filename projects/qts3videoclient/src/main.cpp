@@ -245,7 +245,7 @@ int runTestClient(QApplication &a)
             static auto frameNo = 0;
 
             //auto videoWidget = new VideoWidget();
-            //videoWidget->resize(640, 480);
+            //videoWidget->resize(IFVS_CLIENT_VIDEO_SIZE);
             //videoWidget->show();
 
             auto t = new QTimer();
@@ -259,7 +259,7 @@ int runTestClient(QApplication &a)
                 frameNo = 0;
                 return;
               }
-              image.scaled(640, 480);
+              image.scaled(IFVS_CLIENT_VIDEO_SIZE);
               //videoWidget->setFrame(image);
               if (ts3vc->isReadyForStreaming())
                 ts3vc->sendVideoFrame(image);
@@ -296,7 +296,7 @@ int runVideoRecorderTest(QApplication &a)
   
   QVideoEncoderSettings videoSettings;
   //videoSettings.setCodec("video/mpeg2");
-  videoSettings.setResolution(640, 480);
+  videoSettings.setResolution(IFVS_CLIENT_VIDEO_SIZE);
   videoSettings.setQuality(QMultimedia::VeryHighQuality);
   videoSettings.setFrameRate(30.0);
   
@@ -307,7 +307,7 @@ int runVideoRecorderTest(QApplication &a)
   auto videoWidget = new QVideoWidget();
   camera->setViewfinder(videoWidget);
   videoWidget->show();
-  videoWidget->resize(640, 480);
+  videoWidget->resize(IFVS_CLIENT_VIDEO_SIZE);
 
   QObject::connect(recorder, static_cast<void(QMediaRecorder::*)(QMediaRecorder::Error)>(&QMediaRecorder::error), [camera, recorder](QMediaRecorder::Error error) {
     qDebug() << QString("Error: %1").arg(recorder->errorString());
@@ -342,7 +342,7 @@ int runRecordPlainCameraImages(QApplication &a)
   camera->setViewfinder(grabber);
 
   auto videoWidget = new VideoWidget();
-  videoWidget->resize(640, 480);
+  videoWidget->resize(IFVS_CLIENT_VIDEO_SIZE);
   videoWidget->show();
 
   QObject::connect(grabber, &CameraFrameGrabber::newQImage, [baseDir, &frameNo, videoWidget](const QImage &image) {
@@ -365,7 +365,7 @@ int runPlayPlainCameraImages(QApplication &a)
   auto frameNo = 0;
 
   auto videoWidget = new VideoWidget();
-  videoWidget->resize(640, 480);
+  videoWidget->resize(IFVS_CLIENT_VIDEO_SIZE);
   videoWidget->show();
 
   QTimer t;

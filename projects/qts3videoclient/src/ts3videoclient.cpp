@@ -532,7 +532,7 @@ void VideoEncodingThread::run()
   const int fps = 20;
   const int fpsTimeMs = 1000 / fps;
   const int bitRate = 100;
-  const QSize dim(640, 480);
+  const QSize dim(IFVS_CLIENT_VIDEO_SIZE);
 
   QHash<int, VP8Encoder*> encoders;
   QTime fpsTimer;

@@ -19,4 +19,7 @@
 #define IFVS_SERVER_MEDIA_PORT 13370                     ///< The default server port to handle media data (e.g. video-stream).
 #define IFVS_SERVER_WSSTATUS_PORT 13375                  ///< The default server status/control port (WebSocket).
 
+// Client specific defines.
+#define IFVS_CLIENT_VIDEO_SIZE 640, 480         ///< Keep 4:3 ratio (e.g.: 960x720, 640x480, 480x360)
+
 #endif

@@ -2,6 +2,7 @@
 
 #include "humblelogging/api.h"
 
+#include "ts3video.h"
 #include "elws.h"
 
 HUMBLE_LOGGER(HL, "client.camera");
@@ -11,7 +12,7 @@ HUMBLE_LOGGER(HL, "client.camera");
 CameraFrameGrabber::CameraFrameGrabber(QObject *parent) :
   QAbstractVideoSurface(parent),
   _firstFrame(true),
-  _targetSize(640, 480)
+  _targetSize(IFVS_CLIENT_VIDEO_SIZE)
 {
 }
 
@@ -86,7 +87,9 @@ bool CameraFrameGrabber::present(const QVideoFrame &frame)
     // Create copy via copy() or mirrored(). At least we need a copy as long as we don't directly print here.
     auto image = QImage(f.bits(), f.width(), f.height(), imageFormat);
     image = image.mirrored();
-    image = image.scaled(_imageRect.size());
+    if (image.size() != _imageRect.size()) {
+      image = image.scaled(_imageRect.size());
+    }
     if (_imageOffset.x() != 0) {
       image = image.copy(_imageOffset.x(), 0, _targetSize.width(), _targetSize.height());
     }
