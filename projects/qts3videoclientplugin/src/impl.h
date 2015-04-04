@@ -14,6 +14,8 @@ extern "C" {
   typedef struct {
     uint64 clientId;
     uint64 channelId;
+    char serverAddress[MAX_PATH];
+    uint64 serverPort;
   } TS3Data;
 
   /**

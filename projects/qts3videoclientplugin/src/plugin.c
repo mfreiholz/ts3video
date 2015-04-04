@@ -1062,16 +1062,20 @@ void ts3plugin_onMenuItemEvent(uint64 serverConnectionHandlerID, enum PluginMenu
           anyID clientId = 0;
           char clientName[255];
           char *serverAddress = NULL;
+          uint64 serverPort = 0;
           uint64 channelId = selectedItemID;
 
           if (ts3Functions.getClientID(serverConnectionHandlerID, &clientId) == ERROR_ok
             && ts3Functions.getClientDisplayName(serverConnectionHandlerID, clientId, clientName, 255) == ERROR_ok
             && ts3Functions.getConnectionVariableAsString(serverConnectionHandlerID, clientId, CONNECTION_SERVER_IP, &serverAddress) == ERROR_ok
+            && ts3Functions.getConnectionVariableAsUInt64(serverConnectionHandlerID, clientId, CONNECTION_SERVER_PORT, &serverPort) == ERROR_ok
             ) {
             // Collect info.
             TS3Data data;
             data.clientId = clientId;
             data.channelId = channelId;
+            strcpy(&data.serverAddress, serverAddress);
+            data.serverPort = serverPort;
 
             // Start video chat now.
             if (runClient(/*serverAddress*/"h2377348.stratoserver.net", 13370, clientName, &data) != 0) {

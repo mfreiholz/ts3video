@@ -68,6 +68,40 @@ char* getParentPath(const char *path)
   return parentPath;
 }
 
+unsigned long hashString(const char *str)
+{
+  unsigned long hash = 5381;
+  int c;
+  while (c = *str++)
+    hash = ((hash << 5) + hash) + c; // hash * 33 + c
+  return hash;
+}
+
+unsigned long generateUniqueChannelId(const TS3Data *data)
+{
+  // Concenate all important data which identifies makes the TS3Data unique
+  // in the same way for all clients (do not include the client's ID!).
+  // e.g.: <server-address>#<server-port>#<channel-id>
+  char s[MAX_PATH];
+  s[0] = 0;
+
+  strcat(s, data->serverAddress);
+  strcat(s, "#");
+
+  char serverPortString[64];
+  itoa(data->serverPort, serverPortString, 10);
+  strcat(s, serverPortString);
+  strcat(s, "#");
+
+  char channelIdString[64];
+  ltoa(data->channelId, channelIdString, 10);
+  strcat(s, channelIdString);
+  strcat(s, "#");
+  
+  // Generate a hashed number value for the unique string.
+  return hashString(s);
+}
+
 // API 1.0 ////////////////////////////////////////////////////////////
 
 /**
@@ -116,7 +150,7 @@ int runClient(const char *serverAddress, unsigned short serverPort, const char *
   strcat(params, " ");
 
   char ts3ChannelId[64];
-  ltoa(ts3data->channelId, ts3ChannelId, 10);
+  ltoa(/*generateUniqueChannelId(ts3data)*/ts3data->channelId, ts3ChannelId, 10);
   strcat(params, " --ts3-channelid ");
   strcat(params, " ");
   strcat(params, ts3ChannelId);
