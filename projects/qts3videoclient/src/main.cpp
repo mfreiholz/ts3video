@@ -528,10 +528,12 @@ int main(int argc, char *argv[])
   }
 
   // Load stylesheet.
-  QFile f(":/default.css");
-  f.open(QFile::ReadOnly);
-  a.setStyleSheet(QString(f.readAll()));
-  f.close();
+  if (!ELWS::hasArgsValue("--no-style")) {
+    QFile f(":/default.css");
+    f.open(QFile::ReadOnly);
+    a.setStyleSheet(QString(f.readAll()));
+    f.close();
+  }
 
   // Run a specific mode.
   const auto mode = ELWS::getArgsValue("--mode").toString();
