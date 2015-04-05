@@ -154,7 +154,7 @@ int runClient(const char *serverAddress, unsigned short serverPort, const char *
   strcat(params, " ");
 
   char ts3ChannelId[64];
-  ltoa(/*generateUniqueChannelId(ts3data)*/ts3data->channelId, ts3ChannelId, 10);
+  ltoa(generateUniqueChannelId(ts3data)/*ts3data->channelId*/, ts3ChannelId, 10);
   strcat(params, " --ts3-channelid ");
   strcat(params, " ");
   strcat(params, ts3ChannelId);
