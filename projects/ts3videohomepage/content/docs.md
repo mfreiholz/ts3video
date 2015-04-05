@@ -102,7 +102,7 @@ Registering the server process as a service can be done with the built-in Window
 All upcoming commands need to run as privileged Administrator.
 
 __Install__
-`sc create "ts3video-server" binPath= "C:\path\app.exe" start= auto obj= ".\manuel" password= "" `
+`sc create "ts3video-server" binPath= "C:\path\app.exe --service" start= auto obj= ".\manuel" password= "" `
 
 
 ## Run as Linux Daemon

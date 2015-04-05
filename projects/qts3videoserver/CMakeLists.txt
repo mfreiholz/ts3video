@@ -53,10 +53,15 @@ include_directories(
   ../qts3videocorelib/src
 )
 
+# Target prerequesites.
+if(WIN32)
+  set(win32_gui_type WIN32)
+endif(WIN32)
+
 # Target
 add_executable(
   qts3videoserver
-  WIN32
+  ${win32_gui_type}
   ${headers}
   ${sources}
   ${qheaders}

@@ -516,7 +516,8 @@ int main(int argc, char *argv[])
 
   // Initialize logging.
   auto& fac = humble::logging::Factory::getInstance();
-  fac.registerAppender(new humble::logging::FileAppender(std::string("ts3videoclient.log"), true));
+  fac.setDefaultFormatter(new humble::logging::PatternFormatter("[%date][%lls][pid=%pid][tid=%tid] %m\n"));
+  fac.registerAppender(new humble::logging::FileAppender(QDir::temp().filePath("ts3video-client.log").toStdString(), true));
   fac.changeGlobalLogLevel(humble::logging::LogLevel::Debug);
 
   // Show console window?

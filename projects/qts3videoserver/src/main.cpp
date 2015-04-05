@@ -1,6 +1,7 @@
 #include <QCoreApplication>
 #include <QSettings>
 #include <QFile>
+#include <QDir>
 
 #include "humblelogging/api.h"
 #include "humblesrvproc/api.h"
@@ -69,56 +70,6 @@ bool updateOptionsByLicense(TS3VideoServerOptions &opts, const QString &filePath
   return 0;
 }
 
-/*!
-  Initializes the base server components.
-  Note: It's required to run an event loop after this function.
- */
-/*int initServer(int argc, char *argv[])
-{
-  auto &a = *qApp;
-
-  // Initialize logging.
-  auto& hlFactory = humble::logging::Factory::getInstance();
-  hlFactory.setDefaultFormatter(new humble::logging::PatternFormatter("[%date][%lls][pid=%pid][tid=%tid] %m\n"));
-  hlFactory.registerAppender(new humble::logging::ConsoleAppender());
-  hlFactory.registerAppender(new humble::logging::FileAppender(std::string("ts3videoserver.log"), true));
-  hlFactory.changeGlobalLogLevel(humble::logging::LogLevel::Debug);
-
-  HL_INFO(HL, QString("Server startup (version=%1)").arg(a.applicationVersion()).toStdString());
-  HL_INFO(HL, QString("Organization: %1").arg(a.organizationName()).toStdString());
-  HL_INFO(HL, QString("Organization domain: %1").arg(a.organizationDomain()).toStdString());
-
-  // Initialize server options (from ARGS).
-  TS3VideoServerOptions opts;
-  if (updateOptionsByArgs(opts) != 0) {
-    return 1;
-  }
-  // Override server options by config.
-  auto configFilePath = ELWS::getArgsValue("--config").toString();
-  if (!configFilePath.isEmpty() && updateOptionsByConfig(opts, configFilePath) != 0) {
-    return 1;
-  }
-  // Override server options by license.
-  if (updateOptionsByLicense(opts, "FREE") != 0) {
-    HL_FATAL(HL, QString("No valid license!").toStdString());
-    return 7353;
-  }
-  
-  HL_INFO(HL, QString("----- Configuration -----").toStdString());
-  HL_INFO(HL, QString("Connection limit: %1").arg(opts.connectionLimit).toStdString());
-  HL_INFO(HL, QString("Bandwidth read limit: %1").arg(ELWS::humanReadableBandwidth(opts.bandwidthReadLimit)).toStdString());
-  HL_INFO(HL, QString("Bandwidth write limit: %1").arg(ELWS::humanReadableBandwidth(opts.bandwidthWriteLimit)).toStdString());
-  HL_INFO(HL, QString("-------------------------").toStdString());
-
-  TS3VideoServer *server(opts);
-  if (!server.init())
-    return 2;
-
-  auto returnCode = a.exec();
-  HL_INFO(HL, QString("Server shutdown (code=%1)").arg(returnCode).toStdString());
-  return returnCode;
-}*/
-
 ///////////////////////////////////////////////////////////////////////
 // Server base startup logic.
 ///////////////////////////////////////////////////////////////////////
@@ -140,12 +91,8 @@ public:
     auto& hlFactory = humble::logging::Factory::getInstance();
     hlFactory.setDefaultFormatter(new humble::logging::PatternFormatter("[%date][%lls][pid=%pid][tid=%tid] %m\n"));
     hlFactory.registerAppender(new humble::logging::ConsoleAppender());
-    hlFactory.registerAppender(new humble::logging::FileAppender(qApp->applicationDirPath().toStdString() + std::string("/") + std::string("ts3videoserver.log"), true));
+    hlFactory.registerAppender(new humble::logging::FileAppender(QDir::temp().filePath("ts3video-server.log").toStdString(), true));
     hlFactory.changeGlobalLogLevel(humble::logging::LogLevel::Debug);
-
-    HL_INFO(HL, QString("Server startup (version=%1)").arg(a.applicationVersion()).toStdString());
-    HL_INFO(HL, QString("Organization: %1").arg(a.organizationName()).toStdString());
-    HL_INFO(HL, QString("Organization domain: %1").arg(a.organizationDomain()).toStdString());
 
     // Initialize server options (from ARGS).
     TS3VideoServerOptions opts;
@@ -163,16 +110,20 @@ public:
       return 7353;
     }
 
-    HL_INFO(HL, QString("----- Configuration -----").toStdString());
+    HL_INFO(HL, QString("----- Server startup ----").toStdString());
+    HL_INFO(HL, QString("Version: %1").arg(a.applicationVersion()).toStdString());
+    HL_INFO(HL, QString("Organization: %1").arg(a.organizationName()).toStdString());
+    HL_INFO(HL, QString("Organization domain: %1").arg(a.organizationDomain()).toStdString());
+    HL_INFO(HL, QString("----- Limits ------------").toStdString());
     HL_INFO(HL, QString("Connection limit: %1").arg(opts.connectionLimit).toStdString());
     HL_INFO(HL, QString("Bandwidth read limit: %1").arg(ELWS::humanReadableBandwidth(opts.bandwidthReadLimit)).toStdString());
     HL_INFO(HL, QString("Bandwidth write limit: %1").arg(ELWS::humanReadableBandwidth(opts.bandwidthWriteLimit)).toStdString());
     HL_INFO(HL, QString("-------------------------").toStdString());
 
     _server = new TS3VideoServer(opts, this);
-    if (!_server->init())
-      return 2;
-    
+    if (!_server->init()) {
+      return 1;
+    }
     return 0;
   }
 };
@@ -183,6 +134,8 @@ public:
 
 #include <QThread>
 
+/*! Makes it possible to run the program logic in a separate thread.
+ */
 class AppThread : public QThread
 {
   int _argc;
@@ -201,11 +154,10 @@ public:
         strcpy(_argv[i], argv[i]);
       }
     }
-    
   }
 
   ~AppThread()
-  {
+  { // TODO Clean up.
   }
 
   int returnCode() const
@@ -217,6 +169,8 @@ public:
   {
     AppBootstrapLogic logic;
     _returnCode = logic.init();
+    if (_returnCode != 0)
+      return;
     exec();
   }
 };
@@ -247,35 +201,35 @@ int _main(int argc, char *argv[])
   QCoreApplication a(argc, argv);
   a.setOrganizationName("insaneFactory");
   a.setOrganizationDomain("http://www.insanefactory.com/");
-  a.setApplicationName("TS3 Video Server");
+  a.setApplicationName("ts3video-server");
   a.setApplicationVersion(IFVS_SOFTWARE_VERSION_QSTRING);
+
+  // Mode: Daemon (Win32 Service)
+  if (ELWS::hasArgsValue("--service")) {
+    gAppThread = new AppThread(argc, argv, nullptr);
+
+    // Initialize service configuration.
+    hbl_service_config_t *conf = hbl_service_create_config();
+    conf->start = &serviceStart;
+    conf->stop = &serviceStop;
+
+    // Run service.
+    int exitCode = hbl_service_run(conf);
+    exitCode = gAppThread->returnCode();
+
+    // Clean up.
+    hbl_service_free_config(conf);
+    delete gAppThread;
+    return exitCode;
+  }
 
   // Mode: Console attached.
   // Run as blocking process in main-thread.
-  if (ELWS::hasArgsValue("--console")) {
-    AppBootstrapLogic abl;
-    if (abl.init() != 0)
-      return 1;
-    return a.exec();
-  }
-
-  // Mode: Daemon (Win32 Service)
-  gAppThread = new AppThread(argc, argv, nullptr);
-
-  // Initialize service configuration.
-  hbl_service_config_t *conf = hbl_service_create_config();
-  conf->start = &serviceStart;
-  conf->stop = &serviceStop;
-
-  // Run service.
-  int exitCode = hbl_service_run(conf);
-  exitCode = gAppThread->returnCode();
-
-  // Clean up.
-  hbl_service_free_config(conf);
-  delete gAppThread;
-
-  return exitCode;
+  AppBootstrapLogic abl;
+  auto exitCode = abl.init();
+  if (exitCode != 0)
+    return exitCode;
+  return a.exec();
 }
 
 #ifdef _WIN32
