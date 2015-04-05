@@ -359,7 +359,7 @@ TileViewUserListWidget::TileViewUserListWidget(QWidget *parent) :
   setLayout(mainLayout);
 
   auto filterEdit = new QLineEdit();
-  filterEdit->setPlaceholderText(tr("Filter..."));
+  filterEdit->setPlaceholderText(tr("Participants..."));
   filterEdit->setClearButtonEnabled(true);
   mainLayout->addWidget(filterEdit);
 

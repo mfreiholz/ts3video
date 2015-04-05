@@ -52,7 +52,8 @@ TileViewWidget QScrollBar { background: rgb(30, 30, 30); }
 TileViewWidget QScrollBar:vertical { width: 10px; }
 TileViewWidget QScrollBar::add-line, QScrollBar::sub-line { background: none; }
 TileViewWidget QScrollBar::add-page, QScrollBar::sub-page { background: none; }
-TileViewWidget QScrollBar::handle { background: rgb(63, 63, 70); border: 1px solid rgb(63, 63, 70); }
+TileViewWidget QScrollBar::handle { background: rgb(63, 63, 70); border: 0; }
+TileViewWidget QScrollBar::handle:disabled { background: rgb(30, 30, 30); border: 0; }
 
 TileViewCameraWidget,
 TileViewTileWidget {
@@ -76,8 +77,9 @@ TileViewUserListWidget QListView {
 
 TileViewWidget #rightPanelContainer QLineEdit {
   background: transparent;
-  border: 1px solid rgb(63, 63, 70);
-  border-radius: 2px;
+  border-color: rgb(63, 63, 70);
+  border-style: solid;
+  border-width: 0 0 0px 0;
   color: rgb(200, 200, 200);
   margin: 2px;
   padding: 2px;
