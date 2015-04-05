@@ -83,6 +83,22 @@ TileViewWidget::TileViewWidget(QWidget *parent, Qt::WindowFlags f) :
   d->userListButton->setToolTip(tr("User list"));
   d->userListButton->setCheckable(true);
 
+  auto hideLeftPanelButton = new QPushButton();
+  hideLeftPanelButton->setIcon(QIcon(":/ic_chevron_left_grey600_48dp.png"));
+  hideLeftPanelButton->setIconSize(__sideBarIconSize / 2);
+  hideLeftPanelButton->setToolTip(tr("Hide action bar"));
+  hideLeftPanelButton->setFlat(true);
+
+  auto showLeftPanelButton = new QPushButton(scrollAreaContent);
+  showLeftPanelButton->setObjectName("showLeftPanelButton");
+  showLeftPanelButton->setIcon(QIcon(":/ic_chevron_right_grey600_48dp.png"));
+  showLeftPanelButton->setIconSize(__sideBarIconSize / 2);
+  showLeftPanelButton->setToolTip(tr("Show action bar"));
+  showLeftPanelButton->setFlat(true);
+  showLeftPanelButton->setVisible(!d->leftPanelVisible);
+  showLeftPanelButton->resize(showLeftPanelButton->iconSize());
+  showLeftPanelButton->move(QPoint(6, 6));
+
   auto aboutButton = new QPushButton();
   aboutButton->setIcon(QIcon(":/ic_info_outline_grey600_48dp.png"));
   aboutButton->setIconSize(__sideBarIconSize);
@@ -104,14 +120,12 @@ TileViewWidget::TileViewWidget(QWidget *parent, Qt::WindowFlags f) :
 
   // User list.
   auto userListWidget = new TileViewUserListWidget();
-  d->userListWidget = userListWidget;
 
   // User count label over user list toggle button.
   auto userCountLabel = new QLabel(d->userListButton);
   userCountLabel->setObjectName("userCount");
   userCountLabel->setText(QString::number(0));
   d->userListButton->stackUnder(userCountLabel);
-  d->userCountLabel = userCountLabel;
 
   // Layout
   auto leftPanel = new QWidget();
@@ -123,6 +137,7 @@ TileViewWidget::TileViewWidget(QWidget *parent, Qt::WindowFlags f) :
   leftPanelLayout->addWidget(d->zoomOutButton);
   leftPanelLayout->addWidget(d->userListButton);
   leftPanelLayout->addStretch(1);
+  leftPanelLayout->addWidget(hideLeftPanelButton);
   leftPanelLayout->addWidget(bandwidthContainer);
   leftPanelLayout->addWidget(aboutButton);
   leftPanel->setLayout(leftPanelLayout);
@@ -134,7 +149,7 @@ TileViewWidget::TileViewWidget(QWidget *parent, Qt::WindowFlags f) :
   rightPanelLayout->setSpacing(0);
   rightPanelLayout->addWidget(userListWidget);
   rightPanel->setLayout(rightPanelLayout);
-  rightPanel->setVisible(false);
+  rightPanel->setVisible(d->rightPanelVisible);
 
   auto mainLayout = new QBoxLayout(QBoxLayout::LeftToRight, this);
   mainLayout->setContentsMargins(0, 0, 0, 0);
@@ -160,12 +175,32 @@ TileViewWidget::TileViewWidget(QWidget *parent, Qt::WindowFlags f) :
   });
   QObject::connect(d->userListButton, &QPushButton::toggled, [this, rightPanel](bool checked) {
     rightPanel->setVisible(checked);
+    d->rightPanelVisible = checked;
+  });
+  QObject::connect(hideLeftPanelButton, &QPushButton::clicked, [this, leftPanel, showLeftPanelButton]() {
+    leftPanel->setVisible(false);
+    showLeftPanelButton->setVisible(true);
+    d->leftPanelVisible = false;
+  });
+  QObject::connect(showLeftPanelButton, &QPushButton::clicked, [this, leftPanel, showLeftPanelButton]() {
+    leftPanel->setVisible(true);
+    showLeftPanelButton->setVisible(false);
+    d->leftPanelVisible = true;
   });
   QObject::connect(aboutButton, &QPushButton::clicked, [this]() {
     auto about = new AboutWidget(this);
     about->setWindowFlags(Qt::Dialog);
     about->show();
   });
+
+  // Save some references.
+  d->leftPanel = leftPanel;
+  d->rightPanel = rightPanel;
+  d->userCountLabel = userCountLabel;
+  d->hideLeftPanelButton = hideLeftPanelButton;
+  d->showLeftPanelButton = showLeftPanelButton;
+  d->userListWidget = userListWidget;
+
 
   resize(800, 600);
   setVisible(true);
@@ -281,15 +316,19 @@ void TileViewWidget::wheelEvent(QWheelEvent *e)
 void TileViewWidget::showEvent(QShowEvent *e)
 {
   QSettings settings;
-  restoreGeometry(settings.value("UI/TileViewWidget-Geometry").toByteArray());
   setTileSize(settings.value("UI/TileViewWidget-TileSize", d->tilesCurrentSize).toSize());
+  if (!settings.value("UI/TileViewWidget-LeftPanelVisible", d->leftPanelVisible).toBool())
+    d->hideLeftPanelButton->click();
+  if (settings.value("UI/TileViewWidget-RightPanelVisible", d->rightPanelVisible).toBool())
+    d->userListButton->click();
 }
 
-void TileViewWidget::closeEvent(QCloseEvent *e)
+void TileViewWidget::hideEvent(QHideEvent *e)
 {
   QSettings settings;
-  settings.setValue("UI/TileViewWidget-Geometry", saveGeometry());
   settings.setValue("UI/TileViewWidget-TileSize", d->tilesCurrentSize);
+  settings.setValue("UI/TileViewWidget-LeftPanelVisible", d->leftPanelVisible);
+  settings.setValue("UI/TileViewWidget-RightPanelVisible", d->rightPanelVisible);
 }
 
 ///////////////////////////////////////////////////////////////////////

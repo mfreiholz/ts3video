@@ -25,9 +25,11 @@ class TileViewWidgetPrivate : public QObject
 public:
   TileViewWidgetPrivate(TileViewWidget *o) :
     owner(o),
-    tilesLayout(nullptr),
     tilesAspectRatio(4, 3),
     tilesCurrentSize(tilesAspectRatio),
+    leftPanelVisible(true),
+    rightPanelVisible(false),
+    tilesLayout(nullptr),
     cameraWidget(nullptr),
     zoomInButton(nullptr),
     zoomOutButton(nullptr)
@@ -36,15 +38,23 @@ public:
 public:
   TileViewWidget *owner;
 
-  FlowLayout *tilesLayout;
-  FlowLayout *noVideoTilesLayout;
   QSize tilesAspectRatio;
   QSize tilesCurrentSize;
+
+  bool leftPanelVisible; ///< Used to store state in settings.
+  bool rightPanelVisible; ///< Used to store state in settings.
+
+  FlowLayout *tilesLayout;
+  FlowLayout *noVideoTilesLayout;
   TileViewUserListWidget *userListWidget;
   TileViewCameraWidget *cameraWidget;
+  QWidget *leftPanel;
+  QWidget *rightPanel;
   QPushButton *zoomInButton;
   QPushButton *zoomOutButton;
   QPushButton *userListButton;
+  QPushButton *hideLeftPanelButton;
+  QPushButton *showLeftPanelButton;
   QLabel *userCountLabel;
   QLabel *bandwidthRead;
   QLabel *bandwidthWrite;

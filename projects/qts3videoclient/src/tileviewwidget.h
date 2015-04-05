@@ -29,7 +29,7 @@ public slots:
 protected:
   virtual void wheelEvent(QWheelEvent *e);
   virtual void showEvent(QShowEvent *e);
-  virtual void closeEvent(QCloseEvent *e);
+  virtual void hideEvent(QHideEvent *e);
 };
 
 #endif
