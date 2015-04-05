@@ -68,13 +68,13 @@ TileViewWidget::TileViewWidget(QWidget *parent, Qt::WindowFlags f) :
   d->zoomInButton->setIcon(QIcon(":/ic_add_circle_outline_grey600_48dp.png"));
   d->zoomInButton->setIconSize(__sideBarIconSize);
   d->zoomInButton->setFlat(true);
-  d->zoomInButton->setToolTip(tr("Zoom-in video"));
+  d->zoomInButton->setToolTip(tr("Zoom-in video (CTRL+Mousewheel-Up)"));
 
   d->zoomOutButton = new QPushButton();
   d->zoomOutButton->setIcon(QIcon(":/ic_remove_circle_outline_grey600_48dp.png"));
   d->zoomOutButton->setIconSize(__sideBarIconSize);
   d->zoomOutButton->setFlat(true);
-  d->zoomOutButton->setToolTip(tr("Zoom-out video"));
+  d->zoomOutButton->setToolTip(tr("Zoom-out video (CTRL+Mousewheel-Down)"));
 
   d->userListButton = new QPushButton();
   d->userListButton->setIcon(QIcon(":/ic_supervisor_account_grey600_48dp.png"));
