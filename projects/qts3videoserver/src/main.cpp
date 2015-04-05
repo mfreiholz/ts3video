@@ -18,7 +18,7 @@ HUMBLE_LOGGER(HL, "server");
 */
 int updateOptionsByArgs(TS3VideoServerOptions &opts)
 {
-  HL_INFO(HL, QString("Configure by arguments").toStdString());
+  //HL_INFO(HL, QString("Configure by arguments").toStdString());
   opts.address = ELWS::getQHostAddressFromString(ELWS::getArgsValue("--address", opts.address.toString()).toString());
   opts.port = ELWS::getArgsValue("--port", opts.port).toUInt();
   opts.wsStatusAddress = ELWS::getQHostAddressFromString(ELWS::getArgsValue("--wsstatus-address", opts.wsStatusAddress.toString()).toString());
@@ -36,7 +36,7 @@ int updateOptionsByArgs(TS3VideoServerOptions &opts)
  */
 int updateOptionsByConfig(TS3VideoServerOptions &opts, const QString &filePath)
 {
-  HL_INFO(HL, QString("Configure by file (path=%1)").arg(filePath).toStdString());
+  //HL_INFO(HL, QString("Configure by file (path=%1)").arg(filePath).toStdString());
   if (filePath.isEmpty()) {
     HL_WARN(HL, QString("No config file specified").toStdString());
     return 1;
@@ -66,7 +66,7 @@ int updateOptionsByConfig(TS3VideoServerOptions &opts, const QString &filePath)
  */
 bool updateOptionsByLicense(TS3VideoServerOptions &opts, const QString &filePath)
 {
-  HL_INFO(HL, QString("Configure by license (file=%1)").arg(filePath).toStdString());
+  //HL_INFO(HL, QString("Configure by license (file=%1)").arg(filePath).toStdString());
   return 0;
 }
 
@@ -204,6 +204,7 @@ int _main(int argc, char *argv[])
   a.setApplicationName("ts3video-server");
   a.setApplicationVersion(IFVS_SOFTWARE_VERSION_QSTRING);
 
+#ifdef _WIN32
   // Mode: Daemon (Win32 Service)
   if (ELWS::hasArgsValue("--service")) {
     gAppThread = new AppThread(argc, argv, nullptr);
@@ -222,6 +223,7 @@ int _main(int argc, char *argv[])
     delete gAppThread;
     return exitCode;
   }
+#endif
 
   // Mode: Console attached.
   // Run as blocking process in main-thread.
@@ -232,12 +234,12 @@ int _main(int argc, char *argv[])
   return a.exec();
 }
 
-#ifdef _WIN32
 int main(int argc, char *argv[])
 {
   return _main(argc, argv);
 }
 
+#ifdef _WIN32
 int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
   return _main(__argc, __argv);

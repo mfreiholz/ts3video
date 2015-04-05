@@ -12,6 +12,8 @@ set(sources
 
 if(WIN32)
   list(APPEND sources src/impl_windows.c)
+else(WIN32)
+  list(APPEND sources src/impl_linux.c)
 endif(WIN32)
 
 # Defines

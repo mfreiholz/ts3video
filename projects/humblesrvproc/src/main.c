@@ -1,7 +1,6 @@
+#if 0
 #include <Windows.h>
 #include "humblesrvproc/api.h"
-
-#if 0
 
 ///////////////////////////////////////////////////////////////////////
 // The actual "program" of YOU that will run.
