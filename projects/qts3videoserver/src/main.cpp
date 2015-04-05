@@ -229,6 +229,12 @@ int _main(int argc, char *argv[])
   auto exitCode = abl.init();
   if (exitCode != 0)
     return exitCode;
+
+#ifdef _WIN32
+  if (ELWS::hasArgsValue("--console"))
+    AllocConsole();
+#endif
+
   return a.exec();
 }
 
