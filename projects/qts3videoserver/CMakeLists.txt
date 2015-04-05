@@ -47,6 +47,7 @@ add_definitions(
 # Includes
 include_directories(
   ${humblelogging_INCLUDE_DIRS}
+  ../humblesrvproc/include
   ../medlib/include
   ../qcorlib/src
   ../qts3videocorelib/src
@@ -55,6 +56,7 @@ include_directories(
 # Target
 add_executable(
   qts3videoserver
+  WIN32
   ${headers}
   ${sources}
   ${qheaders}
@@ -70,6 +72,7 @@ target_link_libraries(
   Qt5::Gui
   Qt5::WebSockets
   humblelogging
+  humblesrvproc
   qcorlib
   qts3videocorelib
   medlib

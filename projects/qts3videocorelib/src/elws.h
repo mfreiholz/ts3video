@@ -10,7 +10,9 @@
 class ELWS
 {
 public:
+  static bool hasArgsValue(const QString &key);
   static QVariant getArgsValue(const QString &key, const QVariant &defaultValue = QVariant());
+
   static QString getUserName();
 
   static bool registerURISchemeHandler(const QString &scheme, const QString &title, const QString &modulePath, const QString &moduleArgs);

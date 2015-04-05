@@ -10,6 +10,7 @@ include(cmake/thirdparty.cmake)
 # Local projects.
 add_subdirectory(projects/corlib)
 add_subdirectory(projects/medlib)
+add_subdirectory(projects/humblesrvproc)
 add_subdirectory(projects/qcorlib)
 add_subdirectory(projects/qts3videocorelib)
 add_subdirectory(projects/qts3videoserver)

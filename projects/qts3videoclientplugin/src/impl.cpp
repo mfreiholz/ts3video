@@ -68,6 +68,10 @@ char* getParentPath(const char *path)
   return parentPath;
 }
 
+/*!
+  Uses the "djb2"-algorithm to hash a string value.
+  \see http://www.cse.yorku.ca/~oz/hash.html
+ */
 unsigned long hashString(const char *str)
 {
   unsigned long hash = 5381;

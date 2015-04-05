@@ -10,6 +10,11 @@
 #include <QFileInfo>
 #include <QSettings>
 
+bool ELWS::hasArgsValue(const QString &key)
+{
+  return qApp->arguments().indexOf(key) >= 0;
+}
+
 QVariant ELWS::getArgsValue(const QString &key, const QVariant &defaultValue)
 {
   auto pos = qApp->arguments().indexOf(key);
