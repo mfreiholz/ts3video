@@ -23,6 +23,11 @@ public:
   static QString humanReadableSize(quint64 bytes);
   static QString humanReadableBandwidth(quint64 bytesPerSecond);
 
+  /*!
+    \note A version MUST be the combination of major and minor: X.X
+    \param version Single version to check against, e.g.: 1.0
+    \param supportedVersions Comma separated list of valid versions, e.g.: 1.0,2.0,3.0
+  */
   static bool isVersionSupported(const QString &version, const QString &supportedVersions);
 
   static QHostAddress getQHostAddressFromString(const QString &s);

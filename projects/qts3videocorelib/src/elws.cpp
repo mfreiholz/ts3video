@@ -143,11 +143,9 @@ QString ELWS::humanReadableBandwidth(quint64 bytesPerSecond)
 bool ELWS::isVersionSupported(const QString &version, const QString &supportedVersions)
 {
   auto versions = supportedVersions.split(QChar(','), QString::SkipEmptyParts);
-  for (auto i = 0; i < versions.size(); ++i) {
-    versions[i] = versions[i].trimmed();
+  for (auto i = 0; i < versions.size(); ++i)
     if (versions[i].compare(version) == 0)
       return true;
-  }
   return false;
 }
 

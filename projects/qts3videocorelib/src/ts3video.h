@@ -13,7 +13,7 @@
 #define IFVS_SOFTWARE_VERSION_QSTRING QString("%1 %2 (Build %3)").arg(IFVS_SOFTWARE_VERSION).arg(IFVS_SOFTWARE_VERSION_POSTFIX).arg(IFVS_SOFTWARE_VERSION_BUILD)
 
 // Server specific defines.
-#define IFVS_SERVER_SUPPORTED_CLIENT_VERSIONS "1.0"      ///< Comma separated list of client versions, which the current server build supports.
+#define IFVS_SERVER_SUPPORTED_CLIENT_VERSIONS "2.0"      ///< Comma separated list of client versions, which the current server build supports.
 #define IFVS_SERVER_ADDRESS "h2377348.stratoserver.net"  ///< The default server address. Good for testing.
 #define IFVS_SERVER_CONNECTION_PORT 13370                ///< The default server port to accept connections from clients.
 #define IFVS_SERVER_MEDIA_PORT 13370                     ///< The default server port to handle media data (e.g. video-stream).
