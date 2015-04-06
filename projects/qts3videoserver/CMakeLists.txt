@@ -35,7 +35,6 @@ set(qresources
 )
 
 qt5_wrap_cpp(qheaders_wrap ${qheaders})
-#qt5_wrap_ui(qforms_wrap ${qforms})
 qt5_add_resources(qresources_wrap ${qresources})
 source_group(QtWrap FILES ${qheaders_wrap} ${qforms_wrap} ${qresources_wrap})
 
@@ -53,14 +52,14 @@ include_directories(
   ../qts3videocorelib/src
 )
 
-# Target prerequesites.
+# Target prerequisites.
 if(WIN32)
   set(win32_gui_type WIN32)
 endif(WIN32)
 
 # Target
 add_executable(
-  qts3videoserver
+  ${PROJECT_NAME}
   ${win32_gui_type}
   ${headers}
   ${sources}
@@ -71,7 +70,7 @@ add_executable(
 )
 
 target_link_libraries(
-  qts3videoserver
+  ${PROJECT_NAME}
   Qt5::Core
   Qt5::Network
   Qt5::Gui
@@ -83,6 +82,6 @@ target_link_libraries(
   medlib
 )
 
-humblelogging_POSTBUILD(qts3videoserver)
+humblelogging_POSTBUILD(${PROJECT_NAME})
 
-install(TARGETS qts3videoserver DESTINATION bin)
+install(TARGETS ${PROJECT_NAME} DESTINATION bin)
