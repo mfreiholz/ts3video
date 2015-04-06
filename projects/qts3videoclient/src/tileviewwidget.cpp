@@ -46,6 +46,7 @@ TileViewWidget::TileViewWidget(QWidget *parent, Qt::WindowFlags f) :
   // Video tiles container.
   auto tilesContainer = new MovableWidgetContainer(nullptr, 0);
   auto tilesContainerLayout = static_cast<FlowLayout*>(tilesContainer->layout());
+  tilesContainerLayout->setContentsMargins(0, 0, 0, 0);
   tilesContainer->setLayout(tilesContainerLayout);
   scrollAreaContentLayout->addWidget(tilesContainer, 1);
   d->tilesLayout = tilesContainerLayout;
@@ -97,7 +98,8 @@ TileViewWidget::TileViewWidget(QWidget *parent, Qt::WindowFlags f) :
   showLeftPanelButton->setFlat(true);
   showLeftPanelButton->setVisible(!d->leftPanelVisible);
   showLeftPanelButton->resize(showLeftPanelButton->iconSize());
-  showLeftPanelButton->move(QPoint(6, 6));
+  showLeftPanelButton->move(QPoint(0, 0));
+  showLeftPanelButton->stackUnder(d->cameraWidget);
 
   auto aboutButton = new QPushButton();
   aboutButton->setIcon(QIcon(":/ic_info_outline_grey600_48dp.png"));
@@ -180,11 +182,13 @@ TileViewWidget::TileViewWidget(QWidget *parent, Qt::WindowFlags f) :
   QObject::connect(hideLeftPanelButton, &QPushButton::clicked, [this, leftPanel, showLeftPanelButton]() {
     leftPanel->setVisible(false);
     showLeftPanelButton->setVisible(true);
+    d->tilesLayout->setContentsMargins(d->showLeftPanelButton->width() - 8, 0, 0, 0);
     d->leftPanelVisible = false;
   });
   QObject::connect(showLeftPanelButton, &QPushButton::clicked, [this, leftPanel, showLeftPanelButton]() {
     leftPanel->setVisible(true);
     showLeftPanelButton->setVisible(false);
+    d->tilesLayout->setContentsMargins(0, 0, 0, 0);
     d->leftPanelVisible = true;
   });
   QObject::connect(aboutButton, &QPushButton::clicked, [this]() {
@@ -337,34 +341,24 @@ void TileViewWidget::hideEvent(QHideEvent *e)
 
 TileViewCameraWidget::TileViewCameraWidget(QWidget *parent) :
   QFrame(parent),
-  _widget(nullptr)
+  _mainLayout(nullptr)
 {
   ViewBase::addDropShadowEffect(this);
-}
-
-TileViewCameraWidget::~TileViewCameraWidget()
-{
-  if (_widget) {
-    _widget->setVisible(false);
-    _widget->setParent(nullptr);
-  }
-}
-
-void TileViewCameraWidget::setWidget(QWidget *w)
-{
-  if (_widget) {
-    _widget->setParent(nullptr);
-    _widget->setVisible(false);
-  }
-  _widget = w;
-  _widget->setParent(this);
-  _widget->setVisible(true);
 
   auto l = new QBoxLayout(QBoxLayout::TopToBottom);
   l->setContentsMargins(0, 0, 0, 0);
   l->setSpacing(0);
-  l->addWidget(_widget);
   setLayout(l);
+  _mainLayout = l;
+}
+
+TileViewCameraWidget::~TileViewCameraWidget()
+{
+}
+
+void TileViewCameraWidget::setWidget(QWidget *w)
+{
+  _mainLayout->addWidget(w, 1);
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -376,13 +370,13 @@ TileViewTileWidget::TileViewTileWidget(const ClientEntity &client, QWidget *pare
 {
   ViewBase::addDropShadowEffect(this);
 
-  _videoWidget = ViewBase::createRemoteVideoWidget(client, this);
-
   auto mainLayout = new QBoxLayout(QBoxLayout::TopToBottom);
   mainLayout->setContentsMargins(0, 0, 0, 0);
   mainLayout->setSpacing(0);
-  mainLayout->addWidget(_videoWidget);
   setLayout(mainLayout);
+
+  _videoWidget = ViewBase::createRemoteVideoWidget(client, this);
+  mainLayout->addWidget(_videoWidget);
 }
 
 ///////////////////////////////////////////////////////////////////////

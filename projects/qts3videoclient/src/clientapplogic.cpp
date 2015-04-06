@@ -73,10 +73,10 @@ ClientAppLogic::~ClientAppLogic()
   if (d->view) {
     delete d->view;
   }
-  if (d->cameraWidget) {
-    d->cameraWidget->close();
-    delete d->cameraWidget;
-  }
+  //if (d->cameraWidget) {
+  //  d->cameraWidget->close();
+  //  delete d->cameraWidget;
+  //}
 }
 
 void ClientAppLogic::init()

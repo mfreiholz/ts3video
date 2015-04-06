@@ -75,7 +75,7 @@ public:
   void setWidget(QWidget *w);
 
 private:
-  QWidget *_widget;
+  class QBoxLayout *_mainLayout;
 };
 
 ///////////////////////////////////////////////////////////////////////
