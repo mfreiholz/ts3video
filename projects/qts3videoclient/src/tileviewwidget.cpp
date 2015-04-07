@@ -376,6 +376,7 @@ TileViewTileWidget::TileViewTileWidget(const ClientEntity &client, QWidget *pare
   setLayout(mainLayout);
 
   _videoWidget = ViewBase::createRemoteVideoWidget(client, this);
+  _videoWidget->setToolTip(client.name);
   mainLayout->addWidget(_videoWidget);
 }
 
