@@ -99,7 +99,6 @@ TileViewWidget::TileViewWidget(QWidget *parent, Qt::WindowFlags f) :
   showLeftPanelButton->setVisible(!d->leftPanelVisible);
   showLeftPanelButton->resize(showLeftPanelButton->iconSize());
   showLeftPanelButton->move(QPoint(0, 0));
-  showLeftPanelButton->stackUnder(d->cameraWidget);
 
   auto aboutButton = new QPushButton();
   aboutButton->setIcon(QIcon(":/ic_info_outline_grey600_48dp.png"));

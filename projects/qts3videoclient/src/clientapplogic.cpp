@@ -190,7 +190,7 @@ void ClientAppLogic::onError(QAbstractSocket::SocketError socketError)
 void ClientAppLogic::onServerError(int code, const QString &message)
 {
   HL_INFO(HL, QString("Server error (error=%1; message=%2)").arg(code).arg(message).toStdString());
-  //showError(tr("Server error."),  QString("%1: %2").arg(code).arg(message));
+  showError(tr("Server error."),  QString("%1: %2").arg(code).arg(message));
 }
 
 void ClientAppLogic::onClientJoinedChannel(const ClientEntity &client, const ChannelEntity &channel)
@@ -293,18 +293,19 @@ void ClientAppLogic::hideProgress()
 
 void ClientAppLogic::showError(const QString &shortText, const QString &longText, bool exitApp)
 {
+  HL_ERROR(HL, QString("%1: %2").arg(shortText).arg(longText).toStdString());
   hideProgress();
 
   QMessageBox box(this);
   box.setIcon(QMessageBox::Critical);
   box.addButton(QMessageBox::Ok);
-  box.setText(shortText);
+  box.setText(shortText + QString("\n\n") + longText);
   box.setDetailedText(longText);
   box.setMinimumWidth(400);
   box.exec();
 
-  if (exitApp) {
-    close();
-    qApp->quit();
-  }
+  //if (exitApp) {
+  //  close();
+  //  qApp->quit();
+  //}
 }
