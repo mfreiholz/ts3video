@@ -15,6 +15,7 @@ public:
 public:
   StartupDialog *owner;
   Ui::StartupWidgetForm ui;
+  StartupDialogValues opts;
 };
 
 ///////////////////////////////////////////////////////////////////////
@@ -29,7 +30,6 @@ StartupDialog::StartupDialog(QWidget *parent) :
   d->ui.usernameLineEdit->clear();
   d->ui.passwordLineEdit->clear();
   d->ui.serverAddress->clear();
-  d->ui.serverPort->clear();
 
   auto cameraInfos = QCameraInfo::availableCameras();
   foreach (const auto &ci, cameraInfos) {
@@ -43,7 +43,6 @@ StartupDialog::StartupDialog(QWidget *parent) :
   QObject::connect(d->ui.cameraComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(validate()));
   QObject::connect(d->ui.usernameLineEdit, SIGNAL(textEdited(const QString&)), this, SLOT(validate()));
   QObject::connect(d->ui.serverAddress, SIGNAL(textEdited(const QString&)), this, SLOT(validate()));
-  QObject::connect(d->ui.serverPort, SIGNAL(textEdited(const QString&)), this, SLOT(validate()));
   QObject::connect(d->ui.okButton, &QPushButton::clicked, this, &StartupDialog::onAccept);
   QObject::connect(d->ui.cancelButton, &QPushButton::clicked, this, &QDialog::reject);
 
@@ -56,36 +55,58 @@ StartupDialog::StartupDialog(QWidget *parent) :
       break;
     }
   }
+  const auto addresses = conf.value("UI/StartupDialog-Addresses").toString().split(",", QString::SkipEmptyParts);
+  for (auto i = 0; i < addresses.count(); ++i) {
+    d->ui.serverAddress->addItem(addresses[i]);
+  }
 }
 
 StartupDialog::~StartupDialog()
 {
   QSettings conf;
   auto v = values();
-  conf.setValue("UI/StartupDialog-CameraDeviceID", v.cameraDeviceName); 
+  
+  conf.setValue("UI/StartupDialog-CameraDeviceID", v.cameraDeviceName);
+  
+  QStringList addresses;
+  for (auto i = 0; i < d->ui.serverAddress->count(); ++i)
+    addresses.append(d->ui.serverAddress->itemText(i));
+  if (!addresses.contains(d->ui.serverAddress->currentText()))
+    addresses.prepend(d->ui.serverAddress->currentText());
+  conf.setValue("UI/StartupDialog-Addresses", addresses.join(","));
 }
 
 StartupDialogValues StartupDialog::values() const
 {
-  StartupDialogValues v;
+  auto v = d->opts;
   v.cameraDeviceName = d->ui.cameraComboBox->currentData().toString();
   v.username = d->ui.usernameLineEdit->text();
   v.password = d->ui.passwordLineEdit->text();
-  v.serverAddress = d->ui.serverAddress->text();
-  v.serverPort = d->ui.serverPort->text().toUInt();
+
+  auto addr = d->ui.serverAddress->currentText().split(":", QString::SkipEmptyParts);
+  if (addr.size() >= 1) {
+    v.serverAddress = addr[0];
+  }
+  if (addr.size() >= 2) {
+    bool ok = false;
+    auto port = addr[1].toUInt(&ok);
+    if (port > 0 && ok)
+      v.serverPort = port;
+  }
+
   return v;
 }
 
 void StartupDialog::setValues(const StartupDialogValues &v)
 {
+  d->opts = v;
   auto index = d->ui.cameraComboBox->findData(v.cameraDeviceName);
   if (index >= 0) {
     d->ui.cameraComboBox->setCurrentIndex(index);
   }
   d->ui.usernameLineEdit->setText(v.username);
   d->ui.passwordLineEdit->setText(v.password);
-  d->ui.serverAddress->setText(v.serverAddress);
-  d->ui.serverPort->setText(QString::number(v.serverPort));
+  d->ui.serverAddress->setCurrentText(v.serverAddress + QString(":") + QString::number(v.serverPort));
   d->validateUi();
 }
 
@@ -108,17 +129,11 @@ bool StartupDialogPrivate::validateUi()
 {
   auto d = this;
   auto valid = true;
-  
-  //if (d->ui.cameraComboBox->currentData().toString().isEmpty()) {
-  //  valid = false;
-  //}
+
   if (d->ui.usernameLineEdit->text().isEmpty()) {
     valid = false;
   }
-  if (d->ui.serverAddress->text().isEmpty()) {
-    valid = false;
-  }
-  if (d->ui.serverPort->text().isEmpty() || d->ui.serverPort->text().toUInt() <= 0) {
+  if (d->ui.serverAddress->currentText().isEmpty()) {
     valid = false;
   }
 

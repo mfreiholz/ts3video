@@ -462,7 +462,7 @@ int runClientAppLogic(QApplication &a)
   if (url.isValid()) {
     QUrlQuery urlQuery(url);
     opts.serverAddress = url.host();
-    opts.serverPort = url.port(6000);
+    opts.serverPort = url.port(opts.serverPort);
     opts.ts3clientId = urlQuery.queryItemValue("ts3clientid").toULongLong();
     opts.ts3channelId = urlQuery.queryItemValue("ts3channelid").toULongLong();
     opts.username = urlQuery.queryItemValue("username");
