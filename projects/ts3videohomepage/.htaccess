@@ -1,5 +1,0 @@
-# Rewrite request from "/about" to "/index.php/about"
-RewriteEngine On
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)$ index.php/$1 [QSA,L]
