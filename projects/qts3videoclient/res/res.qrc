@@ -19,6 +19,7 @@
         <file>ic_chevron_left_grey600_48dp.png</file>
         <file>ic_more_vert_grey600_48dp.png</file>
         <file>ic_chevron_right_grey600_48dp.png</file>
+        <file>ic_videocam_black_48dp.png</file>
     </qresource>
     <qresource prefix="/opengl">
         <file>vertex.vsh</file>

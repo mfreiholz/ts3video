@@ -117,7 +117,7 @@ include_directories(
 
 # Target
 add_executable(
-  qts3videoclient
+  ${PROJECT_NAME}
   WIN32
   ${headers}
   ${sources}
@@ -128,7 +128,7 @@ add_executable(
 )
 
 target_link_libraries(
-  qts3videoclient
+  ${PROJECT_NAME}
   Qt5::Core
   Qt5::Gui
   Qt5::Widgets
@@ -145,9 +145,23 @@ target_link_libraries(
 )
 
 if(IncludeOpenGLSupport)
-  target_link_libraries(qts3videoclient opengl32) # TODO This shouldn't be here!
+  target_link_libraries(${PROJECT_NAME} opengl32) # TODO This shouldn't be here!
 endif()
 
-humblelogging_POSTBUILD(qts3videoclient)
+set_target_properties(${PROJECT_NAME}
+  PROPERTIES OUTPUT_NAME "videoclient"
+)
 
-install(TARGETS qts3videoclient DESTINATION bin)
+humblelogging_POSTBUILD(${PROJECT_NAME})
+
+#######################################################################
+# INSTALLATION
+#######################################################################
+
+install(TARGETS ${PROJECT_NAME} DESTINATION bin)
+
+#######################################################################
+# INSTALLATION - PLUGIN
+#######################################################################
+
+install(TARGETS ${PROJECT_NAME} DESTINATION ts3video/plugins/ts3video)

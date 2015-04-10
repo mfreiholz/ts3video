@@ -24,12 +24,20 @@ include_directories(
 
 # Target
 add_library(
-  qts3videoclientplugin
+  ${PROJECT_NAME}
   SHARED
   ${headers}
   ${sources}
 )
 
+set_target_properties(${PROJECT_NAME}
+  PROPERTIES OUTPUT_NAME "ts3video"
+)
+
 # Install
-install(DIRECTORY package DESTINATION ts3plugin)
-install(TARGETS qts3videoclientplugin DESTINATION ts3plugin/package/plugins)
+## Generate "package.ini"
+install(SCRIPT cmake/generate-package-ini.cmake)
+## Copy plugin dll.
+install(TARGETS ${PROJECT_NAME} DESTINATION ts3video/plugins)
+## Copy "qts3videoclient" target into plugin's directory.
+#install(TARGETS qts3videoclient DESTINATION ts3video/plugins/ts3video)

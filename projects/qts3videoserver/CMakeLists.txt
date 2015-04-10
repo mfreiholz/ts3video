@@ -34,6 +34,10 @@ set(qresources
   res/res.qrc
 )
 
+if(WIN32)
+	list(APPEND sources res/app.rc)
+endif(WIN32)
+
 qt5_wrap_cpp(qheaders_wrap ${qheaders})
 qt5_add_resources(qresources_wrap ${qresources})
 source_group(QtWrap FILES ${qheaders_wrap} ${qforms_wrap} ${qresources_wrap})
@@ -80,6 +84,10 @@ target_link_libraries(
   qcorlib
   qts3videocorelib
   medlib
+)
+
+set_target_properties(${PROJECT_NAME}
+  PROPERTIES OUTPUT_NAME "videoserver"
 )
 
 humblelogging_POSTBUILD(${PROJECT_NAME})

@@ -201,7 +201,7 @@ int _main(int argc, char *argv[])
   QCoreApplication a(argc, argv);
   a.setOrganizationName("insaneFactory");
   a.setOrganizationDomain("http://www.insanefactory.com/");
-  a.setApplicationName("ts3video-server");
+  a.setApplicationName("Video Server");
   a.setApplicationVersion(IFVS_SOFTWARE_VERSION_QSTRING);
 
 #ifdef _WIN32

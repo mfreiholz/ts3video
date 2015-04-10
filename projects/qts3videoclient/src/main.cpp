@@ -446,7 +446,7 @@ int runClientAppLogic(QApplication &a)
 {
   a.setOrganizationName("insaneFactory");
   a.setOrganizationDomain("http://www.insanefactory.com/ts3video");
-  a.setApplicationName("TS3 Video Client");
+  a.setApplicationName("Video Client");
   a.setApplicationVersion(IFVS_SOFTWARE_VERSION_QSTRING);
   a.setQuitOnLastWindowClosed(true);
 
