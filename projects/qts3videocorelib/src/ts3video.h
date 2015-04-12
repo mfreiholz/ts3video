@@ -10,7 +10,7 @@
 #define IFVS_SOFTWARE_VERSION "2.0"               ///< Version of the software (Always use <MAJOR>.<MINOR> format!)
 #define IFVS_SOFTWARE_VERSION_POSTFIX "beta"      ///< Version label (alpha, beta, release, ...)
 #define IFVS_SOFTWARE_VERSION_BUILD "0"           ///< Incrementing number with each build, which can be mapped to a revision in source repository.
-#define IFVS_SOFTWARE_VERSION_QSTRING QString("%1 %2").arg(IFVS_SOFTWARE_VERSION).arg(IFVS_SOFTWARE_VERSION_POSTFIX).arg(IFVS_SOFTWARE_VERSION_BUILD)
+#define IFVS_SOFTWARE_VERSION_QSTRING QString("%1 %2").arg(IFVS_SOFTWARE_VERSION).arg(IFVS_SOFTWARE_VERSION_POSTFIX)
 
 // Server specific defines.
 #define IFVS_SERVER_SUPPORTED_CLIENT_VERSIONS "2.0"      ///< Comma separated list of client versions, which the current server build supports.
