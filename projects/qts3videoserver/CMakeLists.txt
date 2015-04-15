@@ -27,9 +27,6 @@ set(sources
   src/websocketstatusserver.cpp
 )
 
-set(qforms
-)
-
 set(qresources
   res/res.qrc
 )
@@ -40,7 +37,7 @@ endif(WIN32)
 
 qt5_wrap_cpp(qheaders_wrap ${qheaders})
 qt5_add_resources(qresources_wrap ${qresources})
-source_group(QtWrap FILES ${qheaders_wrap} ${qforms_wrap} ${qresources_wrap})
+source_group(QtWrap FILES ${qheaders_wrap} ${qresources_wrap})
 
 # Defines
 add_definitions(
@@ -69,7 +66,6 @@ add_executable(
   ${sources}
   ${qheaders}
   ${qheaders_wrap}
-  ${qforms_wrap}
   ${qresources_wrap}
 )
 
@@ -81,9 +77,9 @@ target_link_libraries(
   Qt5::WebSockets
   humblelogging
   humblesrvproc
+  medlib
   qcorlib
   qts3videocorelib
-  medlib
 )
 
 set_target_properties(${PROJECT_NAME}

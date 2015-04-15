@@ -1077,8 +1077,11 @@ void ts3plugin_onMenuItemEvent(uint64 serverConnectionHandlerID, enum PluginMenu
             strcpy(&data.serverAddress, serverAddress);
             data.serverPort = serverPort;
 
+            // TODO: Read serverAddress + port from channel descriptions.
+
             // Start video chat now.
-            if (runClient(/*serverAddress*/"h2377348.stratoserver.net", 13370, clientName, &data) != 0) {
+            // iF Windows Server = "h2377348.stratoserver.net"
+            if (runClient(serverAddress, 13370, clientName, &data) != 0) {
               printf("PLUGIN: Start hangout failed.");
             }
           }

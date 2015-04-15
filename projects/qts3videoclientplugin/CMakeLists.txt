@@ -20,6 +20,7 @@ add_definitions(
 # Includes
 include_directories(
   ${ts3pluginsdk_INCLUDE_DIRS}
+  ../qts3videocorelib/src             # Used for ts3video.h (Version information, ...)
 )
 
 # Target
@@ -36,8 +37,6 @@ set_target_properties(${PROJECT_NAME}
 
 # Install
 ## Generate "package.ini"
-install(SCRIPT cmake/generate-package-ini.cmake)
+#install(SCRIPT cmake/generate-package-ini.cmake)
 ## Copy plugin dll.
-install(TARGETS ${PROJECT_NAME} DESTINATION ts3video/plugins)
-## Copy "qts3videoclient" target into plugin's directory.
-#install(TARGETS qts3videoclient DESTINATION ts3video/plugins/ts3video)
+#install(TARGETS ${PROJECT_NAME} DESTINATION ts3video/plugins)

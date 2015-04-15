@@ -1,6 +1,7 @@
 #include <string>
 #include <stdio.h>
 #include <Windows.h>
+#include "ts3video.h"
 #include "impl.h"
 
 #define PATH_MAX_LENGTH 4096
@@ -41,7 +42,15 @@ char* findClientExeFilePath()
   char *path = new char[PATH_MAX_LENGTH];
   path[0] = 0;
   strcat(path, moduleFilePath);
-  strcat(path, "plugins\\qts3videoclientplugin\\qts3videoclient.exe");
+  strcat(path, "plugins");
+  strcat(path, "\\");
+  strcat(path, "ts3video");
+  strcat(path, "\\");
+  strcat(path, IFVS_SOFTWARE_VERSION);
+  strcat(path, "\\");
+  strcat(path, "bin");
+  strcat(path, "\\");
+  strcat(path, "videoclient.exe");
   return path;
 #endif
 }

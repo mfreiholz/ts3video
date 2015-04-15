@@ -154,14 +154,4 @@ set_target_properties(${PROJECT_NAME}
 
 humblelogging_POSTBUILD(${PROJECT_NAME})
 
-#######################################################################
-# INSTALLATION
-#######################################################################
-
 install(TARGETS ${PROJECT_NAME} DESTINATION bin)
-
-#######################################################################
-# INSTALLATION - PLUGIN
-#######################################################################
-
-install(TARGETS ${PROJECT_NAME} DESTINATION ts3video/plugins/ts3video)
