@@ -48,8 +48,6 @@ char* findClientExeFilePath()
   strcat(path, "\\");
   strcat(path, IFVS_SOFTWARE_VERSION);
   strcat(path, "\\");
-  strcat(path, "bin");
-  strcat(path, "\\");
   strcat(path, "videoclient.exe");
   return path;
 #endif
