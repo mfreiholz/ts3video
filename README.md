@@ -6,23 +6,22 @@ Build has been tested on
 
 ## Requirements
 - CMake (build system)
-- Qt >=5.3 (lower versions not tested yet)
+- Qt 5.4
 - VC12 (Visual Studio 2013)
-- Optional: Qt Addin for Visual Studio (http://www.qt.io/download-open-source/)
+- Optional: Qt Add-in for Visual Studio (http://www.qt.io/download-open-source/)
 
 
 ## Checkout steps
 ```
-$> git clone [URI] [CHECKOUT_DIR]
-$> cd [CHECKOUT_DIR]
+$> git clone git@git.insanefactory.com:/opt/git/ts3video.git .
+$> cd ts3video
 $> git submodule init
 $> git submodule update
 ```
 
 
-## Build steps
+## Compile and build steps
 ```
-$> cd [CHECKOUT_DIR]
 $> mkdir build
 $> cd build
 $> cmake -G "Visual Studio 12 Win64" ..
