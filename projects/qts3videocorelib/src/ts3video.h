@@ -7,13 +7,13 @@
   Shortcuts:
     "IFVS_*" stands for "insaneFactory Video Server ..."
  */
-#define IFVS_SOFTWARE_VERSION "0.1"               ///< Version of the software (Always use <MAJOR>.<MINOR> format!)
+#define IFVS_SOFTWARE_VERSION "0.2"               ///< Version of the software (Always use <MAJOR>.<MINOR> format!)
 #define IFVS_SOFTWARE_VERSION_POSTFIX "beta"      ///< Version label (alpha, beta, release, ...)
 #define IFVS_SOFTWARE_VERSION_BUILD "0"           ///< Incrementing number with each build, which can be mapped to a revision in source repository.
 #define IFVS_SOFTWARE_VERSION_QSTRING QString("%1 %2").arg(IFVS_SOFTWARE_VERSION).arg(IFVS_SOFTWARE_VERSION_POSTFIX)
 
 // Server specific defines.
-#define IFVS_SERVER_SUPPORTED_CLIENT_VERSIONS "0.1"        ///< Comma separated list of client versions, which the current server build supports.
+#define IFVS_SERVER_SUPPORTED_CLIENT_VERSIONS "0.1,0.2"        ///< Comma separated list of client versions, which the current server build supports.
 #define IFVS_SERVER_ADDRESS "teamspeak.insanefactory.com"  ///< The default server address. Good for testing.
 #define IFVS_SERVER_CONNECTION_PORT 13370                  ///< The default server port to accept connections from clients.
 #define IFVS_SERVER_MEDIA_PORT 13370                       ///< The default server port to handle media data (e.g. video-stream).
