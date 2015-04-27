@@ -11,7 +11,7 @@ extern "C" {
 // COR protocol objects
 ///////////////////////////////////////////////////////////////////////
 
-typedef struct
+typedef struct cor_frame
 {
   typedef uint16_t  version_t;
   typedef uint16_t  type_t;
