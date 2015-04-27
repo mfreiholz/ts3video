@@ -12,6 +12,10 @@ ClientListModel::ClientListModel(QObject *parent) :
 {
 }
 
+ClientListModel::~ClientListModel()
+{
+}
+
 void ClientListModel::addClient(const ClientEntity &client)
 {
   beginInsertRows(QModelIndex(), d->clients.size(), d->clients.size());

@@ -118,10 +118,15 @@ include_directories(
   ${vpx_INCLUDE_DIRS}
 )
 
+# Target prerequisites.
+if(WIN32)
+  set(win32_gui_type WIN32)
+endif(WIN32)
+
 # Target
 add_executable(
   ${PROJECT_NAME}
-  WIN32
+  ${win32_gui_type}
   ${headers}
   ${sources}
   ${qheaders}

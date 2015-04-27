@@ -2,6 +2,7 @@
 # Build
 Build has been tested on
 - Windows 8.1
+- Ubuntu 15.04
 
 
 ## Requirements
@@ -9,6 +10,7 @@ Build has been tested on
 - Qt 5.4
 - VC12 (Visual Studio 2013)
 - Optional: Qt Add-in for Visual Studio (http://www.qt.io/download-open-source/)
+- Linux: sudo apt-get install mesa-common-dev
 
 
 ## Checkout steps

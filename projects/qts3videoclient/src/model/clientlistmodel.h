@@ -20,6 +20,7 @@ public:
   };
 
   ClientListModel(QObject *parent);
+  virtual ~ClientListModel();
 
   // Helper function to add/edit/remove clients.
   void addClient(const ClientEntity &client);

@@ -27,6 +27,22 @@ HUMBLE_LOGGER(HL, "client.ts3videoclient");
 
 ///////////////////////////////////////////////////////////////////////
 
+QDataStream& operator<<(QDataStream &out, const UDP::VideoFrameDatagram::dg_frame_id_t &val)
+{
+  out << (quint64) val;
+  return out;
+}
+
+QDataStream& operator>>(QDataStream &in, UDP::VideoFrameDatagram::dg_frame_id_t &val)
+{
+  quint64 i;
+  in >> i;
+  val = i;
+  return in;
+}
+
+///////////////////////////////////////////////////////////////////////
+
 TS3VideoClient::TS3VideoClient(QObject *parent) :
   QObject(parent),
   d(new TS3VideoClientPrivate(this))

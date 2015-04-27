@@ -25,10 +25,12 @@ endmacro(humblelogging_POSTBUILD)
 set(vpx_INCLUDE_DIRS
   ${PROJECT_SOURCE_DIR}/thirdparty/vpx/include
 )
-set(vpx_LIBRARIES
-  optimized "${PROJECT_SOURCE_DIR}/thirdparty/vpx/lib-win-${ARCH}-vc12-release/vpxmd.lib"
-  debug "${PROJECT_SOURCE_DIR}/thirdparty/vpx/lib-win-${ARCH}-vc12-debug/vpxmdd.lib"
-)
+if(WIN32)
+  set(vpx_LIBRARIES
+    optimized "${PROJECT_SOURCE_DIR}/thirdparty/vpx/lib-win-${ARCH}-vc12-release/vpxmd.lib"
+    debug "${PROJECT_SOURCE_DIR}/thirdparty/vpx/lib-win-${ARCH}-vc12-debug/vpxmdd.lib"
+  )
+endif(WIN32)
 
 # Third party (ts3pluginsdk)
 set(ts3pluginsdk_INCLUDE_DIRS

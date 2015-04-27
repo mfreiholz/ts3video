@@ -14,9 +14,9 @@ add_subdirectory(projects/humblesrvproc)
 add_subdirectory(projects/qcorlib)
 add_subdirectory(projects/qts3videocorelib)
 add_subdirectory(projects/qts3videoserver)
-if(WIN32)
+#if(WIN32)
   add_subdirectory(projects/qts3videoclient)
-endif(WIN32)
+#endif(WIN32)
 
 # TS3 Client Plugin
 if(WIN32)
