@@ -245,8 +245,16 @@ void ClientConnectionHandler::onNewIncomingRequest(QCorFrameRefPtr frame)
     _connectionTimeoutTimer.start(20000);
     return;
   }
-  else if (action == "joinchannel") {
-    auto channelId = params["channelid"].toInt();
+  else if (action == "joinchannel" || action == "joinchannelbyidentifier") {
+    int channelId = 0;
+    if (action == "joinchannel") {
+      channelId = params["channelid"].toInt();
+    }
+    else if (action == "joinchannelbyidentifier") {
+      auto ident = params["identifier"].toString();
+      channelId = qHash(ident);
+    }
+    // Validate parameters.
     if (channelId <= 0 || (!_server->_opts.validChannels.isEmpty() && !_server->_opts.validChannels.contains(channelId))) {
       // Send error: Missing channel id.
       QCorFrame res;
