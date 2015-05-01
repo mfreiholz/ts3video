@@ -90,6 +90,9 @@ humblelogging_POSTBUILD(${PROJECT_NAME})
 
 #######################################################################
 # Install
+# -------
+# ToDo's:
+# - Copy humblelogging into deploy directory.
 #######################################################################
 
 if(WIN32)

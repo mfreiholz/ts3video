@@ -1,5 +1,8 @@
 
+# ---------------------------------------------------------------------
 # Third party (HumbleLogging)
+# ---------------------------------------------------------------------
+
 add_subdirectory(thirdparty/humblelogging)
 set(humblelogging_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/thirdparty/humblelogging/include)
 macro(humblelogging_POSTBUILD target_)
@@ -20,7 +23,10 @@ macro(humblelogging_POSTBUILD target_)
   endif(WIN32)
 endmacro(humblelogging_POSTBUILD)
 
+# ---------------------------------------------------------------------
 # Third party (VPX)
+# ---------------------------------------------------------------------
+
 set(vpx_INCLUDE_DIRS
   ${PROJECT_SOURCE_DIR}/thirdparty/vpx/include
 )
@@ -31,7 +37,10 @@ if(WIN32)
   )
 endif(WIN32)
 
+# ---------------------------------------------------------------------
 # Third party (ts3pluginsdk)
+# ---------------------------------------------------------------------
+
 set(ts3pluginsdk_INCLUDE_DIRS
   ${PROJECT_SOURCE_DIR}/thirdparty/teamspeak3-clientpluginsdk/pluginsdk-3.0.16/include
 )
