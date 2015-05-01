@@ -1,9 +1,9 @@
 
 # Architecture
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-	set(ARCH "x64")
+	set(ARCH "x86-64")
 else(CMAKE_SIZEOF_VOID_P EQUAL 8)
-	set(ARCH "x86")
+	set(ARCH "x86-32")
 endif(CMAKE_SIZEOF_VOID_P EQUAL 8)
 
 # Windows
