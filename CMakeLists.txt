@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 project(source)
 cmake_policy(SET CMP0020 NEW)
 
-set(CMAKE_INSTALL_PREFIX "${PROJECT_BINARY_DIR}/install")
+#set(CMAKE_INSTALL_PREFIX "${PROJECT_BINARY_DIR}/install")
 
 include(cmake/compiler.cmake)
 include(cmake/thirdparty.cmake)
@@ -14,12 +14,8 @@ add_subdirectory(projects/humblesrvproc)
 add_subdirectory(projects/qcorlib)
 add_subdirectory(projects/qts3videocorelib)
 add_subdirectory(projects/qts3videoserver)
-#if(WIN32)
-  add_subdirectory(projects/qts3videoclient)
-#endif(WIN32)
-
-# TS3 Client Plugin
 if(WIN32)
+  add_subdirectory(projects/qts3videoclient)
   add_subdirectory(projects/qts3videoclientplugin)
 endif(WIN32)
 
