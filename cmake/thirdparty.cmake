@@ -2,7 +2,6 @@
 # Third party (HumbleLogging)
 add_subdirectory(thirdparty/humblelogging)
 set(humblelogging_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/thirdparty/humblelogging/include)
-#set(humblelogging_LIBRARIES humblelogging)
 macro(humblelogging_POSTBUILD target_)
   if(WIN32)
     add_custom_command(

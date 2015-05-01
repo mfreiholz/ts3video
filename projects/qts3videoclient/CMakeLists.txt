@@ -145,11 +145,11 @@ target_link_libraries(
   Qt5::MultimediaWidgets
   Qt5::OpenGL
   Qt5::Concurrent
+  humblelogging
+  ${vpx_LIBRARIES}
   qcorlib
   qts3videocorelib
   medlib
-  ${vpx_LIBRARIES}
-  humblelogging
 )
 
 if(IncludeOpenGLSupport)
