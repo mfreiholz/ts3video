@@ -48,6 +48,8 @@ set(qheaders
   src/networkclient/networkclient_p.h
   src/networkclient/mediasocket.h
   src/networkclient/mediasocket_p.h
+  src/networkclient/videoencodingthread.h
+  src/networkclient/videodecodingthread.h
 )
 
 set(sources
@@ -73,6 +75,8 @@ set(sources
   src/model/clientlistmodel.cpp
   src/networkclient/networkclient.cpp
   src/networkclient/mediasocket.cpp
+  src/networkclient/videoencodingthread.cpp
+  src/networkclient/videodecodingthread.cpp
 )
 
 set(qforms
