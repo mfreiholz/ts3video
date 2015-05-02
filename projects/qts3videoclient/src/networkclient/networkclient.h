@@ -1,5 +1,5 @@
-#ifndef TS3VIDEOCLIENT_H
-#define TS3VIDEOCLIENT_H
+#ifndef NetworkClient_H
+#define NetworkClient_H
 
 #include <QObject>
 #include <QScopedPointer>
@@ -16,17 +16,17 @@ class ClientEntity;
 class ChannelEntity;
 class NetworkUsageEntity;
 
-class TS3VideoClientPrivate;
-class TS3VideoClient : public QObject
+class NetworkClientPrivate;
+class NetworkClient : public QObject
 {
   Q_OBJECT
-  friend class TS3VideoClientPrivate;
-  QScopedPointer<TS3VideoClientPrivate> d;
+  friend class NetworkClientPrivate;
+  QScopedPointer<NetworkClientPrivate> d;
 
 public:
-  TS3VideoClient(QObject *parent = nullptr);
-  TS3VideoClient(const TS3VideoClient &other);
-  ~TS3VideoClient();
+  NetworkClient(QObject *parent = nullptr);
+  NetworkClient(const NetworkClient &other);
+  ~NetworkClient();
 
   void setMediaEnabled(bool yesno); ///< TODO Remove me... DEV only.
 
@@ -87,4 +87,4 @@ private slots:
   void onNewIncomingRequest(QCorFrameRefPtr frame);
 };
 
-#endif // TS3VIDEOCLIENT_H
+#endif // NetworkClient_H

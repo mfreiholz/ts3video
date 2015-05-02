@@ -10,7 +10,7 @@
 #include "ts3video.h"
 #include "yuvframe.h"
 
-#include "ts3videoclient.h"
+#include "networkclient/networkclient.h"
 
 class QWidget;
 class QProgressDialog;
@@ -36,16 +36,16 @@ public:
     // The address can either be a name like "myhost.com" or and IPv4/IPv6 address.
     QString serverAddress = IFVS_SERVER_ADDRESS;
     quint16 serverPort = IFVS_SERVER_CONNECTION_PORT;
-    
+
     // The visible username of the client.
     QString username = QString();
     QString password = QString();
 
     // The internal Teamspeak client- and channel-id.
-    // The TS3VideoClient will automatically join the channel.
+    // The NetworkClient will automatically join the channel.
     quint64 ts3clientId = 0;
     quint64 ts3channelId = 0;
-    
+
     // The camera's device ID to stream video.
     QString cameraDeviceId = QString();
   };
@@ -53,7 +53,7 @@ public:
 public:
   ClientAppLogic(const Options &opts, QWidget *parent, Qt::WindowFlags flags);
   ~ClientAppLogic();
-  TS3VideoClient& ts3client();
+  NetworkClient& ts3client();
 
 public slots:
   void init();

@@ -25,8 +25,6 @@ set(qheaders
   src/videowidget_p.h
   src/gridviewwidgetarranger.h
   src/videocollectionwidget.h
-  src/ts3videoclient.h
-  src/ts3videoclient_p.h
   src/clientapplogic.h
   src/clientapplogic_p.h
   src/clientcameravideowidget.h
@@ -46,6 +44,10 @@ set(qheaders
   src/hintoverlaywidget_p.h
   src/model/clientlistmodel.h
   src/model/clientlistmodel_p.h
+  src/networkclient/networkclient.h
+  src/networkclient/networkclient_p.h
+  src/networkclient/mediasocket.h
+  src/networkclient/mediasocket_p.h
 )
 
 set(sources
@@ -54,7 +56,6 @@ set(sources
   src/videowidget.cpp
   src/gridviewwidgetarranger.cpp
   src/videocollectionwidget.cpp
-  src/ts3videoclient.cpp
   src/clientapplogic.cpp
   src/clientcameravideowidget.cpp
   src/udpvideoframedecoder.cpp
@@ -70,6 +71,8 @@ set(sources
   src/movablewidgetcontainer.cpp
   src/hintoverlaywidget.cpp
   src/model/clientlistmodel.cpp
+  src/networkclient/networkclient.cpp
+  src/networkclient/mediasocket.cpp
 )
 
 set(qforms

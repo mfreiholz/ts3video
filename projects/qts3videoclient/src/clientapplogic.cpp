@@ -56,15 +56,15 @@ ClientAppLogic::ClientAppLogic(const Options &opts, QWidget *parent, Qt::WindowF
   //setStatusBar(statusBar);
 
   // Network connection events.
-  connect(&d->ts3vc, &TS3VideoClient::connected, this, &ClientAppLogic::onConnected);
-  connect(&d->ts3vc, &TS3VideoClient::disconnected, this, &ClientAppLogic::onDisconnected);
-  connect(&d->ts3vc, &TS3VideoClient::error, this, &ClientAppLogic::onError);
-  connect(&d->ts3vc, &TS3VideoClient::serverError, this, &ClientAppLogic::onServerError);
-  connect(&d->ts3vc, &TS3VideoClient::clientJoinedChannel, this, &ClientAppLogic::onClientJoinedChannel);
-  connect(&d->ts3vc, &TS3VideoClient::clientLeftChannel, this, &ClientAppLogic::onClientLeftChannel);
-  connect(&d->ts3vc, &TS3VideoClient::clientDisconnected, this, &ClientAppLogic::onClientDisconnected);
-  connect(&d->ts3vc, &TS3VideoClient::newVideoFrame, this, &ClientAppLogic::onNewVideoFrame);
-  connect(&d->ts3vc, &TS3VideoClient::networkUsageUpdated, this, &ClientAppLogic::onNetworkUsageUpdated);
+  connect(&d->ts3vc, &NetworkClient::connected, this, &ClientAppLogic::onConnected);
+  connect(&d->ts3vc, &NetworkClient::disconnected, this, &ClientAppLogic::onDisconnected);
+  connect(&d->ts3vc, &NetworkClient::error, this, &ClientAppLogic::onError);
+  connect(&d->ts3vc, &NetworkClient::serverError, this, &ClientAppLogic::onServerError);
+  connect(&d->ts3vc, &NetworkClient::clientJoinedChannel, this, &ClientAppLogic::onClientJoinedChannel);
+  connect(&d->ts3vc, &NetworkClient::clientLeftChannel, this, &ClientAppLogic::onClientLeftChannel);
+  connect(&d->ts3vc, &NetworkClient::clientDisconnected, this, &ClientAppLogic::onClientDisconnected);
+  connect(&d->ts3vc, &NetworkClient::newVideoFrame, this, &ClientAppLogic::onNewVideoFrame);
+  connect(&d->ts3vc, &NetworkClient::networkUsageUpdated, this, &ClientAppLogic::onNetworkUsageUpdated);
 }
 
 ClientAppLogic::~ClientAppLogic()
@@ -112,7 +112,7 @@ void ClientAppLogic::init()
   watcher->setFuture(future);
 }
 
-TS3VideoClient& ClientAppLogic::ts3client()
+NetworkClient& ClientAppLogic::ts3client()
 {
   return d->ts3vc;
 }
@@ -147,7 +147,7 @@ void ClientAppLogic::onConnected()
     {
       HL_DEBUG(HL, QString("Join channel answer: %1").arg(QString(reply2->frame()->data())).toStdString());
       reply2->deleteLater();
-      
+
       int status;
       QJsonObject params;
       if (!JsonProtocolHelper::fromJsonResponse(reply2->frame()->data(), status, params)) {
@@ -157,7 +157,7 @@ void ClientAppLogic::onConnected()
         this->showError(tr("Protocol error"), reply2->frame()->data());
         return;
       }
-      
+
       // Create user interface.
       initGui();
 
@@ -256,7 +256,7 @@ void ClientAppLogic::initGui()
   // Create main view.
   auto viewWidget = new TileViewWidget(this);
   viewWidget->setClientListModel(d->clientListModel);
-  
+
   // Start camera.
   if (!d->opts.cameraDeviceId.isEmpty())
     viewWidget->setCameraWidget(createCameraWidget());

@@ -25,7 +25,7 @@
 #include "videowidget.h"
 #include "gridviewwidgetarranger.h"
 #include "videocollectionwidget.h"
-#include "ts3videoclient.h"
+#include "networkclient/networkclient.h"
 #include "clientapplogic.h"
 #include "startupwidget.h"
 #include "hangoutviewwidget.h"
@@ -202,12 +202,12 @@ int runTileViewTest(QApplication &a)
 int runTestClient(QApplication &a)
 {
   a.setQuitOnLastWindowClosed(false);
-  
+
   auto timer = new QTimer(nullptr);
   timer->setInterval(2000);
   timer->start();
 
-  QList<TS3VideoClient*> ts3vconns;
+  QList<NetworkClient*> ts3vconns;
   auto maxConns = ELWS::getArgsValue("--max", 1).toInt();
   auto serverAddress = ELWS::getArgsValue("--server-address", IFVS_SERVER_ADDRESS).toString();
   auto serverPort = ELWS::getArgsValue("--server-port", IFVS_SERVER_CONNECTION_PORT).toUInt();
@@ -221,24 +221,24 @@ int runTestClient(QApplication &a)
     }
 
     // Create a new connecion to the TS3VideoServer.
-    auto ts3vc = new TS3VideoClient(nullptr);
+    auto ts3vc = new NetworkClient(nullptr);
     ts3vc->setMediaEnabled(true);
     ts3vc->connectToHost(QHostAddress(serverAddress), serverPort);
     ts3vconns.append(ts3vc);
 
     // Connected.
-    QObject::connect(ts3vc, &TS3VideoClient::connected, [ts3vc, &ts3vconns, sendVideo]() {
+    QObject::connect(ts3vc, &NetworkClient::connected, [ts3vc, &ts3vconns, sendVideo]() {
       // Auth.
       auto reply = ts3vc->auth(QString("Test Client #%1").arg(ts3vconns.size()), "");
       QObject::connect(reply, &QCorReply::finished, [ts3vc, reply, sendVideo]() {
         reply->deleteLater();
         HL_DEBUG(HL, QString(reply->frame()->data()).toStdString());
         // Join channel.
-        auto reply2 = ts3vc->joinChannel(42);
+        auto reply2 = ts3vc->joinChannel(1);
         QObject::connect(reply2, &QCorReply::finished, [ts3vc, reply2, sendVideo]() {
           reply2->deleteLater();
           HL_DEBUG(HL, QString(reply2->frame()->data()).toStdString());
-          
+
           // Send video.
           if (sendVideo) {
             auto baseDir = QDir("D:\\Temp\\camera");
@@ -271,7 +271,7 @@ int runTestClient(QApplication &a)
     });
 
     // Disconnected.
-    QObject::connect(ts3vc, &TS3VideoClient::disconnected, [ts3vc, &ts3vconns]() {
+    QObject::connect(ts3vc, &NetworkClient::disconnected, [ts3vc, &ts3vconns]() {
       ts3vconns.removeAll(ts3vc);
       ts3vc->deleteLater();
     });
@@ -293,13 +293,13 @@ int runVideoRecorderTest(QApplication &a)
   camera->start();
 
   auto recorder = new QMediaRecorder(camera);
-  
+
   QVideoEncoderSettings videoSettings;
   //videoSettings.setCodec("video/mpeg2");
   videoSettings.setResolution(IFVS_CLIENT_VIDEO_SIZE);
   videoSettings.setQuality(QMultimedia::VeryHighQuality);
   videoSettings.setFrameRate(30.0);
-  
+
   recorder->setVideoSettings(videoSettings);
   recorder->setOutputLocation(QUrl::fromLocalFile("D:\\Temp\\myvideo.mp4"));
   recorder->record();

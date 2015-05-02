@@ -11,7 +11,7 @@
 
 #include "elws.h"
 
-#include "ts3videoclient.h"
+#include "networkclient/networkclient.h"
 #include "cameraframegrabber.h"
 #include "videowidget.h"
 
@@ -19,7 +19,7 @@ HUMBLE_LOGGER(HL, "client.camera");
 
 ///////////////////////////////////////////////////////////////////////
 
-ClientCameraVideoWidget::ClientCameraVideoWidget(TS3VideoClient *ts3vc, const QCameraInfo &cameraInfo, QWidget *parent) :
+ClientCameraVideoWidget::ClientCameraVideoWidget(NetworkClient *ts3vc, const QCameraInfo &cameraInfo, QWidget *parent) :
   QWidget(parent),
   _ts3vc(ts3vc)
 {
@@ -28,7 +28,7 @@ ClientCameraVideoWidget::ClientCameraVideoWidget(TS3VideoClient *ts3vc, const QC
   auto camera = new QCamera(cameraInfo, this);
   camera->setViewfinder(grabber);
   camera->start();
-  
+
   // GUI
   auto mainLayout = new QBoxLayout(QBoxLayout::TopToBottom);
   mainLayout->setContentsMargins(0, 0, 0, 0);

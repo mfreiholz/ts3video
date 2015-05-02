@@ -4,18 +4,18 @@
 #include <QWidget>
 
 class QCameraInfo;
-class TS3VideoClient;
+class NetworkClient;
 
 class ClientCameraVideoWidget : public QWidget
 {
   Q_OBJECT
 
 public:
-  ClientCameraVideoWidget(TS3VideoClient *ts3vc, const QCameraInfo &cameraInfo, QWidget *parent);
+  ClientCameraVideoWidget(NetworkClient *ts3vc, const QCameraInfo &cameraInfo, QWidget *parent);
   ~ClientCameraVideoWidget();
 
 private:
-  TS3VideoClient *_ts3vc;
+  NetworkClient *_ts3vc;
 };
 
 #endif

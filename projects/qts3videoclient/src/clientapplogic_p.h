@@ -25,7 +25,7 @@ public:
   ClientAppLogic::Options opts;
 
   // Network connection.
-  TS3VideoClient ts3vc;
+  NetworkClient ts3vc;
 
   // Qt models.
   ClientListModel *clientListModel; ///< Always holds the current state of connected clients in the same channel.
