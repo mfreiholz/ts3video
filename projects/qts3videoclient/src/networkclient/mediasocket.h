@@ -40,7 +40,7 @@ protected:
   void sendVideoFrameRecoveryDatagram(quint64 frameId, quint32 fromSenderId);
   virtual void timerEvent(QTimerEvent *ev);
 
-  private slots:
+private slots:
   void onSocketStateChanged(QAbstractSocket::SocketState state);
   void onReadyRead();
 };
