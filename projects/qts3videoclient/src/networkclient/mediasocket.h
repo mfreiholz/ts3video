@@ -4,8 +4,7 @@
 #include <QScopedPointer>
 #include <QUdpSocket>
 #include "yuvframe.h"
-#include "networkusageentity.h"
-#include "../udpvideoframedecoder.h"
+class NetworkUsageEntity;
 
 class MediaSocketPrivate;
 class MediaSocket : public QUdpSocket
@@ -16,7 +15,7 @@ class MediaSocket : public QUdpSocket
 
 public:
   MediaSocket(const QString &token, QObject *parent);
-  ~MediaSocket();
+  virtual ~MediaSocket();
 
   bool isAuthenticated() const;
   void setAuthenticated(bool yesno);
@@ -44,24 +43,6 @@ protected:
   private slots:
   void onSocketStateChanged(QAbstractSocket::SocketState state);
   void onReadyRead();
-
-private:
-  bool _authenticated;
-  QString _token;
-  int _authenticationTimerId;
-
-  // Encoding.
-  class VideoEncodingThread *_videoEncodingThread;
-  unsigned long long _lastFrameRequestTimestamp;
-
-  // Decoding.
-  QHash<int, VideoFrameUdpDecoder*> _videoFrameDatagramDecoders; ///< Maps client-id to it's decoder.
-  class VideoDecodingThread *_videoDecodingThread;
-
-  // Network usage.
-  NetworkUsageEntity _networkUsage;
-  NetworkUsageEntityHelper _networkUsageHelper;
 };
-
 
 #endif
