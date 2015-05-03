@@ -2,20 +2,16 @@
 #define VIDEODECODINGTHREAD_H
 
 #include <QThread>
+#include <QScopedPointer>
 #include "vp8frame.h"
 #include "yuvframe.h"
 
-#include <QMutex>
-#include <QWaitCondition>
-#include <QQueue>
-#include <QPair>
-#include <QAtomicInt>
-
-/*!
-*/
+class VideoDecodingThreadPrivate;
 class VideoDecodingThread : public QThread
 {
   Q_OBJECT
+  friend class VideoDecodingThreadPrivate;
+  QScopedPointer<VideoDecodingThreadPrivate> d;
 
 public:
   VideoDecodingThread(QObject *parent);
@@ -28,12 +24,6 @@ protected:
 
 signals:
   void decoded(YuvFrameRefPtr frame, int senderId);
-
-private:
-  QMutex _m;
-  QWaitCondition _queueCond;
-  QQueue<QPair<VP8Frame*, int> > _queue;
-  QAtomicInt _stopFlag;
 };
 
 #endif

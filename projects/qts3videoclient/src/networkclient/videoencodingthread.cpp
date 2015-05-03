@@ -45,6 +45,7 @@ VideoEncodingThread::VideoEncodingThread(QObject *parent) :
 VideoEncodingThread::~VideoEncodingThread()
 {
   stop();
+  wait();
 }
 
 void VideoEncodingThread::stop()
@@ -145,4 +146,7 @@ void VideoEncodingThread::run()
     //}
 
   }
+
+  // Clean up.
+  qDeleteAll(encoders);
 }

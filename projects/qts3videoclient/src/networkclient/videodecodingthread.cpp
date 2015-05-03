@@ -5,46 +5,78 @@
 
 HUMBLE_LOGGER(HL, "networkclient.videodecodingthread");
 
-VideoDecodingThread::VideoDecodingThread(QObject *parent) :
-  QThread(parent)
-{
+///////////////////////////////////////////////////////////////////////
 
+#include <QMutex>
+#include <QWaitCondition>
+#include <QQueue>
+#include <QPair>
+#include <QAtomicInt>
+
+class VideoDecodingThreadPrivate
+{
+public:
+  VideoDecodingThreadPrivate(VideoDecodingThread *o) :
+    owner(o)
+  {}
+
+public:
+  VideoDecodingThread *owner;
+  QMutex m;
+  QWaitCondition queueCond;
+  QQueue<QPair<VP8Frame*, int> > queue;
+  QAtomicInt stopFlag;
+};
+
+///////////////////////////////////////////////////////////////////////
+
+VideoDecodingThread::VideoDecodingThread(QObject *parent) :
+  QThread(parent),
+  d(new VideoDecodingThreadPrivate(this))
+{
 }
 
 VideoDecodingThread::~VideoDecodingThread()
 {
   stop();
+  wait();
+  while (!d->queue.isEmpty()) {
+    auto item = d->queue.dequeue();
+    delete item.first;
+  }
 }
 
 void VideoDecodingThread::stop()
 {
-  _stopFlag = 1;
-  _queueCond.wakeAll();
+  d->stopFlag = 1;
+  d->queueCond.wakeAll();
 }
 
 void VideoDecodingThread::enqueue(VP8Frame *frame, int senderId)
 {
-  QMutexLocker l(&_m);
-  _queue.enqueue(qMakePair(frame, senderId));
+  QMutexLocker l(&d->m);
+  d->queue.enqueue(qMakePair(frame, senderId));
   //while (_queue.size() > 5) {
   //  auto item = _queue.dequeue();
   //  delete item.first;
   //}
-  _queueCond.wakeAll();
+  d->queueCond.wakeAll();
 }
 
 void VideoDecodingThread::run()
 {
+  // TODO Make it possible to reset/delete a VP8Decoder.
+  //      That would be useful when a participant leaves.
   QHash<int, VP8Decoder*> decoders;
 
-  _stopFlag = 0;
-  while (_stopFlag == 0) {
-    QMutexLocker l(&_m);
-    if (_queue.isEmpty()) {
-      _queueCond.wait(&_m);
+  d->stopFlag = 0;
+  while (d->stopFlag == 0) {
+    QMutexLocker l(&d->m);
+    if (d->queue.isEmpty()) {
+      d->queueCond.wait(&d->m);
       continue;
     }
-    auto item = _queue.dequeue();
+    auto item = d->queue.dequeue();
     l.unlock();
 
     if (!item.first || item.second == 0) {
@@ -74,4 +106,7 @@ void VideoDecodingThread::run()
     //}
 
   }
+
+  // Clean up.
+  qDeleteAll(decoders);
 }
