@@ -36,12 +36,12 @@ public:
 
   cor_parser_settings corSettings;
   cor_parser *corParser;
-  cor_frame::correlation_t nextCorrelationId;
+  cor_correlation_t nextCorrelationId;
 
   QQueue<SendQueueItem*> sendQueue; ///< Outgoing item queue.
   SendQueueItem *sendQueueCurrent; ///< Current outgoing item.
 
-  QHash<cor_frame::correlation_t, ReplyItem*> replies; ///< Holds response objects of pending replies from servers.
+  QHash<cor_correlation_t, ReplyItem*> replies; ///< Holds response objects of pending replies from servers.
 };
 
 /*

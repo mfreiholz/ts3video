@@ -17,7 +17,7 @@ QCorConnection::QCorConnection(QObject *parent) :
 
   qRegisterMetaType<QCorFrameRefPtr>("QCorFrameRefPtr");
 
-  cor_parser_settings_init(d->corSettings);
+  cor_parser_settings_init(&d->corSettings);
   d->corSettings.on_frame_begin = &(QCorConnectionPrivate::onParserFrameBegin);
   d->corSettings.on_frame_header_begin = &(QCorConnectionPrivate::onParserFrameHeaderBegin);
   d->corSettings.on_frame_header_end = &(QCorConnectionPrivate::onParserFrameHeaderEnd);
@@ -118,7 +118,7 @@ QCorReply* QCorConnection::sendRequest(const QCorFrame &frame)
 
   SendQueueItem *item = new SendQueueItem();
   item->frame.version = 1;
-  item->frame.type = cor_frame::TYPE_REQUEST;
+  item->frame.type = COR_FRAME_TYPE_REQUEST;
   item->frame.correlation_id = ++d->nextCorrelationId;
   item->frame.length = frame.data().size();
   item->data = frame.data();
@@ -141,7 +141,7 @@ void QCorConnection::sendResponse(const QCorFrame &frame)
 
   SendQueueItem *item = new SendQueueItem();
   item->frame.version = 1;
-  item->frame.type = cor_frame::TYPE_RESPONSE;
+  item->frame.type = COR_FRAME_TYPE_RESPONSE;
   item->frame.correlation_id = frame.correlationId();
   item->frame.length = frame.data().size();
   item->data = frame.data();
@@ -154,7 +154,7 @@ void QCorConnection::onSocketReadyRead()
   quint64 available = 0;
   while ((available = d->socket->bytesAvailable()) > 0) {
     d->buffer.append(d->socket->read(available));
-    const size_t read = cor_parser_parse(d->corParser, d->corSettings, (uint8_t*)d->buffer.constData(), d->buffer.size());
+    const size_t read = cor_parser_parse(d->corParser, &d->corSettings, (uint8_t*)d->buffer.constData(), d->buffer.size());
     if (read > 0) {
       if (read < d->buffer.size()) {
         d->buffer = d->buffer.mid(read);
@@ -245,10 +245,10 @@ int QCorConnectionPrivate::onParserFrameHeaderEnd(cor_parser *parser)
   QCorConnectionPrivate *d = static_cast<QCorConnectionPrivate*>(parser->object);
   if (d->frame) {
     switch (parser->request->type) {
-      case cor_frame::TYPE_REQUEST:
+      case COR_FRAME_TYPE_REQUEST:
         d->frame->setType(QCorFrame::RequestType);
         break;
-      case cor_frame::TYPE_RESPONSE:
+      case COR_FRAME_TYPE_RESPONSE:
         d->frame->setType(QCorFrame::ResponseType);
         break;
     }
@@ -274,10 +274,10 @@ int QCorConnectionPrivate::onParserFrameEnd(cor_parser *parser)
 
   // Check "replies" and notify associated QCorResponse object.
   switch (parser->request->type) {
-  case cor_frame::TYPE_REQUEST:
+  case COR_FRAME_TYPE_REQUEST:
     emit d->owner->newIncomingRequest(f);
     break;
-  case cor_frame::TYPE_RESPONSE:
+  case COR_FRAME_TYPE_RESPONSE:
     ReplyItem *rep = d->replies.take(parser->request->correlation_id);
     if (rep) {
       rep->dtReceived = QDateTime::currentDateTimeUtc();

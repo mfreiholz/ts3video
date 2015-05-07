@@ -1,3 +1,9 @@
+cmake_minimum_required(VERSION 2.8)
+project(corlib)
+
+if(CMAKE_COMPILER_IS_GNUCXX)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic")
+endif()
 
 # Sources
 set(headers
@@ -5,7 +11,7 @@ set(headers
 )
 
 set(sources
-  src/corprotocol.cpp
+  src/corprotocol.c
 )
 
 # Defines
