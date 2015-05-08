@@ -446,7 +446,7 @@ int runClientAppLogic(QApplication &a)
   opts.serverPort = ELWS::getArgsValue("--server-port", opts.serverPort).toUInt();
   opts.username = ELWS::getArgsValue("--username", ELWS::getUserName()).toString();
   opts.password = ELWS::getArgsValue("--password", opts.password).toString();
-  opts.channelId = ELWS::getArgsValue("--channel-id", opts.channelId).toULongLong();
+  opts.channelId = ELWS::getArgsValue("--channel-id", opts.channelId).toLongLong();
   opts.channelIdentifier = ELWS::getArgsValue("--channel-identifier", opts.channelIdentifier).toString();
 
   // Load options from URI.
@@ -457,7 +457,7 @@ int runClientAppLogic(QApplication &a)
     opts.serverPort = url.port(opts.serverPort);
     opts.username = urlQuery.queryItemValue("username");
     opts.password = urlQuery.queryItemValue("password");
-    opts.channelId = urlQuery.queryItemValue("channelid").toULongLong();
+    opts.channelId = urlQuery.queryItemValue("channelid").toLongLong();
     opts.channelIdentifier = urlQuery.queryItemValue("channelidentifier");
     if (opts.username.isEmpty()) {
       opts.username = ELWS::getUserName();

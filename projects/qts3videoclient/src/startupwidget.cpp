@@ -81,11 +81,7 @@ ClientAppLogic::Options StartupDialog::values() const
 {
   auto v = d->opts;
   v.cameraDeviceId = d->ui.cameraComboBox->currentData().toString();
-
-  if (d->ui.channelIdentifierLineEdit->isVisible()) {
-    v.channelIdentifier = d->ui.channelIdentifierLineEdit->text();
-  }
-
+  v.channelIdentifier = d->ui.channelIdentifierLineEdit->text();
   v.username = d->ui.usernameLineEdit->text();
   v.password = d->ui.passwordLineEdit->text();
 

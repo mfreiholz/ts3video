@@ -44,7 +44,7 @@ public:
     QString password = QString();
 
     // The real ID or identifier of the channel to join.
-    quint64 channelId = 0;
+    qint64 channelId = 0;
     QString channelIdentifier;
 
     // The camera's device ID to stream video.
