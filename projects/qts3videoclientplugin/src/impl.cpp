@@ -24,7 +24,7 @@ char* findClientExeFilePath()
     delete[] moduleFilePath;
     return NULL;
   }
-  
+
   // Found last occurance of "\".
   // TODO Convert \ to /.
   char *offset = moduleFilePath;
@@ -88,12 +88,12 @@ unsigned long hashString(const char *str)
   return hash;
 }
 
-unsigned long generateUniqueChannelId(const TS3Data *data)
+char* generateUniqueChannelIdentifier(const TS3Data *data)
 {
   // Concenate all important data which identifies makes the TS3Data unique
   // in the same way for all clients (do not include the client's ID!).
   // e.g.: <server-address>#<server-port>#<channel-id>
-  char s[MAX_PATH];
+  char *s = new char[MAX_PATH];
   s[0] = 0;
 
   strcat(s, data->serverAddress);
@@ -108,12 +108,12 @@ unsigned long generateUniqueChannelId(const TS3Data *data)
   ltoa(data->channelId, channelIdString, 10);
   strcat(s, channelIdString);
   strcat(s, "#");
-  
+
   // Generate a hashed number value for the unique string.
-  return hashString(s);
+  return s;
 }
 
-// API 1.0 ////////////////////////////////////////////////////////////
+// API ////////////////////////////////////////////////////////////////
 
 /**
  * Starts the ts3video plugin as an separate process.
@@ -130,11 +130,12 @@ int runClient(const char *serverAddress, unsigned short serverPort, const char *
   // Define working directory.
   char *workingDirectory = getParentPath(filePath);
   if (!workingDirectory) {
+    delete[] filePath;
     return 2;
   }
 
   // Command line parameters.
-  // e.g.: --server-address 0.0.0.0 --server-port 6000 --username "Foo Bar"
+  // e.g.: --server-address 0.0.0.0 --server-port 6000 --username "Foo Bar" ...
   char params[PATH_MAX_LENGTH];
   params[0] = 0;
 
@@ -153,19 +154,11 @@ int runClient(const char *serverAddress, unsigned short serverPort, const char *
   strcat(params, username);
   strcat(params, "\" ");
 
-  char ts3ClientId[64];
-  ltoa(ts3data->clientId, ts3ClientId, 10);
-  strcat(params, " --ts3-clientid ");
-  strcat(params, " ");
-  strcat(params, ts3ClientId);
-  strcat(params, " ");
-
-  char ts3ChannelId[64];
-  ltoa(generateUniqueChannelId(ts3data)/*ts3data->channelId*/, ts3ChannelId, 10);
-  strcat(params, " --ts3-channelid ");
-  strcat(params, " ");
-  strcat(params, ts3ChannelId);
-  strcat(params, " ");
+  char *channelIdent = generateUniqueChannelIdentifier(ts3data);
+  strcat(params, " --channel-identifier ");
+  strcat(params, " \"");
+  strcat(params, channelIdent);
+  strcat(params, "\" ");
 
 #ifdef _WIN32
   SHELLEXECUTEINFO execInfo;
@@ -178,12 +171,14 @@ int runClient(const char *serverAddress, unsigned short serverPort, const char *
   execInfo.lpDirectory = workingDirectory;
   execInfo.nShow = SW_SHOWNORMAL;
   if (!ShellExecuteEx(&execInfo)) {
+    delete[] channelIdent;
     delete[] workingDirectory;
     delete[] filePath;
     return 3;
   }
 #endif
 
+  delete[] channelIdent;
   delete[] workingDirectory;
   delete[] filePath;
   return 0;
