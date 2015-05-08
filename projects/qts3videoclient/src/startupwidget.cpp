@@ -15,7 +15,7 @@ public:
 public:
   StartupDialog *owner;
   Ui::StartupWidgetForm ui;
-  StartupDialogValues opts;
+  ClientAppLogic::Options opts;
 };
 
 ///////////////////////////////////////////////////////////////////////
@@ -27,6 +27,7 @@ StartupDialog::StartupDialog(QWidget *parent) :
   d->ui.setupUi(this);
 
   d->ui.cameraComboBox->clear();
+  d->ui.channelIdentifierLineEdit->clear();
   d->ui.usernameLineEdit->clear();
   d->ui.passwordLineEdit->clear();
   d->ui.serverAddress->clear();
@@ -36,13 +37,13 @@ StartupDialog::StartupDialog(QWidget *parent) :
     d->ui.cameraComboBox->addItem(ci.description(), ci.deviceName());
   }
   d->ui.cameraComboBox->addItem(tr("No camera (Viewer mode)"));
-  
-  d->validateUi();
+
   adjustSize();
 
   QObject::connect(d->ui.cameraComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(validate()));
+  QObject::connect(d->ui.channelIdentifierLineEdit, SIGNAL(textEdited(const QString&)), this, SLOT(validate()));
   QObject::connect(d->ui.usernameLineEdit, SIGNAL(textEdited(const QString&)), this, SLOT(validate()));
-  QObject::connect(d->ui.serverAddress, SIGNAL(textEdited(const QString&)), this, SLOT(validate()));
+  QObject::connect(d->ui.serverAddress, SIGNAL(editTextChanged(const QString&)), this, SLOT(validate()));
   QObject::connect(d->ui.okButton, &QPushButton::clicked, this, &StartupDialog::onAccept);
   QObject::connect(d->ui.cancelButton, &QPushButton::clicked, this, &QDialog::reject);
 
@@ -65,9 +66,9 @@ StartupDialog::~StartupDialog()
 {
   QSettings conf;
   auto v = values();
-  
-  conf.setValue("UI/StartupDialog-CameraDeviceID", v.cameraDeviceName);
-  
+
+  conf.setValue("UI/StartupDialog-CameraDeviceID", v.cameraDeviceId);
+
   QStringList addresses;
   for (auto i = 0; i < d->ui.serverAddress->count(); ++i)
     addresses.append(d->ui.serverAddress->itemText(i));
@@ -76,10 +77,15 @@ StartupDialog::~StartupDialog()
   conf.setValue("UI/StartupDialog-Addresses", addresses.join(","));
 }
 
-StartupDialogValues StartupDialog::values() const
+ClientAppLogic::Options StartupDialog::values() const
 {
   auto v = d->opts;
-  v.cameraDeviceName = d->ui.cameraComboBox->currentData().toString();
+  v.cameraDeviceId = d->ui.cameraComboBox->currentData().toString();
+
+  if (d->ui.channelIdentifierLineEdit->isVisible()) {
+    v.channelIdentifier = d->ui.channelIdentifierLineEdit->text();
+  }
+
   v.username = d->ui.usernameLineEdit->text();
   v.password = d->ui.passwordLineEdit->text();
 
@@ -97,16 +103,31 @@ StartupDialogValues StartupDialog::values() const
   return v;
 }
 
-void StartupDialog::setValues(const StartupDialogValues &v)
+void StartupDialog::setValues(const ClientAppLogic::Options &v)
 {
   d->opts = v;
-  auto index = d->ui.cameraComboBox->findData(v.cameraDeviceName);
+  auto index = d->ui.cameraComboBox->findData(v.cameraDeviceId);
   if (index >= 0) {
     d->ui.cameraComboBox->setCurrentIndex(index);
   }
+
+  if (v.channelId == 0 && v.channelIdentifier.isEmpty()) {
+    d->ui.channelIdentifierLabel->setVisible(true);
+    d->ui.channelIdentifierLineEdit->setVisible(true);
+  }
+  else {
+    d->ui.channelIdentifierLabel->setVisible(false);
+    d->ui.channelIdentifierLineEdit->setVisible(false);
+  }
+
   d->ui.usernameLineEdit->setText(v.username);
   d->ui.passwordLineEdit->setText(v.password);
   d->ui.serverAddress->setCurrentText(v.serverAddress + QString(":") + QString::number(v.serverPort));
+  d->validateUi();
+}
+
+void StartupDialog::showEvent(QShowEvent *ev)
+{
   d->validateUi();
 }
 
@@ -130,6 +151,9 @@ bool StartupDialogPrivate::validateUi()
   auto d = this;
   auto valid = true;
 
+  if (d->ui.channelIdentifierLineEdit->isVisible() && d->ui.channelIdentifierLineEdit->text().isEmpty()) {
+    valid = false;
+  }
   if (d->ui.usernameLineEdit->text().isEmpty()) {
     valid = false;
   }

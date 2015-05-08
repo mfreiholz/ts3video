@@ -418,29 +418,19 @@ int runUnregisterUriHandler(QApplication &a)
 
 /*!
   Runs the basic application.
+
+  Logic
+  -----
   - Connects to server.
   - Authenticates with server.
   - Joins channel.
   - Sends and receives video streams.
 
-  Command line parameters
-  -----------------------
-  --server-address
-    Hostname or IPv4/IPv6 address of the server.
-  --server-port
-    Port on which the server is listen.
-  --ts3-clientid
-    The internal Teamspeak3 client-id (uint64) (>0)
-  --ts3-channelid
-    The internal Teamspeak3 channel-id (uint64) (>0)
-  --username
-    Visible username.
-
   URL Syntax example
   ------------------
   By using the "--uri" parameter its possible to define those parameters with a URI.
   e.g.:
-    ts3video://127.0.0.1:6000/?ts3clientid=13&ts3channelid=42&username=mfreiholz
+    ts3video://127.0.0.1:6000/?username=mfreiholz&password=secret1234&channelid=42&...
 */
 int runClientAppLogic(QApplication &a)
 {
@@ -450,54 +440,47 @@ int runClientAppLogic(QApplication &a)
   a.setApplicationVersion(IFVS_SOFTWARE_VERSION_QSTRING);
   a.setQuitOnLastWindowClosed(true);
 
-  // Prepare startup options.
+  // Load options from arguments.
   ClientAppLogic::Options opts;
   opts.serverAddress = ELWS::getArgsValue("--server-address", opts.serverAddress).toString();
   opts.serverPort = ELWS::getArgsValue("--server-port", opts.serverPort).toUInt();
-  opts.ts3clientId = ELWS::getArgsValue("--ts3-clientid", opts.ts3clientId).toUInt();
-  opts.ts3channelId = ELWS::getArgsValue("--ts3-channelid", opts.ts3channelId).toUInt();
   opts.username = ELWS::getArgsValue("--username", ELWS::getUserName()).toString();
+  opts.password = ELWS::getArgsValue("--password", opts.password).toString();
+  opts.channelId = ELWS::getArgsValue("--channel-id", opts.channelId).toULongLong();
+  opts.channelIdentifier = ELWS::getArgsValue("--channel-identifier", opts.channelIdentifier).toString();
 
+  // Load options from URI.
   QUrl url(ELWS::getArgsValue("--uri").toString(), QUrl::StrictMode);
   if (url.isValid()) {
     QUrlQuery urlQuery(url);
     opts.serverAddress = url.host();
     opts.serverPort = url.port(opts.serverPort);
-    opts.ts3clientId = urlQuery.queryItemValue("ts3clientid").toULongLong();
-    opts.ts3channelId = urlQuery.queryItemValue("ts3channelid").toULongLong();
     opts.username = urlQuery.queryItemValue("username");
+    opts.password = urlQuery.queryItemValue("password");
+    opts.channelId = urlQuery.queryItemValue("channelid").toULongLong();
+    opts.channelIdentifier = urlQuery.queryItemValue("channelidentifier");
     if (opts.username.isEmpty()) {
       opts.username = ELWS::getUserName();
     }
   }
 
-  // Show startup dialog.
-  // The values from dialog will modify the ClientAppLogic::Options.
+  // Modify startup options with dialog.
   if (true) {
-    StartupDialogValues v;
-    v.serverAddress = opts.serverAddress;
-    v.serverPort = opts.serverPort;
-    v.username = opts.username;
     StartupDialog dialog(nullptr);
-    dialog.setValues(v);
+    dialog.setValues(opts);
     if (dialog.exec() != QDialog::Accepted) {
       QMetaObject::invokeMethod(&a, "quit", Qt::QueuedConnection);
       return a.exec();
     }
-    v = dialog.values();
-    opts.username = v.username;
-    opts.password = v.password;
-    opts.cameraDeviceId = v.cameraDeviceName;
-    opts.serverAddress = v.serverAddress;
-    opts.serverPort = v.serverPort;
+    opts = dialog.values();
   }
 
   HL_INFO(HL, QString("Client startup (version=%1)").arg(a.applicationVersion()).toStdString());
   HL_INFO(HL, QString("Address: %1").arg(opts.serverAddress).toStdString());
   HL_INFO(HL, QString("Port: %1").arg(opts.serverPort).toStdString());
   HL_INFO(HL, QString("Username: %1").arg(opts.username).toStdString());
-  HL_INFO(HL, QString("TS3 channel id: %1").arg(opts.ts3channelId).toStdString());
-  HL_INFO(HL, QString("TS3 client id: %1").arg(opts.ts3clientId).toStdString());
+  HL_INFO(HL, QString("Channel ID: %1").arg(opts.channelId).toStdString());
+  HL_INFO(HL, QString("Channel Ident: %1").arg(opts.channelIdentifier).toStdString());
   HL_INFO(HL, QString("Camera device ID: %1").arg(opts.cameraDeviceId).toStdString());
 
   ClientAppLogic win(opts, nullptr, 0);

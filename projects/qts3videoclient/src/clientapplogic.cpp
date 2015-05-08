@@ -119,13 +119,10 @@ NetworkClient& ClientAppLogic::ts3client()
 
 void ClientAppLogic::onConnected()
 {
-  auto ts3clientId = d->opts.ts3clientId;
-  auto ts3channelId = d->opts.ts3channelId;
-
   // Authenticate.
   showProgress(tr("Authenticating..."));
   auto reply = d->ts3vc.auth(d->opts.username, d->opts.password, !d->opts.cameraDeviceId.isEmpty());
-  QObject::connect(reply, &QCorReply::finished, [this, reply, ts3clientId, ts3channelId] ()
+  QObject::connect(reply, &QCorReply::finished, [this, reply] ()
   {
     HL_DEBUG(HL, QString("Auth answer: %1").arg(QString(reply->frame()->data())).toStdString());
     reply->deleteLater();
@@ -142,7 +139,12 @@ void ClientAppLogic::onConnected()
 
     // Join channel.
     showProgress(tr("Joining channel..."));
-    auto reply2 = d->ts3vc.joinChannel(ts3channelId);
+    QCorReply *reply2 = nullptr;
+    if (d->opts.channelId != 0) {
+      reply2 = d->ts3vc.joinChannel(d->opts.channelId);
+    } else {
+      reply2 = d->ts3vc.joinChannelByIdentifier(d->opts.channelIdentifier);
+    }
     QObject::connect(reply2, &QCorReply::finished, [this, reply2] ()
     {
       HL_DEBUG(HL, QString("Join channel answer: %1").arg(QString(reply2->frame()->data())).toStdString());

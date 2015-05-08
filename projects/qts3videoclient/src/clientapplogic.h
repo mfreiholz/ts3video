@@ -39,12 +39,13 @@ public:
 
     // The visible username of the client.
     QString username = QString();
+
+    // The optional channel password.
     QString password = QString();
 
-    // The internal Teamspeak client- and channel-id.
-    // The NetworkClient will automatically join the channel.
-    quint64 ts3clientId = 0;
-    quint64 ts3channelId = 0;
+    // The real ID or identifier of the channel to join.
+    quint64 channelId = 0;
+    QString channelIdentifier;
 
     // The camera's device ID to stream video.
     QString cameraDeviceId = QString();

@@ -132,6 +132,17 @@ QCorReply* NetworkClient::joinChannel(int id)
   return d->corSocket->sendRequest(req);
 }
 
+QCorReply* NetworkClient::joinChannelByIdentifier(const QString &ident)
+{
+  if (d->corSocket->socket()->state() != QAbstractSocket::ConnectedState)
+    return nullptr;
+  QJsonObject params;
+  params["identifier"] = ident;
+  QCorFrame req;
+  req.setData(JsonProtocolHelper::createJsonRequest("joinchannelbyidentifier", params));
+  return d->corSocket->sendRequest(req);
+}
+
 void NetworkClient::sendVideoFrame(const QImage &image)
 {
   Q_ASSERT(d->mediaSocket);

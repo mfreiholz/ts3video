@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>211</height>
+    <height>237</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -59,29 +59,38 @@
        <property name="text">
         <string>Camera</string>
        </property>
+       <property name="buddy">
+        <cstring>cameraComboBox</cstring>
+       </property>
       </widget>
      </item>
      <item row="0" column="1">
       <widget class="QComboBox" name="cameraComboBox"/>
      </item>
-     <item row="1" column="0">
+     <item row="2" column="0">
       <widget class="QLabel" name="usernameLabel">
        <property name="text">
         <string>Username</string>
        </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QLineEdit" name="usernameLineEdit"/>
-     </item>
-     <item row="2" column="0">
-      <widget class="QLabel" name="label_2">
-       <property name="text">
-        <string>Password</string>
+       <property name="buddy">
+        <cstring>usernameLineEdit</cstring>
        </property>
       </widget>
      </item>
      <item row="2" column="1">
+      <widget class="QLineEdit" name="usernameLineEdit"/>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>Password</string>
+       </property>
+       <property name="buddy">
+        <cstring>passwordLineEdit</cstring>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
       <widget class="QLineEdit" name="passwordLineEdit">
        <property name="echoMode">
         <enum>QLineEdit::Password</enum>
@@ -91,14 +100,17 @@
        </property>
       </widget>
      </item>
-     <item row="3" column="0">
+     <item row="4" column="0">
       <widget class="QLabel" name="serverAddressLabel">
        <property name="text">
         <string>Server address</string>
        </property>
+       <property name="buddy">
+        <cstring>serverAddress</cstring>
+       </property>
       </widget>
      </item>
-     <item row="3" column="1">
+     <item row="4" column="1">
       <widget class="QComboBox" name="serverAddress">
        <property name="sizePolicy">
         <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
@@ -110,6 +122,19 @@
         <bool>true</bool>
        </property>
       </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="channelIdentifierLabel">
+       <property name="text">
+        <string>Channel</string>
+       </property>
+       <property name="buddy">
+        <cstring>channelIdentifierLineEdit</cstring>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QLineEdit" name="channelIdentifierLineEdit"/>
      </item>
     </layout>
    </item>
@@ -171,6 +196,15 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>cameraComboBox</tabstop>
+  <tabstop>channelIdentifierLineEdit</tabstop>
+  <tabstop>usernameLineEdit</tabstop>
+  <tabstop>passwordLineEdit</tabstop>
+  <tabstop>serverAddress</tabstop>
+  <tabstop>okButton</tabstop>
+  <tabstop>cancelButton</tabstop>
+ </tabstops>
  <resources>
   <include location="../res/res.qrc"/>
  </resources>

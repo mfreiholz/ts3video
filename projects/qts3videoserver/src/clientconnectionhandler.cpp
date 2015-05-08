@@ -37,7 +37,7 @@ ClientConnectionHandler::ClientConnectionHandler(TS3VideoServer *server, QCorCon
   _clientEntity = new ClientEntity();
   _clientEntity->id = ++_server->_nextClientId;
   _server->_clients.insert(_clientEntity->id, _clientEntity);
-  
+
   _server->_connections.insert(_clientEntity->id, this);
   connect(_connection, &QCorConnection::stateChanged, this, &ClientConnectionHandler::onStateChanged);
   connect(_connection, &QCorConnection::newIncomingRequest, this, &ClientConnectionHandler::onNewIncomingRequest);
