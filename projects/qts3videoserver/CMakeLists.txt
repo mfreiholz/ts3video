@@ -55,7 +55,7 @@ include_directories(
 
 # Target prerequisites.
 if(WIN32)
-  set(win32_gui_type WIN32)
+  #set(win32_gui_type WIN32)
 endif(WIN32)
 
 # Target
