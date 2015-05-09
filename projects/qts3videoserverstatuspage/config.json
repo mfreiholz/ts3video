@@ -1,5 +1,6 @@
 {
   "server.statussocket.address": null,
   "server.statussocket.port": 13375,
-  "server.statussocket.path": "/server-status"
+  "server.statussocket.path": "/server-status",
+  "ui.updateinterval": 5000
 }

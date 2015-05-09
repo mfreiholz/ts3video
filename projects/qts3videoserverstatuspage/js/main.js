@@ -40,7 +40,7 @@ window.app = app;
   function AppMain(config) {
     this.config = config;
     this.websocket = null;
-    this.updateInterval = 5000;
+    this.updateInterval = config['ui.updateinterval'] || 5000;
   }
 
   AppMain.prototype.bootstrap = function () {
@@ -79,7 +79,7 @@ window.app = app;
 
     var address = this.config['server.statussocket.address'] || window.location.host;
     var port = this.config['server.statussocket.port'] || 13375;
-    var path = this.config['server.statussocket.path'] || "";
+    var path = this.config['server.statussocket.path'] || '';
     var ws = new WebSocket('ws://' + address + ':' + port + path);
 
     ws.onopen = function (ev) {
@@ -138,13 +138,13 @@ window.app = app;
 
   AppMain.prototype.bytesAsReadableSize = function (b) {
     if (b > 1073741824) {
-      return this.round(b / 1073741824) + " GB";
+      return this.round(b / 1073741824) + ' GB';
     } else if (b > 1048576) {
-      return this.round(b / 1048576) + " MB";
+      return this.round(b / 1048576) + ' MB';
     } else if (b > 1024) {
-      return this.round(b / 1024) + " KB";
+      return this.round(b / 1024) + ' KB';
     }
-    return (b) + " Bytes";
+    return (b) + ' Bytes';
   };
 
   /////////////////////////////////////////////////////////////////////
@@ -199,7 +199,7 @@ jQuery(document).ready(function () {
     if (link.indexOf('view=') !== -1) {
       e.preventDefault();
       app.logic.routeByUrl(link);
-      history.pushState({}, "", link);
+      history.pushState({}, '', link);
     }
   });
   // DEV (END)
