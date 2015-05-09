@@ -1,0 +1,72 @@
+<script id="tmpl-ConnectionsView" type="text/html">
+  <div class="ConnectionsView">
+    <h1 class="view-title">{{>~tr('Connections')}}</h1>
+
+    <div class="hl-panel">
+      <header>
+        <h1>{{>~tr('Client connections')}} <span class="clientcount label">0</span></h1>
+      </header>
+      <section class="clients"></section>
+    </div>
+
+    <div class="hl-panel">
+      <header>
+        <h1>{{>~tr('Server status connections')}} <span class="wsclientcount label">0</span></h1>
+      </header>
+      <section class="wsclients"></section>
+    </div>
+
+  </div>
+</script>
+
+<script id="tmpl-ConnectionsView-ClientList" type="text/html">
+  <div class="ConnectionsView-Table">
+    <table>
+      <thead>
+        <tr>
+          <th>{{>~tr('ID')}}</th>
+          <th>{{>~tr('Name')}}</th>
+          <th>{{>~tr('Address')}}</th>
+          <th>{{>~tr('Media address')}}</th>
+          <th>{{>~tr('Status')}}</th>
+        </tr>
+      </thead>
+      <tbody>
+      {{for clients}}
+        <tr>
+          <td>{{>id}}</td>
+          <td>{{>name}}</td>
+          <td>{{>connection.address}}:{{>connection.port}}</td>
+          <td>{{>connection.mediaaddress}}:{{>connection.mediaport}}</td>
+          <td>
+          {{if videoenabled}}
+            <img src="img/ic_videocam_black_18dp.png" alt="{{>~tr('Camera ON')}}" title="{{>~tr('Camera ON')}}">
+          {{else}}
+            <img src="img/ic_videocam_off_black_18dp.png" alt="{{>~tr('Camera OFF')}}" title="{{>~tr('Camera OFF')}}">
+          {{/if}}
+          </td>
+        </tr>
+      {{/for}}
+      </tbody>
+    </table>
+  </div>
+</script>
+
+<script id="tmpl-ConnectionsView-WSClientList" type="text/html">
+  <div class="ConnectionsView-Table">
+    <table>
+      <thead>
+        <tr>
+          <th>{{>~tr('Address')}}</th>
+        </tr>
+      </thead>
+      <tbody>
+      {{for clients}}
+        <tr>
+          <td>{{>address}}:{{>port}}</td>
+        </tr>
+      {{/for}}
+      </tbody>
+    </table>
+  </div>
+</script>

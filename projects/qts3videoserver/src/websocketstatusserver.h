@@ -40,7 +40,7 @@ private slots:
   void onNewConnection();
   void onTextMessage(const QString &message);
   void onDisconnected();
-  
+
 private:
   QJsonValue getAllInfo() const;
   QJsonValue getAppInfo() const;
@@ -55,10 +55,10 @@ private:
   TS3VideoServer *_server;
   QWebSocketServer *_wsServer;
   QList<QWebSocket*> _sockets;
-  
+
   // Restricts the  socket to send updates with a maxium rate.
   QTime _lastUpdateTime;
-  unsigned int _maxUpdateRate;
+  int _maxUpdateRate;
 };
 
 #endif

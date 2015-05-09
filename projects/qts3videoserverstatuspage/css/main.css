@@ -1,9 +1,140 @@
 /* -------------------- */
 
+/* Basic compoents      */
+
+/* -------------------- */
+
+img {
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+table {
+  border: none;
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+}
+
+table thead {
+}
+
+table thead th {
+  border-color: #ccc;
+  border-style: solid;
+  border-width: 0 0 1px 0;
+  font-size: 0.8em;
+  font-weight: bold;
+  padding: 3px 6px;
+  text-align: left;
+}
+
+table tr:nth-child(2n) {
+  background: #f8f8f8;
+}
+
+table tbody td {
+  padding: 6px;
+}
+
+/* Panel */
+
+.hl-panel {
+  background: #fff;
+  border-color: #ccc;
+  border-radius: 3px 3px 3px 3px;
+  border-style: solid;
+  border-width: 1px;
+  box-shadow: 0 0 1px 0 #ccc;
+  margin: 0 0 16px 0;
+  min-height: 50px;
+}
+
+.hl-panel header {
+  background: #f7f7f7;
+  border-color: #ccc;
+  border-style: solid;
+  border-width: 0 0 1px 0;
+}
+
+.hl-panel header h1 {
+  color: #000;
+  font-size: 0.7em;
+  font-weight: normal;
+  padding: 6px;
+  text-transform: uppercase;
+}
+
+.hl-panel header .label {
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 3px 3px 3px 3px;
+  padding: 2px 6px;
+}
+
+.hl-panel section {
+  line-height: 1.3em;
+}
+
+/* Info list based on <dl> */
+
+dl.hl-info {
+  float: left;
+  margin: 0;
+  padding: 6px;
+  width: 200px;
+}
+
+dl.hl-info:hover {
+  background: #004f80;
+  color: #fff;
+}
+
+dl.hl-info dt {
+  color: #999;
+  font-size: 0.8em;
+  font-weight: normal;
+  margin: 0;
+  padding: 0;
+}
+
+dl.hl-info dd {
+  margin: 0;
+  padding: 0;
+  word-wrap: break-word;
+  word-break: break-all;
+}
+
+/* -------------------- */
+
+/* View                 */
+
+/* -------------------- */
+
+h1.view-title {
+  font-size: 2em;
+  font-weight: bold;
+  margin: 1em 0 12px 0;
+}
+
+/* -------------------- */
+
 /* Main View            */
 
 /* -------------------- */
 
 .MainView {
   margin-top: 10px;
+}
+
+/* -------------------- */
+
+/* Dashboard View       */
+
+/* -------------------- */
+
+.DashboardView {
+  margin: 0;
+  padding: 0;
 }
