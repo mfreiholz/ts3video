@@ -6,6 +6,10 @@ cmake_policy(SET CMP0020 NEW)
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Network REQUIRED)
 
+if(CMAKE_COMPILER_IS_GNUCXX)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic")
+endif()
+
 # Sources
 set(headers
   src/qcorframe.h

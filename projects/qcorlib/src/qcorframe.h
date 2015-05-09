@@ -40,6 +40,6 @@ private:
 };
 
 typedef QSharedPointer<QCorFrame> QCorFrameRefPtr;
-Q_DECLARE_METATYPE(QCorFrameRefPtr);
+Q_DECLARE_METATYPE(QCorFrameRefPtr)
 
 #endif

@@ -156,7 +156,7 @@ void QCorConnection::onSocketReadyRead()
     d->buffer.append(d->socket->read(available));
     const size_t read = cor_parser_parse(d->corParser, &d->corSettings, (uint8_t*)d->buffer.constData(), d->buffer.size());
     if (read > 0) {
-      if (read < d->buffer.size()) {
+      if (static_cast<int>(read) < d->buffer.size()) {
         d->buffer = d->buffer.mid(read);
       } else {
         d->buffer.clear();
@@ -173,6 +173,8 @@ void QCorConnection::onSocketStateChanged(QAbstractSocket::SocketState state)
       if (d->frame && !d->frame->state() != QCorFrame::FinishedState) {
         d->frame->setState(QCorFrame::ErrorState);
       }
+      break;
+    default:
       break;
   }
 }
@@ -237,6 +239,7 @@ int QCorConnectionPrivate::onParserFrameBegin(cor_parser *parser)
 
 int QCorConnectionPrivate::onParserFrameHeaderBegin(cor_parser *parser)
 {
+  (void) parser;
   return 0;
 }
 
