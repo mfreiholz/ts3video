@@ -37,10 +37,9 @@ window.app = app;
   // AppMain
   /////////////////////////////////////////////////////////////////////
 
-  function AppMain(address, port) {
+  function AppMain(config) {
+    this.config = config;
     this.websocket = null;
-    this.address = address;
-    this.port = port;
     this.updateInterval = 5000;
   }
 
@@ -52,6 +51,7 @@ window.app = app;
     brite.registerDao(new app.SingleObjectDaoHandler('BandwidthUsage'));
     brite.registerDao(new app.SingleObjectDaoHandler('Clients'));
     brite.registerDao(new app.SingleObjectDaoHandler('WSClients'));
+    brite.registerDao(new app.SingleObjectDaoHandler('Channels'));
 
     // Route to view based on "view" parameter.
     this.routeByUrl(window.location.href);
@@ -77,25 +77,27 @@ window.app = app;
       return def.promise();
     }
 
-    this.websocket = new WebSocket("ws://" + this.address + ":" + this.port + "/ts3video-websocket");
+    var address = this.config['server.statussocket.address'] || window.location.host;
+    var port = this.config['server.statussocket.port'] || 13375;
+    var path = this.config['server.statussocket.path'] || "";
+    var ws = new WebSocket('ws://' + address + ':' + port + path);
 
-    this.websocket.onopen = function (ev) {
+    ws.onopen = function (ev) {
       def.resolve();
     };
 
-    this.websocket.onclose = function (ev) {
+    ws.onclose = function (ev) {
       that.websocket = null;
     };
 
-    this.websocket.onerror = function (ev) {
+    ws.onerror = function (ev) {
       that.websocket = null;
       def.reject();
       //jQuery("#AppMain").html("Server connection lost... Reconnecting...");
       //setTimeout(function () { that.connect(); }, 3000);
     };
 
-
-    this.websocket.onmessage = function (ev) {
+    ws.onmessage = function (ev) {
       var data = JSON.parse(ev.data);
       if (data.action === 'appinfo') {
         brite.dao('AppInfo').update(data.data);
@@ -107,11 +109,14 @@ window.app = app;
         brite.dao('Clients').update(data.data);
       } else if (data.action === 'wsclients') {
         brite.dao('WSClients').update(data.data);
+      } else if (data.action === 'channels') {
+        brite.dao('Channels').update(data.data);
       } else {
         brite.dao('ServerStatus').update(data.data);
       }
     };
 
+    this.websocket = ws;
     return def.promise();
   };
 
@@ -158,14 +163,29 @@ window.app = app;
   brite.viewDefaultConfig.loadTmpl = true;
   brite.viewDefaultConfig.loadCss = false;
 
-  app.logic = new AppMain(window.location.host, 13375);
-  app.tr = app.logic.tr;
+  // BEGIN Bootstrap
 
-  // First we connect and than we show the content.
-  app.logic.connect()
-    .done(function () {
-      app.logic.bootstrap();
+  // Load config.
+  jQuery.getJSON('config.json')
+    .fail(function () {
+      jQuery('#AppMain').html('Can not load config.json');
+    })
+    .done(function (config) {
+      // Initialize application logic with configuration.
+      app.logic = new AppMain(config);
+      app.tr = app.logic.tr;
+
+      // First we connect and than we show the content.
+      app.logic.connect()
+        .fail(function () {
+          jQuery('#AppMain').html('Can not connect to status socket');
+        })
+        .done(function () {
+          app.logic.bootstrap();
+        });
     });
+
+  // END Bootstrap
 
 }());
 

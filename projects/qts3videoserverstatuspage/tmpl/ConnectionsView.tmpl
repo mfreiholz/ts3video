@@ -16,11 +16,18 @@
       <section class="wsclients"></section>
     </div>
 
+    <div class="hl-panel">
+      <header>
+        <h1>{{>~tr('Channel list')}} <span class="channelcount label">0</span></h1>
+      </header>
+      <section class="channels"></section>
+    </div>
+
   </div>
 </script>
 
 <script id="tmpl-ConnectionsView-ClientList" type="text/html">
-  <div class="ConnectionsView-Table">
+  <div class="ConnectionsView-ClientList">
     <table>
       <thead>
         <tr>
@@ -53,7 +60,7 @@
 </script>
 
 <script id="tmpl-ConnectionsView-WSClientList" type="text/html">
-  <div class="ConnectionsView-Table">
+  <div class="ConnectionsView-WSClientList">
     <table>
       <thead>
         <tr>
@@ -64,6 +71,33 @@
       {{for clients}}
         <tr>
           <td>{{>address}}:{{>port}}</td>
+        </tr>
+      {{/for}}
+      </tbody>
+    </table>
+  </div>
+</script>
+
+<script id="tmpl-ConnectionsView-ChannelList" type="text/html">
+  <div class="ConnectionsView-ChannelList">
+    <table>
+      <thead>
+        <tr>
+          <th>{{>~tr('ID')}}</th>
+          <th>{{>~tr('Name')}}</th>
+          <th>{{>~tr('Participant IDs')}}</th>
+        </tr>
+      </thead>
+      <tbody>
+      {{for channels}}
+        <tr>
+          <td>{{>id}}</td>
+          <td>{{>name}}</td>
+          <td>
+          {{for participants}}
+            {{>#data}}
+          {{/for}}
+          </td>
         </tr>
       {{/for}}
       </tbody>

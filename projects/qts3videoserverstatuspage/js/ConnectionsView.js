@@ -27,11 +27,15 @@
     daoEvents: {
       'dataChange; Clients; update': function (e) {
         this.renderClientList(e.daoEvent.result);
-        console.log('Clients updated:' + JSON.stringify(e.daoEvent.result));
+        //console.log('Clients updated:' + JSON.stringify(e.daoEvent.result));
       },
       'dataChange; WSClients; update': function (e) {
         this.renderWSClientList(e.daoEvent.result);
-        console.log('WSClients updated:' + JSON.stringify(e.daoEvent.result));
+        //console.log('WSClients updated:' + JSON.stringify(e.daoEvent.result));
+      },
+      'dataChange; Channels; update': function (e) {
+        this.renderChannelList(e.daoEvent.result);
+        //console.log('Channels updated:' + JSON.stringify(e.daoEvent.result));
       }
     },
 
@@ -42,6 +46,7 @@
     requestUpdate: function () {
       app.logic.requestUpdate('clients');
       app.logic.requestUpdate('wsclients');
+      app.logic.requestUpdate('channels');
     },
 
     renderClientList: function (data) {
@@ -54,6 +59,12 @@
       var html = jQuery('#tmpl-ConnectionsView-WSClientList').render({ clients: data });
       jQuery('.wsclientcount').html(data.length);
       jQuery('.wsclients').html(html);
+    },
+
+    renderChannelList: function (data) {
+      var html = jQuery('#tmpl-ConnectionsView-ChannelList').render({ channels: data });
+      jQuery('.channelcount').html(data.length);
+      jQuery('.channels').html(html);
     }
 
   });
