@@ -9,17 +9,50 @@
     <script type="text/javascript" src="thirdparty/brite/brite.min.js"></script>
 
     <!-- Bootstrap -->
-    <link rel="stylesheet" href="thirdparty/bootstrap/css/bootstrap.min.css">
+    <!--<link rel="stylesheet" href="thirdparty/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="thirdparty/bootstrap/css/bootstrap-theme.min.css">
-    <script src="thirdparty/bootstrap/js/bootstrap.min.js"></script>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="thirdparty/bootstrap/js/bootstrap.min.js"></script>-->
 
     <!-- Application -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/theme.css">
     <link rel="stylesheet" href="css/main.css">
     <script type="text/javascript" src="js/main.js"></script>
 
   </head>
   <body>
-    <div id="AppMain" class="container"></div>
+
+    <div class="top-nav">
+      <div class="top-nav-content">
+        <div class="logo"><!--<a href="./"><img src="img/logo-topnav.png" alt="Logo" title="HumbleLogging"></a>--></div>
+        <div class="title">Server Status</div>
+        <ul class="links">
+          <li><a href="?view=DashboardView">Dashboard</a></li>
+          <li><a href="?view=ConnectionsView">Connections</a></li>
+        </ul>
+        <ul class="menutoggle">
+          <li><a href=""><img src="img/ic_menu_black_36dp.png" alt="MENU"></a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div id="AppMain" class="contentsections"></div>
+
+    <div class="footer">
+      <div class="copyright"><a href="http://ts3video.insanefactory.com" target="_blank">Copyright &copy; 2015 Manuel Freiholz</a></div>
+    </div>
+
+    <!-- Common view templates -->
+
+    <script id="tmpl-hl-info" type="text/html">
+      {{for items}}
+        <dl class="hl-info">
+          <dt>{{>key}}</dt>
+          <dd>{{>value}}</dd>
+        </dl>
+      {{/for}}
+      <div class="clear"></div>
+    </script>
+
   </body>
 </html>

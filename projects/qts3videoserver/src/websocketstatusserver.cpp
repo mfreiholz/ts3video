@@ -48,10 +48,10 @@ bool WebSocketStatusServer::init()
   _lastUpdateTime.start();
 
   // DEV Run a timer to send periodical updates as long as we can't do it by events from server-object.
-  auto broadcastTimer = new QTimer(this);
-  broadcastTimer->setInterval(250);
-  broadcastTimer->start();
-  QObject::connect(broadcastTimer, &QTimer::timeout, this, &WebSocketStatusServer::broadcastAllInfo);
+  //auto broadcastTimer = new QTimer(this);
+  //broadcastTimer->setInterval(250);
+  //broadcastTimer->start();
+  //QObject::connect(broadcastTimer, &QTimer::timeout, this, &WebSocketStatusServer::broadcastAllInfo);
 
   return true;
 }
@@ -84,9 +84,54 @@ void WebSocketStatusServer::onNewConnection()
 
 void WebSocketStatusServer::onTextMessage(const QString &message)
 {
-  auto socket = qobject_cast<QWebSocket*>(sender());
   HL_TRACE(HL, QString("Incoming text message (message=%1)").arg(message).toStdString());
-  //socket->sendTextMessage(QJsonDocument(root).toJson(QJsonDocument::Compact));
+  auto socket = qobject_cast<QWebSocket*>(sender());
+
+  QJsonParseError jsonError;
+  auto jsonDoc = QJsonDocument::fromJson(message.toUtf8(), &jsonError);
+  auto json = jsonDoc.object();
+  if (jsonDoc.isNull() || jsonError.error != QJsonParseError::NoError) {
+    return;
+  }
+
+  // Handle different types request.
+  auto action = json.value("action");
+  if (action == "appinfo") {
+    QJsonObject root;
+    root["action"] = action;
+    root["data"] = getAppInfo();
+    socket->sendTextMessage(QJsonDocument(root).toJson(QJsonDocument::Compact));
+  }
+  else if (action == "memoryusageinfo") {
+    QJsonObject root;
+    root["action"] = action;
+    root["data"] = getMemoryUsageInfo();
+    socket->sendTextMessage(QJsonDocument(root).toJson(QJsonDocument::Compact));
+  }
+  else if (action == "bandwidthusageinfo") {
+    QJsonObject root;
+    root["action"] = action;
+    root["data"] = getBandwidthInfo();
+    socket->sendTextMessage(QJsonDocument(root).toJson(QJsonDocument::Compact));
+  }
+  else if (action == "clients") {
+    QJsonObject root;
+    root["action"] = action;
+    root.insert("data", getClientsInfo());
+    socket->sendTextMessage(QJsonDocument(root).toJson(QJsonDocument::Compact));
+  }
+  else if (action == "channels") {
+    QJsonObject root;
+    root["action"] = action;
+    root["data"] = getChannelsInfo();
+    socket->sendTextMessage(QJsonDocument(root).toJson(QJsonDocument::Compact));
+  }
+  else if (action == "wsclients") {
+    QJsonObject root;
+    root["action"] = action;
+    root["data"] = getWebSocketsInfo();
+    socket->sendTextMessage(QJsonDocument(root).toJson(QJsonDocument::Compact));
+  }
 }
 
 void WebSocketStatusServer::onDisconnected()

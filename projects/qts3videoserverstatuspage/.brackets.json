@@ -7,7 +7,7 @@
     "plusplus": true,
     "bitwise": true,
     "regexp": true,
-    "predef": ["brite", "$", "jQuery", "psol", "WebSocket"]
+    "predef": ["brite", "$", "jQuery", "WebSocket", "app"]
   },
   "language": {
     "javascript": {
