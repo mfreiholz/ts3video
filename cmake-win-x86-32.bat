@@ -13,7 +13,6 @@ echo     MF_BUILD_DIR_NAME: %MF_BUILD_DIR_NAME%
 echo     MF_BUILD_DIR_PATH: %MF_BUILD_DIR_PATH%
 echo     QTDIR: %QTDIR%
 echo.
-pause
 
 rem Create and enter build directory.
 cd /d %~dp0

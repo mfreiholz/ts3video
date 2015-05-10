@@ -11,3 +11,4 @@ projects/Release
 projects/*/Debug
 projects/*/Release
 projects/*/GeneratedFiles
+projects/project-defines.h
