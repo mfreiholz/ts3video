@@ -40,10 +40,10 @@ set_target_properties(${PROJECT_NAME}
 set(TS3_PLUGIN_PACKAGE_DIR "${CMAKE_INSTALL_PREFIX}/ts3_plugin")
 
 ## Copy plugin dll.
-#install(TARGETS ${PROJECT_NAME} DESTINATION ts3_plugin/plugins)
+install(TARGETS ${PROJECT_NAME} DESTINATION ts3_plugin/plugins)
 
 ## Generate "package.ini" in "ts3_plugin"
-#install(SCRIPT cmake/generate-package-ini.cmake)
+install(SCRIPT cmake/generate-package-ini.cmake)
 
 ## Copy "videoclient" into plugin package directory.
 #install(SCRIPT cmake/copy-videoclient-into-package.cmake)

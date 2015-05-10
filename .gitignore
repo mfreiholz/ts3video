@@ -3,6 +3,7 @@
 *.user
 *.v11.suo
 build/
+build-*/
 install/
 projects/build-*
 projects/Debug
