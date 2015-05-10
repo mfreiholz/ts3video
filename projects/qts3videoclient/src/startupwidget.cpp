@@ -110,11 +110,11 @@ void StartupDialog::setValues(const ClientAppLogic::Options &v)
   if (v.channelId == 0 && v.channelIdentifier.isEmpty()) {
     d->ui.channelIdentifierLabel->setVisible(true);
     d->ui.channelIdentifierLineEdit->setVisible(true);
-  }
-  else {
+  } else {
     d->ui.channelIdentifierLabel->setVisible(false);
     d->ui.channelIdentifierLineEdit->setVisible(false);
   }
+  d->ui.channelIdentifierLineEdit->setText(v.channelIdentifier);
 
   d->ui.usernameLineEdit->setText(v.username);
   d->ui.passwordLineEdit->setText(v.password);

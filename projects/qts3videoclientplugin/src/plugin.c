@@ -20,6 +20,7 @@
 #include "ts3_functions.h"
 #include "plugin.h"
 #include "impl.h"
+#include "ts3video.h"
 
 static struct TS3Functions ts3Functions;
 
@@ -65,20 +66,20 @@ const char* ts3plugin_name() {
 	/* TeamSpeak expects UTF-8 encoded characters. Following demonstrates a possibility how to convert UTF-16 wchar_t into UTF-8. */
 	static char* result = NULL;  /* Static variable so it's allocated only once */
 	if(!result) {
-		const wchar_t* name = L"Video for TS3";
+		const wchar_t* name = L"TS3VIDEO";
 		if(wcharToUtf8(name, &result) == -1) {  /* Convert name into UTF-8 encoded result */
-			result = "Video for TS3";  /* Conversion failed, fallback here */
+			result = "TS3VIDEO";  /* Conversion failed, fallback here */
 		}
 	}
 	return result;
 #else
-	return "Video for TS3";
+	return "TS3VIDEO";
 #endif
 }
 
 /* Plugin version */
 const char* ts3plugin_version() {
-    return "1.0 ALPHA";
+  return IFVS_SOFTWARE_VERSION;
 }
 
 /* Plugin API version. Must be the same as the clients API major version, else the plugin fails to load. */
@@ -1038,7 +1039,7 @@ void ts3plugin_onAvatarUpdated(uint64 serverConnectionHandlerID, anyID clientID,
 
 /*
  * Called when a plugin menu item (see ts3plugin_initMenus) is triggered. Optional function, when not using plugin menus, do not implement this.
- * 
+ *
  * Parameters:
  * - serverConnectionHandlerID: ID of the current server tab
  * - type: Type of the menu (PLUGIN_MENU_TYPE_CHANNEL, PLUGIN_MENU_TYPE_CLIENT or PLUGIN_MENU_TYPE_GLOBAL)
