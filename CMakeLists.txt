@@ -6,9 +6,9 @@ include(cmake/compiler.cmake)
 include(cmake/thirdparty.cmake)
 
 # Generate global version header file.
-set(VERSION_MAJOR 0)
-set(VERSION_MINOR 2)
-set(VERSION_EXTRA "")
+set(VERSION_MAJOR "0" CACHE INTERNAL "Major software version" FORCE)
+set(VERSION_MINOR "2" CACHE INTERNAL "Minor software version" FORCE)
+set(VERSION_EXTRA "dev" CACHE INTERNAL "Additional software version information, e.g.: release, beta, alpha, dev" FORCE)
 FILE(WRITE projects/project-defines.h
   "// Generated project version header.
 \#ifndef VERSION_H_IN
@@ -17,7 +17,7 @@ FILE(WRITE projects/project-defines.h
 \#define IFVS_SOFTWARE_VERSION \"${VERSION_MAJOR}.${VERSION_MINOR}\"
 \#define IFVS_SOFTWARE_VERSION_POSTFIX \"${VERSION_EXTRA}\"
 
-\#endif  
+\#endif
   "
 )
 include_directories(projects)
