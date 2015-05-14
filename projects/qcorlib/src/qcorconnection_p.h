@@ -6,6 +6,7 @@
 #include <QHash>
 #include <QDateTime>
 #include "corprotocol.h"
+#include "corparser.h"
 #include "qcorframe.h"
 class QTcpSocket;
 class QCorConnection;

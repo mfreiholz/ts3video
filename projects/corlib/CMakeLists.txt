@@ -8,10 +8,11 @@ endif()
 # Sources
 set(headers
   include/corprotocol.h
+  include/corparser.h
 )
 
 set(sources
-  src/corprotocol.c
+  src/corparser.c
 )
 
 # Defines
