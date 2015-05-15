@@ -43,7 +43,7 @@ public:
   unsigned long long bandwidthReadLimit = std::numeric_limits<unsigned long long>::max();
   unsigned long long bandwidthWriteLimit = std::numeric_limits<unsigned long long>::max();
 
-  // List of valid TS3 channel IDs users are allowed to join.
+  // List of valid channel IDs users are allowed to join.
   // Leave empty for no restrictions on channel-ids.
   QList<quint64> validChannels;
 
@@ -58,10 +58,12 @@ class TS3VideoServer : public QObject
   Q_OBJECT
   friend class ClientConnectionHandler;
   friend class WebSocketStatusServer;
+  TS3VideoServer(const TS3VideoServer &other);
+  TS3VideoServer& operator=(const TS3VideoServer &other);
 
 public:
   TS3VideoServer(const TS3VideoServerOptions &opts, QObject *parent = nullptr);
-  ~TS3VideoServer();
+  virtual ~TS3VideoServer();
   bool init();
 
 private:

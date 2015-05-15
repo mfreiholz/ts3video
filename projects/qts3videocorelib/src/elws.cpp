@@ -75,7 +75,7 @@ void ELWS::calcScaledAndCenterizedImageRect(const QRect &surfaceRect, QRect &ima
 {
   auto surfaceRatio = (float)surfaceRect.width() / (float)surfaceRect.height();
   auto imageRatio = (float)imageRect.width() / (float)imageRect.height();
-  
+
   auto scaleFactor = 1.0F;
   auto x = 0, y = 0;
 
@@ -140,12 +140,22 @@ QString ELWS::humanReadableBandwidth(quint64 bytesPerSecond)
   return humanReadableSize(bytesPerSecond) + QString("/s");
 }
 
-bool ELWS::isVersionSupported(const QString &version, const QString &supportedVersions)
+bool ELWS::isVersionSupported(const QString &clientVersion, const QString &serverVersion, const QString &clientSupportedServerVersions, const QString &serverSupportedClientVersions)
 {
-  auto versions = supportedVersions.split(QChar(','), QString::SkipEmptyParts);
-  for (auto i = 0; i < versions.size(); ++i)
-    if (versions[i].compare(version) == 0)
-      return true;
+  if (clientVersion.compare(serverVersion) == 0) {
+    return true;
+  }
+
+  auto list = clientSupportedServerVersions.split(QChar(','), QString::SkipEmptyParts);
+  if (list.contains(serverVersion)) {
+    return true;
+  }
+
+  list = serverSupportedClientVersions.split(QChar(','), QString::SkipEmptyParts);
+  if (list.contains(clientVersion)) {
+    return true;
+  }
+
   return false;
 }
 

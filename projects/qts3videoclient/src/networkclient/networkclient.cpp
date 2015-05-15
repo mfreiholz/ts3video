@@ -74,21 +74,32 @@ bool NetworkClient::isReadyForStreaming() const
 
 void NetworkClient::connectToHost(const QHostAddress &address, qint16 port)
 {
-  Q_ASSERT(!address.isNull());
-  Q_ASSERT(port > 0);
+  HL_DEBUG(HL, QString("Connect to server (address=%1; port=%2)").arg(address.toString()).arg(port).toStdString());
   d->corSocket->connectTo(address, port);
 }
 
 QCorReply* NetworkClient::auth(const QString &name, const QString &password, bool videoEnabled)
 {
-  Q_ASSERT(!name.isEmpty());
-  Q_ASSERT(d->corSocket->socket()->state() == QAbstractSocket::ConnectedState);
+  HL_DEBUG(HL, QString("Authenticate with server (version=%1; supportedversions=%2; username=%3; password=<HIDDEN>)")
+  .arg(IFVS_SOFTWARE_VERSION).arg(IFVS_CLIENT_SUPPORTED_SERVER_VERSIONS).arg(name).toStdString());
 
+  if (d->corSocket->socket()->state() != QAbstractSocket::ConnectedState) {
+    HL_ERROR(HL, QString("Connection is not established.").toStdString());
+    return nullptr;
+  }
+  if (name.isEmpty()) {
+    HL_ERROR(HL, QString("Empty username for authentication not allowed.").toStdString());
+    return nullptr;
+  }
+
+  // Prepare authentication request.
   QJsonObject params;
   params["version"] = IFVS_SOFTWARE_VERSION;
+  params["supportedversions"] = IFVS_CLIENT_SUPPORTED_SERVER_VERSIONS;
   params["username"] = name;
   params["password"] = password;
-  params["videoenabled"] = videoEnabled;
+  params["videoenabled"] = videoEnabled; ///< TODO REMOVE
+
   QCorFrame req;
   req.setData(JsonProtocolHelper::createJsonRequest("auth", params));
   auto reply = d->corSocket->sendRequest(req);
@@ -124,9 +135,14 @@ QCorReply* NetworkClient::auth(const QString &name, const QString &password, boo
 
 QCorReply* NetworkClient::joinChannel(int id)
 {
-  Q_ASSERT(d->corSocket->socket()->state() == QAbstractSocket::ConnectedState);
+  if (d->corSocket->socket()->state() != QAbstractSocket::ConnectedState) {
+    HL_ERROR(HL, QString("Connection is not established.").toStdString());
+    return nullptr;
+  }
+
   QJsonObject params;
   params["channelid"] = id;
+
   QCorFrame req;
   req.setData(JsonProtocolHelper::createJsonRequest("joinchannel", params));
   return d->corSocket->sendRequest(req);
@@ -134,10 +150,14 @@ QCorReply* NetworkClient::joinChannel(int id)
 
 QCorReply* NetworkClient::joinChannelByIdentifier(const QString &ident)
 {
-  if (d->corSocket->socket()->state() != QAbstractSocket::ConnectedState)
+  if (d->corSocket->socket()->state() != QAbstractSocket::ConnectedState) {
+    HL_ERROR(HL, QString("Connection is not established.").toStdString());
     return nullptr;
+  }
+
   QJsonObject params;
   params["identifier"] = ident;
+
   QCorFrame req;
   req.setData(JsonProtocolHelper::createJsonRequest("joinchannelbyidentifier", params));
   return d->corSocket->sendRequest(req);
@@ -145,15 +165,19 @@ QCorReply* NetworkClient::joinChannelByIdentifier(const QString &ident)
 
 void NetworkClient::sendVideoFrame(const QImage &image)
 {
-  Q_ASSERT(d->mediaSocket);
-  if (d->mediaSocket) {
-    d->mediaSocket->sendVideoFrame(image, d->clientEntity.id);
+  if (!d->mediaSocket) {
+    HL_ERROR(HL, QString("Connection is not established.").toStdString());
+    return;
   }
+  d->mediaSocket->sendVideoFrame(image, d->clientEntity.id);
 }
 
 void NetworkClient::sendHeartbeat()
 {
-  Q_ASSERT(d->corSocket->socket()->state() == QAbstractSocket::ConnectedState);
+  if (d->corSocket->socket()->state() != QAbstractSocket::ConnectedState) {
+    HL_ERROR(HL, QString("Connection is not established.").toStdString());
+    return;
+  }
   QCorFrame req;
   req.setData(JsonProtocolHelper::createJsonRequest("heartbeat", QJsonObject()));
   auto reply = d->corSocket->sendRequest(req);

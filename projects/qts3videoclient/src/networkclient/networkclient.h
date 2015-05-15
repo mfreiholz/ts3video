@@ -22,20 +22,20 @@ class NetworkClient : public QObject
   Q_OBJECT
   friend class NetworkClientPrivate;
   QScopedPointer<NetworkClientPrivate> d;
+  NetworkClient(const NetworkClient &other);
+  NetworkClient& operator=(const NetworkClient &other);
 
 public:
   NetworkClient(QObject *parent = nullptr);
-  NetworkClient(const NetworkClient &other);
   ~NetworkClient();
 
   void setMediaEnabled(bool yesno); ///< TODO Remove me... DEV only.
-
   const QAbstractSocket* socket() const;
   const ClientEntity& clientEntity() const;
   bool isReadyForStreaming() const;
 
   /*!
-    Connects to the remote TS3-VideoServer.
+    Connects to the remote VideoServer.
     Emits the "connected()" signal when the connection is established.
   */
   void connectToHost(const QHostAddress &address, qint16 port);

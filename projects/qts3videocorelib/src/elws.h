@@ -28,7 +28,7 @@ public:
     \param version Single version to check against, e.g.: 1.0
     \param supportedVersions Comma separated list of valid versions, e.g.: 1.0,2.0,3.0
   */
-  static bool isVersionSupported(const QString &version, const QString &supportedVersions);
+  static bool isVersionSupported(const QString &clientVersion, const QString &serverVersion, const QString &clientSupportedServerVersions, const QString &serverSupportedClientVersions);
 
   static QHostAddress getQHostAddressFromString(const QString &s);
 };

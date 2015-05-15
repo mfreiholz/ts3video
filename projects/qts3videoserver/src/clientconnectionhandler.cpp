@@ -166,9 +166,11 @@ void ClientConnectionHandler::onNewIncomingRequest(QCorFrameRefPtr frame)
   HL_TRACE(HL, QString("New incoming request (size=%1; content=%2)").arg(frame->data().size()).arg(QString(frame->data())).toStdString());
   _networkUsage.bytesRead += frame->data().size(); // TODO Not correct, we need to get values from QCORLIB to include bytes of cor_frame (same for write).
 
+  // Parse incoming request.
   QString action;
   QJsonObject params;
   if (!JsonProtocolHelper::fromJsonRequest(frame->data(), action, params)) {
+    HL_WARN(HL, QString("Retrieved request with invalid JSON protocol format.").toStdString());
     QCorFrame res;
     res.initResponse(*frame.data());
     res.setData(JsonProtocolHelper::createJsonResponseError(500, QString("Invalid protocol format")));
@@ -177,15 +179,16 @@ void ClientConnectionHandler::onNewIncomingRequest(QCorFrameRefPtr frame)
   }
 
   if (action == "auth") {
-    auto version = params["version"].toString();
+    auto clientVersion = params["version"].toString();
+    auto clientSupportedServerVersions = params["supportedversions"].toString();
     auto username = params["username"].toString();
     auto password = params["password"].toString();
     auto videoEnabled = params["videoenabled"].toBool();
     // Compare client version against server version compatibility.
-    if (!ELWS::isVersionSupported(version, IFVS_SERVER_SUPPORTED_CLIENT_VERSIONS)) {
+    if (!ELWS::isVersionSupported(clientVersion, IFVS_SOFTWARE_VERSION, clientSupportedServerVersions, IFVS_SERVER_SUPPORTED_CLIENT_VERSIONS)) {
       QCorFrame res;
       res.initResponse(*frame.data());
-      res.setData(JsonProtocolHelper::createJsonResponseError(3, QString("Incompatible version (client=%1; server=%2)").arg(version).arg(IFVS_SOFTWARE_VERSION)));
+      res.setData(JsonProtocolHelper::createJsonResponseError(3, QString("Incompatible version (client=%1; server=%2)").arg(clientVersion).arg(IFVS_SOFTWARE_VERSION)));
       _connection->sendResponse(res);
       QMetaObject::invokeMethod(_connection, "disconnectFromHost", Qt::QueuedConnection);
       return;
