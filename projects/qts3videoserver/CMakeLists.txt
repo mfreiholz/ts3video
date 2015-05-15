@@ -13,7 +13,8 @@ set(headers
 )
 
 set(qheaders
-  src/ts3videoserver.h
+  src/virtualserver.h
+  src/virtualserver_p.h
   src/clientconnectionhandler.h
   src/mediasockethandler.h
   src/websocketstatusserver.h
@@ -21,7 +22,7 @@ set(qheaders
 
 set(sources
   src/main.cpp
-  src/ts3videoserver.cpp
+  src/virtualserver.cpp
   src/clientconnectionhandler.cpp
   src/mediasockethandler.cpp
   src/websocketstatusserver.cpp

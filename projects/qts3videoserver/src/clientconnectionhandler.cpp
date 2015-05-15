@@ -19,13 +19,13 @@
 #include "channelentity.h"
 #include "jsonprotocolhelper.h"
 
-#include "ts3videoserver.h"
+#include "virtualserver.h"
 
 HUMBLE_LOGGER(HL, "server.clientconnection");
 
 ///////////////////////////////////////////////////////////////////////
 
-ClientConnectionHandler::ClientConnectionHandler(TS3VideoServer *server, QCorConnection *connection, QObject *parent) :
+ClientConnectionHandler::ClientConnectionHandler(VirtualServer *server, QCorConnection *connection, QObject *parent) :
   QObject(parent),
   _server(server),
   _connection(connection),

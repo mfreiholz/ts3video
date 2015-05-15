@@ -9,14 +9,14 @@
 #include "ts3video.h"
 #include "elws.h"
 
-#include "ts3videoserver.h"
+#include "virtualserver.h"
 
 HUMBLE_LOGGER(HL, "server");
 
 /*!
   \return 0 = OK;
 */
-int updateOptionsByArgs(TS3VideoServerOptions &opts)
+int updateOptionsByArgs(VirtualServerOptions &opts)
 {
   //HL_INFO(HL, QString("Configure by arguments").toStdString());
   opts.address = ELWS::getQHostAddressFromString(ELWS::getArgsValue("--address", opts.address.toString()).toString());
@@ -34,7 +34,7 @@ int updateOptionsByArgs(TS3VideoServerOptions &opts)
 /*!
   \return 0 = OK;
  */
-int updateOptionsByConfig(TS3VideoServerOptions &opts, const QString &filePath)
+int updateOptionsByConfig(VirtualServerOptions &opts, const QString &filePath)
 {
   //HL_INFO(HL, QString("Configure by file (path=%1)").arg(filePath).toStdString());
   if (filePath.isEmpty()) {
@@ -62,9 +62,9 @@ int updateOptionsByConfig(TS3VideoServerOptions &opts, const QString &filePath)
 
 /*!
   Updates server options by license.
-  \return 0 = OK; 1 = No valid license; 
+  \return 0 = OK; 1 = No valid license;
  */
-bool updateOptionsByLicense(TS3VideoServerOptions &opts, const QString &filePath)
+bool updateOptionsByLicense(VirtualServerOptions &opts, const QString &filePath)
 {
   //HL_INFO(HL, QString("Configure by license (file=%1)").arg(filePath).toStdString());
   return 0;
@@ -76,7 +76,7 @@ bool updateOptionsByLicense(TS3VideoServerOptions &opts, const QString &filePath
 
 class AppBootstrapLogic : public QObject
 {
-  TS3VideoServer *_server; ///< This is the actual server (TODO: Create more than one -> Virtual Server)
+  VirtualServer *_server; ///< This is the actual server (TODO: Create more than one -> Virtual Server)
 
 public:
   AppBootstrapLogic()
@@ -95,7 +95,7 @@ public:
     hlFactory.changeGlobalLogLevel(humble::logging::LogLevel::Debug);
 
     // Initialize server options (from ARGS).
-    TS3VideoServerOptions opts;
+    VirtualServerOptions opts;
     if (updateOptionsByArgs(opts) != 0) {
       return 1;
     }
@@ -120,7 +120,7 @@ public:
     HL_INFO(HL, QString("Bandwidth write limit: %1").arg(ELWS::humanReadableBandwidth(opts.bandwidthWriteLimit)).toStdString());
     HL_INFO(HL, QString("-------------------------").toStdString());
 
-    _server = new TS3VideoServer(opts, this);
+    _server = new VirtualServer(opts, this);
     if (!_server->init()) {
       return 1;
     }

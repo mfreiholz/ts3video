@@ -11,7 +11,7 @@
 #include "networkusageentity.h"
 
 class QCorConnection;
-class TS3VideoServer;
+class VirtualServer;
 class ClientEntity;
 
 /*
@@ -39,7 +39,7 @@ class ClientConnectionHandler : public QObject
   Q_OBJECT
 
 public:
-  ClientConnectionHandler(TS3VideoServer *server, QCorConnection *connection, QObject *parent);
+  ClientConnectionHandler(VirtualServer *server, QCorConnection *connection, QObject *parent);
   ~ClientConnectionHandler();
 
   void sendMediaAuthSuccessNotify();
@@ -52,7 +52,7 @@ signals:
   void networkUsageUpdated(const NetworkUsageEntity &networkUsage);
 
 private:
-  TS3VideoServer *_server;
+  VirtualServer *_server;
 
   // Connection data.
   QCorConnection *_connection;

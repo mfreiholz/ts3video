@@ -1,4 +1,4 @@
-#include "ts3videoserver.h"
+#include "virtualserver.h"
 
 #include "humblelogging/api.h"
 
@@ -13,7 +13,7 @@ HUMBLE_LOGGER(HL, "server");
 
 ///////////////////////////////////////////////////////////////////////
 
-TS3VideoServer::TS3VideoServer(const TS3VideoServerOptions &opts, QObject *parent) :
+VirtualServer::VirtualServer(const VirtualServerOptions &opts, QObject *parent) :
   QObject(parent),
   _opts(opts),
   _corServer(this),
@@ -29,13 +29,13 @@ TS3VideoServer::TS3VideoServer(const TS3VideoServerOptions &opts, QObject *paren
 {
 }
 
-TS3VideoServer::~TS3VideoServer()
+VirtualServer::~VirtualServer()
 {
   delete _mediaSocketHandler;
   delete _wsStatusServer;
 }
 
-bool TS3VideoServer::init()
+bool VirtualServer::init()
 {
   // Init QCorServer listening for new client connections.
   const quint16 port = _opts.port;
@@ -97,7 +97,7 @@ bool TS3VideoServer::init()
   return true;
 }
 
-void TS3VideoServer::updateMediaRecipients()
+void VirtualServer::updateMediaRecipients()
 {
   bool sendBackOwnVideo = false;
   MediaRecipients recips;
@@ -133,7 +133,7 @@ void TS3VideoServer::updateMediaRecipients()
   _mediaSocketHandler->setRecipients(recips);
 }
 
-ChannelEntity* TS3VideoServer::addClientToChannel(int clientId, int channelId)
+ChannelEntity* VirtualServer::addClientToChannel(int clientId, int channelId)
 {
   // Search for existing channel or create it, if it doesn't exists.
   auto channelEntity = _channels.value(channelId);
@@ -148,7 +148,7 @@ ChannelEntity* TS3VideoServer::addClientToChannel(int clientId, int channelId)
   return channelEntity;
 }
 
-void TS3VideoServer::removeClientFromChannel(int clientId, int channelId)
+void VirtualServer::removeClientFromChannel(int clientId, int channelId)
 {
   // Remove from channel.
   _participants[channelId].remove(clientId);
@@ -163,7 +163,7 @@ void TS3VideoServer::removeClientFromChannel(int clientId, int channelId)
   }
 }
 
-void TS3VideoServer::removeClientFromChannels(int clientId)
+void VirtualServer::removeClientFromChannels(int clientId)
 {
   // Find all channels of the client.
   QList<int> channelIds;
@@ -176,7 +176,7 @@ void TS3VideoServer::removeClientFromChannels(int clientId)
   }
 }
 
-QList<int> TS3VideoServer::getSiblingClientIds(int clientId) const
+QList<int> VirtualServer::getSiblingClientIds(int clientId) const
 {
   QSet<int> clientIds;
   // From channels (participants).

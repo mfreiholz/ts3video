@@ -1,5 +1,5 @@
-#ifndef TS3VIDEOSERVER_H
-#define TS3VIDEOSERVER_H
+#ifndef VirtualServer_H
+#define VirtualServer_H
 
 #include <limits.h>
 
@@ -21,9 +21,9 @@ class ClientEntity;
 class ChannelEntity;
 
 /*!
- * Options to run a TS3VideoServer instance.
+ * Options to run a VirtualServer instance.
  */
-class TS3VideoServerOptions
+class VirtualServerOptions
 {
 public:
   // The address and port on which the server listens for new connections.
@@ -53,17 +53,17 @@ public:
 
 /*!
  */
-class TS3VideoServer : public QObject
+class VirtualServer : public QObject
 {
   Q_OBJECT
   friend class ClientConnectionHandler;
   friend class WebSocketStatusServer;
-  TS3VideoServer(const TS3VideoServer &other);
-  TS3VideoServer& operator=(const TS3VideoServer &other);
+  VirtualServer(const VirtualServer &other);
+  VirtualServer& operator=(const VirtualServer &other);
 
 public:
-  TS3VideoServer(const TS3VideoServerOptions &opts, QObject *parent = nullptr);
-  virtual ~TS3VideoServer();
+  VirtualServer(const VirtualServerOptions &opts, QObject *parent = nullptr);
+  virtual ~VirtualServer();
   bool init();
 
 private:
@@ -74,7 +74,7 @@ private:
   QList<int> getSiblingClientIds(int clientId) const;
 
 private:
-  TS3VideoServerOptions _opts;
+  VirtualServerOptions _opts;
 
   // Listens for new client connections.
   QCorServer _corServer;

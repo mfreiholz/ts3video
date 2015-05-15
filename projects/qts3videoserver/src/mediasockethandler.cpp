@@ -8,7 +8,7 @@
 
 #include "medprotocol.h"
 
-#include "ts3videoserver.h"
+#include "virtualserver.h"
 
 HUMBLE_LOGGER(HL, "server.mediasocket");
 

@@ -16,14 +16,14 @@
 
 #include "humblelogging/api.h"
 
-#include "ts3videoserver.h"
+#include "virtualserver.h"
 #include "clientconnectionhandler.h"
 #include "cliententity.h"
 #include "channelentity.h"
 
 HUMBLE_LOGGER(HL, "server.status");
 
-WebSocketStatusServer::WebSocketStatusServer(const WebSocketStatusServer::Options &opts, TS3VideoServer *server) :
+WebSocketStatusServer::WebSocketStatusServer(const WebSocketStatusServer::Options &opts, VirtualServer *server) :
   QObject(server),
   _opts(opts),
   _server(server),

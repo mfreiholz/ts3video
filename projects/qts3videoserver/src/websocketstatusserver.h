@@ -10,7 +10,7 @@
 
 class QWebSocketServer;
 class QWebSocket;
-class TS3VideoServer;
+class VirtualServer;
 
 class WebSocketStatusServer : public QObject
 {
@@ -26,7 +26,7 @@ public:
   };
 
 public:
-  WebSocketStatusServer(const WebSocketStatusServer::Options &opts, TS3VideoServer *server);
+  WebSocketStatusServer(const WebSocketStatusServer::Options &opts, VirtualServer *server);
   virtual ~WebSocketStatusServer();
   bool init();
 
@@ -52,7 +52,7 @@ private:
 
 private:
   Options _opts;
-  TS3VideoServer *_server;
+  VirtualServer *_server;
   QWebSocketServer *_wsServer;
   QList<QWebSocket*> _sockets;
 
