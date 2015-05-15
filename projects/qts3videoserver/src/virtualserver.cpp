@@ -1,11 +1,11 @@
-#include "virtualserver.h"
+#include "virtualserver_p.h"
 
 #include "humblelogging/api.h"
 
 #include "qcorconnection.h"
 
 #include "cliententity.h"
-#include "channelentity.h"
+#include "serverchannelentity.h"
 
 #include "clientconnectionhandler.h"
 
@@ -15,6 +15,7 @@ HUMBLE_LOGGER(HL, "server");
 
 VirtualServer::VirtualServer(const VirtualServerOptions &opts, QObject *parent) :
   QObject(parent),
+  d(new VirtualServerPrivate(this)),
   _opts(opts),
   _corServer(this),
   _connections(),
@@ -133,12 +134,12 @@ void VirtualServer::updateMediaRecipients()
   _mediaSocketHandler->setRecipients(recips);
 }
 
-ChannelEntity* VirtualServer::addClientToChannel(int clientId, int channelId)
+ServerChannelEntity* VirtualServer::addClientToChannel(int clientId, int channelId)
 {
   // Search for existing channel or create it, if it doesn't exists.
   auto channelEntity = _channels.value(channelId);
   if (!channelEntity) {
-    channelEntity = new ChannelEntity();
+    channelEntity = new ServerChannelEntity();
     channelEntity->id = channelId;
     _channels.insert(channelEntity->id, channelEntity);
   }

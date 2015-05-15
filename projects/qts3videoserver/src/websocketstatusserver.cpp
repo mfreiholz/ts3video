@@ -19,7 +19,7 @@
 #include "virtualserver.h"
 #include "clientconnectionhandler.h"
 #include "cliententity.h"
-#include "channelentity.h"
+#include "serverchannelentity.h"
 
 HUMBLE_LOGGER(HL, "server.status");
 

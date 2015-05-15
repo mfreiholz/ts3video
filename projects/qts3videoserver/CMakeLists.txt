@@ -10,6 +10,7 @@ find_package(Qt5WebSockets REQUIRED)
 
 # Sources
 set(headers
+  src/serverchannelentity.h
 )
 
 set(qheaders
@@ -26,6 +27,7 @@ set(sources
   src/clientconnectionhandler.cpp
   src/mediasockethandler.cpp
   src/websocketstatusserver.cpp
+  src/serverchannelentity.cpp
 )
 
 set(qresources

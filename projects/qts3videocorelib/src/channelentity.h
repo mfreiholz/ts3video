@@ -18,6 +18,7 @@ public:
 public:
   int id;
   QString name;
+  bool isPasswordProtected;
 };
 Q_DECLARE_METATYPE(ChannelEntity);
 #endif

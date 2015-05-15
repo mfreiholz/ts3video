@@ -16,7 +16,7 @@
 #include "ts3video.h"
 #include "elws.h"
 #include "cliententity.h"
-#include "channelentity.h"
+#include "serverchannelentity.h"
 #include "jsonprotocolhelper.h"
 
 #include "virtualserver.h"

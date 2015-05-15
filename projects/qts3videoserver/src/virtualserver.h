@@ -7,6 +7,7 @@
 #include <QList>
 #include <QHash>
 #include <QSet>
+#include <QScopedPointer>
 #include <QHostAddress>
 
 #include "qcorserver.h"
@@ -18,7 +19,7 @@
 
 class ClientConnectionHandler;
 class ClientEntity;
-class ChannelEntity;
+class ServerChannelEntity;
 
 /*!
  * Options to run a VirtualServer instance.
@@ -53,11 +54,15 @@ public:
 
 /*!
  */
+class VirtualServerPrivate;
 class VirtualServer : public QObject
 {
   Q_OBJECT
+  friend class VirtualServer;
   friend class ClientConnectionHandler;
   friend class WebSocketStatusServer;
+  QScopedPointer<VirtualServerPrivate> d;
+
   VirtualServer(const VirtualServer &other);
   VirtualServer& operator=(const VirtualServer &other);
 
@@ -68,7 +73,7 @@ public:
 
 private:
   void updateMediaRecipients();
-  ChannelEntity* addClientToChannel(int clientId, int channelId);
+  ServerChannelEntity* addClientToChannel(int clientId, int channelId);
   void removeClientFromChannel(int clientId, int channelId);
   void removeClientFromChannels(int clientId);
   QList<int> getSiblingClientIds(int clientId) const;
@@ -86,7 +91,7 @@ private:
 
   // Information about existing channels.
   int _nextChannelId;
-  QHash<int, ChannelEntity*> _channels; ///< Maps channel-ids to their info object.
+  QHash<int, ServerChannelEntity*> _channels; ///< Maps channel-ids to their info object.
   QHash<int, QSet<int> > _participants; ///< Maps channel-ids to client-ids.
   QHash<int, QSet<int> > _client2channels; ///< Maps client-ids to channel-ids.
 
