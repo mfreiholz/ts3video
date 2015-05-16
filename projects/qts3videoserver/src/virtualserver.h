@@ -58,11 +58,6 @@ class VirtualServerPrivate;
 class VirtualServer : public QObject
 {
   Q_OBJECT
-  friend class VirtualServer;
-  friend class ClientConnectionHandler;
-  friend class WebSocketStatusServer;
-  QScopedPointer<VirtualServerPrivate> d;
-
   VirtualServer(const VirtualServer &other);
   VirtualServer& operator=(const VirtualServer &other);
 
@@ -71,14 +66,14 @@ public:
   virtual ~VirtualServer();
   bool init();
 
-private:
   void updateMediaRecipients();
   ServerChannelEntity* addClientToChannel(int clientId, int channelId);
   void removeClientFromChannel(int clientId, int channelId);
   void removeClientFromChannels(int clientId);
   QList<int> getSiblingClientIds(int clientId) const;
 
-private:
+public:
+  QScopedPointer<VirtualServerPrivate> d;
   VirtualServerOptions _opts;
 
   // Listens for new client connections.

@@ -20,6 +20,7 @@
 #include "jsonprotocolhelper.h"
 
 #include "virtualserver.h"
+#include "virtualserver_p.h"
 
 HUMBLE_LOGGER(HL, "server.clientconnection");
 
@@ -334,6 +335,20 @@ void ClientConnectionHandler::onNewIncomingRequest(QCorFrameRefPtr frame)
     _server->removeClientFromChannel(_clientEntity->id, channelId);
     return;
   }
+
+  // Handle with registered module.
+  // TODO Since we access _server->d, we can not do anything multi-threaded right now.
+//  auto &serverData = _server->d;
+//  auto module = serverData->action2module.value(action);
+//  if (module) {
+//    try {
+//      AbstractModuleBase::ActionRequest areq(_server, this, frame, action, params);
+//      module->processActionRequest(areq);
+//    } catch (ActionRequestException &are) {
+//      are.what();
+//    }
+//    return;
+//  }
 
   QCorFrame res;
   res.initResponse(*frame.data());

@@ -3,8 +3,8 @@
 
 #include <QObject>
 #include <QHash>
+#include <QSharedPointer>
 #include "virtualserver.h"
-class RequestActionHandlerI;
 
 class VirtualServerPrivate : public QObject
 {
@@ -12,10 +12,11 @@ class VirtualServerPrivate : public QObject
 
 public:
   VirtualServer *owner;
-  QHash<QString, RequestActionHandlerI*> handlers;
 
-public:
-  VirtualServerPrivate(VirtualServer *o) : owner(o) {}
+  VirtualServerPrivate(VirtualServer *o) :
+    owner(o)
+  {}
+
 };
 
 #endif
