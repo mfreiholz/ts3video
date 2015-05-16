@@ -51,7 +51,7 @@ private slots:
 signals:
   void networkUsageUpdated(const NetworkUsageEntity &networkUsage);
 
-private:
+public:
   VirtualServer *_server;
 
   // Connection data.

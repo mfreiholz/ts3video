@@ -16,11 +16,11 @@
 #include "ts3video.h"
 #include "elws.h"
 #include "cliententity.h"
-#include "serverchannelentity.h"
 #include "jsonprotocolhelper.h"
 
 #include "virtualserver.h"
 #include "virtualserver_p.h"
+#include "serverchannelentity.h"
 
 HUMBLE_LOGGER(HL, "server.clientconnection");
 
@@ -179,58 +179,21 @@ void ClientConnectionHandler::onNewIncomingRequest(QCorFrameRefPtr frame)
     return;
   }
 
-  if (action == "auth") {
-    auto clientVersion = params["version"].toString();
-    auto clientSupportedServerVersions = params["supportedversions"].toString();
-    auto username = params["username"].toString();
-    auto password = params["password"].toString();
-    auto videoEnabled = params["videoenabled"].toBool();
-    // Compare client version against server version compatibility.
-    if (!ELWS::isVersionSupported(clientVersion, IFVS_SOFTWARE_VERSION, clientSupportedServerVersions, IFVS_SERVER_SUPPORTED_CLIENT_VERSIONS)) {
-      QCorFrame res;
-      res.initResponse(*frame.data());
-      res.setData(JsonProtocolHelper::createJsonResponseError(3, QString("Incompatible version (client=%1; server=%2)").arg(clientVersion).arg(IFVS_SOFTWARE_VERSION)));
-      _connection->sendResponse(res);
-      QMetaObject::invokeMethod(_connection, "disconnectFromHost", Qt::QueuedConnection);
-      return;
-    }
-    // Authenticate.
-    if (username.isEmpty() || (!_server->_opts.password.isEmpty() && _server->_opts.password != password)) {
-      HL_WARN(HL, QString("Authentication failed by user (user=%1)").arg(username).toStdString());
-      QCorFrame res;
-      res.initResponse(*frame.data());
-      res.setData(JsonProtocolHelper::createJsonResponseError(4, QString("Authentication failed")));
-      _connection->sendResponse(res);
-      QMetaObject::invokeMethod(_connection, "disconnectFromHost", Qt::QueuedConnection);
-      return;
-    }
-    _authenticated = true;
-    _clientEntity->name = username;
-    _clientEntity->videoEnabled = videoEnabled;
-    auto token = QString("%1-%2").arg(_clientEntity->id).arg(QDateTime::currentDateTimeUtc().toString());
-    _server->_tokens.insert(token, _clientEntity->id);
-    // Send response.
-    QJsonObject resData;
-    resData["client"] = _clientEntity->toQJsonObject();
-    resData["authtoken"] = token;
+  // Find matching action handler.
+  // TODO If the client sends more than X invalid action requests, we should disconnect him.
+  auto &serverData = _server->d;
+  auto actionHandler = serverData->actions.value(action);
+  if (!actionHandler) {
     QCorFrame res;
     res.initResponse(*frame.data());
-    res.setData(JsonProtocolHelper::createJsonResponse(resData));
+    res.setData(JsonProtocolHelper::createJsonResponseError(4, QString("Unknown action.")));
     _connection->sendResponse(res);
-    return;
-  }
-  else if (action == "goodbye") {
-    QCorFrame res;
-    res.initResponse(*frame.data());
-    res.setData(JsonProtocolHelper::createJsonResponse(QJsonObject()));
-    _connection->sendResponse(res);
-    _connection->disconnectFromHost();
     return;
   }
 
-  // The client needs to be authenticated before he can request any other actions.
+  // The client needs to be authenticated before he can request any action with RequiresAuthentication flag.
   // Close connection, if the client tries anything else.
-  if (!_authenticated) {
+  if (actionHandler->flags().testFlag(ActionBase::RequiresAuthentication) && !_authenticated) {
     QCorFrame res;
     res.initResponse(*frame.data());
     res.setData(JsonProtocolHelper::createJsonResponseError(4, QString("Authentication failed")));
@@ -239,120 +202,16 @@ void ClientConnectionHandler::onNewIncomingRequest(QCorFrameRefPtr frame)
     return;
   }
 
-  if (action == "heartbeat") {
-    // Send response.
-    QCorFrame res;
-    res.initResponse(*frame.data());
-    res.setData(JsonProtocolHelper::createJsonResponse(QJsonObject()));
-    _connection->sendResponse(res);
-    _connectionTimeoutTimer.stop();
-    _connectionTimeoutTimer.start(20000);
-    return;
-  }
-  else if (action == "joinchannel" || action == "joinchannelbyidentifier") {
-    int channelId = 0;
-    if (action == "joinchannel") {
-      channelId = params["channelid"].toString().toLongLong();
-    }
-    else if (action == "joinchannelbyidentifier") {
-      auto ident = params["identifier"].toString();
-      channelId = qHash(ident);
-    }
-    // Validate parameters.
-    if (channelId == 0 || (!_server->_opts.validChannels.isEmpty() && !_server->_opts.validChannels.contains(channelId))) {
-      // Send error: Missing channel id.
-      QCorFrame res;
-      res.initResponse(*frame.data());
-      res.setData(JsonProtocolHelper::createJsonResponseError(1, QString("Invalid channel id (channelid=%1)").arg(channelId)));
-      _connection->sendResponse(res);
-      return;
-    }
-    // Join channel.
-    auto channelEntity = _server->addClientToChannel(_clientEntity->id, channelId);
-    // Send response.
-    auto participants = _server->_participants[channelEntity->id];
-    QJsonObject params;
-    params["channel"] = channelEntity->toQJsonObject();
-    QJsonArray paramsParticipants;
-    foreach (auto clientId, participants) {
-      auto client = _server->_clients.value(clientId);
-      if (client) {
-        paramsParticipants.append(client->toQJsonObject());
-      }
-    }
-    params["participants"] = paramsParticipants;
-    QCorFrame res;
-    res.initResponse(*frame.data());
-    res.setData(JsonProtocolHelper::createJsonResponse(params));
-    _connection->sendResponse(res);
-    // Notify participants about the new client.
-    params = QJsonObject();
-    params["channel"] = channelEntity->toQJsonObject();
-    params["client"] = _clientEntity->toQJsonObject();
-    QCorFrame req;
-    req.setData(JsonProtocolHelper::createJsonRequest("notify.clientjoinedchannel", params));
-    foreach (auto clientId, participants) {
-      auto conn = _server->_connections.value(clientId);
-      if (conn && conn != this) {
-        auto reply = conn->_connection->sendRequest(req);
-        connect(reply, &QCorReply::finished, reply, &QCorReply::deleteLater);
-      }
-    }
-    return;
-  }
-  else if (action == "leavechannel") {
-    auto channelId = params["channelid"].toInt();
-    // Find channel.
-    auto channelEntity = _server->_channels.value(channelId);
-    if (!channelEntity) {
-      // Send error: Invalid channel id.
-      QCorFrame res;
-      res.initResponse(*frame.data());
-      res.setData(JsonProtocolHelper::createJsonResponseError(1, QString("Invalid channel id (channelid=%1)").arg(channelId)));
-      _connection->sendResponse(res);
-      return;
-    }
-    // Send response.
-    QCorFrame res;
-    res.initResponse(*frame.data());
-    res.setData(JsonProtocolHelper::createJsonResponse(QJsonObject()));
-    _connection->sendResponse(res);
-    // Notify participants.
-    params = QJsonObject();
-    params["channel"] = channelEntity->toQJsonObject();
-    params["client"] = _clientEntity->toQJsonObject();
-    QCorFrame req;
-    req.setData(JsonProtocolHelper::createJsonRequest("notify.clientleftchannel", params));
-    auto participants = _server->_participants[channelEntity->id];
-    foreach(auto clientId, participants) {
-      auto conn = _server->_connections.value(clientId);
-      if (conn && conn != this) {
-        auto reply = conn->_connection->sendRequest(req);
-        connect(reply, &QCorReply::finished, reply, &QCorReply::deleteLater);
-      }
-    }
-    // Leave channel.
-    _server->removeClientFromChannel(_clientEntity->id, channelId);
-    return;
-  }
+  // The request and its prerequisites seems to be legit
+  //   -> process it.
+  ActionData req;
+  req.server = _server;
+  req.session = this;
+  req.connection = _connection;
+  req.frame = frame;
+  req.action = action;
+  req.params = params;
 
-  // Handle with registered module.
-  // TODO Since we access _server->d, we can not do anything multi-threaded right now.
-//  auto &serverData = _server->d;
-//  auto module = serverData->action2module.value(action);
-//  if (module) {
-//    try {
-//      AbstractModuleBase::ActionRequest areq(_server, this, frame, action, params);
-//      module->processActionRequest(areq);
-//    } catch (ActionRequestException &are) {
-//      are.what();
-//    }
-//    return;
-//  }
-
-  QCorFrame res;
-  res.initResponse(*frame.data());
-  res.setData(JsonProtocolHelper::createJsonResponseError(4, QString("Unknown action.")));
-  _connection->sendResponse(res);
-  return;
+  actionHandler->req = req;
+  actionHandler->run();
 }

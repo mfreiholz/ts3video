@@ -28,6 +28,11 @@ VirtualServer::VirtualServer(const VirtualServerOptions &opts, QObject *parent) 
   _tokens(),
   _wsStatusServer(nullptr)
 {
+  d->registerAction(ActionPtr(new AuthenticationAction()));
+  d->registerAction(ActionPtr(new GoodbyeAction()));
+  d->registerAction(ActionPtr(new HeartbeatAction()));
+  d->registerAction(ActionPtr(new JoinChannelAction()));
+  d->registerAction(ActionPtr(new JoinChannel2Action()));
 }
 
 VirtualServer::~VirtualServer()
@@ -96,6 +101,11 @@ bool VirtualServer::init()
   HL_INFO(HL, QString("Listening for web-socket status connections (protocol=TCP; address=%1; port=%2)").arg(wsopts.address.toString()).arg(wsopts.port).toStdString());
 
   return true;
+}
+
+const VirtualServerOptions& VirtualServer::options() const
+{
+  return _opts;
 }
 
 void VirtualServer::updateMediaRecipients()

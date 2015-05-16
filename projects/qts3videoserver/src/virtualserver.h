@@ -53,7 +53,8 @@ public:
 };
 
 /*!
- */
+  TODO: Move every "private" member into the private-impl!
+*/
 class VirtualServerPrivate;
 class VirtualServer : public QObject
 {
@@ -65,7 +66,7 @@ public:
   VirtualServer(const VirtualServerOptions &opts, QObject *parent = nullptr);
   virtual ~VirtualServer();
   bool init();
-
+  const VirtualServerOptions& options() const;
   void updateMediaRecipients();
   ServerChannelEntity* addClientToChannel(int clientId, int channelId);
   void removeClientFromChannel(int clientId, int channelId);
