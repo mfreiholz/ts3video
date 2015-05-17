@@ -92,7 +92,7 @@ public:
     hlFactory.setDefaultFormatter(new humble::logging::PatternFormatter("[%date][%lls][pid=%pid][tid=%tid] %m\n"));
     hlFactory.registerAppender(new humble::logging::ConsoleAppender());
     hlFactory.registerAppender(new humble::logging::FileAppender(QDir::temp().filePath("ts3video-server.log").toStdString(), true));
-    hlFactory.changeGlobalLogLevel(humble::logging::LogLevel::Debug);
+    hlFactory.changeGlobalLogLevel(humble::logging::LogLevel::Trace);
 
     // Initialize server options (from ARGS).
     VirtualServerOptions opts;

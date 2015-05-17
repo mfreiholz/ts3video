@@ -106,7 +106,6 @@ void HeartbeatAction::run()
 void JoinChannelAction::run()
 {
   int channelId = 0;
-
   if (req.action == "joinchannel") {
     channelId = req.params["channelid"].toInt();
   }
@@ -114,6 +113,8 @@ void JoinChannelAction::run()
     auto ident = req.params["identifier"].toString();
     channelId = qHash(ident);
   }
+  auto password = req.params["password"].toString();
+
 
   // Validate parameters.
   if (channelId == 0 || (!req.server->options().validChannels.isEmpty() && !req.server->options().validChannels.contains(channelId))) {
@@ -121,6 +122,16 @@ void JoinChannelAction::run()
     QCorFrame res;
     res.initResponse(*req.frame.data());
     res.setData(JsonProtocolHelper::createJsonResponseError(1, QString("Invalid channel id (channelid=%1)").arg(channelId)));
+    req.connection->sendResponse(res);
+    return;
+  }
+
+  // Verify password.
+  auto channelEntity = req.server->_channels.value(channelId);
+  if (channelEntity && !channelEntity->password.isEmpty() && channelEntity->password.compare(password) != 0) {
+    QCorFrame res;
+    res.initResponse(*req.frame.data());
+    res.setData(JsonProtocolHelper::createJsonResponseError(2, QString("Wrong password (channelid=%1)").arg(channelId)));
     req.connection->sendResponse(res);
     return;
   }
