@@ -133,7 +133,7 @@ QCorReply* NetworkClient::auth(const QString &name, const QString &password, boo
   return reply;
 }
 
-QCorReply* NetworkClient::joinChannel(int id)
+QCorReply* NetworkClient::joinChannel(int id, const QString &password)
 {
   if (d->corSocket->socket()->state() != QAbstractSocket::ConnectedState) {
     HL_ERROR(HL, QString("Connection is not established.").toStdString());
@@ -142,13 +142,14 @@ QCorReply* NetworkClient::joinChannel(int id)
 
   QJsonObject params;
   params["channelid"] = id;
+  params["password"] = password;
 
   QCorFrame req;
   req.setData(JsonProtocolHelper::createJsonRequest("joinchannel", params));
   return d->corSocket->sendRequest(req);
 }
 
-QCorReply* NetworkClient::joinChannelByIdentifier(const QString &ident)
+QCorReply* NetworkClient::joinChannelByIdentifier(const QString &ident, const QString &password)
 {
   if (d->corSocket->socket()->state() != QAbstractSocket::ConnectedState) {
     HL_ERROR(HL, QString("Connection is not established.").toStdString());
@@ -157,6 +158,7 @@ QCorReply* NetworkClient::joinChannelByIdentifier(const QString &ident)
 
   QJsonObject params;
   params["identifier"] = ident;
+  params["password"] = password;
 
   QCorFrame req;
   req.setData(JsonProtocolHelper::createJsonRequest("joinchannelbyidentifier", params));

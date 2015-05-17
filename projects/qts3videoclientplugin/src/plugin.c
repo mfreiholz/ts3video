@@ -509,7 +509,8 @@ static struct PluginMenuItem* createMenuItem(enum PluginMenuType type, int id, c
  * These IDs are freely choosable by the plugin author. It's not really needed to use an enum, it just looks prettier.
  */
 enum {
-  MENU_ID_CHANNEL_STARTHANGOUT = 1
+  MENU_ID_CHANNEL_VIDEO_START_CUSTOM = 1,
+  MENU_ID_CHANNEL_VIDEO_START_QUICK = 2
 };
 
 /*
@@ -536,8 +537,9 @@ void ts3plugin_initMenus(struct PluginMenuItem*** menuItems, char** menuIcon) {
 	 * e.g. for "test_plugin.dll", icon "1.png" is loaded from <TeamSpeak 3 Client install dir>\plugins\test_plugin\1.png
 	 */
 
-	BEGIN_CREATE_MENUS(1);  /* IMPORTANT: Number of menu items must be correct! */
-	CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_CHANNEL, MENU_ID_CHANNEL_STARTHANGOUT, "Start", "1.png");
+	BEGIN_CREATE_MENUS(2);  /* IMPORTANT: Number of menu items must be correct! */
+  CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_CHANNEL, MENU_ID_CHANNEL_VIDEO_START_QUICK, "Join now", "1.png")
+  CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_CHANNEL, MENU_ID_CHANNEL_VIDEO_START_CUSTOM, "Join...", "1.png")
 	END_CREATE_MENUS;  /* Includes an assert checking if the number of menu items matched */
 
 	/*
@@ -1059,34 +1061,47 @@ void ts3plugin_onMenuItemEvent(uint64 serverConnectionHandlerID, enum PluginMenu
 		case PLUGIN_MENU_TYPE_CHANNEL:
 			/* Channel contextmenu item was triggered. selectedItemID is the channelID of the selected channel */
 			switch(menuItemID) {
-        case MENU_ID_CHANNEL_STARTHANGOUT: {
+        case MENU_ID_CHANNEL_VIDEO_START_QUICK:
+        case MENU_ID_CHANNEL_VIDEO_START_CUSTOM:
+        {
           anyID clientId = 0;
           char clientName[255];
+          uint64 channelOfClient = 0;
           char *serverAddress = NULL;
           uint64 serverPort = 0;
-          uint64 channelId = selectedItemID;
+          uint64 targetChannelId = selectedItemID;
 
           if (ts3Functions.getClientID(serverConnectionHandlerID, &clientId) == ERROR_ok
             && ts3Functions.getClientDisplayName(serverConnectionHandlerID, clientId, clientName, 255) == ERROR_ok
+            && ts3Functions.getChannelOfClient(serverConnectionHandlerID, clientId, &channelOfClient) == ERROR_ok
             && ts3Functions.getConnectionVariableAsString(serverConnectionHandlerID, clientId, CONNECTION_SERVER_IP, &serverAddress) == ERROR_ok
             && ts3Functions.getConnectionVariableAsUInt64(serverConnectionHandlerID, clientId, CONNECTION_SERVER_PORT, &serverPort) == ERROR_ok
             ) {
-            // Collect info.
+
+            char path[MAX_PATH];
+            memset(path, 0, MAX_PATH);
+            char password[MAX_PATH];
+            memset(password, 0, MAX_PATH);
+            if (ts3Functions.getChannelConnectInfo(serverConnectionHandlerID, targetChannelId, &path, &password, MAX_PATH) != ERROR_ok) {
+              ts3Functions.printMessageToCurrentTab("You might not have permissions for this channel.");
+              return;
+            }
+
             TS3Data data;
+            data.funcs = &ts3Functions;
             data.clientId = clientId;
-            data.channelId = channelId;
+            strcpy(&data.clientName, clientName);
+            data.channelId = channelOfClient;
             strcpy(&data.serverAddress, serverAddress);
             data.serverPort = serverPort;
+            data.targetChannelId = targetChannelId;
+            strcpy(&data.targetChannelPassword, password);
 
-            // TODO: Read serverAddress + port from channel descriptions.
-
-            // Start video chat now.
-            // iF Windows Server = "h2377348.stratoserver.net"
-            if (runClient(serverAddress, 13370, clientName, &data) != 0) {
+            if (runClient(&data, (menuItemID == MENU_ID_CHANNEL_VIDEO_START_QUICK ? 1 : 0)) != 0) {
               printf("PLUGIN: Start hangout failed.");
             }
+
           }
-          // Clean up allocated memory.
           ts3Functions.freeMemory(serverAddress);
 					break;
         }

@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <Windows.h>
 #include "ts3video.h"
+#include "ts3_functions.h"
 #include "impl.h"
 
 #define PATH_MAX_LENGTH 4096
@@ -21,7 +22,7 @@ char* findClientExeFilePath()
 #ifdef _WIN32
   char moduleFilePath[PATH_MAX_LENGTH]; ///< Path to teamspeak3client.exe
   if (GetModuleFileName(NULL, moduleFilePath, PATH_MAX_LENGTH) <= 0) {
-    delete[] moduleFilePath;
+    //delete[] moduleFilePath;
     return NULL;
   }
 
@@ -75,22 +76,9 @@ char* getParentPath(const char *path)
   return parentPath;
 }
 
-/*!
-  Uses the "djb2"-algorithm to hash a string value.
-  \see http://www.cse.yorku.ca/~oz/hash.html
- */
-unsigned long hashString(const char *str)
-{
-  unsigned long hash = 5381;
-  int c;
-  while (c = *str++)
-    hash = ((hash << 5) + hash) + c; // hash * 33 + c
-  return hash;
-}
-
 char* generateUniqueChannelIdentifier(const TS3Data *data)
 {
-  // Concenate all important data which identifies makes the TS3Data unique
+  // Concenate all important data which makes the TS3Data unique
   // in the same way for all clients (do not include the client's ID!).
   // e.g.: <server-address>#<server-port>#<channel-id>
   char *s = new char[MAX_PATH];
@@ -100,27 +88,28 @@ char* generateUniqueChannelIdentifier(const TS3Data *data)
   strcat(s, "#");
 
   char serverPortString[64];
-  itoa(data->serverPort, serverPortString, 10);
+  ltoa(data->serverPort, serverPortString, 10);
   strcat(s, serverPortString);
   strcat(s, "#");
 
   char channelIdString[64];
-  ltoa(data->channelId, channelIdString, 10);
+  ltoa(data->targetChannelId, channelIdString, 10);
   strcat(s, channelIdString);
   strcat(s, "#");
 
-  // Generate a hashed number value for the unique string.
   return s;
 }
 
 // API ////////////////////////////////////////////////////////////////
 
-/**
- * Starts the ts3video plugin as an separate process.
- * @return 0 = OK; Everything else indicates an error.
- */
-int runClient(const char *serverAddress, unsigned short serverPort, const char *username, TS3Data *ts3data)
+int runClient(TS3Data *ts3data, int skipStartupDialog)
 {
+  // It's not allowed to join a conference of a different channel.
+  if (ts3data->channelId != ts3data->targetChannelId) {
+    ts3data->funcs->printMessageToCurrentTab("You can not join a video-conference of a different channel.");
+    return 1;
+  }
+
   // Find client executable.
   char *filePath = findClientExeFilePath();
   if (!filePath) {
@@ -140,10 +129,10 @@ int runClient(const char *serverAddress, unsigned short serverPort, const char *
   params[0] = 0;
 
   strcat(params, " --server-address ");
-  strcat(params, serverAddress);
+  strcat(params, ts3data->serverAddress);
 
   char serverPortString[64];
-  itoa(serverPort, serverPortString, 10);
+  itoa(13370, serverPortString, 10);
   strcat(params, " --server-port ");
   strcat(params, " ");
   strcat(params, serverPortString);
@@ -151,7 +140,7 @@ int runClient(const char *serverAddress, unsigned short serverPort, const char *
 
   strcat(params, " --username ");
   strcat(params, " \"");
-  strcat(params, username);
+  strcat(params, ts3data->clientName);
   strcat(params, "\" ");
 
   char *channelIdent = generateUniqueChannelIdentifier(ts3data);
@@ -159,6 +148,10 @@ int runClient(const char *serverAddress, unsigned short serverPort, const char *
   strcat(params, " \"");
   strcat(params, channelIdent);
   strcat(params, "\" ");
+
+  if (skipStartupDialog) {
+    strcat(params, " --skip-startup-dialog ");
+  }
 
 #ifdef _WIN32
   SHELLEXECUTEINFO execInfo;

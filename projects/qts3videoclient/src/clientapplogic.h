@@ -41,11 +41,12 @@ public:
     QString username = QString();
 
     // The optional channel password.
-    QString password = QString();
+    //QString password = QString();
 
     // The real ID or identifier of the channel to join.
     qint64 channelId = 0;
     QString channelIdentifier;
+    QString channelPassword;
 
     // The camera's device ID to stream video.
     QString cameraDeviceId = QString();

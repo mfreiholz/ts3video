@@ -29,7 +29,7 @@ StartupDialog::StartupDialog(QWidget *parent) :
   d->ui.cameraComboBox->clear();
   d->ui.channelIdentifierLineEdit->clear();
   d->ui.usernameLineEdit->clear();
-  d->ui.passwordLineEdit->clear();
+  d->ui.channelPasswordLineEdit->clear();
   d->ui.serverAddress->clear();
 
   auto cameraInfos = QCameraInfo::availableCameras();
@@ -83,7 +83,7 @@ ClientAppLogic::Options StartupDialog::values() const
   v.cameraDeviceId = d->ui.cameraComboBox->currentData().toString();
   v.channelIdentifier = d->ui.channelIdentifierLineEdit->text();
   v.username = d->ui.usernameLineEdit->text();
-  v.password = d->ui.passwordLineEdit->text();
+  v.channelPassword = d->ui.channelPasswordLineEdit->text();
 
   auto addr = d->ui.serverAddress->currentText().split(":", QString::SkipEmptyParts);
   if (addr.size() >= 1) {
@@ -117,7 +117,7 @@ void StartupDialog::setValues(const ClientAppLogic::Options &v)
   d->ui.channelIdentifierLineEdit->setText(v.channelIdentifier);
 
   d->ui.usernameLineEdit->setText(v.username);
-  d->ui.passwordLineEdit->setText(v.password);
+  d->ui.channelPasswordLineEdit->setText(v.channelPassword);
   d->ui.serverAddress->setCurrentText(v.serverAddress + QString(":") + QString::number(v.serverPort));
   d->validateUi();
 }

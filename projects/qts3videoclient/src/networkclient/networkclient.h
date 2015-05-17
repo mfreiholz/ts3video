@@ -55,8 +55,8 @@ public:
     \see auth()
     \return QCorReply* Ownership goes over to caller who needs to delete it with "deleteLater()".
   */
-  QCorReply* joinChannel(int id);
-  QCorReply* joinChannelByIdentifier(const QString &ident);
+  QCorReply* joinChannel(int id, const QString &password);
+  QCorReply* joinChannelByIdentifier(const QString &ident, const QString &password);
 
   /*!
     Sends a single frame to the server, which will then broadcast it to other clients.

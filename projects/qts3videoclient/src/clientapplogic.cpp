@@ -121,7 +121,7 @@ void ClientAppLogic::onConnected()
 {
   // Authenticate.
   showProgress(tr("Authenticating..."));
-  auto reply = d->ts3vc.auth(d->opts.username, d->opts.password, !d->opts.cameraDeviceId.isEmpty());
+  auto reply = d->ts3vc.auth(d->opts.username, QString(),/*d->opts.password,*/ !d->opts.cameraDeviceId.isEmpty());
   QObject::connect(reply, &QCorReply::finished, [this, reply] ()
   {
     HL_DEBUG(HL, QString("Auth answer: %1").arg(QString(reply->frame()->data())).toStdString());
@@ -141,9 +141,9 @@ void ClientAppLogic::onConnected()
     showProgress(tr("Joining channel..."));
     QCorReply *reply2 = nullptr;
     if (d->opts.channelId != 0) {
-      reply2 = d->ts3vc.joinChannel(d->opts.channelId);
+      reply2 = d->ts3vc.joinChannel(d->opts.channelId, d->opts.channelPassword);
     } else {
-      reply2 = d->ts3vc.joinChannelByIdentifier(d->opts.channelIdentifier);
+      reply2 = d->ts3vc.joinChannelByIdentifier(d->opts.channelIdentifier, d->opts.channelPassword);
     }
     QObject::connect(reply2, &QCorReply::finished, [this, reply2] ()
     {

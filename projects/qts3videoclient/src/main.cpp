@@ -234,7 +234,7 @@ int runTestClient(QApplication &a)
         reply->deleteLater();
         HL_DEBUG(HL, QString(reply->frame()->data()).toStdString());
         // Join channel.
-        auto reply2 = ts3vc->joinChannel(1);
+        auto reply2 = ts3vc->joinChannel(1, QString());
         QObject::connect(reply2, &QCorReply::finished, [ts3vc, reply2, sendVideo]() {
           reply2->deleteLater();
           HL_DEBUG(HL, QString(reply2->frame()->data()).toStdString());
@@ -445,9 +445,9 @@ int runClientAppLogic(QApplication &a)
   opts.serverAddress = ELWS::getArgsValue("--server-address", opts.serverAddress).toString();
   opts.serverPort = ELWS::getArgsValue("--server-port", opts.serverPort).toUInt();
   opts.username = ELWS::getArgsValue("--username", ELWS::getUserName()).toString();
-  opts.password = ELWS::getArgsValue("--password", opts.password).toString();
   opts.channelId = ELWS::getArgsValue("--channel-id", opts.channelId).toLongLong();
   opts.channelIdentifier = ELWS::getArgsValue("--channel-identifier", opts.channelIdentifier).toString();
+  opts.channelPassword = ELWS::getArgsValue("-channel-password", opts.channelPassword).toString();
 
   // Load options from URI.
   QUrl url(ELWS::getArgsValue("--uri").toString(), QUrl::StrictMode);
@@ -456,24 +456,25 @@ int runClientAppLogic(QApplication &a)
     opts.serverAddress = url.host();
     opts.serverPort = url.port(opts.serverPort);
     opts.username = urlQuery.queryItemValue("username");
-    opts.password = urlQuery.queryItemValue("password");
     opts.channelId = urlQuery.queryItemValue("channelid").toLongLong();
     opts.channelIdentifier = urlQuery.queryItemValue("channelidentifier");
+    opts.channelPassword = urlQuery.queryItemValue("channelpassword");
     if (opts.username.isEmpty()) {
       opts.username = ELWS::getUserName();
     }
   }
 
   // Modify startup options with dialog.
-  if (true) {
-    StartupDialog dialog(nullptr);
-    dialog.setValues(opts);
+  // Skip dialog with: --skip-startup-dialog
+  StartupDialog dialog(nullptr);
+  dialog.setValues(opts);
+  if (!ELWS::hasArgsValue("--skip-startup-dialog")) {
     if (dialog.exec() != QDialog::Accepted) {
       QMetaObject::invokeMethod(&a, "quit", Qt::QueuedConnection);
       return a.exec();
     }
-    opts = dialog.values();
   }
+  opts = dialog.values();
 
   HL_INFO(HL, QString("Client startup (version=%1)").arg(a.applicationVersion()).toStdString());
   HL_INFO(HL, QString("Address: %1").arg(opts.serverAddress).toStdString());
