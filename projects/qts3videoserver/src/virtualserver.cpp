@@ -146,14 +146,8 @@ void VirtualServer::updateMediaRecipients()
 
 ServerChannelEntity* VirtualServer::addClientToChannel(int clientId, int channelId)
 {
-  // Search for existing channel or create it, if it doesn't exists.
+  Q_ASSERT(_channels.value(channelId) != 0);
   auto channelEntity = _channels.value(channelId);
-  if (!channelEntity) {
-    channelEntity = new ServerChannelEntity();
-    channelEntity->id = channelId;
-    _channels.insert(channelEntity->id, channelEntity);
-  }
-  // Join channel.
   _participants[channelEntity->id].insert(clientId);
   _client2channels[clientId].insert(channelEntity->id);
   return channelEntity;
