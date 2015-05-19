@@ -126,8 +126,10 @@ void JoinChannelAction::run()
     return;
   }
 
-  // Verify password.
+  // Retrieve channel information.
   auto channelEntity = req.server->_channels.value(channelId);
+
+  // Verify password.
   if (channelEntity && !channelEntity->password.isEmpty() && channelEntity->password.compare(password) != 0) {
     QCorFrame res;
     res.initResponse(*req.frame.data());
@@ -136,8 +138,17 @@ void JoinChannelAction::run()
     return;
   }
 
-  // Join channel.
-  auto channelEntity = req.server->addClientToChannel(req.session->_clientEntity->id, channelId);
+  // Create channel, if it doesn't exists yet.
+  if (!channelEntity) {
+    channelEntity = new ServerChannelEntity();
+    channelEntity->id = channelId;
+    channelEntity->isPasswordProtected = !password.isEmpty();
+    channelEntity->password = password;
+    req.server->_channels.insert(channelEntity->id, channelEntity);
+  }
+
+  // Associate the client's membership to the channel.
+  req.server->addClientToChannel(req.session->_clientEntity->id, channelId);
 
   // Build response with information about the channel.
   auto participants = req.server->_participants[channelEntity->id];
