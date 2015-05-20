@@ -1078,14 +1078,14 @@ void ts3plugin_onMenuItemEvent(uint64 serverConnectionHandlerID, enum PluginMenu
             && ts3Functions.getConnectionVariableAsUInt64(serverConnectionHandlerID, clientId, CONNECTION_SERVER_PORT, &serverPort) == ERROR_ok
             ) {
 
-            char path[MAX_PATH];
-            memset(path, 0, MAX_PATH);
-            char password[MAX_PATH];
-            memset(password, 0, MAX_PATH);
-            if (ts3Functions.getChannelConnectInfo(serverConnectionHandlerID, targetChannelId, &path, &password, MAX_PATH) != ERROR_ok) {
-              ts3Functions.printMessageToCurrentTab("You might not have permissions for this channel.");
-              return;
-            }
+            //char path[MAX_PATH];
+            //memset(path, 0, MAX_PATH);
+            //char password[MAX_PATH];
+            //memset(password, 0, MAX_PATH);
+            //if (ts3Functions.getChannelConnectInfo(serverConnectionHandlerID, targetChannelId, &path, &password, MAX_PATH) != ERROR_ok) {
+            //  ts3Functions.printMessageToCurrentTab("You might not have permissions for this channel.");
+            //  return;
+            //}
 
             TS3Data data;
             data.funcs = &ts3Functions;
@@ -1095,7 +1095,6 @@ void ts3plugin_onMenuItemEvent(uint64 serverConnectionHandlerID, enum PluginMenu
             strcpy(&data.serverAddress, serverAddress);
             data.serverPort = serverPort;
             data.targetChannelId = targetChannelId;
-            strcpy(&data.targetChannelPassword, password);
 
             if (runClient(&data, (menuItemID == MENU_ID_CHANNEL_VIDEO_START_QUICK ? 1 : 0)) != 0) {
               printf("PLUGIN: Start hangout failed.");

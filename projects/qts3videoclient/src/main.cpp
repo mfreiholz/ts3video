@@ -447,7 +447,7 @@ int runClientAppLogic(QApplication &a)
   opts.username = ELWS::getArgsValue("--username", ELWS::getUserName()).toString();
   opts.channelId = ELWS::getArgsValue("--channel-id", opts.channelId).toLongLong();
   opts.channelIdentifier = ELWS::getArgsValue("--channel-identifier", opts.channelIdentifier).toString();
-  opts.channelPassword = ELWS::getArgsValue("-channel-password", opts.channelPassword).toString();
+  opts.channelPassword = ELWS::getArgsValue("--channel-password", opts.channelPassword).toString();
 
   // Load options from URI.
   QUrl url(ELWS::getArgsValue("--uri").toString(), QUrl::StrictMode);

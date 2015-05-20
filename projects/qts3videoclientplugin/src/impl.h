@@ -17,8 +17,7 @@ extern "C" {
     char serverAddress[MAX_PATH];      ///< The address of the current virtual server.
     uint64 serverPort;                 ///< The port of the current virtual server.
 
-    uint64 targetChannelId;               ///< The ID of the channel the client wants to join.
-    char targetChannelPassword[MAX_PATH]; ///< The password of the channel the client wants to join.
+    uint64 targetChannelId;            ///< The ID of the channel the client wants to join.
   } TS3Data;
 
   /*!

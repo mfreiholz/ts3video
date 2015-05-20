@@ -100,6 +100,25 @@ char* generateUniqueChannelIdentifier(const TS3Data *data)
   return s;
 }
 
+char* generateChannelPassword(const TS3Data *data)
+{
+  const char *ident = generateUniqueChannelIdentifier(data);
+  const int identLen = strlen(ident);
+
+  char *pass = new char[MAX_PATH];
+  memset(pass, 0, MAX_PATH);
+
+  for (int i = identLen / 2 - 1; i >= 0; --i) {
+    const int ival = ident[i];
+    char buff[128];
+    itoa(ival, buff, 16);
+    strcat(pass, buff);
+  }
+
+  delete[] ident;
+  return pass;
+}
+
 // API ////////////////////////////////////////////////////////////////
 
 int runClient(TS3Data *ts3data, int skipStartupDialog)
@@ -149,6 +168,12 @@ int runClient(TS3Data *ts3data, int skipStartupDialog)
   strcat(params, channelIdent);
   strcat(params, "\" ");
 
+  char *channelPassword = generateChannelPassword(ts3data);
+  strcat(params, " --channel-password ");
+  strcat(params, " \"");
+  strcat(params, channelPassword);
+  strcat(params, "\" ");
+
   if (skipStartupDialog) {
     strcat(params, " --skip-startup-dialog ");
   }
@@ -165,6 +190,7 @@ int runClient(TS3Data *ts3data, int skipStartupDialog)
   execInfo.nShow = SW_SHOWNORMAL;
   if (!ShellExecuteEx(&execInfo)) {
     delete[] channelIdent;
+    delete[] channelPassword;
     delete[] workingDirectory;
     delete[] filePath;
     return 3;
@@ -172,6 +198,7 @@ int runClient(TS3Data *ts3data, int skipStartupDialog)
 #endif
 
   delete[] channelIdent;
+  delete[] channelPassword;
   delete[] workingDirectory;
   delete[] filePath;
   return 0;
