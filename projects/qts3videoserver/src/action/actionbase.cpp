@@ -23,6 +23,23 @@ HUMBLE_LOGGER(HL, "server.clientconnection.action");
 
 ///////////////////////////////////////////////////////////////////////
 
+/*void broadcastToSiblingClients(int senderId, const QString &action, const QJsonObject &params)
+{
+  QCorFrame f;
+  f.setData(JsonProtocolHelper::createJsonRequest(action, params));
+
+  auto pids = req.server->getSiblingClientIds(senderId);
+  foreach (auto pid, pids) {
+    auto sess = req.server->_connections.value(pid);
+    if (sess && sess != req.session) {
+      auto reply = sess->_connection->sendRequest(f);
+      QObject::connect(reply, &QCorReply::finished, reply, &QCorReply::deleteLater);
+    }
+  }
+}*/
+
+///////////////////////////////////////////////////////////////////////
+
 void AuthenticationAction::run()
 {
   auto server = req.server;
@@ -98,6 +115,50 @@ void HeartbeatAction::run()
   res.initResponse(*req.frame.data());
   res.setData(JsonProtocolHelper::createJsonResponse(QJsonObject()));
   req.connection->sendResponse(res);
+}
+
+///////////////////////////////////////////////////////////////////////
+
+void EnableVideoAction::run()
+{
+  req.session->_clientEntity->videoEnabled = true;
+
+  // Broadcast to sibling clients.
+  QJsonObject params;
+  params["clientid"] = req.session->_clientEntity->id;
+  QCorFrame f;
+  f.setData(JsonProtocolHelper::createJsonRequest("notify.clientvideoenabled", params));
+
+  auto pids = req.server->getSiblingClientIds(req.session->_clientEntity->id);
+  foreach (auto pid, pids) {
+    auto sess = req.server->_connections.value(pid);
+    if (sess && sess != req.session) {
+      auto reply = sess->_connection->sendRequest(f);
+      QObject::connect(reply, &QCorReply::finished, reply, &QCorReply::deleteLater);
+    }
+  }
+}
+
+///////////////////////////////////////////////////////////////////////
+
+void DisableVideoAction::run()
+{
+  req.session->_clientEntity->videoEnabled = false;
+
+  // Broadcast to sibling clients.
+  QJsonObject params;
+  params["clientid"] = req.session->_clientEntity->id;
+  QCorFrame f;
+  f.setData(JsonProtocolHelper::createJsonRequest("notify.clientvideodisabled", params));
+
+  auto pids = req.server->getSiblingClientIds(req.session->_clientEntity->id);
+  foreach (auto pid, pids) {
+    auto sess = req.server->_connections.value(pid);
+    if (sess && sess != req.session) {
+      auto reply = sess->_connection->sendRequest(f);
+      QObject::connect(reply, &QCorReply::finished, reply, &QCorReply::deleteLater);
+    }
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////

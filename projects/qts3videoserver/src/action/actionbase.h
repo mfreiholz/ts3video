@@ -29,10 +29,10 @@ public:
   ActionData req;
 
   enum Flag { NoFlag, RequiresAuthentication };
-  Q_DECLARE_FLAGS(Flags, Flag);
+  Q_DECLARE_FLAGS(Flags, Flag)
 
   virtual QString name() const = 0;
-  virtual Flags flags() const { return RequiresAuthentication; };
+  virtual Flags flags() const { return RequiresAuthentication; }
   virtual void run() = 0;
 };
 
@@ -63,6 +63,24 @@ class HeartbeatAction : public ActionBase
 {
 public:
   QString name() const { return QString("heartbeat"); }
+  void run();
+};
+
+///////////////////////////////////////////////////////////////////////
+
+class EnableVideoAction : public ActionBase
+{
+public:
+  QString name() const { return QString("clientenablevideo"); }
+  void run();
+};
+
+///////////////////////////////////////////////////////////////////////
+
+class DisableVideoAction : public ActionBase
+{
+public:
+  QString name() const { return QString("clientdisablevideo"); }
   void run();
 };
 

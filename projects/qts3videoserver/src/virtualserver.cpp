@@ -33,6 +33,8 @@ VirtualServer::VirtualServer(const VirtualServerOptions &opts, QObject *parent) 
   d->registerAction(ActionPtr(new HeartbeatAction()));
   d->registerAction(ActionPtr(new JoinChannelAction()));
   d->registerAction(ActionPtr(new JoinChannel2Action()));
+  d->registerAction(ActionPtr(new EnableVideoAction()));
+  d->registerAction(ActionPtr(new DisableVideoAction()));
 }
 
 VirtualServer::~VirtualServer()
