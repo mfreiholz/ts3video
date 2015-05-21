@@ -12,13 +12,12 @@
 
 #include "ts3video.h"
 #include "elws.h"
-#include "../servercliententity.h"
-#include "../serverchannelentity.h"
 #include "jsonprotocolhelper.h"
 
-#include "../virtualserver.h"
 #include "../virtualserver_p.h"
 #include "../clientconnectionhandler.h"
+#include "../servercliententity.h"
+#include "../serverchannelentity.h"
 
 HUMBLE_LOGGER(HL, "server.clientconnection.action");
 
