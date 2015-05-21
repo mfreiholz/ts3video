@@ -12,7 +12,7 @@
 
 class QCorConnection;
 class VirtualServer;
-class ClientEntity;
+class ServerClientEntity;
 
 /*
   JSON Example Request
@@ -59,7 +59,7 @@ public:
   QTimer _connectionTimeoutTimer;
 
   // Status information.
-  ClientEntity *_clientEntity;
+  ServerClientEntity *_clientEntity;
   bool _authenticated;
 
   // Network usage.

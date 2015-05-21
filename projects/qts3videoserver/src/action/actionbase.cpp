@@ -12,7 +12,7 @@
 
 #include "ts3video.h"
 #include "elws.h"
-#include "cliententity.h"
+#include "../servercliententity.h"
 #include "../serverchannelentity.h"
 #include "jsonprotocolhelper.h"
 

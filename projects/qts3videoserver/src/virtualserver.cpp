@@ -4,7 +4,7 @@
 
 #include "qcorconnection.h"
 
-#include "cliententity.h"
+#include "servercliententity.h"
 #include "serverchannelentity.h"
 
 #include "clientconnectionhandler.h"
@@ -72,7 +72,7 @@ bool VirtualServer::init()
     auto clientId = _tokens.take(token);
     auto clientEntity = _clients.value(clientId);
     if (!clientEntity) {
-      HL_WARN(HL, QString("No matching ClientEntity for auth token (token=%1; client-id=%2)").arg(token).arg(clientId).toStdString());
+      HL_WARN(HL, QString("No matching client-entity for auth token (token=%1; client-id=%2)").arg(token).arg(clientId).toStdString());
       return;
     }
     clientEntity->mediaAddress = address.toString();

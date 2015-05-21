@@ -15,11 +15,11 @@
 
 #include "ts3video.h"
 #include "elws.h"
-#include "cliententity.h"
 #include "jsonprotocolhelper.h"
 
 #include "virtualserver.h"
 #include "virtualserver_p.h"
+#include "servercliententity.h"
 #include "serverchannelentity.h"
 
 HUMBLE_LOGGER(HL, "server.clientconnection");
@@ -35,7 +35,7 @@ ClientConnectionHandler::ClientConnectionHandler(VirtualServer *server, QCorConn
   _networkUsage(),
   _networkUsageHelper(_networkUsage)
 {
-  _clientEntity = new ClientEntity();
+  _clientEntity = new ServerClientEntity();
   _clientEntity->id = ++_server->_nextClientId;
   _server->_clients.insert(_clientEntity->id, _clientEntity);
 

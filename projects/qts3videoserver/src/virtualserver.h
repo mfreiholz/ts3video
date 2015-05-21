@@ -18,7 +18,7 @@
 #include "websocketstatusserver.h"
 
 class ClientConnectionHandler;
-class ClientEntity;
+class ServerClientEntity;
 class ServerChannelEntity;
 
 /*!
@@ -82,7 +82,7 @@ public:
 
   // Information about connected clients.
   int _nextClientId;
-  QHash<int, ClientEntity*> _clients; ///< Maps client-ids to their info object.
+  QHash<int, ServerClientEntity*> _clients; ///< Maps client-ids to their info object.
   QHash<int, ClientConnectionHandler*> _connections; ///< Maps client-ids to their connection handlers.
 
   // Information about existing channels.

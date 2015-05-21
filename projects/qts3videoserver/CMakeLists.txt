@@ -10,7 +10,9 @@ find_package(Qt5WebSockets REQUIRED)
 
 # Sources
 set(headers
+  src/servercliententity.h
   src/serverchannelentity.h
+  src/action/actionbase.h
 )
 
 set(qheaders
@@ -19,7 +21,6 @@ set(qheaders
   src/clientconnectionhandler.h
   src/mediasockethandler.h
   src/websocketstatusserver.h
-  src/action/actionbase.h
 #  src/module/abstractmodulebase.h
 #  src/module/coremodule.h
 #  src/module/channelmodule.h
@@ -31,6 +32,7 @@ set(sources
   src/clientconnectionhandler.cpp
   src/mediasockethandler.cpp
   src/websocketstatusserver.cpp
+  src/servercliententity.cpp
   src/serverchannelentity.cpp
   src/action/actionbase.cpp
 #  src/module/coremodule.cpp
@@ -38,7 +40,7 @@ set(sources
 )
 
 set(qresources
-  res/res.qrc
+#  res/res.qrc
 )
 
 if(WIN32)
