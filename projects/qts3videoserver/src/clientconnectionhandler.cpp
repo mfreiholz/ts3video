@@ -113,6 +113,20 @@ ClientConnectionHandler::ClientConnectionHandler(VirtualServer *server, QCorConn
     connect(reply, &QCorReply::finished, reply, &QCorReply::deleteLater);
     QMetaObject::invokeMethod(_connection, "disconnectFromHost", Qt::QueuedConnection);
   }
+
+  // Ban check.
+  const auto peerAddress = connection->socket()->peerAddress();
+  if (_server->isBaned(peerAddress)) {
+    HL_WARN(HL, QString("Baned user tried to connect. (address=%1)").arg(peerAddress.toString()).toStdString());
+    QJsonObject params;
+    params["code"] = 1;
+    params["message"] = "You are baned from the server.";
+    QCorFrame req;
+    req.setData(JsonProtocolHelper::createJsonRequest("error", params));
+    auto reply = _connection->sendRequest(req);
+    connect(reply, &QCorReply::finished, reply, &QCorReply::deleteLater);
+    QMetaObject::invokeMethod(_connection, "disconnectFromHost", Qt::QueuedConnection);
+  }
 }
 
 ClientConnectionHandler::~ClientConnectionHandler()
