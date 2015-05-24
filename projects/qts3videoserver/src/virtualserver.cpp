@@ -1,5 +1,9 @@
 #include "virtualserver_p.h"
 
+#include <QCoreApplication>
+#include <QDir>
+#include <QSettings>
+
 #include "humblelogging/api.h"
 
 #include "qcorconnection.h"
@@ -193,4 +197,35 @@ QList<int> VirtualServer::getSiblingClientIds(int clientId) const
     }
   }
   return clientIds.toList();
+}
+
+void VirtualServer::bann(const QHostAddress &address)
+{
+  QDir dir(QCoreApplication::applicationDirPath());
+  const auto filePath = dir.filePath("banns.ini");
+  QSettings ini(filePath, QSettings::IniFormat);
+
+  ini.beginGroup("ips");
+  ini.setValue(address.toString(), QDateTime::currentDateTimeUtc().toString(Qt::ISODate));
+  ini.endGroup();
+}
+
+void VirtualServer::unbann(const QHostAddress &address)
+{
+  QDir dir(QCoreApplication::applicationDirPath());
+  const auto filePath = dir.filePath("banns.ini");
+  QSettings ini(filePath, QSettings::IniFormat);
+
+  ini.beginGroup("ips");
+  ini.remove(address.toString());
+  ini.endGroup();
+}
+
+bool VirtualServer::isBanned(const QHostAddress &address)
+{
+  QDir dir(QCoreApplication::applicationDirPath());
+  const auto filePath = dir.filePath("banns.ini");
+  QSettings ini(filePath, QSettings::IniFormat);
+
+  return ini.contains("ips/" + address.toString());
 }

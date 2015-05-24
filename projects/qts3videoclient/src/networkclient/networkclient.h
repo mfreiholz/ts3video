@@ -59,6 +59,15 @@ public:
   QCorReply* joinChannelByIdentifier(const QString &ident, const QString &password);
 
   /*!
+    Enables/disables sending of video stream to server.
+    Requires an authenticated connection.
+    \see auth()
+    \return QCorReply* Ownership goes over to caller who needs to delete it with "deleteLater()".
+  */
+  QCorReply* enableVideoStream();
+  QCorReply* disableVideoStream();
+
+  /*!
     Sends a single frame to the server, which will then broadcast it to other clients.
     Internally encodes the image with VPX codec.
     \thread-safe

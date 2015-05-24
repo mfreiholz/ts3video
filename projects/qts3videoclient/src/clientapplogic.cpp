@@ -12,7 +12,6 @@
 #include <QtConcurrent>
 #include <QFuture>
 #include <QFutureWatcher>
-#include <QStatusBar>
 
 #include "humblelogging/api.h"
 
@@ -50,10 +49,6 @@ ClientAppLogic::ClientAppLogic(const Options &opts, QWidget *parent, Qt::WindowF
   d->progressDialog->setRange(0, 0);
   d->progressDialog->setModal(true);
   d->progressDialog->setVisible(false);
-
-  //// Status bar.
-  //auto statusBar = new QStatusBar(this);
-  //setStatusBar(statusBar);
 
   // Network connection events.
   connect(&d->ts3vc, &NetworkClient::connected, this, &ClientAppLogic::onConnected);
@@ -243,6 +238,7 @@ void ClientAppLogic::onNetworkUsageUpdated(const NetworkUsageEntity &networkUsag
 
 void ClientAppLogic::showEvent(QShowEvent *e)
 {
+  // TODO: Do not load when it comes back from minimized state.
   QSettings settings;
   restoreGeometry(settings.value("UI/ClientApp-Geometry").toByteArray());
 }

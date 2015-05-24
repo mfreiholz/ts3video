@@ -2,7 +2,6 @@
 #define CLIENTAPPLOGICPRIVATE_H
 
 #include "clientapplogic.h"
-
 class ClientListModel;
 
 class ClientAppLogicPrivate : public QObject
@@ -19,15 +18,13 @@ public:
     cameraWidget(nullptr),
     progressDialog(nullptr)
   {}
+  ~ClientAppLogicPrivate()
+  {}
 
 public:
   ClientAppLogic *owner;
   ClientAppLogic::Options opts;
-
-  // Network connection.
   NetworkClient ts3vc;
-
-  // Qt models.
   ClientListModel *clientListModel; ///< Always holds the current state of connected clients in the same channel.
 
   // Direct GUI elements.

@@ -27,7 +27,7 @@ class MediaSocket;
 class NetworkClientPrivate
 {
 public:
-  NetworkClientPrivate(NetworkClient *o) : owner(o), corSocket(nullptr), mediaSocket(nullptr), useMediaSocket(true) {}
+  NetworkClientPrivate(NetworkClient *o) : owner(o), corSocket(nullptr), mediaSocket(nullptr), videoStreamingEnabled(false), useMediaSocket(true) {}
   NetworkClientPrivate(const NetworkClientPrivate &);
 
 public:
@@ -38,8 +38,8 @@ public:
   MediaSocket *mediaSocket;
   QTimer heartbeatTimer;
 
-  // Common data.
   ClientEntity clientEntity;
+  bool videoStreamingEnabled;
 
   bool useMediaSocket; ///< TODO Remove me (DEV ONLY)
 };

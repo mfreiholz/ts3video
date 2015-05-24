@@ -34,6 +34,8 @@ public:
   virtual QString name() const = 0;
   virtual Flags flags() const { return RequiresAuthentication; }
   virtual void run() = 0;
+
+  void broadcastNotificationToSiblingClients(const QString &action, const QJsonObject &params);
 };
 
 typedef QSharedPointer<ActionBase> ActionPtr;
@@ -108,6 +110,15 @@ class LeaveChannelAction : public ActionBase
 {
 public:
   QString name() const { return QString("leavechannel"); }
+  void run();
+};
+
+///////////////////////////////////////////////////////////////////////
+
+class KickClientAction : public ActionBase
+{
+public:
+  QString name() const { return QString("kickclient"); }
   void run();
 };
 

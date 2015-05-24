@@ -40,13 +40,10 @@ public:
     // The visible username of the client.
     QString username = QString();
 
-    // The optional channel password.
-    //QString password = QString();
-
-    // The real ID or identifier of the channel to join.
-    qint64 channelId = 0;
-    QString channelIdentifier;
-    QString channelPassword;
+    // Information about the channel to join.
+    qint64 channelId = 0;                                              ///< The channel's ID.
+    QString channelIdentifier;                                         ///< String based identifier. An ID will be calculated from this string.
+    QString channelPassword;                                           ///< The channel's password.
 
     // The camera's device ID to stream video.
     QString cameraDeviceId = QString();

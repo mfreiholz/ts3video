@@ -165,10 +165,43 @@ QCorReply* NetworkClient::joinChannelByIdentifier(const QString &ident, const QS
   return d->corSocket->sendRequest(req);
 }
 
+QCorReply* NetworkClient::enableVideoStream()
+{
+  if (d->corSocket->socket()->state() != QAbstractSocket::ConnectedState) {
+    HL_ERROR(HL, QString("Connection is not established.").toStdString());
+    return nullptr;
+  }
+  d->videoStreamingEnabled = true;
+
+  QJsonObject params;
+
+  QCorFrame req;
+  req.setData(JsonProtocolHelper::createJsonRequest("clientenablevideo", params));
+  return d->corSocket->sendRequest(req);
+}
+
+QCorReply* NetworkClient::disableVideoStream()
+{
+  if (d->corSocket->socket()->state() != QAbstractSocket::ConnectedState) {
+    HL_ERROR(HL, QString("Connection is not established.").toStdString());
+    return nullptr;
+  }
+  d->videoStreamingEnabled = false;
+
+  QJsonObject params;
+
+  QCorFrame req;
+  req.setData(JsonProtocolHelper::createJsonRequest("clientdisablevideo", params));
+  return d->corSocket->sendRequest(req);
+}
+
 void NetworkClient::sendVideoFrame(const QImage &image)
 {
   if (!d->mediaSocket) {
     HL_ERROR(HL, QString("Connection is not established.").toStdString());
+    return;
+  }
+  if (!d->videoStreamingEnabled) {
     return;
   }
   d->mediaSocket->sendVideoFrame(image, d->clientEntity.id);

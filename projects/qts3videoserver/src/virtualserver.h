@@ -73,6 +73,11 @@ public:
   void removeClientFromChannels(int clientId);
   QList<int> getSiblingClientIds(int clientId) const;
 
+  // Bann / unbann clients.
+  void bann(const QHostAddress &address);
+  void unbann(const QHostAddress &address);
+  bool isBanned(const QHostAddress &address);
+
 public:
   QScopedPointer<VirtualServerPrivate> d;
   VirtualServerOptions _opts;
