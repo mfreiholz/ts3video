@@ -263,6 +263,10 @@ void ClientAppLogic::closeEvent(QCloseEvent *e)
 {
   QSettings settings;
   settings.setValue("UI/ClientApp-Geometry", saveGeometry());
+
+  // TODO Wait for the response of "goodbye"?
+  auto reply = networkClient()->goodbye();
+  if (reply) QObject::connect(reply, &QCorReply::finished, reply, &QCorReply::deleteLater);
 }
 
 void ClientAppLogic::initGui()

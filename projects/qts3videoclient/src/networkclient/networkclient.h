@@ -52,6 +52,12 @@ public:
   QCorReply* auth(const QString &name, const QString &password, bool videoEnabled = true);
 
   /*!
+    Sends a goodbye to the server, which tells the server to drop this connection.
+    \return QCorReply* Ownership goes over to caller who needs to delete it with "deleteLater()".
+  */
+  QCorReply* goodbye();
+
+  /*!
     Joins a channel/room/conference.
     Requires an authenticated connection.
     \see auth()
@@ -113,6 +119,7 @@ signals:
 private slots:
   void sendHeartbeat();
   void onStateChanged(QAbstractSocket::SocketState state);
+  void onError(QAbstractSocket::SocketError error);
   void onNewIncomingRequest(QCorFrameRefPtr frame);
 };
 

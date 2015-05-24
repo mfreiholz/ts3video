@@ -31,7 +31,8 @@ public:
     owner(o),
     corSocket(nullptr),
     mediaSocket(nullptr),
-    videoStreamingEnabled(false),
+    goodbye(false),
+    videoStreamingEnabled(true), ///< TODO Set to "false" as soon as we implemented video enable/disable completely.
     isAdmin(false),
     useMediaSocket(true)
   {}
@@ -44,6 +45,7 @@ public:
   QCorConnection *corSocket;
   MediaSocket *mediaSocket;
   QTimer heartbeatTimer;
+  bool goodbye;
 
   ClientEntity clientEntity;
   bool videoStreamingEnabled;

@@ -33,7 +33,7 @@ NetworkClient::NetworkClient(QObject *parent) :
 
   d->corSocket = new QCorConnection(this);
   connect(d->corSocket, &QCorConnection::stateChanged, this, &NetworkClient::onStateChanged);
-  connect(d->corSocket, &QCorConnection::error, this, &NetworkClient::error);
+  connect(d->corSocket, &QCorConnection::error, this, &NetworkClient::onError);
   connect(d->corSocket, &QCorConnection::newIncomingRequest, this, &NetworkClient::onNewIncomingRequest);
 
   d->heartbeatTimer.setInterval(10000);
@@ -141,6 +141,20 @@ QCorReply* NetworkClient::auth(const QString &name, const QString &password, boo
   });
 
   return reply;
+}
+
+QCorReply* NetworkClient::goodbye()
+{
+  if (d->corSocket->socket()->state() != QAbstractSocket::ConnectedState) {
+    HL_ERROR(HL, QString("Connection is not established.").toStdString());
+    return nullptr;
+  }
+
+  d->goodbye = true;
+
+  QCorFrame req;
+  req.setData(JsonProtocolHelper::createJsonRequest("goodbye", QJsonObject()));
+  return d->corSocket->sendRequest(req);
 }
 
 QCorReply* NetworkClient::joinChannel(int id, const QString &password)
@@ -288,6 +302,15 @@ void NetworkClient::onStateChanged(QAbstractSocket::SocketState state)
       emit disconnected();
       break;
   }
+}
+
+void NetworkClient::onError(QAbstractSocket::SocketError err)
+{
+  if (d->goodbye) {
+    d->goodbye = false;
+    return;
+  }
+  emit error(err);
 }
 
 void NetworkClient::onNewIncomingRequest(QCorFrameRefPtr frame)
