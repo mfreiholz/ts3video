@@ -52,7 +52,7 @@ public:
 public:
   ClientAppLogic(const Options &opts, QWidget *parent, Qt::WindowFlags flags);
   ~ClientAppLogic();
-  NetworkClient& ts3client();
+  NetworkClient* networkClient();
 
 public slots:
   void init();

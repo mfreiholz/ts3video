@@ -107,9 +107,9 @@ void ClientAppLogic::init()
   watcher->setFuture(future);
 }
 
-NetworkClient& ClientAppLogic::ts3client()
+NetworkClient* ClientAppLogic::networkClient()
 {
-  return d->ts3vc;
+  return &d->ts3vc;
 }
 
 void ClientAppLogic::onConnected()

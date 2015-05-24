@@ -34,7 +34,7 @@ TileViewWidget #leftPanelContainer {
 }
 
 TileViewWidget #leftPanelContainer QPushButton:checked {
-  background: rgb(25, 26, 27)
+  background: rgb(45, 45, 45);
 }
 
 TileViewWidget QScrollArea QWidget {

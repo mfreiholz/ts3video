@@ -26,7 +26,7 @@ public:
 class ActionBase
 {
 public:
-  ActionData req;
+  ActionData _req;
 
   enum Flag { NoFlag, RequiresAuthentication };
   Q_DECLARE_FLAGS(Flags, Flag)

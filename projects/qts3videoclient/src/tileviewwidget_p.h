@@ -10,6 +10,7 @@
 
 class QPushButton;
 class QLabel;
+class ClientAppLogic;
 class FlowLayout;
 class RemoteClientVideoWidget;
 class TileViewTileWidget;
@@ -25,6 +26,7 @@ class TileViewWidgetPrivate : public QObject
 public:
   TileViewWidgetPrivate(TileViewWidget *o) :
     owner(o),
+    logic(nullptr),
     tilesAspectRatio(4, 3),
     tilesCurrentSize(tilesAspectRatio),
     leftPanelVisible(true),
@@ -37,6 +39,7 @@ public:
 
 public:
   TileViewWidget *owner;
+  ClientAppLogic *logic;
 
   QSize tilesAspectRatio;
   QSize tilesCurrentSize;

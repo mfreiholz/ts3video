@@ -8,16 +8,21 @@
 #include <QListView>
 #include <QLineEdit>
 
+#include "humblelogging/api.h"
+
 #include "elws.h"
 #include "cliententity.h"
 #include "channelentity.h"
 #include "networkusageentity.h"
 
+#include "clientapplogic.h"
 #include "flowlayout.h"
 #include "remoteclientvideowidget.h"
 #include "aboutwidget.h"
 #include "movablewidgetcontainer.h"
 #include "model/clientlistmodel.h"
+
+HUMBLE_LOGGER(HL, "gui.tileview");
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -36,6 +41,7 @@ TileViewWidget::TileViewWidget(QWidget *parent, Qt::WindowFlags f) :
   QWidget(parent),
   d(new TileViewWidgetPrivate(this))
 {
+  d->logic = qobject_cast<ClientAppLogic*>(parent);
   d->tilesCurrentSize.scale(200, 200, Qt::KeepAspectRatio);
 
   // Scroll area content widget.
@@ -65,6 +71,14 @@ TileViewWidget::TileViewWidget(QWidget *parent, Qt::WindowFlags f) :
   d->cameraWidget->setVisible(false);
 
   // Buttons.
+  auto cameraButton = new QPushButton();
+  cameraButton->setIcon(QIcon(":/ic_videocam_grey600_48dp.png"));
+  cameraButton->setIconSize(__sideBarIconSize);
+  cameraButton->setFlat(true);
+  cameraButton->setToolTip(tr("Turn camera on/off"));
+  cameraButton->setCheckable(true);
+  cameraButton->setVisible(false);
+
   d->zoomInButton = new QPushButton();
   d->zoomInButton->setIcon(QIcon(":/ic_add_circle_outline_grey600_48dp.png"));
   d->zoomInButton->setIconSize(__sideBarIconSize);
@@ -134,6 +148,7 @@ TileViewWidget::TileViewWidget(QWidget *parent, Qt::WindowFlags f) :
   auto leftPanelLayout = new QBoxLayout(QBoxLayout::TopToBottom);
   leftPanelLayout->setContentsMargins(0, 0, 0, 0);
   leftPanelLayout->setSpacing(0);
+  leftPanelLayout->addWidget(cameraButton);
   leftPanelLayout->addWidget(d->zoomInButton);
   leftPanelLayout->addWidget(d->zoomOutButton);
   leftPanelLayout->addWidget(d->userListButton);
@@ -160,7 +175,23 @@ TileViewWidget::TileViewWidget(QWidget *parent, Qt::WindowFlags f) :
   mainLayout->addWidget(rightPanel, 0);
   setLayout(mainLayout);
 
-  // Connections.
+  // Events
+  QObject::connect(cameraButton, &QPushButton::toggled, [this, cameraButton](bool checked) {
+    HL_DEBUG(HL, QString("Toggle camera (on=%1)").arg(checked).toStdString());
+    cameraButton->setEnabled(false);
+    QCorReply *reply = nullptr;
+    if (checked)
+      reply = d->logic->networkClient()->enableVideoStream();
+    else
+      reply = d->logic->networkClient()->disableVideoStream();
+    if (!reply)
+      return;
+    QObject::connect(reply, &QCorReply::finished, [reply, cameraButton]()
+    {
+      cameraButton->setEnabled(true);
+      reply->deleteLater();
+    });
+  });
   QObject::connect(d->zoomInButton, &QPushButton::clicked, [this]() {
     auto newSize = d->tilesCurrentSize;
     newSize += QSize(25, 25);
