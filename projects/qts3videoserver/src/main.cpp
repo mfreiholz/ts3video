@@ -28,6 +28,7 @@ int updateOptionsByArgs(VirtualServerOptions &opts)
   opts.bandwidthWriteLimit = ELWS::getArgsValue("--bandwidth-write-limit", opts.bandwidthWriteLimit).toULongLong();
   opts.validChannels.clear();
   opts.password = ELWS::getArgsValue("--password", opts.password).toString();
+  opts.adminPassword = ELWS::getArgsValue("--admin-password", opts.adminPassword).toString();
   return 0;
 }
 
@@ -56,6 +57,7 @@ int updateOptionsByConfig(VirtualServerOptions &opts, const QString &filePath)
   opts.bandwidthWriteLimit = conf.value("bandwidthwritelimit", opts.bandwidthWriteLimit).toULongLong();
   opts.validChannels = opts.validChannels;
   opts.password = conf.value("password", opts.password).toString();
+  opts.adminPassword = conf.value("adminpassword", opts.adminPassword).toString();
   conf.endGroup();
   return 0;
 }
@@ -92,7 +94,7 @@ public:
     hlFactory.setDefaultFormatter(new humble::logging::PatternFormatter("[%date][%lls][pid=%pid][tid=%tid] %m\n"));
     hlFactory.registerAppender(new humble::logging::ConsoleAppender());
     hlFactory.registerAppender(new humble::logging::FileAppender(QDir::temp().filePath("ts3video-server.log").toStdString(), true));
-    hlFactory.changeGlobalLogLevel(humble::logging::LogLevel::Info);
+    hlFactory.changeGlobalLogLevel(humble::logging::LogLevel::Warn);
 
     // Initialize server options (from ARGS).
     VirtualServerOptions opts;
