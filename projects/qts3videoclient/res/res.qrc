@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/">
+        <file>ic_lock_black_48dp.png</file>
         <file>avatar.jpg</file>
         <file>ic_close_grey600_48dp.png</file>
         <file>ic_fullscreen_exit_grey600_48dp.png</file>
@@ -20,6 +21,7 @@
         <file>ic_more_vert_grey600_48dp.png</file>
         <file>ic_chevron_right_grey600_48dp.png</file>
         <file>ic_videocam_black_48dp.png</file>
+        <file>ic_lock_grey600_48dp.png</file>
     </qresource>
     <qresource prefix="/opengl">
         <file>vertex.vsh</file>

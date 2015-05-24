@@ -70,6 +70,15 @@ public:
 
 ///////////////////////////////////////////////////////////////////////
 
+class AdminAuthAction : public ActionBase
+{
+public:
+  QString name() const { return QString("adminauth"); }
+  void run();
+};
+
+///////////////////////////////////////////////////////////////////////
+
 class EnableVideoAction : public ActionBase
 {
 public:

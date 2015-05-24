@@ -57,6 +57,9 @@ QVariant ClientListModel::data(const QModelIndex &index, int role) const
 
     case VideoEnabledRole:
       return client.videoEnabled;
+
+    case ClientEntityRole:
+      return QVariant::fromValue(client);
   }
 
   return QVariant();
@@ -87,7 +90,7 @@ bool SortFilterClientListProxyModel::lessThan(const QModelIndex &left, const QMo
 {
   const auto videoEnabledLeft = left.data(ClientListModel::VideoEnabledRole).toBool();
   const auto videoEnabledRight = right.data(ClientListModel::VideoEnabledRole).toBool();
-  
+
   if (videoEnabledLeft == videoEnabledRight)
     return left.data().toString().compare(right.data().toString(), Qt::CaseInsensitive) < 0;
   else if (videoEnabledLeft)

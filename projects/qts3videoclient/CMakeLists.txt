@@ -20,6 +20,7 @@ set(headers
 )
 
 set(qheaders
+  src/adminauthwidget.h
   src/cameraframegrabber.h
   src/videowidget.h
   src/videowidget_p.h
@@ -42,6 +43,8 @@ set(qheaders
   src/movablewidgetcontainer.h
   src/hintoverlaywidget.h
   src/hintoverlaywidget_p.h
+  src/camera/cameracontroller.h
+  src/camera/cameracontroller_p.h
   src/model/clientlistmodel.h
   src/model/clientlistmodel_p.h
   src/networkclient/networkclient.h
@@ -56,6 +59,7 @@ set(qheaders
 
 set(sources
   src/main.cpp
+  src/adminauthwidget.cpp
   src/cameraframegrabber.cpp
   src/videowidget.cpp
   src/gridviewwidgetarranger.cpp
@@ -74,6 +78,7 @@ set(sources
   src/aboutwidget.cpp
   src/movablewidgetcontainer.cpp
   src/hintoverlaywidget.cpp
+  src/camera/cameracontroller.cpp
   src/model/clientlistmodel.cpp
   src/networkclient/networkclient.cpp
   src/networkclient/mediasocket.cpp
@@ -83,6 +88,7 @@ set(sources
 )
 
 set(qforms
+  src/adminauthwidget.ui
   src/startupwidget.ui
   src/aboutwidget.ui
 )

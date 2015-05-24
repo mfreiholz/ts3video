@@ -39,6 +39,10 @@ VirtualServer::VirtualServer(const VirtualServerOptions &opts, QObject *parent) 
   d->registerAction(ActionPtr(new JoinChannel2Action()));
   d->registerAction(ActionPtr(new EnableVideoAction()));
   d->registerAction(ActionPtr(new DisableVideoAction()));
+
+  // Admin actions.
+  d->registerAction(ActionPtr(new AdminAuthAction()));
+  d->registerAction(ActionPtr(new KickClientAction()));
 }
 
 VirtualServer::~VirtualServer()
@@ -199,10 +203,10 @@ QList<int> VirtualServer::getSiblingClientIds(int clientId) const
   return clientIds.toList();
 }
 
-void VirtualServer::bann(const QHostAddress &address)
+void VirtualServer::ban(const QHostAddress &address)
 {
   QDir dir(QCoreApplication::applicationDirPath());
-  const auto filePath = dir.filePath("banns.ini");
+  const auto filePath = dir.filePath("bans.ini");
   QSettings ini(filePath, QSettings::IniFormat);
 
   ini.beginGroup("ips");
@@ -210,10 +214,10 @@ void VirtualServer::bann(const QHostAddress &address)
   ini.endGroup();
 }
 
-void VirtualServer::unbann(const QHostAddress &address)
+void VirtualServer::unban(const QHostAddress &address)
 {
   QDir dir(QCoreApplication::applicationDirPath());
-  const auto filePath = dir.filePath("banns.ini");
+  const auto filePath = dir.filePath("bans.ini");
   QSettings ini(filePath, QSettings::IniFormat);
 
   ini.beginGroup("ips");
@@ -221,10 +225,10 @@ void VirtualServer::unbann(const QHostAddress &address)
   ini.endGroup();
 }
 
-bool VirtualServer::isBanned(const QHostAddress &address)
+bool VirtualServer::isBaned(const QHostAddress &address)
 {
   QDir dir(QCoreApplication::applicationDirPath());
-  const auto filePath = dir.filePath("banns.ini");
+  const auto filePath = dir.filePath("bans.ini");
   QSettings ini(filePath, QSettings::IniFormat);
 
   return ini.contains("ips/" + address.toString());

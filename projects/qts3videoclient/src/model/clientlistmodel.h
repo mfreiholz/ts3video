@@ -16,7 +16,8 @@ class ClientListModel : public QAbstractListModel
 
 public:
   enum Role {
-    VideoEnabledRole = Qt::UserRole + 1
+    VideoEnabledRole = Qt::UserRole + 1,
+    ClientEntityRole = Qt::UserRole + 2
   };
 
   ClientListModel(QObject *parent);

@@ -72,6 +72,16 @@ bool NetworkClient::isReadyForStreaming() const
   return true;
 }
 
+bool NetworkClient::isAdmin() const
+{
+  return d->isAdmin;
+}
+
+bool NetworkClient::isSelf(const ClientEntity &ci) const
+{
+  return d->clientEntity.id == ci.id;
+}
+
 void NetworkClient::connectToHost(const QHostAddress &address, qint16 port)
 {
   HL_DEBUG(HL, QString("Connect to server (address=%1; port=%2)").arg(address.toString()).arg(port).toStdString());
@@ -205,6 +215,53 @@ void NetworkClient::sendVideoFrame(const QImage &image)
     return;
   }
   d->mediaSocket->sendVideoFrame(image, d->clientEntity.id);
+}
+
+QCorReply* NetworkClient::authAsAdmin(const QString &password)
+{
+  HL_DEBUG(HL, QString("Authorize as administrator").toStdString());
+  if (d->corSocket->socket()->state() != QAbstractSocket::ConnectedState) {
+    HL_ERROR(HL, QString("Connection is not established.").toStdString());
+    return nullptr;
+  }
+
+  QJsonObject params;
+  params["password"] = password;
+
+  QCorFrame req;
+  req.setData(JsonProtocolHelper::createJsonRequest("adminauth", params));
+  auto reply = d->corSocket->sendRequest(req);
+
+  connect(reply, &QCorReply::finished, [this, reply]() {
+    int status = 0;
+    QJsonObject params;
+    if (!JsonProtocolHelper::fromJsonResponse(reply->frame()->data(), status, params)) {
+      return;
+    }
+    else if (status != 0) {
+      return;
+    }
+    d->isAdmin = true;
+  });
+
+  return reply;
+}
+
+QCorReply* NetworkClient::kickClient(int clientId, bool ban)
+{
+  HL_DEBUG(HL, QString("Kick client (id=%1; ban=%2)").arg(clientId).arg(ban).toStdString());
+  if (d->corSocket->socket()->state() != QAbstractSocket::ConnectedState) {
+    HL_ERROR(HL, QString("Connection is not established.").toStdString());
+    return nullptr;
+  }
+
+  QJsonObject params;
+  params["clientid"] = clientId;
+  params["ban"] = ban;
+
+  QCorFrame req;
+  req.setData(JsonProtocolHelper::createJsonRequest("kickclient", params));
+  return d->corSocket->sendRequest(req);
 }
 
 void NetworkClient::sendHeartbeat()

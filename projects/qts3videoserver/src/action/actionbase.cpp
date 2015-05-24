@@ -119,6 +119,30 @@ void HeartbeatAction::run()
 
 ///////////////////////////////////////////////////////////////////////
 
+void AdminAuthAction::run()
+{
+  auto password = _req.params["password"].toString();
+
+  // Verify password.
+  const auto adminPassword = _req.server->options().adminPassword;
+  if (password.isEmpty() || adminPassword.isEmpty() || password.compare(adminPassword) != 0) {
+    QCorFrame res;
+    res.initResponse(*_req.frame.data());
+    res.setData(JsonProtocolHelper::createJsonResponseError(1, "Wrong password"));
+    _req.connection->sendResponse(res);
+    return;
+  }
+
+  _req.session->_isAdmin = true;
+
+  QCorFrame res;
+  res.initResponse(*_req.frame.data());
+  res.setData(JsonProtocolHelper::createJsonResponse(QJsonObject()));
+  _req.connection->sendResponse(res);
+}
+
+///////////////////////////////////////////////////////////////////////
+
 void EnableVideoAction::run()
 {
   _req.session->_clientEntity->videoEnabled = true;
@@ -281,7 +305,7 @@ void LeaveChannelAction::run()
 void KickClientAction::run()
 {
   const auto clientId = _req.params["clientid"].toInt();
-  const auto bann = _req.params["bann"].toBool();
+  const auto ban = _req.params["ban"].toBool();
 
   // Find client session.
   auto sess = _req.server->_connections.value(clientId);
@@ -300,10 +324,16 @@ void KickClientAction::run()
   QObject::connect(reply, &QCorReply::finished, reply, &QCorReply::deleteLater);
   QMetaObject::invokeMethod(sess->_connection, "disconnectFromHost", Qt::QueuedConnection);
 
-  // Update bann-list.
-  if (bann) {
-    _req.server->bann(QHostAddress(_req.session->_clientEntity->mediaAddress));
+  // Update ban-list.
+  if (ban) {
+    _req.server->ban(QHostAddress(_req.session->_clientEntity->mediaAddress));
   }
+
+  // Response.
+  QCorFrame res;
+  res.initResponse(*_req.frame.data());
+  res.setData(JsonProtocolHelper::createJsonResponse(QJsonObject()));
+  _req.connection->sendResponse(res);
 }
 
 ///////////////////////////////////////////////////////////////////////

@@ -61,6 +61,7 @@ public:
   // Status information.
   ServerClientEntity *_clientEntity;
   bool _authenticated;
+  bool _isAdmin;
 
   // Network usage.
   NetworkUsageEntity _networkUsage;

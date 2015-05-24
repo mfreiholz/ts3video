@@ -31,6 +31,7 @@ ClientConnectionHandler::ClientConnectionHandler(VirtualServer *server, QCorConn
   _server(server),
   _connection(connection),
   _authenticated(false),
+  _isAdmin(false),
   _clientEntity(nullptr),
   _networkUsage(),
   _networkUsageHelper(_networkUsage)

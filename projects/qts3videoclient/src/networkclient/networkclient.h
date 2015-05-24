@@ -33,6 +33,8 @@ public:
   const QAbstractSocket* socket() const;
   const ClientEntity& clientEntity() const;
   bool isReadyForStreaming() const;
+  bool isAdmin() const;
+  bool isSelf(const ClientEntity &ci) const;
 
   /*!
     Connects to the remote VideoServer.
@@ -74,6 +76,23 @@ public:
     \param image A single frame of the video.
   */
   void sendVideoFrame(const QImage &image);
+
+  /*!
+    Tries to authorize the client as administrator.
+    Requires an authenticated connection.
+    \return QCorReply* Ownership goes over to caller who needs to delete it with "deleteLater()".
+  */
+  QCorReply* authAsAdmin(const QString &password);
+
+  /*!
+    Kicks another client from the server.
+    Requires an authenticated connection with administration privileges.
+    \see authAsAdmin()
+    \param clientId The client to kick.
+    \param ban Set to "true" to ban the client aswell.
+    \return QCorReply* Ownership goes over to caller who needs to delete it with "deleteLater()".
+  */
+  QCorReply* kickClient(int clientId, bool ban = false);
 
 signals:
   // Connection based signals.

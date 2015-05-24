@@ -5,11 +5,15 @@
 #include <QJsonObject>
 #include <QMetaType>
 
+/*!
+  This object always needs to be fully copyable.
+*/
 class ClientEntity
 {
 public:
   ClientEntity();
   ClientEntity(const ClientEntity &other);
+  ClientEntity& operator=(const ClientEntity &other);
   ~ClientEntity();
   void fromQJsonObject(const QJsonObject &obj);
   QJsonObject toQJsonObject() const;
@@ -20,7 +24,7 @@ public:
   QString name; ///< Visible name of the client.
   QString mediaAddress; ///< Do not serialize, as long as we don't support P2P streaming.
   quint16 mediaPort; ///< Do not serialize, as long as we don't support P2P streaming.
-  
+
   // Video settings.
   bool videoEnabled; ///< Indicates whether the client has video enabled.
 };

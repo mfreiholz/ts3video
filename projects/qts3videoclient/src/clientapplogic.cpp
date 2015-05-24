@@ -34,10 +34,23 @@ HUMBLE_LOGGER(HL, "client.logic");
 
 ///////////////////////////////////////////////////////////////////////
 
+static ClientAppLogic *gFirstInstance = nullptr;
+
+ClientAppLogic* ClientAppLogic::instance()
+{
+  return gFirstInstance;
+}
+
+///////////////////////////////////////////////////////////////////////
+
 ClientAppLogic::ClientAppLogic(const Options &opts, QWidget *parent, Qt::WindowFlags flags) :
   QMainWindow(parent, flags),
   d(new ClientAppLogicPrivate(this))
 {
+  if (!gFirstInstance) {
+    gFirstInstance = this;
+  }
+
   d->opts = opts;
   d->clientListModel = new ClientListModel(this);
 
@@ -64,6 +77,9 @@ ClientAppLogic::ClientAppLogic(const Options &opts, QWidget *parent, Qt::WindowF
 
 ClientAppLogic::~ClientAppLogic()
 {
+  if (gFirstInstance == this) {
+    gFirstInstance = nullptr;
+  }
   hideProgress();
   if (d->view) {
     delete d->view;

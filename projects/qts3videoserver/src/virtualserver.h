@@ -48,8 +48,11 @@ public:
   // Leave empty for no restrictions on channel-ids.
   QList<quint64> validChannels;
 
-  // Global server password.
+  // Basic server password.
   QString password;
+
+  // Administrator password.
+  QString adminPassword;
 };
 
 /*!
@@ -73,10 +76,10 @@ public:
   void removeClientFromChannels(int clientId);
   QList<int> getSiblingClientIds(int clientId) const;
 
-  // Bann / unbann clients.
-  void bann(const QHostAddress &address);
-  void unbann(const QHostAddress &address);
-  bool isBanned(const QHostAddress &address);
+  // Ban / unban clients.
+  void ban(const QHostAddress &address);
+  void unban(const QHostAddress &address);
+  bool isBaned(const QHostAddress &address);
 
 public:
   QScopedPointer<VirtualServerPrivate> d;

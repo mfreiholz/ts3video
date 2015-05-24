@@ -7,6 +7,7 @@
 #include <QScrollArea>
 #include <QListView>
 #include <QLineEdit>
+#include <QMenu>
 
 #include "humblelogging/api.h"
 
@@ -20,6 +21,7 @@
 #include "remoteclientvideowidget.h"
 #include "aboutwidget.h"
 #include "movablewidgetcontainer.h"
+#include "adminauthwidget.h"
 #include "model/clientlistmodel.h"
 
 HUMBLE_LOGGER(HL, "gui.tileview");
@@ -114,6 +116,12 @@ TileViewWidget::TileViewWidget(QWidget *parent, Qt::WindowFlags f) :
   showLeftPanelButton->resize(showLeftPanelButton->iconSize());
   showLeftPanelButton->move(QPoint(0, 0));
 
+  auto adminAuthButton = new QPushButton(scrollAreaContent);
+  adminAuthButton->setIcon(QIcon(":/ic_lock_grey600_48dp.png"));
+  adminAuthButton->setIconSize(__sideBarIconSize / 2);
+  adminAuthButton->setToolTip(tr("Login as admin"));
+  adminAuthButton->setFlat(true);
+
   auto aboutButton = new QPushButton();
   aboutButton->setIcon(QIcon(":/ic_info_outline_grey600_48dp.png"));
   aboutButton->setIconSize(__sideBarIconSize);
@@ -154,6 +162,7 @@ TileViewWidget::TileViewWidget(QWidget *parent, Qt::WindowFlags f) :
   leftPanelLayout->addWidget(d->userListButton);
   leftPanelLayout->addStretch(1);
   leftPanelLayout->addWidget(hideLeftPanelButton);
+  leftPanelLayout->addWidget(adminAuthButton);
   leftPanelLayout->addWidget(bandwidthContainer);
   leftPanelLayout->addWidget(aboutButton);
   leftPanel->setLayout(leftPanelLayout);
@@ -220,6 +229,13 @@ TileViewWidget::TileViewWidget(QWidget *parent, Qt::WindowFlags f) :
     showLeftPanelButton->setVisible(false);
     d->tilesLayout->setContentsMargins(0, 0, 0, 0);
     d->leftPanelVisible = true;
+  });
+  QObject::connect(adminAuthButton, &QPushButton::clicked, [this, adminAuthButton]() {
+    auto w = new AdminAuthWidget(d->logic->networkClient(), this);
+    w->setModal(true);
+    w->exec();
+    if (d->logic->networkClient()->isAdmin())
+      adminAuthButton->setVisible(false);
   });
   QObject::connect(aboutButton, &QPushButton::clicked, [this]() {
     auto about = new AboutWidget(this);
@@ -428,6 +444,7 @@ TileViewUserListWidget::TileViewUserListWidget(QWidget *parent) :
   mainLayout->addWidget(filterEdit);
 
   auto listView = new QListView();
+  listView->setContextMenuPolicy(Qt::CustomContextMenu);
   mainLayout->addWidget(listView);
 
   _listView = listView;
@@ -441,5 +458,38 @@ TileViewUserListWidget::TileViewUserListWidget(QWidget *parent) :
     if (!pm)
       return;
     pm->setFilterWildcard(text);
+  });
+
+  QObject::connect(listView, &QWidget::customContextMenuRequested, [listView](const QPoint &point)
+  {
+    const auto mi = listView->indexAt(point);
+    if (!mi.isValid()) {
+      return;
+    }
+    const auto ci = mi.data(ClientListModel::ClientEntityRole).value<ClientEntity>();
+
+    // Create context menu.
+    QMenu menu;
+    if (ClientAppLogic::I()->networkClient()->isAdmin() && !ClientAppLogic::I()->networkClient()->isSelf(ci)) {
+      // Kick client.
+      auto kickAction = menu.addAction(QIcon(), tr("Kick client"));
+      QObject::connect(kickAction, &QAction::triggered, [ci]()
+      {
+        const auto reply = ClientAppLogic::I()->networkClient()->kickClient(ci.id, false);
+        QObject::connect(reply, &QCorReply::finished, reply, &QCorReply::deleteLater);
+      });
+      // Ban client.
+      auto banAction = menu.addAction(QIcon(), tr("Ban client"));
+      QObject::connect(banAction, &QAction::triggered, [ci]()
+      {
+        const auto reply = ClientAppLogic::I()->networkClient()->kickClient(ci.id, true);
+        QObject::connect(reply, &QCorReply::finished, reply, &QCorReply::deleteLater);
+      });
+    }
+    if (menu.actions().isEmpty()) {
+      auto a = menu.addAction(tr("No actions available."));
+      a->setEnabled(false);
+    }
+    menu.exec(listView->mapToGlobal(point));
   });
 }

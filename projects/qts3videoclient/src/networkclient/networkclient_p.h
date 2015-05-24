@@ -27,7 +27,14 @@ class MediaSocket;
 class NetworkClientPrivate
 {
 public:
-  NetworkClientPrivate(NetworkClient *o) : owner(o), corSocket(nullptr), mediaSocket(nullptr), videoStreamingEnabled(false), useMediaSocket(true) {}
+  NetworkClientPrivate(NetworkClient *o) :
+    owner(o),
+    corSocket(nullptr),
+    mediaSocket(nullptr),
+    videoStreamingEnabled(false),
+    isAdmin(false),
+    useMediaSocket(true)
+  {}
   NetworkClientPrivate(const NetworkClientPrivate &);
 
 public:
@@ -40,6 +47,7 @@ public:
 
   ClientEntity clientEntity;
   bool videoStreamingEnabled;
+  bool isAdmin;
 
   bool useMediaSocket; ///< TODO Remove me (DEV ONLY)
 };

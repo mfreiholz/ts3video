@@ -15,6 +15,16 @@ ClientEntity::ClientEntity(const ClientEntity &other)
   this->videoEnabled = other.videoEnabled;
 }
 
+ClientEntity& ClientEntity::operator = (const ClientEntity &other)
+{
+  this->id = other.id;
+  this->name = other.name;
+  this->mediaAddress = other.mediaAddress;
+  this->mediaPort = other.mediaPort;
+  this->videoEnabled = other.videoEnabled;
+  return *this;
+}
+
 ClientEntity::~ClientEntity()
 {}
 

@@ -49,6 +49,20 @@ public:
     QString cameraDeviceId = QString();
   };
 
+  /*!
+    This is very, very dirty.
+    I'm currently using this approach, because i don't want to pass
+    the object into every small object/dialog which might need it.
+
+    This method does not actually create the object.
+    As soon as the normal constructor gets called it will return the
+    created instance. As i said... very dirty.
+
+    \todo As long as we use this way, we can't not have multiple instances.
+  */
+  static ClientAppLogic* instance();
+  static ClientAppLogic* I() { return instance(); }
+
 public:
   ClientAppLogic(const Options &opts, QWidget *parent, Qt::WindowFlags flags);
   ~ClientAppLogic();
