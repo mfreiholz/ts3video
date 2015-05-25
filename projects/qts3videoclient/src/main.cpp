@@ -23,12 +23,10 @@
 
 #include "cameraframegrabber.h"
 #include "videowidget.h"
-#include "gridviewwidgetarranger.h"
 #include "videocollectionwidget.h"
 #include "networkclient/networkclient.h"
 #include "clientapplogic.h"
 #include "startupwidget.h"
-#include "hangoutviewwidget.h"
 #include "tileviewwidget.h"
 
 HUMBLE_LOGGER(HL, "client");
@@ -44,7 +42,7 @@ QWidget* createVideoWidget()
   return w;
 }
 
-int runGuiTest(QApplication &a)
+/*int runGuiTest(QApplication &a)
 {
   // Create a bunch of initial widgets.
   QList<QWidget*> widgets;
@@ -105,9 +103,9 @@ int runGuiTest(QApplication &a)
 //  tWidgetCreator.start(2000);
 
   return a.exec();
-}
+}*/
 
-int runVideoCollectionTest(QApplication &a)
+/*int runVideoCollectionTest(QApplication &a)
 {
   a.setQuitOnLastWindowClosed(true);
 
@@ -120,9 +118,9 @@ int runVideoCollectionTest(QApplication &a)
   coll.setWidgets(widgets);
   coll.setVisible(true);
   return a.exec();
-}
+}*/
 
-int runHangoutViewTest(QApplication &a)
+/*int runHangoutViewTest(QApplication &a)
 {
   a.setQuitOnLastWindowClosed(true);
 
@@ -164,7 +162,7 @@ int runHangoutViewTest(QApplication &a)
   });
 
   return a.exec();
-}
+}*/
 
 int runTileViewTest(QApplication &a)
 {
@@ -523,15 +521,6 @@ int main(int argc, char *argv[])
   const auto mode = ELWS::getArgsValue("--mode").toString();
   if (mode == QString("test-multi-client")) {
     return runTestClient(a);
-  }
-  else if (mode == QString("test-gui")) {
-    return runGuiTest(a);
-  }
-  else if (mode == QString("test-gui2")) {
-    return runVideoCollectionTest(a);
-  }
-  else if (mode == QString("test-gui3")) {
-    return runHangoutViewTest(a);
   }
   else if (mode == QString("test-gui4")) {
     return runTileViewTest(a);

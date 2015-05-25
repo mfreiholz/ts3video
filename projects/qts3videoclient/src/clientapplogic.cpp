@@ -26,7 +26,6 @@
 
 #include "clientcameravideowidget.h"
 #include "remoteclientvideowidget.h"
-#include "hangoutviewwidget.h"
 #include "tileviewwidget.h"
 #include "model/clientlistmodel.h"
 

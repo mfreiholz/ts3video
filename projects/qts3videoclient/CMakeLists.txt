@@ -24,7 +24,7 @@ set(qheaders
   src/cameraframegrabber.h
   src/videowidget.h
   src/videowidget_p.h
-  src/gridviewwidgetarranger.h
+#  src/gridviewwidgetarranger.h
   src/videocollectionwidget.h
   src/clientapplogic.h
   src/clientapplogic_p.h
@@ -34,8 +34,8 @@ set(qheaders
   src/vp8encoder.h
   src/vp8decoder.h
   src/startupwidget.h
-  src/hangoutviewwidget.h
-  src/hangoutviewwidget_p.h
+#  src/hangoutviewwidget.h
+#  src/hangoutviewwidget_p.h
   src/tileviewwidget.h
   src/tileviewwidget_p.h
   src/flowlayout.h
@@ -62,7 +62,7 @@ set(sources
   src/adminauthwidget.cpp
   src/cameraframegrabber.cpp
   src/videowidget.cpp
-  src/gridviewwidgetarranger.cpp
+#  src/gridviewwidgetarranger.cpp
   src/videocollectionwidget.cpp
   src/clientapplogic.cpp
   src/clientcameravideowidget.cpp
@@ -71,7 +71,7 @@ set(sources
   src/vp8encoder.cpp
   src/vp8decoder.cpp
   src/startupwidget.cpp
-  src/hangoutviewwidget.cpp
+#  src/hangoutviewwidget.cpp
   src/viewbase.cpp
   src/tileviewwidget.cpp
   src/flowlayout.cpp

@@ -470,6 +470,8 @@ TileViewUserListWidget::TileViewUserListWidget(QWidget *parent) :
 
     // Create context menu.
     QMenu menu;
+
+    // Admin actions.
     if (ClientAppLogic::I()->networkClient()->isAdmin() && !ClientAppLogic::I()->networkClient()->isSelf(ci)) {
       // Kick client.
       auto kickAction = menu.addAction(QIcon(), tr("Kick client"));
