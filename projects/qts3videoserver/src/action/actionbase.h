@@ -40,6 +40,7 @@ public:
   void broadcastNotificationToSiblingClients(const QString &action, const QJsonObject &params);
   void disconnectFromHostDelayed();
 };
+Q_DECLARE_OPERATORS_FOR_FLAGS(ActionBase::Flags)
 
 typedef QSharedPointer<ActionBase> ActionPtr;
 
