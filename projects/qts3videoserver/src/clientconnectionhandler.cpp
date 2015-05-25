@@ -138,6 +138,8 @@ ClientConnectionHandler::~ClientConnectionHandler()
   delete _connection;
   _clientEntity = nullptr;
   _connection = nullptr;
+
+  _server->updateMediaRecipients();
   _server = nullptr;
 }
 

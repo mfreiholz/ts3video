@@ -50,6 +50,15 @@ bool MediaSocketHandler::init()
 void MediaSocketHandler::setRecipients(const MediaRecipients &rec)
 {
   _recipients = rec;
+
+  //printf("\n");
+  //foreach(const auto &sender, rec.id2sender.values()) {
+  //  printf("FROM %s\n", sender.id.toStdString().c_str());
+  //  foreach(const auto &receiver, sender.receivers) {
+  //    printf("\tTO %s:%d\n", receiver.address.toString().toStdString().c_str(), receiver.port);
+  //  }
+  //}
+  //printf("\n");
 }
 
 void MediaSocketHandler::onReadyRead()
@@ -94,7 +103,7 @@ void MediaSocketHandler::onReadyRead()
 
       // Video data.
       case UDP::VideoFrameDatagram::TYPE: {
-        auto senderId = MediaSenderEntity::createID(senderAddress, senderPort);
+        const auto senderId = MediaSenderEntity::createID(senderAddress, senderPort);
         const auto &senderEntity = _recipients.id2sender[senderId];
         for (auto i = 0; i < senderEntity.receivers.size(); ++i) {
           const auto &receiverEntity = senderEntity.receivers[i];
