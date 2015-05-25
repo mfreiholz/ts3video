@@ -36,6 +36,7 @@ public:
     // The address can either be a name like "myhost.com" or and IPv4/IPv6 address.
     QString serverAddress = IFVS_SERVER_ADDRESS;
     quint16 serverPort = IFVS_SERVER_CONNECTION_PORT;
+    QString serverPassword;
 
     // The visible username of the client.
     QString username = QString();

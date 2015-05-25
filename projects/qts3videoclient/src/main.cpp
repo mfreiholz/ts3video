@@ -442,6 +442,7 @@ int runClientAppLogic(QApplication &a)
   ClientAppLogic::Options opts;
   opts.serverAddress = ELWS::getArgsValue("--server-address", opts.serverAddress).toString();
   opts.serverPort = ELWS::getArgsValue("--server-port", opts.serverPort).toUInt();
+  opts.serverPassword = ELWS::getArgsValue("--server-password", opts.serverPassword).toString();
   opts.username = ELWS::getArgsValue("--username", ELWS::getUserName()).toString();
   opts.channelId = ELWS::getArgsValue("--channel-id", opts.channelId).toLongLong();
   opts.channelIdentifier = ELWS::getArgsValue("--channel-identifier", opts.channelIdentifier).toString();
@@ -453,6 +454,7 @@ int runClientAppLogic(QApplication &a)
     QUrlQuery urlQuery(url);
     opts.serverAddress = url.host();
     opts.serverPort = url.port(opts.serverPort);
+    opts.serverPassword = urlQuery.queryItemValue("serverpassword");
     opts.username = urlQuery.queryItemValue("username");
     opts.channelId = urlQuery.queryItemValue("channelid").toLongLong();
     opts.channelIdentifier = urlQuery.queryItemValue("channelidentifier");

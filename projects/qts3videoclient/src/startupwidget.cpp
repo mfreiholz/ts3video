@@ -80,10 +80,9 @@ StartupDialog::~StartupDialog()
 ClientAppLogic::Options StartupDialog::values() const
 {
   auto v = d->opts;
+
   v.cameraDeviceId = d->ui.cameraComboBox->currentData().toString();
-  v.channelIdentifier = d->ui.channelIdentifierLineEdit->text();
   v.username = d->ui.usernameLineEdit->text();
-  v.channelPassword = d->ui.channelPasswordLineEdit->text();
 
   auto addr = d->ui.serverAddress->currentText().split(":", QString::SkipEmptyParts);
   if (addr.size() >= 1) {
@@ -95,6 +94,21 @@ ClientAppLogic::Options StartupDialog::values() const
     if (port > 0 && ok)
       v.serverPort = port;
   }
+  v.serverPassword = d->ui.serverPasswordLineEdit->text();
+
+  v.channelIdentifier = d->ui.channelIdentifierLineEdit->text();
+  v.channelPassword = d->ui.channelPasswordLineEdit->text();
+
+  // Handle special format of channel ident => ID=789456
+  const auto parts = v.channelIdentifier.split('=', QString::SkipEmptyParts);
+  if (parts.size() == 2 && parts[0].compare("ID") == 0) {
+    bool isNum = false;
+    const auto channelId = parts[1].trimmed().toInt(&isNum);
+    if (channelId != 0 && isNum) {
+      v.channelIdentifier.clear();
+      v.channelId = channelId;
+    }
+  }
 
   return v;
 }
@@ -102,23 +116,22 @@ ClientAppLogic::Options StartupDialog::values() const
 void StartupDialog::setValues(const ClientAppLogic::Options &v)
 {
   d->opts = v;
-  auto index = d->ui.cameraComboBox->findData(v.cameraDeviceId);
-  if (index >= 0) {
-    d->ui.cameraComboBox->setCurrentIndex(index);
-  }
 
-  if (v.channelId == 0 && v.channelIdentifier.isEmpty()) {
-    d->ui.channelIdentifierLabel->setVisible(true);
-    d->ui.channelIdentifierLineEdit->setVisible(true);
-  } else {
-    d->ui.channelIdentifierLabel->setVisible(false);
-    d->ui.channelIdentifierLineEdit->setVisible(false);
-  }
-  d->ui.channelIdentifierLineEdit->setText(v.channelIdentifier);
-
+  const auto index = d->ui.cameraComboBox->findData(v.cameraDeviceId);
+  if (index >= 0) d->ui.cameraComboBox->setCurrentIndex(index);
   d->ui.usernameLineEdit->setText(v.username);
-  d->ui.channelPasswordLineEdit->setText(v.channelPassword);
+
   d->ui.serverAddress->setCurrentText(v.serverAddress + QString(":") + QString::number(v.serverPort));
+  d->ui.serverPasswordLineEdit->setText(v.serverPassword);
+
+  d->ui.channelIdentifierLineEdit->setText(v.channelIdentifier);
+  d->ui.channelPasswordLineEdit->setText(v.channelPassword);
+
+  // Handle special channel-ident format => ID=123456
+  if (v.channelId != 0) {
+    d->ui.channelIdentifierLineEdit->setText(QString("ID=%1").arg(v.channelId));
+  }
+
   d->validateUi();
 }
 
@@ -147,13 +160,13 @@ bool StartupDialogPrivate::validateUi()
   auto d = this;
   auto valid = true;
 
-  if (d->ui.channelIdentifierLineEdit->isVisible() && d->ui.channelIdentifierLineEdit->text().isEmpty()) {
-    valid = false;
-  }
   if (d->ui.usernameLineEdit->text().isEmpty()) {
     valid = false;
   }
   if (d->ui.serverAddress->currentText().isEmpty()) {
+    valid = false;
+  }
+  if (d->ui.channelIdentifierLineEdit->text().isEmpty()) {
     valid = false;
   }
 
