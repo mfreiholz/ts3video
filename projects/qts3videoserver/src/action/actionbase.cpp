@@ -23,6 +23,28 @@ HUMBLE_LOGGER(HL, "server.clientconnection.action");
 
 ///////////////////////////////////////////////////////////////////////
 
+void ActionBase::sendDefaultOkResponse(const QJsonObject &params)
+{
+  // Create simple status=0 response frame.
+  QCorFrame res;
+  res.initResponse(*_req.frame.data());
+  res.setData(JsonProtocolHelper::createJsonResponse(params));
+
+  // Send.
+  _req.connection->sendResponse(res);
+}
+
+void ActionBase::sendDefaultErrorResponse(int statusCode, const QString &message)
+{
+  // Create simple status=X response frame.
+  QCorFrame res;
+  res.initResponse(*_req.frame.data());
+  res.setData(JsonProtocolHelper::createJsonResponseError(statusCode, message));
+
+  // Send.
+  _req.connection->sendResponse(res);
+}
+
 void ActionBase::broadcastNotificationToSiblingClients(const QString &action, const QJsonObject &params)
 {
   QCorFrame f;
@@ -38,70 +60,58 @@ void ActionBase::broadcastNotificationToSiblingClients(const QString &action, co
   }
 }
 
+void ActionBase::disconnectFromHostDelayed()
+{
+  QMetaObject::invokeMethod(_req.connection, "disconnectFromHost", Qt::QueuedConnection);
+}
+
 ///////////////////////////////////////////////////////////////////////
 
 void AuthenticationAction::run()
 {
-  auto server = _req.server;
-  auto &serverData = _req.server->d;
-  auto conn = _req.connection;
-  auto frame = _req.frame;
-  auto action = _req.action;
-  auto params = _req.params;
-
-  auto clientVersion = params["version"].toString();
-  auto clientSupportedServerVersions = params["supportedversions"].toString();
-  auto username = params["username"].toString();
-  auto password = params["password"].toString();
-  auto videoEnabled = params["videoenabled"].toBool();
+  const auto clientVersion = _req.params["version"].toString();
+  const auto clientSupportedServerVersions = _req.params["supportedversions"].toString();
+  const auto username = _req.params["username"].toString();
+  const auto password = _req.params["password"].toString();
+  const auto videoEnabled = _req.params["videoenabled"].toBool();
 
   // Compare client version against server version compatibility.
   if (!ELWS::isVersionSupported(clientVersion, IFVS_SOFTWARE_VERSION, clientSupportedServerVersions, IFVS_SERVER_SUPPORTED_CLIENT_VERSIONS)) {
-    QCorFrame res;
-    res.initResponse(*frame.data());
-    res.setData(JsonProtocolHelper::createJsonResponseError(3, QString("Incompatible version (client=%1; server=%2)").arg(clientVersion).arg(IFVS_SOFTWARE_VERSION)));
-    conn->sendResponse(res);
-    QMetaObject::invokeMethod(conn, "disconnectFromHost", Qt::QueuedConnection);
+    HL_WARN(HL, QString("Incompatible version (client=%1; server=%2)").arg(clientVersion).arg(IFVS_SOFTWARE_VERSION).toStdString());
+    sendDefaultErrorResponse(3, QString("Incompatible version (client=%1; server=%2)").arg(clientVersion).arg(IFVS_SOFTWARE_VERSION));
+    disconnectFromHostDelayed();
     return;
   }
 
   // Authenticate.
-  if (username.isEmpty() || (!server->options().password.isEmpty() && server->options().password != password)) {
+  if (username.isEmpty() || (!_req.server->options().password.isEmpty() && _req.server->options().password != password)) {
     HL_WARN(HL, QString("Authentication failed by user (user=%1)").arg(username).toStdString());
-    QCorFrame res;
-    res.initResponse(*frame.data());
-    res.setData(JsonProtocolHelper::createJsonResponseError(4, QString("Authentication failed")));
-    conn->sendResponse(res);
-    QMetaObject::invokeMethod(conn, "disconnectFromHost", Qt::QueuedConnection);
+    sendDefaultErrorResponse(4, QString("Authentication failed"));
+    disconnectFromHostDelayed();
     return;
   }
 
+  // Update self ClientEntity and generate auth-token for media socket.
   _req.session->_authenticated = true;
   _req.session->_clientEntity->name = username;
   _req.session->_clientEntity->videoEnabled = videoEnabled;
-  auto token = QString("%1-%2").arg(_req.session->_clientEntity->id).arg(QDateTime::currentDateTimeUtc().toString());
-  server->_tokens.insert(token, _req.session->_clientEntity->id);
 
-  // Send response.
-  QJsonObject resData;
-  resData["client"] = _req.session->_clientEntity->toQJsonObject();
-  resData["authtoken"] = token;
-  QCorFrame res;
-  res.initResponse(*frame.data());
-  res.setData(JsonProtocolHelper::createJsonResponse(resData));
-  conn->sendResponse(res);
-  return;
+  const auto token = QString("%1-%2").arg(_req.session->_clientEntity->id).arg(QDateTime::currentDateTimeUtc().toString());
+  _req.server->_tokens.insert(token, _req.session->_clientEntity->id);
+
+  // Respond.
+  QJsonObject params;
+  params["client"] = _req.session->_clientEntity->toQJsonObject();
+  params["authtoken"] = token;
+  sendDefaultOkResponse(params);
 }
 
 ///////////////////////////////////////////////////////////////////////
 
 void GoodbyeAction::run()
 {
-  QCorFrame res;
-  res.initResponse(*_req.frame.data());
-  res.setData(JsonProtocolHelper::createJsonResponse(QJsonObject()));
-  _req.connection->sendResponse(res);
-  _req.connection->disconnectFromHost();
+  sendDefaultOkResponse();
+  disconnectFromHostDelayed();
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -111,34 +121,7 @@ void HeartbeatAction::run()
   _req.session->_connectionTimeoutTimer.stop();
   _req.session->_connectionTimeoutTimer.start(20000);
 
-  QCorFrame res;
-  res.initResponse(*_req.frame.data());
-  res.setData(JsonProtocolHelper::createJsonResponse(QJsonObject()));
-  _req.connection->sendResponse(res);
-}
-
-///////////////////////////////////////////////////////////////////////
-
-void AdminAuthAction::run()
-{
-  auto password = _req.params["password"].toString();
-
-  // Verify password.
-  const auto adminPassword = _req.server->options().adminPassword;
-  if (password.isEmpty() || adminPassword.isEmpty() || password.compare(adminPassword) != 0) {
-    QCorFrame res;
-    res.initResponse(*_req.frame.data());
-    res.setData(JsonProtocolHelper::createJsonResponseError(1, "Wrong password"));
-    _req.connection->sendResponse(res);
-    return;
-  }
-
-  _req.session->_isAdmin = true;
-
-  QCorFrame res;
-  res.initResponse(*_req.frame.data());
-  res.setData(JsonProtocolHelper::createJsonResponse(QJsonObject()));
-  _req.connection->sendResponse(res);
+  sendDefaultOkResponse();
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -146,16 +129,13 @@ void AdminAuthAction::run()
 void EnableVideoAction::run()
 {
   _req.session->_clientEntity->videoEnabled = true;
+  _req.server->updateMediaRecipients();
 
-  // Respond to sender.
-  QCorFrame res;
-  res.initResponse(*_req.frame.data());
-  res.setData(JsonProtocolHelper::createJsonResponse(QJsonObject()));
-  _req.session->_connection->sendResponse(res);
+  sendDefaultOkResponse();
 
   // Broadcast to sibling clients.
   QJsonObject params;
-  params["clientid"] = _req.session->_clientEntity->id;
+  params["client"] = _req.session->_clientEntity->toQJsonObject();
   broadcastNotificationToSiblingClients("notify.clientvideoenabled", params);
 }
 
@@ -164,17 +144,43 @@ void EnableVideoAction::run()
 void DisableVideoAction::run()
 {
   _req.session->_clientEntity->videoEnabled = false;
+  _req.server->updateMediaRecipients();
 
-  // Respond to sender.
-  QCorFrame res;
-  res.initResponse(*_req.frame.data());
-  res.setData(JsonProtocolHelper::createJsonResponse(QJsonObject()));
-  _req.session->_connection->sendResponse(res);
+  sendDefaultOkResponse();
 
   // Broadcast to sibling clients.
   QJsonObject params;
-  params["clientid"] = _req.session->_clientEntity->id;
+  params["client"] = _req.session->_clientEntity->toQJsonObject();
   broadcastNotificationToSiblingClients("notify.clientvideodisabled", params);
+}
+
+///////////////////////////////////////////////////////////////////////
+
+void EnableRemoteVideoAction::run()
+{
+  const auto clientId = _req.params["clientid"].toInt();
+
+  auto &set = _req.session->_clientEntity->remoteVideoExcludes;
+  if (set.remove(clientId)) {
+    _req.server->updateMediaRecipients();
+  }
+
+  sendDefaultOkResponse();
+}
+
+///////////////////////////////////////////////////////////////////////
+
+void DisableRemoteVideoAction::run()
+{
+  const auto clientId = _req.params["clientid"].toInt();
+
+  auto &set = _req.session->_clientEntity->remoteVideoExcludes;
+  if (!set.contains(clientId)) {
+    set.insert(clientId);
+    _req.server->updateMediaRecipients();
+  }
+
+  sendDefaultOkResponse();
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -189,28 +195,20 @@ void JoinChannelAction::run()
     auto ident = _req.params["identifier"].toString();
     channelId = qHash(ident);
   }
-  auto password = _req.params["password"].toString();
-
+  const auto password = _req.params["password"].toString();
 
   // Validate parameters.
   if (channelId == 0 || (!_req.server->options().validChannels.isEmpty() && !_req.server->options().validChannels.contains(channelId))) {
-    // Send error: Missing or invalid channel-id.
-    QCorFrame res;
-    res.initResponse(*_req.frame.data());
-    res.setData(JsonProtocolHelper::createJsonResponseError(1, QString("Invalid channel id (channelid=%1)").arg(channelId)));
-    _req.connection->sendResponse(res);
+    sendDefaultErrorResponse(1, QString("Invalid channel id (channelid=%1)").arg(channelId));
     return;
   }
 
-  // Retrieve channel information.
+  // Retrieve channel information (It is not guaranteed that the channel already exists).
   auto channelEntity = _req.server->_channels.value(channelId);
 
   // Verify password.
   if (channelEntity && !channelEntity->password.isEmpty() && channelEntity->password.compare(password) != 0) {
-    QCorFrame res;
-    res.initResponse(*_req.frame.data());
-    res.setData(JsonProtocolHelper::createJsonResponseError(2, QString("Wrong password (channelid=%1)").arg(channelId)));
-    _req.connection->sendResponse(res);
+    sendDefaultErrorResponse(2, QString("Wrong password (channelid=%1)").arg(channelId));
     return;
   }
 
@@ -225,6 +223,7 @@ void JoinChannelAction::run()
 
   // Associate the client's membership to the channel.
   _req.server->addClientToChannel(_req.session->_clientEntity->id, channelId);
+  _req.server->updateMediaRecipients();
 
   // Build response with information about the channel.
   auto participants = _req.server->_participants[channelEntity->id];
@@ -238,66 +237,60 @@ void JoinChannelAction::run()
     }
   }
   params["participants"] = paramsParticipants;
-
-  QCorFrame res;
-  res.initResponse(*_req.frame.data());
-  res.setData(JsonProtocolHelper::createJsonResponse(params));
-  _req.connection->sendResponse(res);
+  sendDefaultOkResponse(params);
 
   // Notify participants about the new client.
   params = QJsonObject();
   params["channel"] = channelEntity->toQJsonObject();
   params["client"] = _req.session->_clientEntity->toQJsonObject();
-
-  QCorFrame f;
-  f.setData(JsonProtocolHelper::createJsonRequest("notify.clientjoinedchannel", params));
-  foreach(auto clientId, participants) {
-    auto sess = _req.server->_connections.value(clientId);
-    if (sess && sess != _req.session) {
-      auto reply = sess->_connection->sendRequest(f);
-      QObject::connect(reply, &QCorReply::finished, reply, &QCorReply::deleteLater);
-    }
-  }
+  broadcastNotificationToSiblingClients("notify.clientjoinedchannel", params);
 }
 
 ///////////////////////////////////////////////////////////////////////
 
 void LeaveChannelAction::run()
 {
-  auto channelId = _req.params["channelid"].toInt();
+  const auto channelId = _req.params["channelid"].toInt();
+
   // Find channel.
   auto channelEntity = _req.server->_channels.value(channelId);
   if (!channelEntity) {
-    // Send error: Invalid channel id.
+    sendDefaultErrorResponse(1, QString("Invalid channel id (channelid=%1)").arg(channelId));
+    return;
+  }
+
+  sendDefaultOkResponse();
+
+  // Notify participants.
+  QJsonObject params;
+  params["channel"] = channelEntity->toQJsonObject();
+  params["client"] = _req.session->_clientEntity->toQJsonObject();
+  broadcastNotificationToSiblingClients("notify.clientleftchannel", params);
+
+  // Leave channel.
+  _req.server->removeClientFromChannel(_req.session->_clientEntity->id, channelId);
+  _req.server->updateMediaRecipients();
+}
+
+///////////////////////////////////////////////////////////////////////
+
+void AdminAuthAction::run()
+{
+  const auto password = _req.params["password"].toString();
+
+  // Verify password.
+  const auto adminPassword = _req.server->options().adminPassword;
+  if (password.isEmpty() || adminPassword.isEmpty() || password.compare(adminPassword) != 0) {
     QCorFrame res;
     res.initResponse(*_req.frame.data());
-    res.setData(JsonProtocolHelper::createJsonResponseError(1, QString("Invalid channel id (channelid=%1)").arg(channelId)));
+    res.setData(JsonProtocolHelper::createJsonResponseError(1, "Wrong password"));
     _req.connection->sendResponse(res);
     return;
   }
-  // Send response.
-  QCorFrame res;
-  res.initResponse(*_req.frame.data());
-  res.setData(JsonProtocolHelper::createJsonResponse(QJsonObject()));
-  _req.connection->sendResponse(res);
 
-  // Notify participants.
-  auto params = QJsonObject();
-  params["channel"] = channelEntity->toQJsonObject();
-  params["client"] = _req.session->_clientEntity->toQJsonObject();
+  _req.session->_isAdmin = true;
 
-  QCorFrame f;
-  f.setData(JsonProtocolHelper::createJsonRequest("notify.clientleftchannel", params));
-  auto participants = _req.server->_participants[channelEntity->id];
-  foreach(auto clientId, participants) {
-    auto sess = _req.server->_connections.value(clientId);
-    if (sess && sess != _req.session) {
-      auto reply = sess->_connection->sendRequest(f);
-      QObject::connect(reply, &QCorReply::finished, reply, &QCorReply::deleteLater);
-    }
-  }
-  // Leave channel.
-  _req.server->removeClientFromChannel(_req.session->_clientEntity->id, channelId);
+  sendDefaultOkResponse();
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -317,9 +310,12 @@ void KickClientAction::run()
     return;
   }
 
-  // Kick client.
+  // Kick client (+notify the client about it).
+  QJsonObject params;
+  params["client"] = _req.session->_clientEntity->toQJsonObject();
+
   QCorFrame f;
-  f.setData(JsonProtocolHelper::createJsonRequest("notify.kicked", QJsonObject()));
+  f.setData(JsonProtocolHelper::createJsonRequest("notify.kicked", params));
   const auto reply = sess->_connection->sendRequest(f);
   QObject::connect(reply, &QCorReply::finished, reply, &QCorReply::deleteLater);
   QMetaObject::invokeMethod(sess->_connection, "disconnectFromHost", Qt::QueuedConnection);
@@ -329,11 +325,7 @@ void KickClientAction::run()
     _req.server->ban(QHostAddress(_req.session->_clientEntity->mediaAddress));
   }
 
-  // Response.
-  QCorFrame res;
-  res.initResponse(*_req.frame.data());
-  res.setData(JsonProtocolHelper::createJsonResponse(QJsonObject()));
-  _req.connection->sendResponse(res);
+  sendDefaultOkResponse();
 }
 
 ///////////////////////////////////////////////////////////////////////

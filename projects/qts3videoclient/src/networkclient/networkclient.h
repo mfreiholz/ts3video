@@ -76,6 +76,15 @@ public:
   QCorReply* disableVideoStream();
 
   /*!
+    Enables/disables receiving the video of a specific participant.
+    Requires an authenticated connection.
+    \see auth()
+    \return QCorReply* Ownership goes over to caller who needs to delete it with "deleteLater()".
+  */
+  QCorReply* enableRemoteVideoStream(int clientId);
+  QCorReply* disableRemoteVideoStream(int clientId);
+
+  /*!
     Sends a single frame to the server, which will then broadcast it to other clients.
     Internally encodes the image with VPX codec.
     \thread-safe
@@ -108,8 +117,11 @@ signals:
 
   // Protocol based signals.
   void serverError(int errorCode, const QString &errorMessage);
+  void clientEnabledVideo(const ClientEntity &client);
+  void clientDisabledVideo(const ClientEntity &client);
   void clientJoinedChannel(const ClientEntity &client, const ChannelEntity &channel);
   void clientLeftChannel(const ClientEntity &client, const ChannelEntity &channel);
+  void clientKicked(const ClientEntity &client);
   void clientDisconnected(const ClientEntity &client);
   void newVideoFrame(YuvFrameRefPtr frame, int senderId);
 

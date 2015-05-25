@@ -217,6 +217,16 @@ void ClientConnectionHandler::onNewIncomingRequest(QCorFrameRefPtr frame)
     return;
   }
 
+  // The client may require admin-privileges for the found action.
+  if (actionHandler->flags().testFlag(ActionBase::RequiresAdminPrivileges) && !_isAdmin) {
+    QCorFrame res;
+    res.initResponse(*frame.data());
+    res.setData(JsonProtocolHelper::createJsonResponseError(5, QString("Admin privileges required")));
+    _connection->sendResponse(res);
+    _connection->disconnectFromHost();
+    return;
+  }
+
   // The request and its prerequisites seems to be legit
   //   -> process it.
   ActionData req;

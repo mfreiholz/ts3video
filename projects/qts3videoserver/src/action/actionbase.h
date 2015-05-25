@@ -28,14 +28,17 @@ class ActionBase
 public:
   ActionData _req;
 
-  enum Flag { NoFlag, RequiresAuthentication };
+  enum Flag { NoFlag, RequiresAuthentication, RequiresAdminPrivileges };
   Q_DECLARE_FLAGS(Flags, Flag)
 
   virtual QString name() const = 0;
   virtual Flags flags() const { return RequiresAuthentication; }
   virtual void run() = 0;
 
+  void sendDefaultOkResponse(const QJsonObject &params = QJsonObject());
+  void sendDefaultErrorResponse(int statusCode = 500, const QString &message = QString());
   void broadcastNotificationToSiblingClients(const QString &action, const QJsonObject &params);
+  void disconnectFromHostDelayed();
 };
 
 typedef QSharedPointer<ActionBase> ActionPtr;
@@ -70,15 +73,6 @@ public:
 
 ///////////////////////////////////////////////////////////////////////
 
-class AdminAuthAction : public ActionBase
-{
-public:
-  QString name() const { return QString("adminauth"); }
-  void run();
-};
-
-///////////////////////////////////////////////////////////////////////
-
 class EnableVideoAction : public ActionBase
 {
 public:
@@ -92,6 +86,24 @@ class DisableVideoAction : public ActionBase
 {
 public:
   QString name() const { return QString("clientdisablevideo"); }
+  void run();
+};
+
+///////////////////////////////////////////////////////////////////////
+
+class EnableRemoteVideoAction : public ActionBase
+{
+public:
+  QString name() const { return QString("enableremotevideo"); }
+  void run();
+};
+
+///////////////////////////////////////////////////////////////////////
+
+class DisableRemoteVideoAction : public ActionBase
+{
+public:
+  QString name() const { return QString("disableremotevideo"); }
   void run();
 };
 
@@ -124,10 +136,20 @@ public:
 
 ///////////////////////////////////////////////////////////////////////
 
+class AdminAuthAction : public ActionBase
+{
+public:
+  QString name() const { return QString("adminauth"); }
+  void run();
+};
+
+///////////////////////////////////////////////////////////////////////
+
 class KickClientAction : public ActionBase
 {
 public:
   QString name() const { return QString("kickclient"); }
+  Flags flags() const { return RequiresAuthentication | RequiresAdminPrivileges; }
   void run();
 };
 

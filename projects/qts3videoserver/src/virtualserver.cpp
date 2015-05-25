@@ -39,8 +39,10 @@ VirtualServer::VirtualServer(const VirtualServerOptions &opts, QObject *parent) 
   d->registerAction(ActionPtr(new JoinChannel2Action()));
   d->registerAction(ActionPtr(new EnableVideoAction()));
   d->registerAction(ActionPtr(new DisableVideoAction()));
+  d->registerAction(ActionPtr(new EnableRemoteVideoAction()));
+  d->registerAction(ActionPtr(new DisableRemoteVideoAction()));
 
-  // Admin actions.
+  // Admin actions (RequiresAdminPrivileges)
   d->registerAction(ActionPtr(new AdminAuthAction()));
   d->registerAction(ActionPtr(new KickClientAction()));
 }
