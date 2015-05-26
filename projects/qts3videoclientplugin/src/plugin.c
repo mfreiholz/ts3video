@@ -538,8 +538,8 @@ void ts3plugin_initMenus(struct PluginMenuItem*** menuItems, char** menuIcon) {
 	 */
 
 	BEGIN_CREATE_MENUS(2);  /* IMPORTANT: Number of menu items must be correct! */
-  CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_CHANNEL, MENU_ID_CHANNEL_VIDEO_START_QUICK, "Join now", "1.png")
-  CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_CHANNEL, MENU_ID_CHANNEL_VIDEO_START_CUSTOM, "Join...", "1.png")
+  CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_CHANNEL, MENU_ID_CHANNEL_VIDEO_START_QUICK, "Join now", "join-now.png")
+  CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_CHANNEL, MENU_ID_CHANNEL_VIDEO_START_CUSTOM, "Join...", "join-custom.png")
 	END_CREATE_MENUS;  /* Includes an assert checking if the number of menu items matched */
 
 	/*
@@ -547,7 +547,7 @@ void ts3plugin_initMenus(struct PluginMenuItem*** menuItems, char** menuIcon) {
 	 * If unused, set menuIcon to NULL
 	 */
 	*menuIcon = (char*)malloc(PLUGIN_MENU_BUFSZ * sizeof(char));
-	_strcpy(*menuIcon, PLUGIN_MENU_BUFSZ, "t.png");
+  _strcpy(*menuIcon, PLUGIN_MENU_BUFSZ, "logo.png");
 
 	/*
 	 * Menus can be enabled or disabled with: ts3Functions.setPluginMenuEnabled(pluginID, menuID, 0|1);
