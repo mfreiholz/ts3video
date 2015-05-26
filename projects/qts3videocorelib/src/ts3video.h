@@ -33,4 +33,11 @@
 #define IFVS_CLIENT_SUPPORTED_SERVER_VERSIONS ""                       ///< Comma separated list of server versions, which the current client build supports.
 #define IFVS_CLIENT_VIDEO_SIZE 640, 480                                ///< Keep 4:3 ratio (e.g.: 960x720, 640x480, 480x360)
 
+///////////////////////////////////////////////////////////////////////
+// Important global datatypes.
+///////////////////////////////////////////////////////////////////////
+
+typedef int vs_clientid_t;
+typedef int vs_channelid_t;
+
 #endif
