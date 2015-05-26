@@ -22,6 +22,7 @@
         <file>ic_chevron_right_grey600_48dp.png</file>
         <file>ic_videocam_black_48dp.png</file>
         <file>ic_lock_grey600_48dp.png</file>
+        <file>logo-48x48.png</file>
     </qresource>
     <qresource prefix="/opengl">
         <file>vertex.vsh</file>
