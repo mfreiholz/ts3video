@@ -37,6 +37,22 @@ HUMBLE_LOGGER(HL, "networkclient");
   }
 
 ///////////////////////////////////////////////////////////////////////
+// Private Implementation
+///////////////////////////////////////////////////////////////////////
+
+void NetworkClientPrivate::reset()
+{
+  heartbeatTimer.stop();
+  goodbye = false;
+  clientEntity = ClientEntity();
+  videoStreamingEnabled = true;  ///< TODO Set to "false" as soon as we implemented video enable/disable completely.
+  isAdmin = false;
+  useMediaSocket = true;
+}
+
+///////////////////////////////////////////////////////////////////////
+//
+///////////////////////////////////////////////////////////////////////
 
 NetworkClient::NetworkClient(QObject *parent) :
   QObject(parent),
@@ -52,6 +68,8 @@ NetworkClient::NetworkClient(QObject *parent) :
 
   d->heartbeatTimer.setInterval(10000);
   QObject::connect(&d->heartbeatTimer, &QTimer::timeout, this, &NetworkClient::sendHeartbeat);
+
+  d->reset();
 }
 
 NetworkClient::~NetworkClient()
@@ -136,10 +154,13 @@ QCorReply* NetworkClient::auth(const QString &name, const QString &password, boo
     } else if (status != 0) {
       return;
     }
-    auto client = params["client"].toObject();
-    auto authtoken = params["authtoken"].toString();
-    // Get self client info from response.
+
+    // Parse self client info from response and
+    // connect MediaSocket for media data streaming.
+    const auto client = params["client"].toObject();
+    const auto authtoken = params["authtoken"].toString();
     d->clientEntity.fromQJsonObject(client);
+
     // Create new media socket.
     if (d->useMediaSocket) {
       if (d->mediaSocket) {
@@ -323,6 +344,7 @@ void NetworkClient::sendHeartbeat()
 
 void NetworkClient::onStateChanged(QAbstractSocket::SocketState state)
 {
+  HL_DEBUG(HL, QString("Socket connection state changed (state=%1)").arg(state).toStdString());
   switch (state) {
     case QAbstractSocket::ConnectedState:
       d->heartbeatTimer.start();
@@ -337,7 +359,7 @@ void NetworkClient::onStateChanged(QAbstractSocket::SocketState state)
 
 void NetworkClient::onError(QAbstractSocket::SocketError err)
 {
-  HL_ERROR(HL, QString("Socket connection error (err=%1; goodbye=%1)").arg(err).arg(d->goodbye).toStdString());
+  HL_DEBUG(HL, QString("Socket connection error (err=%1; goodbye=%2)").arg(err).arg(d->goodbye).toStdString());
   if (d->goodbye) {
     d->goodbye = false;
     return;
@@ -401,6 +423,9 @@ void NetworkClient::onNewIncomingRequest(QCorFrameRefPtr frame)
     auto errorCode = parameters["code"].toInt();
     auto errorMessage = parameters["message"].toString();
     emit serverError(errorCode, errorMessage);
+  }
+  else {
+    HL_WARN(HL, QString("Unknown request action. Please check for available software updates. (action=%1)").arg(action).toStdString());
   }
 
   QCorFrame res;

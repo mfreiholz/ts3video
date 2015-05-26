@@ -32,11 +32,12 @@ public:
     corSocket(nullptr),
     mediaSocket(nullptr),
     goodbye(false),
-    videoStreamingEnabled(true), ///< TODO Set to "false" as soon as we implemented video enable/disable completely.
+    videoStreamingEnabled(false),
     isAdmin(false),
     useMediaSocket(true)
   {}
   NetworkClientPrivate(const NetworkClientPrivate &);
+  void reset();
 
 public:
   NetworkClient *owner;

@@ -4,6 +4,7 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QJsonValue>
+#include <QTcpSocket>
 
 #include "humblelogging/api.h"
 
@@ -74,6 +75,33 @@ void AuthenticationAction::run()
   const auto username = _req.params["username"].toString();
   const auto password = _req.params["password"].toString();
   const auto videoEnabled = _req.params["videoenabled"].toBool();
+
+  if (true) {
+    // Max number of connections (Connection limit).
+    if (_req.server->_connections.size() > _req.server->options().connectionLimit) {
+      HL_WARN(HL, QString("Server connection limit exceeded. (max=%1)").arg(_req.server->options().connectionLimit).toStdString());
+      sendDefaultErrorResponse(1, "Server connection limit exceeded.");
+      disconnectFromHostDelayed();
+      return;
+    }
+
+    // Max bandwidth usage (Bandwidth limit).
+    if (_req.server->_networkUsageMediaSocket.bandwidthRead > _req.server->options().bandwidthReadLimit || _req.server->_networkUsageMediaSocket.bandwidthWrite > _req.server->options().bandwidthWriteLimit) {
+      HL_WARN(HL, QString("Server bandwidth limit exceeded.").toStdString());
+      sendDefaultErrorResponse(1, "Server bandwidth limit exceeded.");
+      disconnectFromHostDelayed();
+      return;
+    }
+
+    // Ban check.
+    const auto peerAddress = _req.connection->socket()->peerAddress();
+    if (_req.server->isBaned(peerAddress)) {
+      HL_WARN(HL, QString("Baned user tried to connect. (address=%1)").arg(peerAddress.toString()).toStdString());
+      sendDefaultErrorResponse(1, "You are baned from the server.");
+      disconnectFromHostDelayed();
+      return;
+    }
+  }
 
   // Compare client version against server version compatibility.
   if (!ELWS::isVersionSupported(clientVersion, IFVS_SOFTWARE_VERSION, clientSupportedServerVersions, IFVS_SERVER_SUPPORTED_CLIENT_VERSIONS)) {

@@ -54,7 +54,7 @@ ClientAppLogic::ClientAppLogic(const Options &opts, QWidget *parent, Qt::WindowF
   d->clientListModel = new ClientListModel(this);
 
   // Global progress dialog.
-  d->progressDialog = new QProgressDialog(this, 0);
+  d->progressDialog = new QProgressDialog(this, Qt::FramelessWindowHint);
   d->progressDialog->setCancelButton(nullptr);
   d->progressDialog->setAutoClose(false);
   d->progressDialog->setAutoReset(false);
@@ -138,12 +138,13 @@ void ClientAppLogic::onConnected()
     reply->deleteLater();
 
     int status;
+    QString errorString;
     QJsonObject params;
-    if (!JsonProtocolHelper::fromJsonResponse(reply->frame()->data(), status, params)) {
+    if (!JsonProtocolHelper::fromJsonResponse(reply->frame()->data(), status, params, errorString)) {
       this->showError(tr("Protocol error"), reply->frame()->data());
       return;
     } else if (status != 0) {
-      this->showError(tr("Protocol error"), reply->frame()->data());
+      this->showResponseError(status, errorString, reply->frame()->data());
       return;
     }
 
@@ -161,12 +162,13 @@ void ClientAppLogic::onConnected()
       reply2->deleteLater();
 
       int status;
+      QString errorString;
       QJsonObject params;
-      if (!JsonProtocolHelper::fromJsonResponse(reply2->frame()->data(), status, params)) {
+      if (!JsonProtocolHelper::fromJsonResponse(reply2->frame()->data(), status, params, errorString)) {
         this->showError(tr("Protocol error"), reply2->frame()->data());
         return;
       } else if (status != 0) {
-        this->showError(tr("Protocol error"), reply2->frame()->data());
+        this->showResponseError(status, errorString, reply2->frame()->data());
         return;
       }
 
@@ -308,15 +310,32 @@ void ClientAppLogic::hideProgress()
   d->progressDialog->close();
 }
 
+void ClientAppLogic::showResponseError(int status, const QString &errorMessage, const QString &details)
+{
+  HL_ERROR(HL, QString("Network response error (status=%1; message=%2)").arg(status).arg(errorMessage).toStdString());
+  hideProgress();
+
+  QMessageBox box(this);
+  box.setWindowTitle(tr("Warning"));
+  box.setIcon(QMessageBox::Warning);
+  box.addButton(QMessageBox::Ok);
+  box.setText(QString::number(status) + QString(": ") + errorMessage);
+  if (!details.isEmpty())
+    box.setDetailedText(details);
+  box.setMinimumWidth(400);
+  box.exec();
+}
+
 void ClientAppLogic::showError(const QString &shortText, const QString &longText, bool exitApp)
 {
   HL_ERROR(HL, QString("%1: %2").arg(shortText).arg(longText).toStdString());
   hideProgress();
 
   QMessageBox box(this);
-  box.setIcon(QMessageBox::Critical);
+  box.setWindowTitle(tr("Warning"));
+  box.setIcon(QMessageBox::Warning);
   box.addButton(QMessageBox::Ok);
-  box.setText(shortText + QString("\n\n") + longText);
+  box.setText(shortText);
   box.setDetailedText(longText);
   box.setMinimumWidth(400);
   box.exec();

@@ -90,6 +90,7 @@ protected:
   QWidget* createCameraWidget();
   void showProgress(const QString &text);
   void hideProgress();
+  void showResponseError(int status, const QString &errorMessage, const QString &details = QString());
   void showError(const QString &shortText, const QString &longText = QString(), bool exitApp = false);
 };
 

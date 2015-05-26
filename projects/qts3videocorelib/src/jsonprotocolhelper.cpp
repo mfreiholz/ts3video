@@ -43,7 +43,7 @@ bool JsonProtocolHelper::fromJsonRequest(const QByteArray &data, QString &action
   return true;
 }
 
-bool JsonProtocolHelper::fromJsonResponse(const QByteArray &data, int &status, QJsonObject &parameters)
+bool JsonProtocolHelper::fromJsonResponse(const QByteArray &data, int &status, QJsonObject &parameters, QString &error)
 {
   QJsonParseError err;
   auto doc = QJsonDocument::fromJson(data, &err);
@@ -58,6 +58,7 @@ bool JsonProtocolHelper::fromJsonResponse(const QByteArray &data, int &status, Q
     return false;
   }
   status = root["status"].toInt();
+  error = root["error"].toString();
   parameters = root["data"].toObject();
   return true;
 }
