@@ -148,8 +148,9 @@ QCorReply* NetworkClient::auth(const QString &name, const QString &password, boo
   connect(reply, &QCorReply::finished, [this, reply] ()
   {
     int status = 0;
+    QString error;
     QJsonObject params;
-    if (!JsonProtocolHelper::fromJsonResponse(reply->frame()->data(), status, params)) {
+    if (!JsonProtocolHelper::fromJsonResponse(reply->frame()->data(), status, params, error)) {
       return;
     } else if (status != 0) {
       return;
@@ -302,8 +303,9 @@ QCorReply* NetworkClient::authAsAdmin(const QString &password)
   connect(reply, &QCorReply::finished, [this, reply]()
   {
     int status = 0;
+    QString error;
     QJsonObject params;
-    if (!JsonProtocolHelper::fromJsonResponse(reply->frame()->data(), status, params)) {
+    if (!JsonProtocolHelper::fromJsonResponse(reply->frame()->data(), status, params, error)) {
       return;
     }
     else if (status != 0) {
