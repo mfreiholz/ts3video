@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
-project(qts3videocorelib)
+project(videolib)
 cmake_policy(SET CMP0020 NEW)
 
 # Qt5
@@ -58,7 +58,7 @@ include_directories(
 
 # Target
 add_library(
-  qts3videocorelib
+  ${PROJECT_NAME}
   STATIC
   ${headers}
   ${sources}
@@ -69,7 +69,7 @@ add_library(
 )
 
 target_link_libraries(
-  qts3videocorelib
+  ${PROJECT_NAME}
   Qt5::Core
   Qt5::Gui
   Qt5::Network

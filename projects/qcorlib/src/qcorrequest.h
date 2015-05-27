@@ -1,4 +1,0 @@
-#ifndef QCORREQUEST_HEADER
-#define QCORREQUEST_HEADER
-
-#endif

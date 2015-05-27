@@ -1,1 +1,0 @@
-#include "qcorrequest.h"

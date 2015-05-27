@@ -13,7 +13,6 @@ endif()
 # Sources
 set(headers
   src/qcorframe.h
-  src/qcorrequest.h
 )
 
 set(qheaders
@@ -28,7 +27,6 @@ set(sources
   src/qcorconnection.cpp
   src/qcorframe.cpp
   src/qcorserver.cpp
-  src/qcorrequest.cpp
   src/qcorreply.cpp
 )
 

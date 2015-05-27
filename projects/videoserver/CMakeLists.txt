@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 2.8)
-project(qts3videoserver)
+project(videoserver)
 cmake_policy(SET CMP0020 NEW)
 
 # Qt5
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Network REQUIRED)
-find_package(Qt5Gui REQUIRED) # Due to qts3videocorelib
+find_package(Qt5Gui REQUIRED) # Due to videolib
 find_package(Qt5WebSockets REQUIRED)
 
 # Sources
@@ -62,7 +62,7 @@ include_directories(
   ../humblesrvproc/include
   ../medlib/include
   ../qcorlib/src
-  ../qts3videocorelib/src
+  ../videolib/src
 )
 
 # Target prerequisites.
@@ -91,7 +91,7 @@ target_link_libraries(
   humblesrvproc
   medlib
   qcorlib
-  qts3videocorelib
+  videolib
 )
 
 set_target_properties(${PROJECT_NAME}
