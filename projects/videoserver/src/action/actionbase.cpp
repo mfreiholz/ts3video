@@ -95,9 +95,9 @@ void AuthenticationAction::run()
 
     // Ban check.
     const auto peerAddress = _req.connection->socket()->peerAddress();
-    if (_req.server->isBaned(peerAddress)) {
-      HL_WARN(HL, QString("Baned user tried to connect. (address=%1)").arg(peerAddress.toString()).toStdString());
-      sendDefaultErrorResponse(1, "You are baned from the server.");
+    if (_req.server->isBanned(peerAddress)) {
+      HL_WARN(HL, QString("Banned user tried to connect. (address=%1)").arg(peerAddress.toString()).toStdString());
+      sendDefaultErrorResponse(1, "You are banned from the server.");
       disconnectFromHostDelayed();
       return;
     }

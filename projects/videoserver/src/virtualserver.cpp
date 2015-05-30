@@ -227,7 +227,7 @@ void VirtualServer::unban(const QHostAddress &address)
   ini.endGroup();
 }
 
-bool VirtualServer::isBaned(const QHostAddress &address)
+bool VirtualServer::isBanned(const QHostAddress &address)
 {
   QDir dir(QCoreApplication::applicationDirPath());
   const auto filePath = dir.filePath("bans.ini");

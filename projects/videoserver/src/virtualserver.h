@@ -79,7 +79,7 @@ public:
   // Ban / unban clients.
   void ban(const QHostAddress &address);
   void unban(const QHostAddress &address);
-  bool isBaned(const QHostAddress &address);
+  bool isBanned(const QHostAddress &address);
 
 public:
   QScopedPointer<VirtualServerPrivate> d;
