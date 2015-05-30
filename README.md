@@ -1,3 +1,4 @@
+![Logo](https://raw.githubusercontent.com/mfreiholz/ocs/master/projects/videoclient/res/logo-48x48.png)
 
 # Build
 Build has been tested on
@@ -6,8 +7,8 @@ Build has been tested on
 
 
 ## Requirements
-- CMake (build system)
-- Qt 5.4
+- CMake 2.8.11
+- Qt 5.4 with OpenGL
 - VC12 (Visual Studio 2013)
 - Optional: Qt Add-in for Visual Studio (http://www.qt.io/download-open-source/)
 - Linux: sudo apt-get install mesa-common-dev
@@ -15,8 +16,8 @@ Build has been tested on
 
 ## Checkout steps
 ```
-$> git clone git@git.insanefactory.com:/opt/git/ts3video.git .
-$> cd ts3video
+$> git clone https://github.com/mfreiholz/ocs.git
+$> cd ocs
 $> git submodule init
 $> git submodule update
 ```
@@ -26,7 +27,7 @@ $> git submodule update
 ```
 $> mkdir build
 $> cd build
-$> cmake -G "Visual Studio 12 Win64" ..
+$> cmake -DCMAKE_INSTALL_PREFIX=install -G "Visual Studio 12 Win64" ..
 ```
 
 
@@ -35,3 +36,9 @@ Remove all non-tracked + ignored files (append `-n` for a dry-run)
 ```
 git clean -x -d -f
 ```
+
+# Related repositories
+- https://github.com/mfreiholz/ts3video-homepage
+- https://github.com/mfreiholz/ocs-deploy
+- https://github.com/mfreiholz/ocs-ts3clientpluginsdk
+- https://github.com/mfreiholz/ocs-vpx
