@@ -23,15 +23,15 @@ class NetworkClient : public QObject
   friend class NetworkClientPrivate;
   QScopedPointer<NetworkClientPrivate> d;
   NetworkClient(const NetworkClient &other);
-  NetworkClient& operator=(const NetworkClient &other);
+  NetworkClient &operator=(const NetworkClient &other);
 
 public:
   NetworkClient(QObject *parent = nullptr);
   ~NetworkClient();
 
   void setMediaEnabled(bool yesno); ///< TODO Remove me... DEV only.
-  const QAbstractSocket* socket() const;
-  const ClientEntity& clientEntity() const;
+  const QAbstractSocket *socket() const;
+  const ClientEntity &clientEntity() const;
   bool isReadyForStreaming() const;
   bool isAdmin() const;
   bool isSelf(const ClientEntity &ci) const;
@@ -49,13 +49,13 @@ public:
     \see connected()
     \return QCorReply* Ownership goes over to caller who needs to delete it with "deleteLater()".
   */
-  QCorReply* auth(const QString &name, const QString &password, bool videoEnabled = true);
+  QCorReply *auth(const QString &name, const QString &password, bool videoEnabled = true);
 
   /*!
     Sends a goodbye to the server, which tells the server to drop this connection.
     \return QCorReply* Ownership goes over to caller who needs to delete it with "deleteLater()".
   */
-  QCorReply* goodbye();
+  QCorReply *goodbye();
 
   /*!
     Joins a channel/room/conference.
@@ -63,8 +63,8 @@ public:
     \see auth()
     \return QCorReply* Ownership goes over to caller who needs to delete it with "deleteLater()".
   */
-  QCorReply* joinChannel(int id, const QString &password);
-  QCorReply* joinChannelByIdentifier(const QString &ident, const QString &password);
+  QCorReply *joinChannel(int id, const QString &password);
+  QCorReply *joinChannelByIdentifier(const QString &ident, const QString &password);
 
   /*!
     Enables/disables sending of video stream to server.
@@ -72,8 +72,8 @@ public:
     \see auth()
     \return QCorReply* Ownership goes over to caller who needs to delete it with "deleteLater()".
   */
-  QCorReply* enableVideoStream();
-  QCorReply* disableVideoStream();
+  QCorReply *enableVideoStream();
+  QCorReply *disableVideoStream();
 
   /*!
     Enables/disables receiving the video of a specific participant.
@@ -81,8 +81,8 @@ public:
     \see auth()
     \return QCorReply* Ownership goes over to caller who needs to delete it with "deleteLater()".
   */
-  QCorReply* enableRemoteVideoStream(int clientId);
-  QCorReply* disableRemoteVideoStream(int clientId);
+  QCorReply *enableRemoteVideoStream(int clientId);
+  QCorReply *disableRemoteVideoStream(int clientId);
 
   /*!
     Sends a single frame to the server, which will then broadcast it to other clients.
@@ -97,7 +97,7 @@ public:
     Requires an authenticated connection.
     \return QCorReply* Ownership goes over to caller who needs to delete it with "deleteLater()".
   */
-  QCorReply* authAsAdmin(const QString &password);
+  QCorReply *authAsAdmin(const QString &password);
 
   /*!
     Kicks another client from the server.
@@ -107,7 +107,7 @@ public:
     \param ban Set to "true" to ban the client aswell.
     \return QCorReply* Ownership goes over to caller who needs to delete it with "deleteLater()".
   */
-  QCorReply* kickClient(int clientId, bool ban = false);
+  QCorReply *kickClient(int clientId, bool ban = false);
 
 signals:
   // Connection based signals.

@@ -5,7 +5,9 @@
 #include <QAbstractListModel>
 #include <QSortFilterProxyModel>
 
+class NetworkClient;
 class ClientEntity;
+class ChannelEntity;
 
 class ClientListModelPrivate;
 class ClientListModel : public QAbstractListModel
@@ -15,13 +17,20 @@ class ClientListModel : public QAbstractListModel
   QScopedPointer<ClientListModelPrivate> d;
 
 public:
-  enum Role {
+  enum Role
+  {
     VideoEnabledRole = Qt::UserRole + 1,
     ClientEntityRole = Qt::UserRole + 2
   };
 
   ClientListModel(QObject *parent);
   virtual ~ClientListModel();
+
+  /*
+    Sets the network client to be used for this model.
+    Calling this function resets the model and make it base on the new one, but does not delete the old one.
+  */
+  void setNetworkClient(NetworkClient *networkClient);
 
   // Helper function to add/edit/remove clients.
   void addClient(const ClientEntity &client);

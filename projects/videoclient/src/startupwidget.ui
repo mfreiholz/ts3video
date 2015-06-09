@@ -136,7 +136,7 @@
    <item>
     <widget class="QGroupBox" name="channelGroup">
      <property name="title">
-      <string>Room / Channel</string>
+      <string>Conference</string>
      </property>
      <layout class="QFormLayout" name="formLayout">
       <item row="0" column="0">
@@ -235,9 +235,11 @@
  </widget>
  <tabstops>
   <tabstop>cameraComboBox</tabstop>
-  <tabstop>channelIdentifierLineEdit</tabstop>
   <tabstop>usernameLineEdit</tabstop>
   <tabstop>serverAddress</tabstop>
+  <tabstop>serverPasswordLineEdit</tabstop>
+  <tabstop>channelIdentifierLineEdit</tabstop>
+  <tabstop>channelPasswordLineEdit</tabstop>
   <tabstop>okButton</tabstop>
   <tabstop>cancelButton</tabstop>
  </tabstops>

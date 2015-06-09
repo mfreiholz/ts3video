@@ -52,6 +52,7 @@ ClientAppLogic::ClientAppLogic(const Options &opts, QWidget *parent, Qt::WindowF
 
   d->opts = opts;
   d->clientListModel = new ClientListModel(this);
+  d->clientListModel->setNetworkClient(&d->ts3vc);
 
   // Global progress dialog.
   d->progressDialog = new QProgressDialog(this, Qt::FramelessWindowHint);
@@ -184,6 +185,7 @@ void ClientAppLogic::onConnected()
         ClientEntity client;
         client.fromQJsonObject(v.toObject());
         onClientJoinedChannel(client, channel);
+        d->clientListModel->addClient(client); // TODO Manage inside model.
       }
       hideProgress();
     });
@@ -213,21 +215,21 @@ void ClientAppLogic::onClientJoinedChannel(const ClientEntity &client, const Cha
   if (client.id != d->ts3vc.clientEntity().id) {
     d->view->addClient(client, channel);
   }
-  d->clientListModel->addClient(client);
+  //d->clientListModel->addClient(client);
 }
 
 void ClientAppLogic::onClientLeftChannel(const ClientEntity &client, const ChannelEntity &channel)
 {
   HL_INFO(HL, QString("Client left channel (client-id=%1; channel-id=%2)").arg(client.id).arg(channel.id).toStdString());
   d->view->removeClient(client, channel);
-  d->clientListModel->removeClient(client);
+  //d->clientListModel->removeClient(client);
 }
 
 void ClientAppLogic::onClientDisconnected(const ClientEntity &client)
 {
   HL_INFO(HL, QString("Client disconnected (client-id=%1)").arg(client.id).toStdString());
   d->view->removeClient(client, ChannelEntity());
-  d->clientListModel->removeClient(client);
+  //d->clientListModel->removeClient(client);
 }
 
 void ClientAppLogic::onNewVideoFrame(YuvFrameRefPtr frame, int senderId)

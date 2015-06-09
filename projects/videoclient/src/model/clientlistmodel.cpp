@@ -2,6 +2,8 @@
 
 #include <QIcon>
 
+#include "../networkclient/networkclient.h"
+
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
@@ -14,6 +16,22 @@ ClientListModel::ClientListModel(QObject *parent) :
 
 ClientListModel::~ClientListModel()
 {
+}
+
+void ClientListModel::setNetworkClient(NetworkClient *networkClient)
+{
+  beginResetModel();
+  if (d->networkClient)
+  {
+    d->networkClient->disconnect(d.data());
+    d->networkClient->disconnect(this);
+  }
+  d->networkClient = networkClient;
+  connect(d->networkClient, &NetworkClient::clientJoinedChannel, d.data(), &ClientListModelPrivate::onClientJoinedChannel);
+  connect(d->networkClient, &NetworkClient::clientLeftChannel, d.data(), &ClientListModelPrivate::onClientLeftChannel);
+  connect(d->networkClient, &NetworkClient::clientDisconnected, d.data(), &ClientListModelPrivate::onClientDisconnected);
+  d->clients.clear();
+  endResetModel();
 }
 
 void ClientListModel::addClient(const ClientEntity &client)
@@ -45,21 +63,22 @@ QVariant ClientListModel::data(const QModelIndex &index, int role) const
 
   auto &client = d->clients[index.row()];
 
-  switch (role) {
-    case Qt::DisplayRole:
-      return client.name;
+  switch (role)
+  {
+  case Qt::DisplayRole:
+    return client.name;
 
-    case Qt::DecorationRole:
-      if (client.videoEnabled)
-        return QIcon(":/ic_videocam_grey600_48dp.png");
-      else
-        return QIcon(":/ic_videocam_off_grey600_48dp.png");
+  case Qt::DecorationRole:
+    if (client.videoEnabled)
+      return QIcon(":/ic_videocam_grey600_48dp.png");
+    else
+      return QIcon(":/ic_videocam_off_grey600_48dp.png");
 
-    case VideoEnabledRole:
-      return client.videoEnabled;
+  case VideoEnabledRole:
+    return client.videoEnabled;
 
-    case ClientEntityRole:
-      return QVariant::fromValue(client);
+  case ClientEntityRole:
+    return QVariant::fromValue(client);
   }
 
   return QVariant();
@@ -67,14 +86,40 @@ QVariant ClientListModel::data(const QModelIndex &index, int role) const
 
 ///////////////////////////////////////////////////////////////////////
 
+ClientListModelPrivate::ClientListModelPrivate(ClientListModel *o) :
+  QObject(o),
+  owner(o),
+  networkClient(nullptr)
+{
+}
+
 int ClientListModelPrivate::findIndexOfClient(const ClientEntity &c) const
 {
   auto d = this;
-  for (auto i = 0; i < d->clients.size(); ++i) {
+  for (auto i = 0; i < d->clients.size(); ++i)
+  {
     if (d->clients[i].id == c.id)
       return i;
   }
   return -1;
+}
+
+void ClientListModelPrivate::onClientJoinedChannel(const ClientEntity &client, const ChannelEntity &channel)
+{
+  auto d = this;
+  d->owner->addClient(client);
+}
+
+void ClientListModelPrivate::onClientLeftChannel(const ClientEntity &client, const ChannelEntity &channel)
+{
+  auto d = this;
+  d->owner->removeClient(client);
+}
+
+void ClientListModelPrivate::onClientDisconnected(const ClientEntity &client)
+{
+  auto d = this;
+  d->owner->removeClient(client);
 }
 
 ///////////////////////////////////////////////////////////////////////

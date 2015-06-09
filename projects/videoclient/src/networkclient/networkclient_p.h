@@ -48,11 +48,16 @@ public:
   QTimer heartbeatTimer;
   bool goodbye;
 
+  // Data about self.
   ClientEntity clientEntity;
   bool videoStreamingEnabled;
   bool isAdmin;
 
+  // Data about others.
+  // TODO Hold and manage ClientListModel here.
+
+  // DEV
   bool useMediaSocket; ///< TODO Remove me (DEV ONLY)
 };
 
-#endif // NetworkClient_P_H
+#endif

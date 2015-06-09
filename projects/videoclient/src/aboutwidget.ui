@@ -803,6 +803,9 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&
          <property name="alignment">
           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
          </property>
+         <property name="openExternalLinks">
+          <bool>true</bool>
+         </property>
         </widget>
        </item>
       </layout>
