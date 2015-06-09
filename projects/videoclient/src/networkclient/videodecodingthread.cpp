@@ -1,7 +1,7 @@
 #include "videodecodingthread.h"
 #include "humblelogging/api.h"
 #include "ts3video.h"
-#include "../vp8decoder.h"
+#include "vp8decoder.h"
 
 HUMBLE_LOGGER(HL, "networkclient.videodecodingthread");
 
@@ -24,7 +24,7 @@ public:
   VideoDecodingThread *owner;
   QMutex m;
   QWaitCondition queueCond;
-  QQueue<QPair<VP8Frame*, int> > queue;
+  QQueue<QPair<VP8Frame *, int> > queue;
   QAtomicInt stopFlag;
 };
 
@@ -40,7 +40,8 @@ VideoDecodingThread::~VideoDecodingThread()
 {
   stop();
   wait();
-  while (!d->queue.isEmpty()) {
+  while (!d->queue.isEmpty())
+  {
     auto item = d->queue.dequeue();
     delete item.first;
   }
@@ -67,26 +68,29 @@ void VideoDecodingThread::run()
 {
   // TODO Make it possible to reset/delete a VP8Decoder.
   //      That would be useful when a participant leaves.
-  QHash<int, VP8Decoder*> decoders;
+  QHash<int, VP8Decoder *> decoders;
 
   d->stopFlag = 0;
-  while (d->stopFlag == 0) {
+  while (d->stopFlag == 0)
+  {
     QMutexLocker l(&d->m);
-    if (d->queue.isEmpty()) {
+    if (d->queue.isEmpty())
+    {
       d->queueCond.wait(&d->m);
       continue;
     }
     auto item = d->queue.dequeue();
     l.unlock();
 
-    if (!item.first || item.second == 0) {
+    if (!item.first || item.second == 0)
       continue;
-    }
 
-    if (true) {
+    if (true)
+    {
       // Decode VPX frame to YuvFrame.
       auto decoder = decoders.value(item.second);
-      if (!decoder) {
+      if (!decoder)
+      {
         decoder = new VP8Decoder();
         decoder->initialize();
         decoders.insert(item.second, decoder);
@@ -109,4 +113,5 @@ void VideoDecodingThread::run()
 
   // Clean up.
   qDeleteAll(decoders);
+  decoders.clear();
 }

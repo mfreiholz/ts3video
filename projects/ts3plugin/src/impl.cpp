@@ -9,36 +9,33 @@
 
 // Logging ////////////////////////////////////////////////////////////
 
-
+// TODO Implement some very simple logging or static link against HumbleLogging
 
 // Common /////////////////////////////////////////////////////////////
 
-/**
- * Gets the path to the TS3VideoClient.exe.
- * @return char* Ownership goes to caller.
- */
-char* findClientExeFilePath()
+/*
+   Gets the path to the TS3VideoClient.exe.
+   @return char* Ownership goes to caller.
+*/
+char *findClientExeFilePath()
 {
 #ifdef _WIN32
   char moduleFilePath[PATH_MAX_LENGTH]; ///< Path to teamspeak3client.exe
-  if (GetModuleFileName(NULL, moduleFilePath, PATH_MAX_LENGTH) <= 0) {
-    //delete[] moduleFilePath;
+  if (GetModuleFileName(NULL, moduleFilePath, PATH_MAX_LENGTH) <= 0)
     return NULL;
-  }
 
-  // Found last occurance of "\".
+  // Find last occurance of "\".
   // TODO Convert \ to /.
   char *offset = moduleFilePath;
-  while (true) {
+  while (true)
+  {
     char *p = strstr(offset, "\\");
-    if (!p) {
+    if (!p)
       break;
-    }
     offset = ++p;
   }
-  if (offset) {
+  if (offset)
     memset(offset, 0, sizeof(char));
-  }
 
   char *path = new char[PATH_MAX_LENGTH];
   path[0] = 0;
@@ -54,35 +51,34 @@ char* findClientExeFilePath()
 #endif
 }
 
-char* getParentPath(const char *path)
+char *getParentPath(const char *path)
 {
   char *parentPath = new char[PATH_MAX_LENGTH];
   memset(parentPath, 0, PATH_MAX_LENGTH);
   strcpy(parentPath, path);
 
-  // Found last occurance of "\".
+  // Find last occurance of "\".
   // TODO Convert \ to /.
   char *offset = parentPath;
-  while (true) {
+  while (true)
+  {
     char *p = strstr(offset, "\\");
-    if (!p) {
+    if (!p)
       break;
-    }
     offset = ++p;
   }
-  if (offset && --offset) {
+  if (offset && --offset)
     memset(offset, 0, sizeof(char));
-  }
   return parentPath;
 }
 
-char* generateUniqueChannelIdentifier(const TS3Data *data)
+char *generateUniqueChannelIdentifier(const TS3Data *data)
 {
   // Concenate all important data which makes the TS3Data unique
   // in the same way for all clients (do not include the client's ID!).
   // e.g.: <server-address>#<server-port>#<channel-id>
   char *s = new char[MAX_PATH];
-  s[0] = 0;
+  memset(s, 0, MAX_PATH);
 
   strcat(s, data->serverAddress);
   strcat(s, "#");
@@ -100,7 +96,7 @@ char* generateUniqueChannelIdentifier(const TS3Data *data)
   return s;
 }
 
-char* generateChannelPassword(const TS3Data *data)
+char *generateChannelPassword(const TS3Data *data)
 {
   const char *ident = generateUniqueChannelIdentifier(data);
   const int identLen = strlen(ident);
@@ -108,7 +104,8 @@ char* generateChannelPassword(const TS3Data *data)
   char *pass = new char[MAX_PATH];
   memset(pass, 0, MAX_PATH);
 
-  for (int i = identLen / 2 - 1; i >= 0; --i) {
+  for (int i = identLen / 2 - 1; i >= 0; --i)
+  {
     const int ival = ident[i];
     char buff[128];
     itoa(ival, buff, 16);
@@ -124,20 +121,21 @@ char* generateChannelPassword(const TS3Data *data)
 int runClient(TS3Data *ts3data, int skipStartupDialog)
 {
   // It's not allowed to join a conference of a different channel.
-  if (ts3data->channelId != ts3data->targetChannelId) {
+  if (ts3data->channelId != ts3data->targetChannelId)
+  {
     ts3data->funcs->printMessageToCurrentTab("You can not join a video-conference of a different channel.");
     return 1;
   }
 
   // Find client executable.
   char *filePath = findClientExeFilePath();
-  if (!filePath) {
+  if (!filePath)
     return 1;
-  }
 
   // Define working directory.
   char *workingDirectory = getParentPath(filePath);
-  if (!workingDirectory) {
+  if (!workingDirectory)
+  {
     delete[] filePath;
     return 2;
   }
@@ -174,9 +172,8 @@ int runClient(TS3Data *ts3data, int skipStartupDialog)
   strcat(params, channelPassword);
   strcat(params, "\" ");
 
-  if (skipStartupDialog) {
+  if (skipStartupDialog)
     strcat(params, " --skip-startup-dialog ");
-  }
 
 #ifdef _WIN32
   SHELLEXECUTEINFO execInfo;
@@ -188,7 +185,8 @@ int runClient(TS3Data *ts3data, int skipStartupDialog)
   execInfo.lpParameters = params;
   execInfo.lpDirectory = workingDirectory;
   execInfo.nShow = SW_SHOWNORMAL;
-  if (!ShellExecuteEx(&execInfo)) {
+  if (!ShellExecuteEx(&execInfo))
+  {
     delete[] channelIdent;
     delete[] channelPassword;
     delete[] workingDirectory;

@@ -29,10 +29,7 @@ set(qheaders
   src/clientapplogic.h
   src/clientapplogic_p.h
   src/clientcameravideowidget.h
-  src/udpvideoframedecoder.h
   src/remoteclientvideowidget.h
-  src/vp8encoder.h
-  src/vp8decoder.h
   src/startupwidget.h
 #  src/hangoutviewwidget.h
 #  src/hangoutviewwidget_p.h
@@ -55,6 +52,9 @@ set(qheaders
   src/networkclient/mediasocketthread_p.h
   src/networkclient/videoencodingthread.h
   src/networkclient/videodecodingthread.h
+  src/networkclient/udpvideoframedecoder.h
+  src/networkclient/vp8encoder.h
+  src/networkclient/vp8decoder.h
 )
 
 set(sources
@@ -66,10 +66,7 @@ set(sources
   src/videocollectionwidget.cpp
   src/clientapplogic.cpp
   src/clientcameravideowidget.cpp
-  src/udpvideoframedecoder.cpp
   src/remoteclientvideowidget.cpp
-  src/vp8encoder.cpp
-  src/vp8decoder.cpp
   src/startupwidget.cpp
 #  src/hangoutviewwidget.cpp
   src/viewbase.cpp
@@ -85,6 +82,9 @@ set(sources
   src/networkclient/mediasocketthread.cpp
   src/networkclient/videoencodingthread.cpp
   src/networkclient/videodecodingthread.cpp
+  src/networkclient/udpvideoframedecoder.cpp
+  src/networkclient/vp8encoder.cpp
+  src/networkclient/vp8decoder.cpp
 )
 
 set(qforms

@@ -31,11 +31,19 @@ $> cmake -DCMAKE_INSTALL_PREFIX=install -G "Visual Studio 12 Win64" ..
 ```
 
 
+# Contribute
+
+## Code style
+I began to use AStyle to strictly format source code based on
+*astyle-cpp-code-style.cfg* configuration.
+
+
 # Useful commands
 Remove all non-tracked + ignored files (append `-n` for a dry-run)
 ```
 git clean -x -d -f
 ```
+
 
 # Related repositories
 - https://github.com/mfreiholz/ts3video-homepage

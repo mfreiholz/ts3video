@@ -1,5 +1,7 @@
 #!/bin/python
 # -*- coding: utf-8 -*-
+#
+# DO NOT USE THIS SCRIPT YET - NOT FINISHED
 
 import sys
 import subprocess

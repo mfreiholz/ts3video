@@ -7,7 +7,7 @@ include(cmake/thirdparty.cmake)
 
 # Generate global version header file.
 set(VERSION_MAJOR "0" CACHE INTERNAL "Major software version" FORCE)
-set(VERSION_MINOR "3" CACHE INTERNAL "Minor software version" FORCE)
+set(VERSION_MINOR "4" CACHE INTERNAL "Minor software version" FORCE)
 set(VERSION_EXTRA "" CACHE INTERNAL "Additional software version information, e.g.: release, beta, alpha, dev" FORCE)
 FILE(WRITE projects/project-defines.h
   "// Generated project version header.

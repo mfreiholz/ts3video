@@ -3,7 +3,7 @@
 
 #include "mediasocket.h"
 #include "networkusageentity.h"
-#include "../udpvideoframedecoder.h"
+#include "udpvideoframedecoder.h"
 #include "videoencodingthread.h"
 #include "videodecodingthread.h"
 
@@ -35,7 +35,7 @@ public:
   unsigned long long lastFrameRequestTimestamp;
 
   // Decoding.
-  QHash<int, VideoFrameUdpDecoder*> videoFrameDatagramDecoders; ///< Maps client-id to it's decoder.
+  QHash<int, VideoFrameUdpDecoder *> videoFrameDatagramDecoders; ///< Maps client-id to it's decoder.
   VideoDecodingThread *videoDecodingThread;
 
   // Network usage.
