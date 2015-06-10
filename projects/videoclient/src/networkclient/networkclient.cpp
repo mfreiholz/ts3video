@@ -50,8 +50,69 @@ void NetworkClientPrivate::reset()
   useMediaSocket = true;
 }
 
+void NetworkClientPrivate::onAuthFinished()
+{
+  auto d = this;
+  auto reply = qobject_cast<QCorReply *>(sender());
+
+  int status = 0;
+  QString error;
+  QJsonObject params;
+  if (!JsonProtocolHelper::fromJsonResponse(reply->frame()->data(), status, params, error))
+    return;
+  else if (status != 0)
+    return;
+
+  // Parse self client info from response and
+  // connect MediaSocket for media data streaming.
+  const auto client = params["client"].toObject();
+  const auto authtoken = params["authtoken"].toString();
+  d->clientEntity.fromQJsonObject(client);
+
+  // Create new media socket.
+  if (d->useMediaSocket)
+  {
+    if (d->mediaSocket)
+    {
+      d->mediaSocket->close();
+      delete d->mediaSocket;
+    }
+    d->mediaSocket = new MediaSocket(authtoken, this);
+    d->mediaSocket->connectToHost(d->corSocket->socket()->peerAddress(), d->corSocket->socket()->peerPort());
+    QObject::connect(d->mediaSocket, &MediaSocket::newVideoFrame, d->owner, &NetworkClient::newVideoFrame);
+    QObject::connect(d->mediaSocket, &MediaSocket::networkUsageUpdated, d->owner, &NetworkClient::networkUsageUpdated);
+  }
+}
+
+void NetworkClientPrivate::onJoinChannelFinished()
+{
+  auto d = this;
+  auto reply = qobject_cast<QCorReply *>(sender());
+
+  int status = 0;
+  QString error;
+  QJsonObject params;
+  if (!JsonProtocolHelper::fromJsonResponse(reply->frame()->data(), status, params, error))
+    return;
+  else if (status != 0)
+    return;
+
+  // Extract channel.
+  ChannelEntity channel;
+  channel.fromQJsonObject(params["channel"].toObject());
+  d->clientModel.setChannel(channel);
+
+  // Extract participants and create widgets.
+  foreach (auto v, params["participants"].toArray())
+  {
+    ClientEntity client;
+    client.fromQJsonObject(v.toObject());
+    d->clientModel.addClient(client);
+  }
+}
+
 ///////////////////////////////////////////////////////////////////////
-//
+// NetworkClient
 ///////////////////////////////////////////////////////////////////////
 
 NetworkClient::NetworkClient(QObject *parent) :
@@ -68,6 +129,8 @@ NetworkClient::NetworkClient(QObject *parent) :
 
   d->heartbeatTimer.setInterval(10000);
   QObject::connect(&d->heartbeatTimer, &QTimer::timeout, this, &NetworkClient::sendHeartbeat);
+
+  d->clientModel.setNetworkClient(this);
 
   d->reset();
 }
@@ -112,6 +175,11 @@ bool NetworkClient::isSelf(const ClientEntity &ci) const
   return d->clientEntity.id == ci.id;
 }
 
+ClientListModel *NetworkClient::clientModel() const
+{
+  return &d->clientModel;
+}
+
 void NetworkClient::connectToHost(const QHostAddress &address, qint16 port)
 {
   HL_DEBUG(HL, QString("Connect to server (address=%1; port=%2)").arg(address.toString()).arg(port).toStdString());
@@ -142,39 +210,7 @@ QCorReply *NetworkClient::auth(const QString &name, const QString &password, boo
   QCorFrame req;
   req.setData(JsonProtocolHelper::createJsonRequest("auth", params));
   auto reply = d->corSocket->sendRequest(req);
-
-  // Authentication response: Automatically connect media socket, if authentication was successful.
-  connect(reply, &QCorReply::finished, [this, reply]()
-  {
-    int status = 0;
-    QString error;
-    QJsonObject params;
-    if (!JsonProtocolHelper::fromJsonResponse(reply->frame()->data(), status, params, error))
-      return;
-    else if (status != 0)
-      return;
-
-    // Parse self client info from response and
-    // connect MediaSocket for media data streaming.
-    const auto client = params["client"].toObject();
-    const auto authtoken = params["authtoken"].toString();
-    d->clientEntity.fromQJsonObject(client);
-
-    // Create new media socket.
-    if (d->useMediaSocket)
-    {
-      if (d->mediaSocket)
-      {
-        d->mediaSocket->close();
-        delete d->mediaSocket;
-      }
-      d->mediaSocket = new MediaSocket(authtoken, this);
-      d->mediaSocket->connectToHost(d->corSocket->socket()->peerAddress(), d->corSocket->socket()->peerPort());
-      QObject::connect(d->mediaSocket, &MediaSocket::newVideoFrame, this, &NetworkClient::newVideoFrame);
-      QObject::connect(d->mediaSocket, &MediaSocket::networkUsageUpdated, this, &NetworkClient::networkUsageUpdated);
-    }
-  });
-
+  QObject::connect(reply, &QCorReply::finished, d.data(), &NetworkClientPrivate::onAuthFinished);
   return reply;
 }
 
@@ -203,7 +239,9 @@ QCorReply *NetworkClient::joinChannel(int id, const QString &password)
 
   QCorFrame req;
   req.setData(JsonProtocolHelper::createJsonRequest("joinchannel", params));
-  return d->corSocket->sendRequest(req);
+  auto reply = d->corSocket->sendRequest(req);
+  QObject::connect(reply, &QCorReply::finished, d.data(), &NetworkClientPrivate::onJoinChannelFinished);
+  return reply;
 }
 
 QCorReply *NetworkClient::joinChannelByIdentifier(const QString &ident, const QString &password)
@@ -218,7 +256,9 @@ QCorReply *NetworkClient::joinChannelByIdentifier(const QString &ident, const QS
 
   QCorFrame req;
   req.setData(JsonProtocolHelper::createJsonRequest("joinchannelbyidentifier", params));
-  return d->corSocket->sendRequest(req);
+  auto reply = d->corSocket->sendRequest(req);
+  QObject::connect(reply, &QCorReply::finished, d.data(), &NetworkClientPrivate::onJoinChannelFinished);
+  return reply;
 }
 
 QCorReply *NetworkClient::enableVideoStream()

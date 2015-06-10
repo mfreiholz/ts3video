@@ -51,6 +51,11 @@ void ClientListModel::removeClient(const ClientEntity &client)
   endRemoveRows();
 }
 
+void ClientListModel::setChannel(const ChannelEntity &channel)
+{
+  d->channel = channel;
+}
+
 int ClientListModel::rowCount(const QModelIndex &parent) const
 {
   return d->clients.size();

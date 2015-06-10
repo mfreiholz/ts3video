@@ -35,6 +35,7 @@ public:
   // Helper function to add/edit/remove clients.
   void addClient(const ClientEntity &client);
   void removeClient(const ClientEntity &client);
+  void setChannel(const ChannelEntity &channel);
 
   // Qt's model pattern overwrites.
   virtual int rowCount(const QModelIndex &parent = QModelIndex()) const;

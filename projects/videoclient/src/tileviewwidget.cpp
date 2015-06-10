@@ -277,6 +277,7 @@ void TileViewWidget::setClientListModel(ClientListModel *model)
   QObject::connect(m, &ClientListModel::rowsRemoved, [this, m](const QModelIndex&, int, int) {
     d->userCountLabel->setText(QString::number(m->rowCount()));
   });
+  d->userCountLabel->setText(QString::number(m->rowCount()));
 }
 
 void TileViewWidget::setCameraWidget(QWidget *w)

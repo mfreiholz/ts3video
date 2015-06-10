@@ -4,6 +4,7 @@
 #include "clientlistmodel.h"
 
 #include "cliententity.h"
+#include "channelentity.h"
 
 class ClientListModelPrivate : public QObject
 {
@@ -21,6 +22,7 @@ public slots:
 public:
   ClientListModel *owner;
   NetworkClient *networkClient;
+  ChannelEntity channel;
   QList<ClientEntity>  clients;
 };
 

@@ -15,6 +15,7 @@ class QHostAddress;
 class ClientEntity;
 class ChannelEntity;
 class NetworkUsageEntity;
+class ClientListModel;
 
 class NetworkClientPrivate;
 class NetworkClient : public QObject
@@ -35,6 +36,13 @@ public:
   bool isReadyForStreaming() const;
   bool isAdmin() const;
   bool isSelf(const ClientEntity &ci) const;
+
+  /*!
+    Gets the model which holds information about the current conference.
+    Ownership stays with NetworkClient.
+    \return ClientListModel*
+  */
+  ClientListModel *clientModel() const;
 
   /*!
     Connects to the remote VideoServer.

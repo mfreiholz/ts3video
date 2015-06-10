@@ -27,7 +27,6 @@
 #include "clientcameravideowidget.h"
 #include "remoteclientvideowidget.h"
 #include "tileviewwidget.h"
-#include "model/clientlistmodel.h"
 
 HUMBLE_LOGGER(HL, "client.logic");
 
@@ -51,8 +50,6 @@ ClientAppLogic::ClientAppLogic(const Options &opts, QWidget *parent, Qt::WindowF
   }
 
   d->opts = opts;
-  d->clientListModel = new ClientListModel(this);
-  d->clientListModel->setNetworkClient(&d->ts3vc);
 
   // Global progress dialog.
   d->progressDialog = new QProgressDialog(this, Qt::FramelessWindowHint);
@@ -185,7 +182,6 @@ void ClientAppLogic::onConnected()
         ClientEntity client;
         client.fromQJsonObject(v.toObject());
         onClientJoinedChannel(client, channel);
-        d->clientListModel->addClient(client); // TODO Manage inside model.
       }
       hideProgress();
     });
@@ -215,21 +211,18 @@ void ClientAppLogic::onClientJoinedChannel(const ClientEntity &client, const Cha
   if (client.id != d->ts3vc.clientEntity().id) {
     d->view->addClient(client, channel);
   }
-  //d->clientListModel->addClient(client);
 }
 
 void ClientAppLogic::onClientLeftChannel(const ClientEntity &client, const ChannelEntity &channel)
 {
   HL_INFO(HL, QString("Client left channel (client-id=%1; channel-id=%2)").arg(client.id).arg(channel.id).toStdString());
   d->view->removeClient(client, channel);
-  //d->clientListModel->removeClient(client);
 }
 
 void ClientAppLogic::onClientDisconnected(const ClientEntity &client)
 {
   HL_INFO(HL, QString("Client disconnected (client-id=%1)").arg(client.id).toStdString());
   d->view->removeClient(client, ChannelEntity());
-  //d->clientListModel->removeClient(client);
 }
 
 void ClientAppLogic::onNewVideoFrame(YuvFrameRefPtr frame, int senderId)
@@ -276,7 +269,7 @@ void ClientAppLogic::initGui()
 {
   // Create main view.
   auto viewWidget = new TileViewWidget(this);
-  viewWidget->setClientListModel(d->clientListModel);
+  viewWidget->setClientListModel(d->ts3vc.clientModel());
 
   // Start camera.
   if (!d->opts.cameraDeviceId.isEmpty())

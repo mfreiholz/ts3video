@@ -20,24 +20,32 @@
 #include "yuvframe.h"
 
 #include "networkclient.h"
+#include "../model/clientlistmodel.h"
 
 class QCorConnection;
 class MediaSocket;
 
-class NetworkClientPrivate
+class NetworkClientPrivate : public QObject
 {
+  Q_OBJECT
 public:
   NetworkClientPrivate(NetworkClient *o) :
+    QObject(o),
     owner(o),
     corSocket(nullptr),
     mediaSocket(nullptr),
     goodbye(false),
     videoStreamingEnabled(false),
     isAdmin(false),
-    useMediaSocket(true)
+    useMediaSocket(true),
+    clientModel(o)
   {}
   NetworkClientPrivate(const NetworkClientPrivate &);
   void reset();
+
+public slots:
+  void onAuthFinished();
+  void onJoinChannelFinished();
 
 public:
   NetworkClient *owner;
@@ -54,7 +62,7 @@ public:
   bool isAdmin;
 
   // Data about others.
-  // TODO Hold and manage ClientListModel here.
+  ClientListModel clientModel;
 
   // DEV
   bool useMediaSocket; ///< TODO Remove me (DEV ONLY)
