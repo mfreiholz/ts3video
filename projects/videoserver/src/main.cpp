@@ -102,7 +102,7 @@ public:
       return 1;
     }
     // Override server options by config.
-    auto configFilePath = ELWS::getArgsValue("--config").toString();
+    auto configFilePath = ELWS::getArgsValue("--config", a.applicationDirPath() + QString("/default.ini")).toString();
     if (!configFilePath.isEmpty() && updateOptionsByConfig(opts, configFilePath) != 0) {
       return 1;
     }
