@@ -20,7 +20,7 @@
 #include "yuvframe.h"
 
 #include "networkclient.h"
-#include "../model/clientlistmodel.h"
+#include "clientlistmodel.h"
 
 class QCorConnection;
 class MediaSocket;

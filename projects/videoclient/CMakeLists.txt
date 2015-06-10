@@ -42,8 +42,6 @@ set(qheaders
   src/hintoverlaywidget_p.h
   src/camera/cameracontroller.h
   src/camera/cameracontroller_p.h
-  src/model/clientlistmodel.h
-  src/model/clientlistmodel_p.h
   src/networkclient/networkclient.h
   src/networkclient/networkclient_p.h
   src/networkclient/mediasocket.h
@@ -55,6 +53,8 @@ set(qheaders
   src/networkclient/udpvideoframedecoder.h
   src/networkclient/vp8encoder.h
   src/networkclient/vp8decoder.h
+  src/networkclient/clientlistmodel.h
+  src/networkclient/clientlistmodel_p.h
 )
 
 set(sources
@@ -76,7 +76,6 @@ set(sources
   src/movablewidgetcontainer.cpp
   src/hintoverlaywidget.cpp
   src/camera/cameracontroller.cpp
-  src/model/clientlistmodel.cpp
   src/networkclient/networkclient.cpp
   src/networkclient/mediasocket.cpp
   src/networkclient/mediasocketthread.cpp
@@ -85,6 +84,7 @@ set(sources
   src/networkclient/udpvideoframedecoder.cpp
   src/networkclient/vp8encoder.cpp
   src/networkclient/vp8decoder.cpp
+  src/networkclient/clientlistmodel.cpp
 )
 
 set(qforms

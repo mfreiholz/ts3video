@@ -22,7 +22,7 @@
 #include "aboutwidget.h"
 #include "movablewidgetcontainer.h"
 #include "adminauthwidget.h"
-#include "model/clientlistmodel.h"
+#include "networkclient/clientlistmodel.h"
 
 HUMBLE_LOGGER(HL, "gui.tileview");
 
