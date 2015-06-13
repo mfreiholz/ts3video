@@ -87,7 +87,7 @@ target_link_libraries(
   Qt5::Network
   Qt5::Gui
   Qt5::WebSockets
-  humblelogging
+  ${humblelogging_LIBRARIES}
   humblesrvproc
   medlib
   qcorlib
@@ -97,8 +97,6 @@ target_link_libraries(
 set_target_properties(${PROJECT_NAME}
   PROPERTIES OUTPUT_NAME "videoserver"
 )
-
-humblelogging_POSTBUILD(${PROJECT_NAME})
 
 #######################################################################
 # Install

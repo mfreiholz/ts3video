@@ -127,8 +127,8 @@ add_definitions(
 # Includes
 include_directories(
   ${CMAKE_CURRENT_BINARY_DIR}
-  ${humblelogging_INCLUDE_DIRS}
   ${vpx_INCLUDE_DIRS}
+  ${humblelogging_INCLUDE_DIRS}
   ../medlib/include
   ../qcorlib/src
   ../videolib/src
@@ -161,8 +161,8 @@ target_link_libraries(
   Qt5::MultimediaWidgets
   Qt5::OpenGL
   Qt5::Concurrent
-  humblelogging
   ${vpx_LIBRARIES}
+  ${humblelogging_LIBRARIES}
   qcorlib
   medlib
   videolib
@@ -175,8 +175,6 @@ endif()
 set_target_properties(${PROJECT_NAME}
   PROPERTIES OUTPUT_NAME "videoclient"
 )
-
-humblelogging_POSTBUILD(${PROJECT_NAME})
 
 #######################################################################
 # Install

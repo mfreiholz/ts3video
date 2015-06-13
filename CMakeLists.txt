@@ -4,6 +4,7 @@ cmake_policy(SET CMP0020 NEW)
 
 include(cmake/compiler.cmake)
 include(cmake/thirdparty.cmake)
+include(cmake/thirdparty-external.cmake)
 
 # Generate global version header file.
 set(VERSION_MAJOR "0" CACHE INTERNAL "Major software version" FORCE)

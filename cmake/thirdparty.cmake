@@ -3,25 +3,25 @@
 # Third party (HumbleLogging)
 # ---------------------------------------------------------------------
 
-add_subdirectory(thirdparty/humblelogging)
-set(humblelogging_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/thirdparty/humblelogging/include)
-macro(humblelogging_POSTBUILD target_)
-  if(WIN32)
-    add_custom_command(
-      TARGET ${target_} POST_BUILD
-      COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        $<TARGET_FILE_DIR:humblelogging>/humblelogging.dll
-        $<TARGET_FILE_DIR:${target_}>/humblelogging.dll
-    )
-  else(WIN32)
-    add_custom_command(
-      TARGET ${target_} POST_BUILD
-      COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        $<TARGET_FILE_DIR:humblelogging>/libhumblelogging.so
-        $<TARGET_FILE_DIR:${target_}>/libhumblelogging.so
-    )
-  endif(WIN32)
-endmacro(humblelogging_POSTBUILD)
+#add_subdirectory(thirdparty/humblelogging)
+#set(humblelogging_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/thirdparty/humblelogging/include)
+#macro(humblelogging_POSTBUILD target_)
+#  if(WIN32)
+#    add_custom_command(
+#      TARGET ${target_} POST_BUILD
+#      COMMAND ${CMAKE_COMMAND} -E copy_if_different
+#        $<TARGET_FILE_DIR:humblelogging>/humblelogging.dll
+#        $<TARGET_FILE_DIR:${target_}>/humblelogging.dll
+#    )
+#  else(WIN32)
+#    add_custom_command(
+#      TARGET ${target_} POST_BUILD
+#      COMMAND ${CMAKE_COMMAND} -E copy_if_different
+#        $<TARGET_FILE_DIR:humblelogging>/libhumblelogging.so
+#        $<TARGET_FILE_DIR:${target_}>/libhumblelogging.so
+#    )
+#  endif(WIN32)
+#endmacro(humblelogging_POSTBUILD)
 
 # ---------------------------------------------------------------------
 # Third party (VPX)
