@@ -21,3 +21,10 @@ if(WIN32)
     debug "${CMAKE_BINARY_DIR}/humblelogging-prefix/src/humblelogging-build/bin/Debug/humblelogging.lib"
   )
 endif(WIN32)
+
+if(CMAKE_COMPILER_IS_GNUCC)
+  set(humblelogging_LIBRARIES
+    "${CMAKE_BINARY_DIR}/humblelogging-prefix/src/humblelogging-build/bin/libhumblelogging.a"
+  )
+endif(CMAKE_COMPILER_IS_GNUCC)
+
