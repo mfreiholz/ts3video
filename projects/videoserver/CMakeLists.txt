@@ -21,9 +21,6 @@ set(qheaders
   src/clientconnectionhandler.h
   src/mediasockethandler.h
   src/websocketstatusserver.h
-#  src/module/abstractmodulebase.h
-#  src/module/coremodule.h
-#  src/module/channelmodule.h
 )
 
 set(sources
@@ -35,8 +32,6 @@ set(sources
   src/servercliententity.cpp
   src/serverchannelentity.cpp
   src/action/actionbase.cpp
-#  src/module/coremodule.cpp
-#  src/module/channelmodule.cpp
 )
 
 set(qresources
