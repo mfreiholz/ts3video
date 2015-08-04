@@ -13,6 +13,7 @@ set(headers
   src/servercliententity.h
   src/serverchannelentity.h
   src/action/actionbase.h
+  src/teamspeak3/ts3serverquery.h
 )
 
 set(qheaders
@@ -32,6 +33,7 @@ set(sources
   src/servercliententity.cpp
   src/serverchannelentity.cpp
   src/action/actionbase.cpp
+  src/teamspeak3/ts3serverquery.cpp
 )
 
 set(qresources
