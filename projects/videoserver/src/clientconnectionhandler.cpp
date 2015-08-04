@@ -198,7 +198,5 @@ void ClientConnectionHandler::onNewIncomingRequest(QCorFrameRefPtr frame)
   req.frame = frame;
   req.action = action;
   req.params = params;
-
-  actionHandler->_req = req;
-  actionHandler->run();
+  actionHandler->run(req);
 }

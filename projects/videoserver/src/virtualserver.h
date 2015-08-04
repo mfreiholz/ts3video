@@ -108,6 +108,9 @@ public:
 
   // Network usages (COR, Media, WebSocket, ...)
   NetworkUsageEntity _networkUsageMediaSocket;
+
+  // TS3 Bridge stuff.
+  class TS3ServerBridge* _ts3bridge;
 };
 
 #endif

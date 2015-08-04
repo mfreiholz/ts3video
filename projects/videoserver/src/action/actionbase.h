@@ -26,19 +26,19 @@ public:
 class ActionBase
 {
 public:
-  ActionData _req;
+  //ActionData _req;
 
   enum Flag { NoFlag, RequiresAuthentication, RequiresAdminPrivileges };
   Q_DECLARE_FLAGS(Flags, Flag)
 
   virtual QString name() const = 0;
   virtual Flags flags() const { return RequiresAuthentication; }
-  virtual void run() = 0;
+  virtual void run(const ActionData &req) = 0;
 
-  void sendDefaultOkResponse(const QJsonObject &params = QJsonObject());
-  void sendDefaultErrorResponse(int statusCode = 500, const QString &message = QString());
-  void broadcastNotificationToSiblingClients(const QString &action, const QJsonObject &params);
-  void disconnectFromHostDelayed();
+  void sendDefaultOkResponse(const ActionData &req, const QJsonObject &params = QJsonObject());
+  void sendDefaultErrorResponse(const ActionData &req, int statusCode = 500, const QString &message = QString());
+  void broadcastNotificationToSiblingClients(const ActionData &req, const QString &action, const QJsonObject &params);
+  void disconnectFromHostDelayed(const ActionData &req);
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(ActionBase::Flags)
 
@@ -51,7 +51,7 @@ class AuthenticationAction : public ActionBase
 public:
   QString name() const { return QString("auth"); }
   Flags flags() const { return NoFlag; }
-  void run();
+  void run(const ActionData &req);
 };
 
 ///////////////////////////////////////////////////////////////////////
@@ -60,7 +60,7 @@ class GoodbyeAction : public ActionBase
 {
 public:
   QString name() const { return QString("goodbye"); }
-  void run();
+  void run(const ActionData &req);
 };
 
 ///////////////////////////////////////////////////////////////////////
@@ -69,7 +69,7 @@ class HeartbeatAction : public ActionBase
 {
 public:
   QString name() const { return QString("heartbeat"); }
-  void run();
+  void run(const ActionData &req);
 };
 
 ///////////////////////////////////////////////////////////////////////
@@ -78,7 +78,7 @@ class EnableVideoAction : public ActionBase
 {
 public:
   QString name() const { return QString("clientenablevideo"); }
-  void run();
+  void run(const ActionData &req);
 };
 
 ///////////////////////////////////////////////////////////////////////
@@ -87,7 +87,7 @@ class DisableVideoAction : public ActionBase
 {
 public:
   QString name() const { return QString("clientdisablevideo"); }
-  void run();
+  void run(const ActionData &req);
 };
 
 ///////////////////////////////////////////////////////////////////////
@@ -96,7 +96,7 @@ class EnableRemoteVideoAction : public ActionBase
 {
 public:
   QString name() const { return QString("enableremotevideo"); }
-  void run();
+  void run(const ActionData &req);
 };
 
 ///////////////////////////////////////////////////////////////////////
@@ -105,7 +105,7 @@ class DisableRemoteVideoAction : public ActionBase
 {
 public:
   QString name() const { return QString("disableremotevideo"); }
-  void run();
+  void run(const ActionData &req);
 };
 
 ///////////////////////////////////////////////////////////////////////
@@ -114,7 +114,7 @@ class JoinChannelAction : public ActionBase
 {
 public:
   QString name() const { return QString("joinchannel"); }
-  void run();
+  void run(const ActionData &req);
 };
 
 ///////////////////////////////////////////////////////////////////////
@@ -123,7 +123,7 @@ class JoinChannel2Action : public JoinChannelAction
 {
 public:
   QString name() const { return QString("joinchannelbyidentifier"); }
-  void run() { JoinChannelAction::run(); }
+  void run(const ActionData &req) { JoinChannelAction::run(req); }
 };
 
 ///////////////////////////////////////////////////////////////////////
@@ -132,7 +132,7 @@ class LeaveChannelAction : public ActionBase
 {
 public:
   QString name() const { return QString("leavechannel"); }
-  void run();
+  void run(const ActionData &req);
 };
 
 ///////////////////////////////////////////////////////////////////////
@@ -141,7 +141,7 @@ class AdminAuthAction : public ActionBase
 {
 public:
   QString name() const { return QString("adminauth"); }
-  void run();
+  void run(const ActionData &req);
 };
 
 ///////////////////////////////////////////////////////////////////////
@@ -151,7 +151,7 @@ class KickClientAction : public ActionBase
 public:
   QString name() const { return QString("kickclient"); }
   Flags flags() const { return RequiresAuthentication | RequiresAdminPrivileges; }
-  void run();
+  void run(const ActionData &req);
 };
 
 ///////////////////////////////////////////////////////////////////////

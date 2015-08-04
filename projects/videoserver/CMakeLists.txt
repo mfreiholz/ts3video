@@ -22,6 +22,8 @@ set(qheaders
   src/clientconnectionhandler.h
   src/mediasockethandler.h
   src/websocketstatusserver.h
+  src/teamspeak3/ts3serverbridge.h
+  src/teamspeak3/ts3serverqueryconnection.h
 )
 
 set(sources
@@ -34,6 +36,8 @@ set(sources
   src/serverchannelentity.cpp
   src/action/actionbase.cpp
   src/teamspeak3/ts3serverquery.cpp
+  src/teamspeak3/ts3serverbridge.cpp
+  src/teamspeak3/ts3serverqueryconnection.cpp
 )
 
 set(qresources

@@ -12,10 +12,6 @@ class TS3ServerQueryResponse;
 /*
   TS3ServerQuery helps with the Teamspeak Server Query console.
 
-  Command Order:
-    login ...
-    select virtualserver ...
-
   \note This class may throw Exceptions.
 */
 class TS3ServerQuery
