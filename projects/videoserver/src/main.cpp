@@ -138,7 +138,7 @@ public:
 
     // TEST CODE HERE
     QtConcurrent::run([]() {
-      TS3Util::test1();
+      TS3Util::isClientConnected(QHostAddress::LocalHost, 10011, "serveradmin", "TiHxQDHt", 9987, "0.0.0.0");
     });
 
     return 0;

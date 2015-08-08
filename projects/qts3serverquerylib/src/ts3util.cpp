@@ -10,16 +10,12 @@
 namespace TS3Util
 {
 
-bool isClientConnected(const QString& ip)
+bool isClientConnected(const QHostAddress& address, quint16 port, const QString& loginName, const QString& loginPassword, quint16 vsPort, const QString& clientIp)
 {
-  // login serveradmin TiHxQDHt
-  // use 9987
-  // clientlist -ip
-  // quit
   TS3ServerQuery sq;
 
   QTcpSocket socket;
-  socket.connectToHost(QHostAddress::LocalHost, 10011);
+  socket.connectToHost(address, port);
   if (!socket.waitForConnected())
   {
     printf("can not connect to query-console.");
@@ -43,8 +39,8 @@ bool isClientConnected(const QString& ip)
 
   // Login.
   params.clear();
-  params << qMakePair(QString("client_login_name"), QStringList() << "serveradmin");
-  params << qMakePair(QString("client_login_password"), QStringList() << "TiHxQDHt");
+  params << qMakePair(QString("client_login_name"), QStringList() << loginName);
+  params << qMakePair(QString("client_login_password"), QStringList() << loginPassword);
   options.clear();
   cmd = sq.createCommand("login", params, options);
   socket.write(cmd.toUtf8());
@@ -53,13 +49,14 @@ bool isClientConnected(const QString& ip)
   err = sq.parseError(line);
   if (err.first != 0)
   {
+    printf("login failed (%s)", line.toStdString().c_str());
     socket.close();
     return false;
   }
 
   // Select virtual server.
   params.clear();
-  params << qMakePair(QString("port"), QStringList() << "9987");
+  params << qMakePair(QString("port"), QStringList() << QString::number(vsPort));
   options.clear();
   cmd = sq.createCommand("use", params, options);
   socket.write(cmd.toUtf8());
@@ -98,19 +95,33 @@ bool isClientConnected(const QString& ip)
 
   socket.disconnectFromHost();
   if (socket.state() != QTcpSocket::UnconnectedState)
-    socket.waitForDisconnected();
-
-  printf("\nClient list:\n");
-  foreach (auto item, clientList)
   {
-    printf("\tClient (db-id=%s; type=%s; ip=%s)\n",
-           item.value("client_database_id").toStdString().c_str(),
-           item.value("client_type").toStdString().c_str(),
-           item.value("connection_client_ip").toStdString().c_str()
-          );
+    socket.waitForDisconnected();
   }
 
-  return true;
+  // Find client by IP.
+  int found = -1;
+  for (auto i = 0; i < clientList.size(); ++i)
+  {
+    const auto& item = clientList[i];
+    const auto type = item.value("client_type").toInt();
+    const auto ip = item.value("connection_client_ip");
+    if (type == 0 && ip.compare(clientIp) == 0)
+    {
+      found = i;
+      break;
+    }
+  }
+  return (found >= 0);
+  //printf("\nClient list:\n");
+  //foreach (auto item, clientList)
+  //{
+  //  printf("\tClient (db-id=%s; type=%s; ip=%s)\n",
+  //         item.value("client_database_id").toStdString().c_str(),
+  //         item.value("client_type").toStdString().c_str(),
+  //         item.value("connection_client_ip").toStdString().c_str()
+  //        );
+  //}
 }
 
 
