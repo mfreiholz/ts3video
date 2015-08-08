@@ -2,9 +2,12 @@
 #include <QSettings>
 #include <QFile>
 #include <QDir>
+#include <QtConcurrent>
 
 #include "humblelogging/api.h"
 #include "humblesrvproc/api.h"
+
+#include "ts3util.h"
 
 #include "ts3video.h"
 #include "elws.h"
@@ -132,6 +135,12 @@ public:
     {
       return 1;
     }
+
+    // TEST CODE HERE
+    QtConcurrent::run([]() {
+      TS3Util::test1();
+    });
+
     return 0;
   }
 };
@@ -252,7 +261,7 @@ int _main(int argc, char* argv[])
   return a.exec();
 }
 
-#include "teamspeak3/ts3serverquery.h"
+/*#include "teamspeak3/ts3serverquery.h"
 int test_serverquery(int argc, char* argv[])
 {
   (void)argc;
@@ -284,7 +293,7 @@ int test_serverquery(int argc, char* argv[])
   res = sq.parse(QByteArray("client_unique_identifier=gZ7K[...]GIik="));
 
   return 0;
-}
+}*/
 
 int main(int argc, char* argv[])
 {

@@ -2,16 +2,14 @@
 #define TS3SERVERQUERYCLIENTCONNECTION_H
 
 #include <QTcpSocket>
-#include <QFuture>
+#include <QHostAddress>
 
 /*
   Command order:
     login <loginname> <password>
     use port=<serverport>
     clientupdate nickname=<new-nickname>
-
-    ...
-
+    <...>
     quit
 */
 class TS3ServerQueryClientConnection : public QObject
@@ -23,18 +21,30 @@ public:
   void init();
 
 private slots:
-  void onStateChanged(QAbstractSocket::SocketState state);
-  void onReadyRead();
+  void onSocketConnected();
+  void onSocketDisconnected();
+  void onSocketError(QAbstractSocket::SocketError err);
+  void onSocketReadyRead();
 
 private:
-  QString _serverAddress;
-  qint16 _serverPort;
-  qint16 _serverQueryPort;
-  QString _loginName;
-  QString _loginPassword;
+  QHostAddress _address;
+  qint16 _port;
+
+  qint16 _virtualServerPort;
+  QString _clientLoginName;
+  QString _clientLoginPassword;
 
   QTcpSocket* _socket;
   QByteArray _buffer;
+};
+
+
+class TS3ServerQueryCommand : public QObject
+{
+  Q_OBJECT
+
+public:
+  TS3ServerQueryCommand(QObject *parent);
 };
 
 #endif

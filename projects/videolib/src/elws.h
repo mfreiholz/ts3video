@@ -6,6 +6,7 @@
 #include <QRect>
 #include <QPoint>
 #include <QHostAddress>
+#include <QTcpSocket>
 
 class ELWS
 {

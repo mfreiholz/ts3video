@@ -7,13 +7,13 @@ find_package(Qt5Core REQUIRED)
 find_package(Qt5Network REQUIRED)
 find_package(Qt5Gui REQUIRED) # Due to videolib
 find_package(Qt5WebSockets REQUIRED)
+find_package(Qt5Concurrent REQUIRED)
 
 # Sources
 set(headers
   src/servercliententity.h
   src/serverchannelentity.h
   src/action/actionbase.h
-  src/teamspeak3/ts3serverquery.h
 )
 
 set(qheaders
@@ -22,8 +22,6 @@ set(qheaders
   src/clientconnectionhandler.h
   src/mediasockethandler.h
   src/websocketstatusserver.h
-  src/teamspeak3/ts3serverbridge.h
-  src/teamspeak3/ts3serverqueryconnection.h
 )
 
 set(sources
@@ -35,9 +33,6 @@ set(sources
   src/servercliententity.cpp
   src/serverchannelentity.cpp
   src/action/actionbase.cpp
-  src/teamspeak3/ts3serverquery.cpp
-  src/teamspeak3/ts3serverbridge.cpp
-  src/teamspeak3/ts3serverqueryconnection.cpp
 )
 
 set(qresources
@@ -63,6 +58,7 @@ include_directories(
   ../humblesrvproc/include
   ../medlib/include
   ../qcorlib/src
+  ../qts3serverquerylib/src
   ../videolib/src
 )
 
@@ -88,10 +84,12 @@ target_link_libraries(
   Qt5::Network
   Qt5::Gui
   Qt5::WebSockets
+  Qt5::Concurrent
   ${humblelogging_LIBRARIES}
   humblesrvproc
   medlib
   qcorlib
+  qts3serverquerylib
   videolib
 )
 

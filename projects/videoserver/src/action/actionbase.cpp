@@ -46,7 +46,7 @@ void ActionBase::sendDefaultErrorResponse(const ActionData &req, int statusCode,
   req.connection->sendResponse(res);
 }
 
-void ActionBase::broadcastNotificationToSiblingClients(const ActionData &req, const QString &action, const QJsonObject &params)
+void ActionBase::broadcastNotificationToSiblingClients(const ActionData &req, const QString &action, const QJsonObject & params)
 {
   QCorFrame f;
   f.setData(JsonProtocolHelper::createJsonRequest(action, params));

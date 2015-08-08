@@ -13,8 +13,6 @@
 
 #include "clientconnectionhandler.h"
 
-#include "teamspeak3/ts3serverbridge.h"
-
 HUMBLE_LOGGER(HL, "server");
 
 ///////////////////////////////////////////////////////////////////////
@@ -34,7 +32,10 @@ VirtualServer::VirtualServer(const VirtualServerOptions &opts, QObject *parent) 
   _tokens(),
   _wsStatusServer(nullptr)
 {
+  // Basic actions.
   d->registerAction(ActionPtr(new AuthenticationAction()));
+
+  // Authenticated actions (RequiresAuthentication).
   d->registerAction(ActionPtr(new GoodbyeAction()));
   d->registerAction(ActionPtr(new HeartbeatAction()));
   d->registerAction(ActionPtr(new JoinChannelAction()));
@@ -113,14 +114,6 @@ bool VirtualServer::init()
     return false;
   }
   HL_INFO(HL, QString("Listening for web-socket status connections (protocol=TCP; address=%1; port=%2)").arg(wsopts.address.toString()).arg(wsopts.port).toStdString());
-
-  // Init TS3 Server Query Bridge.
-  _ts3bridge = new TS3ServerBridge(this, nullptr);
-  if (!_ts3bridge->init()) {
-    HL_ERROR(HL, QString("Can not connect to TeamSpeak 3 (...)").toStdString());
-    return false;
-  }
-  HL_INFO(HL, QString("Connected to TeamSpeak 3 (...)").toStdString());
 
   return true;
 }

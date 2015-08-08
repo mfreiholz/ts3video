@@ -4,69 +4,6 @@
 #include <exception>
 
 ///////////////////////////////////////////////////////////////////////
-// Parse Functions
-///////////////////////////////////////////////////////////////////////
-
-
-/*
-   @param data
-    e.g.: 'key1=val1 key2=val2'
-
-   @return Entity object:
-    { "key1": "val1", "key2": "val2" }
-*/
-QHash<QString, QString> parseItem(const QString& data)
-{
-  QHash<QString, QString> obj;
-  auto kvs = data.split(' ');
-  foreach (auto& kv, kvs)
-  {
-    auto pos = kv.indexOf('=');
-    if (pos == -1)
-    {
-      obj[kv] = QString();
-    }
-    else if (pos > 0)
-    {
-      if (pos == kv.length() - 1)
-        obj[kv.mid(0, pos)] = QString();
-      else
-        obj[kv.mid(0, pos)] = kv.mid(pos + 1);
-    }
-    else
-    {
-      throw new std::exception("Invalid key=value format");
-    }
-  }
-  return obj;
-}
-
-
-/*
-   Parses data and converts it into an object.
-
-   @param data
-      e.g.: 'key1=val1 key2=val2|key1=val3 key2=val4534'
-
-   @return Array with entity objects:
-    [
-      { "key1": "val1", "key2": "val2" },
-      { "key1": "val3", "key2": "val4534" }
-    ]
-*/
-QList<QHash<QString, QString> > parseItemList(const QString& data)
-{
-  QList<QHash<QString, QString> > l;
-  auto items = data.split('|');
-  foreach (auto itemData, items)
-  {
-    l.append(parseItem(itemData));
-  }
-  return l;
-}
-
-
-///////////////////////////////////////////////////////////////////////
 // TS3ServerQuery
 ///////////////////////////////////////////////////////////////////////
 
@@ -78,7 +15,6 @@ QList<QHash<QString, QString> > parseItemList(const QString& data)
   Docs:
     http://media.teamspeak.com/ts3_literature/TeamSpeak%203%20Server%20Query%20Manual.pdf
 */
-
 TS3ServerQuery::TS3ServerQuery()
 {
   // Normal characters.
@@ -103,7 +39,7 @@ QString TS3ServerQuery::escape(const QString& s) const
   QString enc;
   for (auto i = 0, l = s.size(); i < l; ++i)
   {
-    const auto c = s[i];
+    const auto& c = s[i];
     enc.append(_escapes.value(c, c));
   }
   return enc;
@@ -113,7 +49,6 @@ QString TS3ServerQuery::escape(const QString& s) const
 QString TS3ServerQuery::unescape(const QString& s) const
 {
   // TODO Not yet implemented.
-
   return s;
 }
 
@@ -155,7 +90,66 @@ QString TS3ServerQuery::createCommand(const QString& cmd, const QList<QPair<QStr
     }
   }
 
+  s.append('\n');
+
   return s;
+}
+
+
+QList<QHash<QString, QString> > TS3ServerQuery::parseItemList(const QString& data) const
+{
+  QList<QHash<QString, QString> > l;
+  auto items = data.split('|');
+  foreach (auto itemData, items)
+  {
+    l.append(parseItem(itemData));
+  }
+  return l;
+}
+
+
+QHash<QString, QString> TS3ServerQuery::parseItem(const QString& data) const
+{
+  QHash<QString, QString> obj;
+  auto kvs = data.split(' ');
+  foreach (auto& kv, kvs)
+  {
+    auto pos = kv.indexOf('=');
+    if (pos == -1)
+    {
+      obj[kv] = QString();
+    }
+    else if (pos > 0)
+    {
+      if (pos == kv.length() - 1)
+        obj[kv.mid(0, pos)] = QString();
+      else
+        obj[kv.mid(0, pos)] = kv.mid(pos + 1);
+    }
+    else
+    {
+      throw new std::exception("Invalid key=value format");
+    }
+  }
+  return obj;
+}
+
+
+QPair<int, QString> TS3ServerQuery::parseError(const QString& data) const
+{
+  QRegExp rx("error id=(.*)? msg=(.*)?");
+  if (!rx.exactMatch(data))
+  {
+    throw new std::exception("Invalid format for error line.");
+  }
+  return qMakePair(rx.cap(1).toInt(), rx.cap(2));
+}
+
+
+bool TS3ServerQuery::isErrorLine(const QString& data) const
+{
+  QRegExp rx("error id=(.*)? msg=(.*)?");
+  return rx.exactMatch(data);
 }
 
 
@@ -187,6 +181,18 @@ TS3ServerQueryResponse TS3ServerQuery::parse(const QByteArray& data)
     }
   }
   return res;
+}
+
+
+TS3ServerQueryResponse TS3ServerQuery::parseNext(QIODevice* device) const
+{
+  QTextStream in(device);
+  in.setCodec("UTF-8");
+
+  QString line;
+
+
+  return TS3ServerQueryResponse();
 }
 
 
