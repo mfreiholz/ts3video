@@ -56,6 +56,7 @@ add_definitions(
 include_directories(
   ${humblelogging_INCLUDE_DIRS}
   ../humblesrvproc/include
+  ../qtasync/src
   ../medlib/include
   ../qcorlib/src
   ../qts3serverquerylib/src
@@ -87,6 +88,7 @@ target_link_libraries(
   Qt5::Concurrent
   ${humblelogging_LIBRARIES}
   humblesrvproc
+  qtasync
   medlib
   qcorlib
   qts3serverquerylib

@@ -14,6 +14,8 @@
 
 #include "ts3util.h"
 
+#include "qtasync.h"
+
 #include "ts3video.h"
 #include "elws.h"
 #include "jsonprotocolhelper.h"
@@ -122,7 +124,41 @@ void AuthenticationAction::run(const ActionData &req)
     return;
   }
 
-  // TODO Ask TS3 Server, whether the client is connected.
+  // Ask TS3 Server ASYNC.
+  QtAsync::async(
+    [=]() {
+      if (!req.server->options().ts3Enabled)
+        return true;
+      const auto& o = req.server->options();
+      return TS3Util::isClientConnected(o.ts3Address, o.ts3Port, o.ts3LoginName, o.ts3LoginPassword, o.ts3VirtualServerPort, req.connection->socket()->peerAddress().toString());
+    },
+    [=](QVariant data)
+    {
+      auto b = data.toBool();
+      if (!b)
+      {
+        HL_WARN(HL, QString("Authorization against TeamSpeak 3 failed (ip=%1)").arg(req.connection->socket()->peerAddress().toString()).toStdString());
+        sendDefaultErrorResponse(req, 5, QString("Authentication failed (TeamSpeak 3 Bridge)"));
+        disconnectFromHostDelayed(req);
+        return;
+      }
+
+      // Update self ClientEntity and generate auth-token for media socket.
+      req.session->_authenticated = true;
+      req.session->_clientEntity->name = username;
+      req.session->_clientEntity->videoEnabled = videoEnabled;
+
+      const auto token = QString("%1-%2").arg(req.session->_clientEntity->id).arg(QDateTime::currentDateTimeUtc().toString());
+      req.server->_tokens.insert(token, req.session->_clientEntity->id);
+
+      // Respond.
+      QJsonObject params;
+      params["client"] = req.session->_clientEntity->toQJsonObject();
+      params["authtoken"] = token;
+      sendDefaultOkResponse(req, params);
+    });
+
+  /*// Ask TS3 Server, whether the client is connected.
   if (req.server->options().ts3Enabled)
   {
     auto f = QtConcurrent::run([&req]()
@@ -152,6 +188,7 @@ void AuthenticationAction::run(const ActionData &req)
   params["client"] = req.session->_clientEntity->toQJsonObject();
   params["authtoken"] = token;
   sendDefaultOkResponse(req, params);
+  */
 }
 
 ///////////////////////////////////////////////////////////////////////
