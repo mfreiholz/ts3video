@@ -2,12 +2,9 @@
 #include <QSettings>
 #include <QFile>
 #include <QDir>
-#include <QtConcurrent>
 
 #include "humblelogging/api.h"
 #include "humblesrvproc/api.h"
-
-#include "ts3util.h"
 
 #include "ts3video.h"
 #include "elws.h"
@@ -63,6 +60,15 @@ int updateOptionsByConfig(VirtualServerOptions& opts, const QString& filePath)
   opts.validChannels = opts.validChannels;
   opts.password = conf.value("password", opts.password).toString();
   opts.adminPassword = conf.value("adminpassword", opts.adminPassword).toString();
+  conf.endGroup();
+
+  conf.beginGroup("teamspeak3-serverquery-bridge");
+  opts.ts3Enabled = conf.value("enabled", opts.ts3Enabled).toBool();
+  opts.ts3Address = ELWS::getQHostAddressFromString(conf.value("address", opts.ts3Address.toString()).toString());
+  opts.ts3Port = conf.value("port", opts.port).toUInt();
+  opts.ts3LoginName = conf.value("loginname", opts.ts3LoginName).toString();
+  opts.ts3LoginPassword = conf.value("loginpassword", opts.ts3LoginPassword).toString();
+  opts.ts3VirtualServerPort = conf.value("virtualserverport", opts.ts3VirtualServerPort).toUInt();
   conf.endGroup();
   return 0;
 }
@@ -137,9 +143,9 @@ public:
     }
 
     // TEST CODE HERE
-    QtConcurrent::run([]() {
-      TS3Util::isClientConnected(QHostAddress::LocalHost, 10011, "serveradmin", "TiHxQDHt", 9987, "0.0.0.0");
-    });
+    //QtConcurrent::run([]() {
+    //  TS3Util::isClientConnected(QHostAddress::LocalHost, 10011, "serveradmin", "tztfBmIz", 9987, "0.0.0.0");
+    //});
 
     return 0;
   }

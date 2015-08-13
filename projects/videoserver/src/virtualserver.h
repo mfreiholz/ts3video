@@ -53,6 +53,14 @@ public:
 
   // Administrator password.
   QString adminPassword;
+
+  // TeamSpeak 3 Server Bridge.
+  bool ts3Enabled = false;
+  QHostAddress ts3Address = QHostAddress::LocalHost;
+  quint16 ts3Port = 10011;
+  QString ts3LoginName = "serveradmin";
+  QString ts3LoginPassword;
+  quint16 ts3VirtualServerPort = 9987;
 };
 
 /*!
