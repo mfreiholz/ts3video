@@ -1,4 +1,7 @@
 #include "ts3serverqueryconnection.h"
+#include "humblelogging/api.h"
+
+HUMBLE_LOGGER(HL, "ts3");
 
 TS3ServerQueryClientConnection::TS3ServerQueryClientConnection(QObject* parent) :
   QObject(parent),

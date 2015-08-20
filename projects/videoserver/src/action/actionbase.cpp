@@ -137,7 +137,7 @@ void AuthenticationAction::run(const ActionData &req)
       auto b = data.toBool();
       if (!b)
       {
-        HL_WARN(HL, QString("Authorization against TeamSpeak 3 failed (ip=%1)").arg(req.connection->socket()->peerAddress().toString()).toStdString());
+        HL_WARN(HL, QString("Client authorization against TeamSpeak 3 failed (ip=%1)").arg(req.connection->socket()->peerAddress().toString()).toStdString());
         sendDefaultErrorResponse(req, 5, QString("Authentication failed (TeamSpeak 3 Bridge)"));
         disconnectFromHostDelayed(req);
         return;

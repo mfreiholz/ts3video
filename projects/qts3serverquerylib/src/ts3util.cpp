@@ -1,11 +1,13 @@
 #include "ts3util.h"
 #include "ts3serverquery.h"
 
-#include <cstdio>
-
 #include <QString>
 #include <QHostAddress>
 #include <QTcpSocket>
+
+#include "humblelogging/api.h"
+
+HUMBLE_LOGGER(HL, "ts3");
 
 namespace TS3Util
 {
@@ -18,7 +20,7 @@ bool isClientConnected(const QHostAddress& address, quint16 port, const QString&
   socket.connectToHost(address, port);
   if (!socket.waitForConnected())
   {
-    printf("can not connect to query-console.");
+    HL_ERROR(HL, QString("Can not connect to query-console (address=%1; port=%2)").arg(address.toString()).arg(port).toStdString());
     return false;
   }
 
@@ -26,7 +28,7 @@ bool isClientConnected(const QHostAddress& address, quint16 port, const QString&
   QString line;
   if ((line = socketReadLineSync(socket)) != "TS3")
   {
-    printf("invalid welcome from query-console: %s", line.toStdString().c_str());
+    HL_ERROR(HL, QString("Invalid welcome-message (msg=%1)").arg(line).toStdString());
     socket.close();
     return false;
   }
@@ -49,7 +51,7 @@ bool isClientConnected(const QHostAddress& address, quint16 port, const QString&
   err = sq.parseError(line);
   if (err.first != 0)
   {
-    printf("login failed (%s)", line.toStdString().c_str());
+    HL_ERROR(HL, QString("Login failed (name=%1)").arg(loginName).toStdString());
     socket.close();
     return false;
   }
@@ -65,6 +67,7 @@ bool isClientConnected(const QHostAddress& address, quint16 port, const QString&
   err = sq.parseError(line);
   if (err.first != 0)
   {
+    HL_ERROR(HL, QString("Can not select virtual server (%1)").arg(line).toStdString());
     socket.close();
     return false;
   }
@@ -82,7 +85,7 @@ bool isClientConnected(const QHostAddress& address, quint16 port, const QString&
   err = sq.parseError(line);
   if (err.first != 0)
   {
-    printf("clientlist failed: %s", line.toStdString().c_str());
+    HL_ERROR(HL, QString("Can not retrieve client list (%1)").arg(line).toStdString());
     socket.close();
     return false;
   }

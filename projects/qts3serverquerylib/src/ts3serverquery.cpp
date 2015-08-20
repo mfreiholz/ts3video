@@ -1,7 +1,10 @@
 #include "ts3serverquery.h"
 #include <QTextStream>
 #include <QDebug>
+#include "humblelogging/api.h"
 #include <exception>
+
+HUMBLE_LOGGER(HL, "ts3");
 
 ///////////////////////////////////////////////////////////////////////
 // TS3ServerQuery

@@ -46,11 +46,12 @@ add_definitions(
 include_directories(
   include
   src
+  ${humblelogging_INCLUDE_DIRS}
 )
 
 # Target
 add_library(
-  qts3serverquerylib
+  ${PROJECT_NAME}
   STATIC
   ${headers}
   ${sources}
@@ -61,7 +62,8 @@ add_library(
 )
 
 target_link_libraries(
-  qts3serverquerylib
+  ${PROJECT_NAME}
   Qt5::Core
   Qt5::Network
+  ${humblelogging_LIBRARIES}
 )
