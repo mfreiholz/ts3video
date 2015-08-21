@@ -73,6 +73,20 @@ public:
   TS3ServerQueryResponse parse(const QByteArray& data);
   TS3ServerQueryResponse parseNext(QIODevice* device) const;
 
+  /*
+    Finds the first Item with a matching key<=>value combination.
+
+    @param itemList
+      List of multiple items.
+    @param key
+      The name of the key, e.g.: "cldbid"
+    @param value
+      The value of the ..
+
+    @return The found Item or an empty hash.
+  */
+  static QHash<QString, QString> findItem(const QList<QHash<QString, QString> >& itemList, const QString& key, const QString &value);
+
 private:
   QHash<QChar, QString> _escapes;
 };

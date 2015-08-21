@@ -61,6 +61,7 @@ public:
   QString ts3LoginName = "serveradmin";
   QString ts3LoginPassword;
   quint16 ts3VirtualServerPort = 9987;
+  QList<quint64> ts3AllowedServerGroups;
 };
 
 /*!

@@ -19,6 +19,7 @@ set(qheaders
   src/ts3serverquery.h
   src/ts3serverqueryconnection.h
   src/ts3util.h
+  src/ts3queryconsolesocket.h
 )
 
 set(sources
@@ -26,6 +27,7 @@ set(sources
   src/ts3serverquery.cpp
   src/ts3serverqueryconnection.cpp
   src/ts3util.cpp
+  src/ts3queryconsolesocket.cpp
 )
 
 set (qforms

@@ -13,6 +13,8 @@
 #include "qcorreply.h"
 
 #include "ts3util.h"
+#include "ts3serverquery.h"
+#include "ts3queryconsolesocket.h"
 
 #include "qtasync.h"
 
@@ -29,7 +31,7 @@ HUMBLE_LOGGER(HL, "server.clientconnection.action");
 
 ///////////////////////////////////////////////////////////////////////
 
-void ActionBase::sendDefaultOkResponse(const ActionData &req, const QJsonObject &params)
+void ActionBase::sendDefaultOkResponse(const ActionData& req, const QJsonObject& params)
 {
   // Create simple status=0 response frame.
   QCorFrame res;
@@ -40,7 +42,7 @@ void ActionBase::sendDefaultOkResponse(const ActionData &req, const QJsonObject 
   req.connection->sendResponse(res);
 }
 
-void ActionBase::sendDefaultErrorResponse(const ActionData &req, int statusCode, const QString &message)
+void ActionBase::sendDefaultErrorResponse(const ActionData& req, int statusCode, const QString& message)
 {
   // Create simple status=X response frame.
   QCorFrame res;
@@ -51,29 +53,31 @@ void ActionBase::sendDefaultErrorResponse(const ActionData &req, int statusCode,
   req.connection->sendResponse(res);
 }
 
-void ActionBase::broadcastNotificationToSiblingClients(const ActionData &req, const QString &action, const QJsonObject & params)
+void ActionBase::broadcastNotificationToSiblingClients(const ActionData& req, const QString& action, const QJsonObject& params)
 {
   QCorFrame f;
   f.setData(JsonProtocolHelper::createJsonRequest(action, params));
 
   const auto pids = req.server->getSiblingClientIds(req.session->_clientEntity->id);
-  foreach (const auto pid, pids) {
+  foreach (const auto pid, pids)
+  {
     const auto sess = req.server->_connections.value(pid);
-    if (sess && sess != req.session) {
+    if (sess && sess != req.session)
+    {
       const auto reply = sess->_connection->sendRequest(f);
       QObject::connect(reply, &QCorReply::finished, reply, &QCorReply::deleteLater);
     }
   }
 }
 
-void ActionBase::disconnectFromHostDelayed(const ActionData &req)
+void ActionBase::disconnectFromHostDelayed(const ActionData& req)
 {
   QMetaObject::invokeMethod(req.connection, "disconnectFromHost", Qt::QueuedConnection);
 }
 
 ///////////////////////////////////////////////////////////////////////
 
-void AuthenticationAction::run(const ActionData &req)
+void AuthenticationAction::run(const ActionData& req)
 {
   const auto clientVersion = req.params["version"].toString();
   const auto clientSupportedServerVersions = req.params["supportedversions"].toString();
@@ -81,9 +85,11 @@ void AuthenticationAction::run(const ActionData &req)
   const auto password = req.params["password"].toString();
   const auto videoEnabled = req.params["videoenabled"].toBool();
 
-  if (true) {
+  if (true)
+  {
     // Max number of connections (Connection limit).
-    if (req.server->_connections.size() > req.server->options().connectionLimit) {
+    if (req.server->_connections.size() > req.server->options().connectionLimit)
+    {
       HL_WARN(HL, QString("Server connection limit exceeded. (max=%1)").arg(req.server->options().connectionLimit).toStdString());
       sendDefaultErrorResponse(req, 1, "Server connection limit exceeded.");
       disconnectFromHostDelayed(req);
@@ -91,7 +97,8 @@ void AuthenticationAction::run(const ActionData &req)
     }
 
     // Max bandwidth usage (Bandwidth limit).
-    if (req.server->_networkUsageMediaSocket.bandwidthRead > req.server->options().bandwidthReadLimit || req.server->_networkUsageMediaSocket.bandwidthWrite > req.server->options().bandwidthWriteLimit) {
+    if (req.server->_networkUsageMediaSocket.bandwidthRead > req.server->options().bandwidthReadLimit || req.server->_networkUsageMediaSocket.bandwidthWrite > req.server->options().bandwidthWriteLimit)
+    {
       HL_WARN(HL, QString("Server bandwidth limit exceeded.").toStdString());
       sendDefaultErrorResponse(req, 1, "Server bandwidth limit exceeded.");
       disconnectFromHostDelayed(req);
@@ -100,7 +107,8 @@ void AuthenticationAction::run(const ActionData &req)
 
     // Ban check.
     const auto peerAddress = req.connection->socket()->peerAddress();
-    if (req.server->isBanned(peerAddress)) {
+    if (req.server->isBanned(peerAddress))
+    {
       HL_WARN(HL, QString("Banned user tried to connect. (address=%1)").arg(peerAddress.toString()).toStdString());
       sendDefaultErrorResponse(req, 1, "You are banned from the server.");
       disconnectFromHostDelayed(req);
@@ -109,7 +117,8 @@ void AuthenticationAction::run(const ActionData &req)
   }
 
   // Compare client version against server version compatibility.
-  if (!ELWS::isVersionSupported(clientVersion, IFVS_SOFTWARE_VERSION, clientSupportedServerVersions, IFVS_SERVER_SUPPORTED_CLIENT_VERSIONS)) {
+  if (!ELWS::isVersionSupported(clientVersion, IFVS_SOFTWARE_VERSION, clientSupportedServerVersions, IFVS_SERVER_SUPPORTED_CLIENT_VERSIONS))
+  {
     HL_WARN(HL, QString("Incompatible version (client=%1; server=%2)").arg(clientVersion).arg(IFVS_SOFTWARE_VERSION).toStdString());
     sendDefaultErrorResponse(req, 3, QString("Incompatible version (client=%1; server=%2)").arg(clientVersion).arg(IFVS_SOFTWARE_VERSION));
     disconnectFromHostDelayed(req);
@@ -117,50 +126,115 @@ void AuthenticationAction::run(const ActionData &req)
   }
 
   // Authenticate.
-  if (username.isEmpty() || (!req.server->options().password.isEmpty() && req.server->options().password != password)) {
+  if (username.isEmpty() || (!req.server->options().password.isEmpty() && req.server->options().password != password))
+  {
     HL_WARN(HL, QString("Authentication failed by user (user=%1)").arg(username).toStdString());
     sendDefaultErrorResponse(req, 4, QString("Authentication failed"));
     disconnectFromHostDelayed(req);
     return;
   }
 
-  // Ask TS3 Server ASYNC.
+  // Ask TS3 Server.
+  auto peerAddress = req.connection->socket()->peerAddress();
   QtAsync::async(
-    [=]() {
-      if (!req.server->options().ts3Enabled)
-        return true;
-      const auto& o = req.server->options();
-      return TS3Util::isClientConnected(o.ts3Address, o.ts3Port, o.ts3LoginName, o.ts3LoginPassword, o.ts3VirtualServerPort, req.connection->socket()->peerAddress().toString());
-    },
-    [=](QVariant data)
+    [ = ]()
+  {
+    if (req.server->options().ts3Enabled)
     {
-      auto b = data.toBool();
-      if (!b)
+      const auto& o = req.server->options();
+      //return TS3Util::isClientConnected(o.ts3Address, o.ts3Port, o.ts3LoginName, o.ts3LoginPassword, o.ts3VirtualServerPort, req.connection->socket()->peerAddress().toString());
+
+      TS3QueryConsoleSocketSync qc;
+      if (!qc.start(o.ts3Address, o.ts3Port))
+        return false;
+
+      if (!qc.login(o.ts3LoginName, o.ts3LoginPassword))
+        return false;
+
+      if (!qc.useByPort(o.ts3VirtualServerPort))
+        return false;
+
+      // Get client-list and search for client by it's IP address.
+      // TODO Also verify by client-id provided from TS3VIDEO plugin.
+      const auto clientList = qc.clientList();
+      auto found = -1;
+      for (auto i = 0; i < clientList.size(); ++i)
       {
-        HL_WARN(HL, QString("Client authorization against TeamSpeak 3 failed (ip=%1)").arg(req.connection->socket()->peerAddress().toString()).toStdString());
-        sendDefaultErrorResponse(req, 5, QString("Authentication failed (TeamSpeak 3 Bridge)"));
-        disconnectFromHostDelayed(req);
-        return;
+        const auto& item = clientList[i];
+        //const auto cldbid = item.value("client_database_id").toULongLong();
+        const auto type = item.value("client_type").toInt();
+        const auto ip = item.value("connection_client_ip");
+        if (type == 0 && ip.compare(peerAddress.toString()) == 0)
+        {
+          found = i;
+          break;
+        }
+      }
+      if (found < 0)
+        return false;
+
+      // Check whether the client is in a valid server group.
+      if (!o.ts3AllowedServerGroups.isEmpty())
+      {
+        auto& client = clientList[found];
+        auto clientDbId = client.value("client_database_id").toULongLong();
+        if (clientDbId <= 0)
+          return false;
+
+        auto sgl = qc.serverGroupsByClientId(clientDbId);
+        auto hasGroup = false;
+        for (auto i = 0; i < sgl.size() && !hasGroup; ++i)
+        {
+          auto& sg = sgl[i];
+          for (auto k = 0; k < o.ts3AllowedServerGroups.size() && !hasGroup; ++k)
+          {
+            if (sg.value("sgid").toULongLong() == o.ts3AllowedServerGroups[k])
+            {
+              hasGroup = true;
+              break;
+            }
+          }
+        }
+        if (!hasGroup)
+        {
+          HL_WARN(HL, QString("Client is not a member of a allowed TS3 server group.").toStdString());
+          return false;
+        }
       }
 
-      // Update self ClientEntity and generate auth-token for media socket.
-      req.session->_authenticated = true;
-      req.session->_clientEntity->name = username;
-      req.session->_clientEntity->videoEnabled = videoEnabled;
+      qc.quit();
+    }
+    return true;
+  },
+  [ = ](QVariant data)
+  {
+    auto b = data.toBool();
+    if (!b)
+    {
+      HL_WARN(HL, QString("Client authorization against TeamSpeak 3 failed (ip=%1)").arg(peerAddress.toString()).toStdString());
+      sendDefaultErrorResponse(req, 5, QString("Authentication failed (TeamSpeak 3 Bridge)"));
+      disconnectFromHostDelayed(req);
+      return;
+    }
 
-      const auto token = QString("%1-%2").arg(req.session->_clientEntity->id).arg(QDateTime::currentDateTimeUtc().toString());
-      req.server->_tokens.insert(token, req.session->_clientEntity->id);
+    // Update self ClientEntity and generate auth-token for media socket.
+    req.session->_authenticated = true;
+    req.session->_clientEntity->name = username;
+    req.session->_clientEntity->videoEnabled = videoEnabled;
 
-      // Respond.
-      QJsonObject params;
-      params["client"] = req.session->_clientEntity->toQJsonObject();
-      params["authtoken"] = token;
-      sendDefaultOkResponse(req, params);
-    });
+    const auto token = QString("%1-%2").arg(req.session->_clientEntity->id).arg(QDateTime::currentDateTimeUtc().toString());
+    req.server->_tokens.insert(token, req.session->_clientEntity->id);
+
+    // Respond.
+    QJsonObject params;
+    params["client"] = req.session->_clientEntity->toQJsonObject();
+    params["authtoken"] = token;
+    sendDefaultOkResponse(req, params);
+  });
 
   /*// Ask TS3 Server, whether the client is connected.
-  if (req.server->options().ts3Enabled)
-  {
+    if (req.server->options().ts3Enabled)
+    {
     auto f = QtConcurrent::run([&req]()
     {
       const auto& o = req.server->options();
@@ -173,27 +247,27 @@ void AuthenticationAction::run(const ActionData &req)
       disconnectFromHostDelayed(req);
       return;
     }
-  }
+    }
 
-  // Update self ClientEntity and generate auth-token for media socket.
-  req.session->_authenticated = true;
-  req.session->_clientEntity->name = username;
-  req.session->_clientEntity->videoEnabled = videoEnabled;
+    // Update self ClientEntity and generate auth-token for media socket.
+    req.session->_authenticated = true;
+    req.session->_clientEntity->name = username;
+    req.session->_clientEntity->videoEnabled = videoEnabled;
 
-  const auto token = QString("%1-%2").arg(req.session->_clientEntity->id).arg(QDateTime::currentDateTimeUtc().toString());
-  req.server->_tokens.insert(token, req.session->_clientEntity->id);
+    const auto token = QString("%1-%2").arg(req.session->_clientEntity->id).arg(QDateTime::currentDateTimeUtc().toString());
+    req.server->_tokens.insert(token, req.session->_clientEntity->id);
 
-  // Respond.
-  QJsonObject params;
-  params["client"] = req.session->_clientEntity->toQJsonObject();
-  params["authtoken"] = token;
-  sendDefaultOkResponse(req, params);
+    // Respond.
+    QJsonObject params;
+    params["client"] = req.session->_clientEntity->toQJsonObject();
+    params["authtoken"] = token;
+    sendDefaultOkResponse(req, params);
   */
 }
 
 ///////////////////////////////////////////////////////////////////////
 
-void GoodbyeAction::run(const ActionData &req)
+void GoodbyeAction::run(const ActionData& req)
 {
   sendDefaultOkResponse(req);
   disconnectFromHostDelayed(req);
@@ -201,7 +275,7 @@ void GoodbyeAction::run(const ActionData &req)
 
 ///////////////////////////////////////////////////////////////////////
 
-void HeartbeatAction::run(const ActionData &req)
+void HeartbeatAction::run(const ActionData& req)
 {
   req.session->_connectionTimeoutTimer.stop();
   req.session->_connectionTimeoutTimer.start(20000);
@@ -211,7 +285,7 @@ void HeartbeatAction::run(const ActionData &req)
 
 ///////////////////////////////////////////////////////////////////////
 
-void EnableVideoAction::run(const ActionData &req)
+void EnableVideoAction::run(const ActionData& req)
 {
   req.session->_clientEntity->videoEnabled = true;
   req.server->updateMediaRecipients();
@@ -226,7 +300,7 @@ void EnableVideoAction::run(const ActionData &req)
 
 ///////////////////////////////////////////////////////////////////////
 
-void DisableVideoAction::run(const ActionData &req)
+void DisableVideoAction::run(const ActionData& req)
 {
   req.session->_clientEntity->videoEnabled = false;
   req.server->updateMediaRecipients();
@@ -241,12 +315,13 @@ void DisableVideoAction::run(const ActionData &req)
 
 ///////////////////////////////////////////////////////////////////////
 
-void EnableRemoteVideoAction::run(const ActionData &req)
+void EnableRemoteVideoAction::run(const ActionData& req)
 {
   const auto clientId = req.params["clientid"].toInt();
 
-  auto &set = req.session->_clientEntity->remoteVideoExcludes;
-  if (set.remove(clientId)) {
+  auto& set = req.session->_clientEntity->remoteVideoExcludes;
+  if (set.remove(clientId))
+  {
     req.server->updateMediaRecipients();
   }
 
@@ -255,12 +330,13 @@ void EnableRemoteVideoAction::run(const ActionData &req)
 
 ///////////////////////////////////////////////////////////////////////
 
-void DisableRemoteVideoAction::run(const ActionData &req)
+void DisableRemoteVideoAction::run(const ActionData& req)
 {
   const auto clientId = req.params["clientid"].toInt();
 
-  auto &set = req.session->_clientEntity->remoteVideoExcludes;
-  if (!set.contains(clientId)) {
+  auto& set = req.session->_clientEntity->remoteVideoExcludes;
+  if (!set.contains(clientId))
+  {
     set.insert(clientId);
     req.server->updateMediaRecipients();
   }
@@ -270,20 +346,23 @@ void DisableRemoteVideoAction::run(const ActionData &req)
 
 ///////////////////////////////////////////////////////////////////////
 
-void JoinChannelAction::run(const ActionData &req)
+void JoinChannelAction::run(const ActionData& req)
 {
   int channelId = 0;
-  if (req.action == "joinchannel") {
+  if (req.action == "joinchannel")
+  {
     channelId = req.params["channelid"].toInt();
   }
-  else if (req.action == "joinchannelbyidentifier") {
+  else if (req.action == "joinchannelbyidentifier")
+  {
     auto ident = req.params["identifier"].toString();
     channelId = qHash(ident);
   }
   const auto password = req.params["password"].toString();
 
   // Validate parameters.
-  if (channelId == 0 || (!req.server->options().validChannels.isEmpty() && !req.server->options().validChannels.contains(channelId))) {
+  if (channelId == 0 || (!req.server->options().validChannels.isEmpty() && !req.server->options().validChannels.contains(channelId)))
+  {
     sendDefaultErrorResponse(req, 1, QString("Invalid channel id (channelid=%1)").arg(channelId));
     return;
   }
@@ -292,13 +371,15 @@ void JoinChannelAction::run(const ActionData &req)
   auto channelEntity = req.server->_channels.value(channelId);
 
   // Verify password.
-  if (channelEntity && !channelEntity->password.isEmpty() && channelEntity->password.compare(password) != 0) {
+  if (channelEntity && !channelEntity->password.isEmpty() && channelEntity->password.compare(password) != 0)
+  {
     sendDefaultErrorResponse(req, 2, QString("Wrong password (channelid=%1)").arg(channelId));
     return;
   }
 
   // Create channel, if it doesn't exists yet.
-  if (!channelEntity) {
+  if (!channelEntity)
+  {
     channelEntity = new ServerChannelEntity();
     channelEntity->id = channelId;
     channelEntity->isPasswordProtected = !password.isEmpty();
@@ -315,9 +396,11 @@ void JoinChannelAction::run(const ActionData &req)
   QJsonObject params;
   params["channel"] = channelEntity->toQJsonObject();
   QJsonArray paramsParticipants;
-  foreach(auto clientId, participants) {
+  foreach (auto clientId, participants)
+  {
     auto client = req.server->_clients.value(clientId);
-    if (client) {
+    if (client)
+    {
       paramsParticipants.append(client->toQJsonObject());
     }
   }
@@ -333,13 +416,14 @@ void JoinChannelAction::run(const ActionData &req)
 
 ///////////////////////////////////////////////////////////////////////
 
-void LeaveChannelAction::run(const ActionData &req)
+void LeaveChannelAction::run(const ActionData& req)
 {
   const auto channelId = req.params["channelid"].toInt();
 
   // Find channel.
   auto channelEntity = req.server->_channels.value(channelId);
-  if (!channelEntity) {
+  if (!channelEntity)
+  {
     sendDefaultErrorResponse(req, 1, QString("Invalid channel id (channelid=%1)").arg(channelId));
     return;
   }
@@ -359,13 +443,14 @@ void LeaveChannelAction::run(const ActionData &req)
 
 ///////////////////////////////////////////////////////////////////////
 
-void AdminAuthAction::run(const ActionData &req)
+void AdminAuthAction::run(const ActionData& req)
 {
   const auto password = req.params["password"].toString();
 
   // Verify password.
   const auto adminPassword = req.server->options().adminPassword;
-  if (password.isEmpty() || adminPassword.isEmpty() || password.compare(adminPassword) != 0) {
+  if (password.isEmpty() || adminPassword.isEmpty() || password.compare(adminPassword) != 0)
+  {
     QCorFrame res;
     res.initResponse(*req.frame.data());
     res.setData(JsonProtocolHelper::createJsonResponseError(1, "Wrong password"));
@@ -380,14 +465,15 @@ void AdminAuthAction::run(const ActionData &req)
 
 ///////////////////////////////////////////////////////////////////////
 
-void KickClientAction::run(const ActionData &req)
+void KickClientAction::run(const ActionData& req)
 {
   const auto clientId = req.params["clientid"].toInt();
   const auto ban = req.params["ban"].toBool();
 
   // Find client session.
   auto sess = req.server->_connections.value(clientId);
-  if (!sess) {
+  if (!sess)
+  {
     QCorFrame res;
     res.initResponse(*req.frame.data());
     res.setData(JsonProtocolHelper::createJsonResponseError(1, QString("Unknown client")));
@@ -406,7 +492,8 @@ void KickClientAction::run(const ActionData &req)
   QMetaObject::invokeMethod(sess->_connection, "disconnectFromHost", Qt::QueuedConnection);
 
   // Update ban-list.
-  if (ban) {
+  if (ban)
+  {
     req.server->ban(QHostAddress(req.session->_clientEntity->mediaAddress));
   }
 

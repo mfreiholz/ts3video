@@ -199,6 +199,21 @@ TS3ServerQueryResponse TS3ServerQuery::parseNext(QIODevice* device) const
 }
 
 
+QHash<QString, QString> TS3ServerQuery::findItem(const QList<QHash<QString, QString> >& itemList, const QString& key, const QString& value)
+{
+  QHash<QString, QString> ret;
+  foreach (const auto& i, itemList)
+  {
+    if (i.contains(key) && i[key] == value)
+    {
+      ret = i;
+      break;
+    }
+  }
+  return ret;
+}
+
+
 void TS3ServerQueryResponse::debugOut()
 {
   for (auto i = 0; i < items.size(); ++i)
