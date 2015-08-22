@@ -40,4 +40,21 @@
 typedef int vs_clientid_t;
 typedef int vs_channelid_t;
 
+///////////////////////////////////////////////////////////////////////
+// Status Codes
+///////////////////////////////////////////////////////////////////////
+
+#define CREATE_SERVER_STATUS(NAME, VALUE, DESCR) const static int IFVS_STATUS_##NAME = VALUE
+
+CREATE_SERVER_STATUS(OK, 0, "");
+CREATE_SERVER_STATUS(INTERNAL_ERROR, 500, "Internal error.");
+CREATE_SERVER_STATUS(INCOMPATIBLE_VERSION, 505, "");
+CREATE_SERVER_STATUS(CONNECTION_LIMIT_REACHED, 429, "");
+CREATE_SERVER_STATUS(BANDWIDTH_LIMIT_REACHED, 509, "");
+CREATE_SERVER_STATUS(UNAUTHORIZED, 401, "");
+CREATE_SERVER_STATUS(FORBIDDEN, 403, "");
+CREATE_SERVER_STATUS(AUTHENTICATION_TIMEOUT, 419, "");
+CREATE_SERVER_STATUS(INVALID_PARAMETERS, 701, "");
+CREATE_SERVER_STATUS(BANNED, 702, "");
+
 #endif

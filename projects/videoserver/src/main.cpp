@@ -70,7 +70,7 @@ int updateOptionsByConfig(VirtualServerOptions& opts, const QString& filePath)
   opts.ts3LoginPassword = conf.value("loginpassword", opts.ts3LoginPassword).toString();
   opts.ts3VirtualServerPort = conf.value("virtualserverport", opts.ts3VirtualServerPort).toUInt();
 
-  auto sgl = conf.value("allowedservergroups", "").toStringList();
+  auto sgl = conf.value("allowedservergroups").toStringList();
   for (auto i = 0; i < sgl.size(); ++i)
     opts.ts3AllowedServerGroups.append(sgl[i].toULongLong());
 

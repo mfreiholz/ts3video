@@ -36,7 +36,7 @@ public:
   virtual void run(const ActionData &req) = 0;
 
   void sendDefaultOkResponse(const ActionData &req, const QJsonObject &params = QJsonObject());
-  void sendDefaultErrorResponse(const ActionData &req, int statusCode = 500, const QString &message = QString());
+  void sendDefaultErrorResponse(const ActionData &req, int statusCode, const QString &message);
   void broadcastNotificationToSiblingClients(const ActionData &req, const QString &action, const QJsonObject &params);
   void disconnectFromHostDelayed(const ActionData &req);
 };

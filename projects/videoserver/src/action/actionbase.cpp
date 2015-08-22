@@ -91,7 +91,7 @@ void AuthenticationAction::run(const ActionData& req)
     if (req.server->_connections.size() > req.server->options().connectionLimit)
     {
       HL_WARN(HL, QString("Server connection limit exceeded. (max=%1)").arg(req.server->options().connectionLimit).toStdString());
-      sendDefaultErrorResponse(req, 1, "Server connection limit exceeded.");
+      sendDefaultErrorResponse(req, IFVS_STATUS_CONNECTION_LIMIT_REACHED, "Server connection limit exceeded.");
       disconnectFromHostDelayed(req);
       return;
     }
@@ -100,7 +100,7 @@ void AuthenticationAction::run(const ActionData& req)
     if (req.server->_networkUsageMediaSocket.bandwidthRead > req.server->options().bandwidthReadLimit || req.server->_networkUsageMediaSocket.bandwidthWrite > req.server->options().bandwidthWriteLimit)
     {
       HL_WARN(HL, QString("Server bandwidth limit exceeded.").toStdString());
-      sendDefaultErrorResponse(req, 1, "Server bandwidth limit exceeded.");
+      sendDefaultErrorResponse(req, IFVS_STATUS_BANDWIDTH_LIMIT_REACHED, "Server bandwidth limit exceeded.");
       disconnectFromHostDelayed(req);
       return;
     }
@@ -110,7 +110,7 @@ void AuthenticationAction::run(const ActionData& req)
     if (req.server->isBanned(peerAddress))
     {
       HL_WARN(HL, QString("Banned user tried to connect. (address=%1)").arg(peerAddress.toString()).toStdString());
-      sendDefaultErrorResponse(req, 1, "You are banned from the server.");
+      sendDefaultErrorResponse(req, IFVS_STATUS_BANNED, "You are banned from the server.");
       disconnectFromHostDelayed(req);
       return;
     }
@@ -120,7 +120,7 @@ void AuthenticationAction::run(const ActionData& req)
   if (!ELWS::isVersionSupported(clientVersion, IFVS_SOFTWARE_VERSION, clientSupportedServerVersions, IFVS_SERVER_SUPPORTED_CLIENT_VERSIONS))
   {
     HL_WARN(HL, QString("Incompatible version (client=%1; server=%2)").arg(clientVersion).arg(IFVS_SOFTWARE_VERSION).toStdString());
-    sendDefaultErrorResponse(req, 3, QString("Incompatible version (client=%1; server=%2)").arg(clientVersion).arg(IFVS_SOFTWARE_VERSION));
+    sendDefaultErrorResponse(req, IFVS_STATUS_INCOMPATIBLE_VERSION, QString("Incompatible version (client=%1; server=%2)").arg(clientVersion).arg(IFVS_SOFTWARE_VERSION));
     disconnectFromHostDelayed(req);
     return;
   }
@@ -129,21 +129,20 @@ void AuthenticationAction::run(const ActionData& req)
   if (username.isEmpty() || (!req.server->options().password.isEmpty() && req.server->options().password != password))
   {
     HL_WARN(HL, QString("Authentication failed by user (user=%1)").arg(username).toStdString());
-    sendDefaultErrorResponse(req, 4, QString("Authentication failed"));
+    sendDefaultErrorResponse(req, IFVS_STATUS_UNAUTHORIZED, "Authentication failed by user (empty username or wrong password?)");
     disconnectFromHostDelayed(req);
     return;
   }
 
   // Ask TS3 Server.
-  auto peerAddress = req.connection->socket()->peerAddress();
+  const auto peerAddress = req.connection->socket()->peerAddress();
+  const auto ts3ClientDbId = req.session->_clientEntity->customData.value("ts3.cldbid").toULongLong();
   QtAsync::async(
     [ = ]()
   {
-    if (req.server->options().ts3Enabled)
+    const auto& o = req.server->options();
+    if (o.ts3Enabled)
     {
-      const auto& o = req.server->options();
-      //return TS3Util::isClientConnected(o.ts3Address, o.ts3Port, o.ts3LoginName, o.ts3LoginPassword, o.ts3VirtualServerPort, req.connection->socket()->peerAddress().toString());
-
       TS3QueryConsoleSocketSync qc;
       if (!qc.start(o.ts3Address, o.ts3Port))
         return false;
@@ -155,19 +154,43 @@ void AuthenticationAction::run(const ActionData& req)
         return false;
 
       // Get client-list and search for client by it's IP address.
-      // TODO Also verify by client-id provided from TS3VIDEO plugin.
-      const auto clientList = qc.clientList();
+      // ATTENTION: It might be possible that there are multiple clients from the same IP address.
+      //            So it would be better to check for the "client_database_id" aswell. But older TS3VIDEO versions,
+      //            doesn't provide this information.
+      auto clientList = qc.clientList();
       auto found = -1;
-      for (auto i = 0; i < clientList.size(); ++i)
+      if (ts3ClientDbId > 0)
       {
-        const auto& item = clientList[i];
-        //const auto cldbid = item.value("client_database_id").toULongLong();
-        const auto type = item.value("client_type").toInt();
-        const auto ip = item.value("connection_client_ip");
-        if (type == 0 && ip.compare(peerAddress.toString()) == 0)
+        for (auto i = 0; i < clientList.size(); ++i)
         {
-          found = i;
-          break;
+          auto& c = clientList[i];
+          auto dbid = c.value("client_database_id").toULongLong();
+          auto type = c.value("client_type").toInt();
+          auto ip = c.value("connection_client_ip");
+          if (dbid == ts3ClientDbId
+              && type == 0
+              && ip.compare(peerAddress.toString()) == 0)
+          {
+            found = i;
+            break;
+          }
+        }
+      }
+      else
+      {
+        // DEPRECATED: The bad way (missing check for database ID)
+        //             But required for older client versions (<= 0.3)
+        for (auto i = 0; i < clientList.size(); ++i)
+        {
+          auto& c = clientList[i];
+          auto type = c.value("client_type").toInt();
+          auto ip = c.value("connection_client_ip");
+          if (type == 0
+              && ip.compare(peerAddress.toString()) == 0)
+          {
+            found = i;
+            break;
+          }
         }
       }
       if (found < 0)
@@ -197,7 +220,7 @@ void AuthenticationAction::run(const ActionData& req)
         }
         if (!hasGroup)
         {
-          HL_WARN(HL, QString("Client is not a member of a allowed TS3 server group.").toStdString());
+          HL_WARN(HL, QString("Client is not a member of a allowed TS3 server group (cldbid=%1)").arg(clientDbId).toStdString());
           return false;
         }
       }
@@ -212,7 +235,7 @@ void AuthenticationAction::run(const ActionData& req)
     if (!b)
     {
       HL_WARN(HL, QString("Client authorization against TeamSpeak 3 failed (ip=%1)").arg(peerAddress.toString()).toStdString());
-      sendDefaultErrorResponse(req, 5, QString("Authentication failed (TeamSpeak 3 Bridge)"));
+      sendDefaultErrorResponse(req, IFVS_STATUS_UNAUTHORIZED, "Authorization against TeamSpeak 3 Server failed. Looks like you do not have the required permission (TS3 Server Group)");
       disconnectFromHostDelayed(req);
       return;
     }
@@ -363,7 +386,7 @@ void JoinChannelAction::run(const ActionData& req)
   // Validate parameters.
   if (channelId == 0 || (!req.server->options().validChannels.isEmpty() && !req.server->options().validChannels.contains(channelId)))
   {
-    sendDefaultErrorResponse(req, 1, QString("Invalid channel id (channelid=%1)").arg(channelId));
+    sendDefaultErrorResponse(req, IFVS_STATUS_INVALID_PARAMETERS, QString("Invalid channel id (channelid=%1)").arg(channelId));
     return;
   }
 
@@ -373,7 +396,7 @@ void JoinChannelAction::run(const ActionData& req)
   // Verify password.
   if (channelEntity && !channelEntity->password.isEmpty() && channelEntity->password.compare(password) != 0)
   {
-    sendDefaultErrorResponse(req, 2, QString("Wrong password (channelid=%1)").arg(channelId));
+    sendDefaultErrorResponse(req, IFVS_STATUS_UNAUTHORIZED, QString("Wrong channel password (channelid=%1)").arg(channelId));
     return;
   }
 
@@ -424,7 +447,7 @@ void LeaveChannelAction::run(const ActionData& req)
   auto channelEntity = req.server->_channels.value(channelId);
   if (!channelEntity)
   {
-    sendDefaultErrorResponse(req, 1, QString("Invalid channel id (channelid=%1)").arg(channelId));
+    sendDefaultErrorResponse(req, IFVS_STATUS_INVALID_PARAMETERS, QString("Invalid channel id (channelid=%1)").arg(channelId));
     return;
   }
 
