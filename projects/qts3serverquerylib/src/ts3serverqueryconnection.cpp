@@ -33,6 +33,7 @@ void TS3ServerQueryClientConnection::onSocketDisconnected()
 
 void TS3ServerQueryClientConnection::onSocketError(QAbstractSocket::SocketError err)
 {
+  (void) err;
 }
 
 void TS3ServerQueryClientConnection::onSocketReadyRead()

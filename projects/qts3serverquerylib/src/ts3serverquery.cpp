@@ -59,7 +59,7 @@ QString TS3ServerQuery::unescape(const QString& s) const
 QString TS3ServerQuery::createCommand(const QString& cmd, const QList<QPair<QString, QStringList> >& parameters, const QStringList& options) const
 {
   if (cmd.isEmpty())
-    throw new std::exception("Empty command value not allowed.");
+    return QString();//throw new std::exception("Empty command value not allowed.");
 
   QString s;
   s.append(cmd);
@@ -131,7 +131,7 @@ QHash<QString, QString> TS3ServerQuery::parseItem(const QString& data) const
     }
     else
     {
-      throw new std::exception("Invalid key=value format");
+      //throw new std::exception("Invalid key=value format");
     }
   }
   return obj;
@@ -143,7 +143,7 @@ QPair<int, QString> TS3ServerQuery::parseError(const QString& data) const
   QRegExp rx("error id=(.*)? msg=(.*)?");
   if (!rx.exactMatch(data))
   {
-    throw new std::exception("Invalid format for error line.");
+    return QPair<int, QString>();//throw new std::exception("Invalid format for error line.");
   }
   return qMakePair(rx.cap(1).toInt(), rx.cap(2));
 }
@@ -164,7 +164,7 @@ TS3ServerQueryResponse TS3ServerQuery::parse(const QByteArray& data)
   bool isEvent = false;
   if (isEvent)
   {
-    throw new std::exception("Event from server: Not yet implemented!");
+    return res;//throw new std::exception("Event from server: Not yet implemented!");
   }
   else
   {
