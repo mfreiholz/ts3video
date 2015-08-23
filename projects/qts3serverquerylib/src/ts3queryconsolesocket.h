@@ -12,33 +12,34 @@
 
 class TS3QueryConsoleSocketSync : public QTcpSocket
 {
-  Q_OBJECT
+	Q_OBJECT
 
 public:
-  TS3QueryConsoleSocketSync(QObject* parent = 0);
-  virtual ~TS3QueryConsoleSocketSync();
+	TS3QueryConsoleSocketSync(QObject* parent = 0);
+	virtual ~TS3QueryConsoleSocketSync();
 
-  bool start(const QHostAddress& address, quint16 port);
-  bool quit();
+	bool start(const QHostAddress& address, quint16 port);
+	bool quit();
 
-  bool login(const QString& loginName, const QString& loginPassword);
-  bool useByPort(quint16 port);
-  QList<QHash<QString, QString> > clientList();
-  QList<QHash<QString, QString> > serverGroupsByClientId(quint64 clientDbId);
+	bool login(const QString& loginName, const QString& loginPassword);
+	bool useByPort(quint16 port);
+	bool updateNickname(const QString& nickname);
+	QList<QHash<QString, QString> > clientList();
+	QList<QHash<QString, QString> > serverGroupsByClientId(quint64 clientDbId);
 
 protected:
-  QString socketReadLineSync();
+	QString socketReadLineSync();
 };
 
 
 class TS3QueryConsoleCommandData
 {
 public:
-  QString cmd;
-  QList<QPair<QString, QStringList> > params;
-  QStringList options;
-  QPair<int, QString> err;
-  QList<QHash<QString, QString> > itemList;
+	QString cmd;
+	QList<QPair<QString, QStringList> > params;
+	QStringList options;
+	QPair<int, QString> err;
+	QList<QHash<QString, QString> > itemList;
 };
 
 
