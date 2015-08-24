@@ -129,7 +129,7 @@ void ClientAppLogic::onConnected()
 {
   // Authenticate.
   showProgress(tr("Authenticating..."));
-  auto reply = d->ts3vc.auth(d->opts.username, d->opts.serverPassword, !d->opts.cameraDeviceId.isEmpty());
+  auto reply = d->ts3vc.auth(d->opts.username, d->opts.serverPassword, !d->opts.cameraDeviceId.isEmpty(), d->opts.authParams);
   QObject::connect(reply, &QCorReply::finished, [this, reply] ()
   {
     HL_DEBUG(HL, QString("Auth answer: %1").arg(QString(reply->frame()->data())).toStdString());

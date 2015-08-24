@@ -429,6 +429,10 @@ int runUnregisterUriHandler(QApplication &a)
   By using the "--uri" parameter its possible to define those parameters with a URI.
   e.g.:
     ts3video://127.0.0.1:6000/?username=mfreiholz&password=secret1234&channelid=42&...
+
+  Some sample commands
+  --------------------
+  --server-address 127.0.0.1 --server-port 13370 --username TEST --channel-identifier default --ts3-client-database-id 1
 */
 int runClientAppLogic(QApplication &a)
 {
@@ -447,6 +451,7 @@ int runClientAppLogic(QApplication &a)
   opts.channelId = ELWS::getArgsValue("--channel-id", opts.channelId).toLongLong();
   opts.channelIdentifier = ELWS::getArgsValue("--channel-identifier", opts.channelIdentifier).toString();
   opts.channelPassword = ELWS::getArgsValue("--channel-password", opts.channelPassword).toString();
+  opts.authParams.insert("ts3_client_database_id", ELWS::getArgsValue("--ts3-client-database-id", 0).toULongLong());
 
   // Load options from URI.
   QUrl url(ELWS::getArgsValue("--uri").toString(), QUrl::StrictMode);

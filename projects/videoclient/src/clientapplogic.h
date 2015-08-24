@@ -4,6 +4,7 @@
 #include <QScopedPointer>
 #include <QString>
 #include <QHash>
+#include <QVariant>
 #include <QHostAddress>
 #include <QMainWindow>
 
@@ -48,6 +49,9 @@ public:
 
     // The camera's device ID to stream video.
     QString cameraDeviceId = QString();
+
+    // Custom parameters for authentication.
+    QHash<QString, QVariant> authParams;
   };
 
   /*!

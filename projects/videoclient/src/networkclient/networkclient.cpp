@@ -186,7 +186,7 @@ void NetworkClient::connectToHost(const QHostAddress &address, qint16 port)
   d->corSocket->connectTo(address, port);
 }
 
-QCorReply *NetworkClient::auth(const QString &name, const QString &password, bool videoEnabled)
+QCorReply *NetworkClient::auth(const QString &name, const QString &password, bool videoEnabled, const QHash<QString, QVariant> &custom)
 {
   REQUEST_PRECHECK
 
@@ -206,6 +206,13 @@ QCorReply *NetworkClient::auth(const QString &name, const QString &password, boo
   params["username"] = name;
   params["password"] = password;
   params["videoenabled"] = videoEnabled; ///< TODO REMOVE
+
+  // Add custom parameters.
+  for (auto i = custom.constBegin(); i != custom.constEnd(); ++i)
+  {
+    if (!params.contains(i.key()))
+      params[i.key()] = QJsonValue::fromVariant(i.value());
+  }
 
   QCorFrame req;
   req.setData(JsonProtocolHelper::createJsonRequest("auth", params));

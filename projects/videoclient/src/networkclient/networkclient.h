@@ -2,6 +2,8 @@
 #define NetworkClient_H
 
 #include <QObject>
+#include <QHash>
+#include <QVariant>
 #include <QScopedPointer>
 #include <QAbstractSocket>
 
@@ -57,7 +59,7 @@ public:
     \see connected()
     \return QCorReply* Ownership goes over to caller who needs to delete it with "deleteLater()".
   */
-  QCorReply *auth(const QString &name, const QString &password, bool videoEnabled = true);
+  QCorReply *auth(const QString &name, const QString &password, bool videoEnabled = true, const QHash<QString, QVariant> &custom = QHash<QString, QVariant>());
 
   /*!
     Sends a goodbye to the server, which tells the server to drop this connection.
