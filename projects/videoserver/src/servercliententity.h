@@ -7,11 +7,11 @@
 class ServerClientEntity : public ClientEntity
 {
 public:
-  ServerClientEntity();
-  ServerClientEntity(const ServerClientEntity& other);
+	ServerClientEntity();
+	ServerClientEntity(const ServerClientEntity& other);
 
 public:
-  QSet<int> remoteVideoExcludes; ///< "This" client, doesn't want to receive the video of clients in this list.
+	QSet<int> remoteVideoExcludes; ///< "This" client, doesn't want to receive the video of clients in this list.
 };
 
 #endif

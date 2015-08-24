@@ -14,125 +14,136 @@ HUMBLE_LOGGER(HL, "server.mediasocket");
 
 ///////////////////////////////////////////////////////////////////////
 
-MediaSocketHandler::MediaSocketHandler(quint16 port, QObject *parent) :
-  QObject(parent),
-  _port(port),
-  _socket(this),
-  _networkUsage(),
-  _networkUsageHelper(_networkUsage)
+MediaSocketHandler::MediaSocketHandler(quint16 port, QObject* parent) :
+	QObject(parent),
+	_port(port),
+	_socket(this),
+	_networkUsage(),
+	_networkUsageHelper(_networkUsage)
 {
-  connect(&_socket, &QUdpSocket::readyRead, this, &MediaSocketHandler::onReadyRead);
+	connect(&_socket, &QUdpSocket::readyRead, this, &MediaSocketHandler::onReadyRead);
 
-  // Update bandwidth status every X seconds.
-  auto bandwidthTimer = new QTimer(this);
-  bandwidthTimer->setInterval(1500);
-  bandwidthTimer->start();
-  QObject::connect(bandwidthTimer, &QTimer::timeout, [this]() {
-    _networkUsageHelper.recalculate();
-    emit networkUsageUpdated(_networkUsage);
-  });
+	// Update bandwidth status every X seconds.
+	auto bandwidthTimer = new QTimer(this);
+	bandwidthTimer->setInterval(1500);
+	bandwidthTimer->start();
+	QObject::connect(bandwidthTimer, &QTimer::timeout, [this]()
+	{
+		_networkUsageHelper.recalculate();
+		emit networkUsageUpdated(_networkUsage);
+	});
 }
 
 MediaSocketHandler::~MediaSocketHandler()
 {
-  _socket.close();
+	_socket.close();
 }
 
 bool MediaSocketHandler::init()
 {
-  if (!_socket.bind(QHostAddress::Any, _port, QAbstractSocket::DontShareAddress)) {
-    HL_ERROR(HL, QString("Can not bind to UDP port (port=%1)").arg(_port).toStdString());
-    return false;
-  }
-  return true;
+	if (!_socket.bind(QHostAddress::Any, _port, QAbstractSocket::DontShareAddress))
+	{
+		HL_ERROR(HL, QString("Can not bind to UDP port (port=%1)").arg(_port).toStdString());
+		return false;
+	}
+	return true;
 }
 
-void MediaSocketHandler::setRecipients(const MediaRecipients &rec)
+void MediaSocketHandler::setRecipients(const MediaRecipients& rec)
 {
-  _recipients = rec;
+	_recipients = rec;
 
-  //printf("\n");
-  //foreach(const auto &sender, rec.id2sender.values()) {
-  //  printf("FROM %s\n", sender.id.toStdString().c_str());
-  //  foreach(const auto &receiver, sender.receivers) {
-  //    printf("\tTO %s:%d\n", receiver.address.toString().toStdString().c_str(), receiver.port);
-  //  }
-  //}
-  //printf("\n");
+	//printf("\n");
+	//foreach(const auto &sender, rec.id2sender.values()) {
+	//  printf("FROM %s\n", sender.id.toStdString().c_str());
+	//  foreach(const auto &receiver, sender.receivers) {
+	//    printf("\tTO %s:%d\n", receiver.address.toString().toStdString().c_str(), receiver.port);
+	//  }
+	//}
+	//printf("\n");
 }
 
 void MediaSocketHandler::onReadyRead()
 {
-  while (_socket.hasPendingDatagrams()) {
-    // Read datagram.
-    QByteArray data;
-    QHostAddress senderAddress;
-    quint16 senderPort;
-    data.resize(_socket.pendingDatagramSize());
-    _socket.readDatagram(data.data(), data.size(), &senderAddress, &senderPort);
-    _networkUsage.bytesRead += data.size();
+	while (_socket.hasPendingDatagrams())
+	{
+		// Read datagram.
+		QByteArray data;
+		QHostAddress senderAddress;
+		quint16 senderPort;
+		data.resize(_socket.pendingDatagramSize());
+		_socket.readDatagram(data.data(), data.size(), &senderAddress, &senderPort);
+		_networkUsage.bytesRead += data.size();
 
-    // Check magic.
-    QDataStream in(data);
-    in.setByteOrder(QDataStream::BigEndian);
-    UDP::Datagram dg;
-    in >> dg.magic;
-    if (dg.magic != UDP::Datagram::MAGIC) {
-      HL_WARN(HL, QString("Received invalid datagram (size=%1; data=%2)").arg(data.size()).arg(QString(data)).toStdString());
-      continue;
-    }
+		// Check magic.
+		QDataStream in(data);
+		in.setByteOrder(QDataStream::BigEndian);
+		UDP::Datagram dg;
+		in >> dg.magic;
+		if (dg.magic != UDP::Datagram::MAGIC)
+		{
+			HL_WARN(HL, QString("Received invalid datagram (size=%1; data=%2)").arg(data.size()).arg(QString(data)).toStdString());
+			continue;
+		}
 
-    // Handle by type.
-    in >> dg.type;
-    switch (dg.type) {
+		// Handle by type.
+		in >> dg.type;
+		switch (dg.type)
+		{
 
-      // Authentication
-      case UDP::AuthDatagram::TYPE: {
-        UDP::AuthDatagram dgauth;
-        in >> dgauth.size;
-        dgauth.data = new UDP::dg_byte_t[dgauth.size];
-        auto read = in.readRawData((char*)dgauth.data, dgauth.size);
-        if (read != dgauth.size) {
-          // Error.
-          continue;
-        }
-        auto token = QString::fromUtf8((char*)dgauth.data, dgauth.size);
-        emit tokenAuthentication(token, senderAddress, senderPort);
-        break;
-      }
+		// Authentication
+		case UDP::AuthDatagram::TYPE:
+		{
+			UDP::AuthDatagram dgauth;
+			in >> dgauth.size;
+			dgauth.data = new UDP::dg_byte_t[dgauth.size];
+			auto read = in.readRawData((char*)dgauth.data, dgauth.size);
+			if (read != dgauth.size)
+			{
+				// Error.
+				continue;
+			}
+			auto token = QString::fromUtf8((char*)dgauth.data, dgauth.size);
+			emit tokenAuthentication(token, senderAddress, senderPort);
+			break;
+		}
 
-      // Video data.
-      case UDP::VideoFrameDatagram::TYPE: {
-        const auto senderId = MediaSenderEntity::createID(senderAddress, senderPort);
-        const auto &senderEntity = _recipients.id2sender[senderId];
-        for (auto i = 0; i < senderEntity.receivers.size(); ++i) {
-          const auto &receiverEntity = senderEntity.receivers[i];
-          _socket.writeDatagram(data, receiverEntity.address, receiverEntity.port);
-          _networkUsage.bytesWritten += data.size();
-        }
-        break;
-      }
+		// Video data.
+		case UDP::VideoFrameDatagram::TYPE:
+		{
+			const auto senderId = MediaSenderEntity::createID(senderAddress, senderPort);
+			const auto& senderEntity = _recipients.id2sender[senderId];
+			for (auto i = 0; i < senderEntity.receivers.size(); ++i)
+			{
+				const auto& receiverEntity = senderEntity.receivers[i];
+				_socket.writeDatagram(data, receiverEntity.address, receiverEntity.port);
+				_networkUsage.bytesWritten += data.size();
+			}
+			break;
+		}
 
-      // Video recovery.
-      case UDP::VideoFrameRecoveryDatagram::TYPE: {
-        HL_TRACE(HL, QString("Process video frame recovery datagram.").toStdString());
+		// Video recovery.
+		case UDP::VideoFrameRecoveryDatagram::TYPE:
+		{
+			HL_TRACE(HL, QString("Process video frame recovery datagram.").toStdString());
 
-        UDP::VideoFrameRecoveryDatagram dgrec;
-        in >> dgrec.sender;
-        //in >> dgrec.frameId;
-        //in >> dgrec.index;
+			UDP::VideoFrameRecoveryDatagram dgrec;
+			in >> dgrec.sender;
+			//in >> dgrec.frameId;
+			//in >> dgrec.index;
 
-        // Send to specific receiver only.
-        const auto &receiver = _recipients.clientid2receiver[dgrec.sender];
-        if (receiver.address.isNull() || receiver.port == 0) {
-          HL_WARN(HL, QString("Unknown receiver for recovery frame (client-id=%1)").arg(dgrec.sender).toStdString());
-          continue;
-        }
-        _socket.writeDatagram(data, receiver.address, receiver.port);
-        _networkUsage.bytesWritten += data.size();
-        break;
-      }
-    }
+			// Send to specific receiver only.
+			const auto& receiver = _recipients.clientid2receiver[dgrec.sender];
+			if (receiver.address.isNull() || receiver.port == 0)
+			{
+				HL_WARN(HL, QString("Unknown receiver for recovery frame (client-id=%1)").arg(dgrec.sender).toStdString());
+				continue;
+			}
+			_socket.writeDatagram(data, receiver.address, receiver.port);
+			_networkUsage.bytesWritten += data.size();
+			break;
+		}
+		}
 
-  } // while (datagrams)
+	} // while (datagrams)
 }

@@ -23,229 +23,245 @@
 
 HUMBLE_LOGGER(HL, "server.status");
 
-WebSocketStatusServer::WebSocketStatusServer(const WebSocketStatusServer::Options &opts, VirtualServer *server) :
-  QObject(server),
-  _opts(opts),
-  _server(server),
-  _wsServer(new QWebSocketServer(QString(), QWebSocketServer::NonSecureMode, this)),
-  _maxUpdateRate(2000)
+WebSocketStatusServer::WebSocketStatusServer(const WebSocketStatusServer::Options& opts, VirtualServer* server) :
+	QObject(server),
+	_opts(opts),
+	_server(server),
+	_wsServer(new QWebSocketServer(QString(), QWebSocketServer::NonSecureMode, this)),
+	_maxUpdateRate(2000)
 {
-  QObject::connect(_wsServer, &QWebSocketServer::newConnection, this, &WebSocketStatusServer::onNewConnection);
-  QObject::connect(_wsServer, &QWebSocketServer::closed, this, &WebSocketStatusServer::closed);
+	QObject::connect(_wsServer, &QWebSocketServer::newConnection, this, &WebSocketStatusServer::onNewConnection);
+	QObject::connect(_wsServer, &QWebSocketServer::closed, this, &WebSocketStatusServer::closed);
 }
 
 WebSocketStatusServer::~WebSocketStatusServer()
 {
-  _wsServer->close();
-  qDeleteAll(_sockets.begin(), _sockets.end());
+	_wsServer->close();
+	qDeleteAll(_sockets.begin(), _sockets.end());
 }
 
 bool WebSocketStatusServer::init()
 {
-  if (!_wsServer->listen(_opts.address, _opts.port)) {
-    return false;
-  }
-  _lastUpdateTime.start();
+	if (!_wsServer->listen(_opts.address, _opts.port))
+	{
+		return false;
+	}
+	_lastUpdateTime.start();
 
-  // DEV Run a timer to send periodical updates as long as we can't do it by events from server-object.
-  //auto broadcastTimer = new QTimer(this);
-  //broadcastTimer->setInterval(250);
-  //broadcastTimer->start();
-  //QObject::connect(broadcastTimer, &QTimer::timeout, this, &WebSocketStatusServer::broadcastAllInfo);
+	// DEV Run a timer to send periodical updates as long as we can't do it by events from server-object.
+	//auto broadcastTimer = new QTimer(this);
+	//broadcastTimer->setInterval(250);
+	//broadcastTimer->start();
+	//QObject::connect(broadcastTimer, &QTimer::timeout, this, &WebSocketStatusServer::broadcastAllInfo);
 
-  return true;
+	return true;
 }
 
 void WebSocketStatusServer::broadcastAllInfo()
 {
-  if (_lastUpdateTime.elapsed() <= _maxUpdateRate)
-    return;
-  _lastUpdateTime.restart();
+	if (_lastUpdateTime.elapsed() <= _maxUpdateRate)
+		return;
+	_lastUpdateTime.restart();
 
-  auto root = getAllInfo().toObject();
-  auto rootData = QJsonDocument(root).toJson(QJsonDocument::Compact);
-  foreach(QWebSocket *socket, _sockets) {
-    socket->sendTextMessage(rootData);
-  }
+	auto root = getAllInfo().toObject();
+	auto rootData = QJsonDocument(root).toJson(QJsonDocument::Compact);
+	foreach (QWebSocket* socket, _sockets)
+	{
+		socket->sendTextMessage(rootData);
+	}
 }
 
 void WebSocketStatusServer::onNewConnection()
 {
-  while (_wsServer->hasPendingConnections()) {
-    auto socket = _wsServer->nextPendingConnection();
-    QObject::connect(socket, &QWebSocket::textMessageReceived, this, &WebSocketStatusServer::onTextMessage);
-    QObject::connect(socket, &QWebSocket::disconnected, this, &WebSocketStatusServer::onDisconnected);
-    _sockets.append(socket);
+	while (_wsServer->hasPendingConnections())
+	{
+		auto socket = _wsServer->nextPendingConnection();
+		QObject::connect(socket, &QWebSocket::textMessageReceived, this, &WebSocketStatusServer::onTextMessage);
+		QObject::connect(socket, &QWebSocket::disconnected, this, &WebSocketStatusServer::onDisconnected);
+		_sockets.append(socket);
 
-    // Send all-info to new connected client.
-    socket->sendTextMessage(QJsonDocument(getAllInfo().toObject()).toJson(QJsonDocument::Compact));
-  }
+		// Send all-info to new connected client.
+		socket->sendTextMessage(QJsonDocument(getAllInfo().toObject()).toJson(QJsonDocument::Compact));
+	}
 }
 
-void WebSocketStatusServer::onTextMessage(const QString &message)
+void WebSocketStatusServer::onTextMessage(const QString& message)
 {
-  HL_TRACE(HL, QString("Incoming text message (message=%1)").arg(message).toStdString());
-  auto socket = qobject_cast<QWebSocket*>(sender());
+	HL_TRACE(HL, QString("Incoming text message (message=%1)").arg(message).toStdString());
+	auto socket = qobject_cast<QWebSocket*>(sender());
 
-  QJsonParseError jsonError;
-  auto jsonDoc = QJsonDocument::fromJson(message.toUtf8(), &jsonError);
-  auto json = jsonDoc.object();
-  if (jsonDoc.isNull() || jsonError.error != QJsonParseError::NoError) {
-    return;
-  }
+	QJsonParseError jsonError;
+	auto jsonDoc = QJsonDocument::fromJson(message.toUtf8(), &jsonError);
+	auto json = jsonDoc.object();
+	if (jsonDoc.isNull() || jsonError.error != QJsonParseError::NoError)
+	{
+		return;
+	}
 
-  // Handle different types request.
-  auto action = json.value("action");
-  if (action == "appinfo") {
-    QJsonObject root;
-    root["action"] = action;
-    root["data"] = getAppInfo();
-    socket->sendTextMessage(QJsonDocument(root).toJson(QJsonDocument::Compact));
-  }
-  else if (action == "memoryusageinfo") {
-    QJsonObject root;
-    root["action"] = action;
-    root["data"] = getMemoryUsageInfo();
-    socket->sendTextMessage(QJsonDocument(root).toJson(QJsonDocument::Compact));
-  }
-  else if (action == "bandwidthusageinfo") {
-    QJsonObject root;
-    root["action"] = action;
-    root["data"] = getBandwidthInfo();
-    socket->sendTextMessage(QJsonDocument(root).toJson(QJsonDocument::Compact));
-  }
-  else if (action == "clients") {
-    QJsonObject root;
-    root["action"] = action;
-    root.insert("data", getClientsInfo());
-    socket->sendTextMessage(QJsonDocument(root).toJson(QJsonDocument::Compact));
-  }
-  else if (action == "channels") {
-    QJsonObject root;
-    root["action"] = action;
-    root["data"] = getChannelsInfo();
-    socket->sendTextMessage(QJsonDocument(root).toJson(QJsonDocument::Compact));
-  }
-  else if (action == "wsclients") {
-    QJsonObject root;
-    root["action"] = action;
-    root["data"] = getWebSocketsInfo();
-    socket->sendTextMessage(QJsonDocument(root).toJson(QJsonDocument::Compact));
-  }
+	// Handle different types request.
+	auto action = json.value("action");
+	if (action == "appinfo")
+	{
+		QJsonObject root;
+		root["action"] = action;
+		root["data"] = getAppInfo();
+		socket->sendTextMessage(QJsonDocument(root).toJson(QJsonDocument::Compact));
+	}
+	else if (action == "memoryusageinfo")
+	{
+		QJsonObject root;
+		root["action"] = action;
+		root["data"] = getMemoryUsageInfo();
+		socket->sendTextMessage(QJsonDocument(root).toJson(QJsonDocument::Compact));
+	}
+	else if (action == "bandwidthusageinfo")
+	{
+		QJsonObject root;
+		root["action"] = action;
+		root["data"] = getBandwidthInfo();
+		socket->sendTextMessage(QJsonDocument(root).toJson(QJsonDocument::Compact));
+	}
+	else if (action == "clients")
+	{
+		QJsonObject root;
+		root["action"] = action;
+		root.insert("data", getClientsInfo());
+		socket->sendTextMessage(QJsonDocument(root).toJson(QJsonDocument::Compact));
+	}
+	else if (action == "channels")
+	{
+		QJsonObject root;
+		root["action"] = action;
+		root["data"] = getChannelsInfo();
+		socket->sendTextMessage(QJsonDocument(root).toJson(QJsonDocument::Compact));
+	}
+	else if (action == "wsclients")
+	{
+		QJsonObject root;
+		root["action"] = action;
+		root["data"] = getWebSocketsInfo();
+		socket->sendTextMessage(QJsonDocument(root).toJson(QJsonDocument::Compact));
+	}
 }
 
 void WebSocketStatusServer::onDisconnected()
 {
-  auto socket = qobject_cast<QWebSocket*>(sender());
-  if (socket) {
-    _sockets.removeAll(socket);
-    socket->deleteLater();
-  }
+	auto socket = qobject_cast<QWebSocket*>(sender());
+	if (socket)
+	{
+		_sockets.removeAll(socket);
+		socket->deleteLater();
+	}
 }
 
 QJsonValue WebSocketStatusServer::getAllInfo() const
 {
-  QJsonObject root;
-  root.insert("info", getAppInfo());
-  root.insert("memory", getMemoryUsageInfo());
-  root.insert("bandwidth", getBandwidthInfo());
-  root.insert("clients", getClientsInfo());
-  root.insert("channels", getChannelsInfo());
-  root.insert("websockets", getWebSocketsInfo());
-  return root;
+	QJsonObject root;
+	root.insert("info", getAppInfo());
+	root.insert("memory", getMemoryUsageInfo());
+	root.insert("bandwidth", getBandwidthInfo());
+	root.insert("clients", getClientsInfo());
+	root.insert("channels", getChannelsInfo());
+	root.insert("websockets", getWebSocketsInfo());
+	return root;
 }
 
 QJsonValue WebSocketStatusServer::getAppInfo() const
 {
-  QJsonObject jsInfo;
-  jsInfo.insert("appname", qApp->applicationName());
-  jsInfo.insert("appversion", qApp->applicationVersion());
-  jsInfo.insert("appdirectory", qApp->applicationDirPath());
-  jsInfo.insert("appfilepath", qApp->applicationFilePath());
-  jsInfo.insert("apppid", qApp->applicationPid());
-  jsInfo.insert("organizationname", qApp->organizationName());
-  jsInfo.insert("organizationdomain", qApp->organizationDomain());
-  return jsInfo;
+	QJsonObject jsInfo;
+	jsInfo.insert("appname", qApp->applicationName());
+	jsInfo.insert("appversion", qApp->applicationVersion());
+	jsInfo.insert("appdirectory", qApp->applicationDirPath());
+	jsInfo.insert("appfilepath", qApp->applicationFilePath());
+	jsInfo.insert("apppid", qApp->applicationPid());
+	jsInfo.insert("organizationname", qApp->organizationName());
+	jsInfo.insert("organizationdomain", qApp->organizationDomain());
+	return jsInfo;
 }
 
 QJsonValue WebSocketStatusServer::getMemoryUsageInfo() const
 {
-  QJsonObject jsMemory;
+	QJsonObject jsMemory;
 #ifdef Q_OS_WIN
-  PROCESS_MEMORY_COUNTERS_EX pmc;
-  GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS*)&pmc, sizeof(pmc));
-  jsMemory.insert("pagefaultcount", (qint64)pmc.PageFaultCount);
-  jsMemory.insert("peakworkingsetsize", (qint64)pmc.PeakWorkingSetSize);
-  jsMemory.insert("workingsetsize", (qint64)pmc.WorkingSetSize);
-  jsMemory.insert("quotapeakpagedpoolusage", (qint64)pmc.QuotaPeakPagedPoolUsage);
-  jsMemory.insert("quotapagedpoolusage", (qint64)pmc.QuotaPagedPoolUsage);
-  jsMemory.insert("quotapeaknonpagedpoolusage", (qint64)pmc.QuotaPeakNonPagedPoolUsage);
-  jsMemory.insert("quotanonpagedpoolusage", (qint64)pmc.QuotaNonPagedPoolUsage);
-  jsMemory.insert("pagefileusage", (qint64)pmc.PagefileUsage);
-  jsMemory.insert("peakpagefileusage", (qint64)pmc.PeakPagefileUsage);
-  jsMemory.insert("privateusage", (qint64)pmc.PrivateUsage);
+	PROCESS_MEMORY_COUNTERS_EX pmc;
+	GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS*)&pmc, sizeof(pmc));
+	jsMemory.insert("pagefaultcount", (qint64)pmc.PageFaultCount);
+	jsMemory.insert("peakworkingsetsize", (qint64)pmc.PeakWorkingSetSize);
+	jsMemory.insert("workingsetsize", (qint64)pmc.WorkingSetSize);
+	jsMemory.insert("quotapeakpagedpoolusage", (qint64)pmc.QuotaPeakPagedPoolUsage);
+	jsMemory.insert("quotapagedpoolusage", (qint64)pmc.QuotaPagedPoolUsage);
+	jsMemory.insert("quotapeaknonpagedpoolusage", (qint64)pmc.QuotaPeakNonPagedPoolUsage);
+	jsMemory.insert("quotanonpagedpoolusage", (qint64)pmc.QuotaNonPagedPoolUsage);
+	jsMemory.insert("pagefileusage", (qint64)pmc.PagefileUsage);
+	jsMemory.insert("peakpagefileusage", (qint64)pmc.PeakPagefileUsage);
+	jsMemory.insert("privateusage", (qint64)pmc.PrivateUsage);
 #else
-  jsMemory.insert("pagefaultcount", (qint64)-1);
-  jsMemory.insert("peakworkingsetsize", (qint64)-1);
-  jsMemory.insert("workingsetsize", (qint64)-1);
-  jsMemory.insert("quotapeakpagedpoolusage", (qint64)-1);
-  jsMemory.insert("quotapagedpoolusage", (qint64)-1);
-  jsMemory.insert("quotapeaknonpagedpoolusage", (qint64)-1);
-  jsMemory.insert("quotanonpagedpoolusage", (qint64)-1);
-  jsMemory.insert("pagefileusage", (qint64)-1);
-  jsMemory.insert("peakpagefileusage", (qint64)-1);
-  jsMemory.insert("privateusage", (qint64)-1);
+	jsMemory.insert("pagefaultcount", (qint64) - 1);
+	jsMemory.insert("peakworkingsetsize", (qint64) - 1);
+	jsMemory.insert("workingsetsize", (qint64) - 1);
+	jsMemory.insert("quotapeakpagedpoolusage", (qint64) - 1);
+	jsMemory.insert("quotapagedpoolusage", (qint64) - 1);
+	jsMemory.insert("quotapeaknonpagedpoolusage", (qint64) - 1);
+	jsMemory.insert("quotanonpagedpoolusage", (qint64) - 1);
+	jsMemory.insert("pagefileusage", (qint64) - 1);
+	jsMemory.insert("peakpagefileusage", (qint64) - 1);
+	jsMemory.insert("privateusage", (qint64) - 1);
 #endif
-  return jsMemory;
+	return jsMemory;
 }
 
 QJsonValue WebSocketStatusServer::getBandwidthInfo() const
 {
-  return _server->_networkUsageMediaSocket.toQJsonObject();
+	return _server->_networkUsageMediaSocket.toQJsonObject();
 }
 
 QJsonValue WebSocketStatusServer::getClientsInfo() const
 {
-  QJsonArray clients;
-  foreach(auto clientEntity, _server->_clients) {
-    auto jsClient = clientEntity->toQJsonObject();
-    auto conn = _server->_connections.value(clientEntity->id);
-    if (conn) {
-      QJsonObject jsConn;
-      jsConn.insert("address", "n/a");
-      jsConn.insert("port", 0);
-      jsConn.insert("mediaaddress", clientEntity->mediaAddress);
-      jsConn.insert("mediaport", clientEntity->mediaPort);
-      jsClient.insert("connection", jsConn);
-    }
-    clients.append(jsClient);
-  }
-  return clients;
+	QJsonArray clients;
+	foreach (auto clientEntity, _server->_clients)
+	{
+		auto jsClient = clientEntity->toQJsonObject();
+		auto conn = _server->_connections.value(clientEntity->id);
+		if (conn)
+		{
+			QJsonObject jsConn;
+			jsConn.insert("address", "n/a");
+			jsConn.insert("port", 0);
+			jsConn.insert("mediaaddress", clientEntity->mediaAddress);
+			jsConn.insert("mediaport", clientEntity->mediaPort);
+			jsClient.insert("connection", jsConn);
+		}
+		clients.append(jsClient);
+	}
+	return clients;
 }
 
 QJsonValue WebSocketStatusServer::getChannelsInfo() const
 {
-  QJsonArray channels;
-  foreach(auto channelEntity, _server->_channels) {
-    auto jsChannel = channelEntity->toQJsonObject();
-    QJsonArray jsParticipants;
-    foreach(auto clientId, _server->_participants.value(channelEntity->id)) {
-      jsParticipants.append(clientId);
-    }
-    jsChannel.insert("participants", jsParticipants);
-    channels.append(jsChannel);
-  }
-  return channels;
+	QJsonArray channels;
+	foreach (auto channelEntity, _server->_channels)
+	{
+		auto jsChannel = channelEntity->toQJsonObject();
+		QJsonArray jsParticipants;
+		foreach (auto clientId, _server->_participants.value(channelEntity->id))
+		{
+			jsParticipants.append(clientId);
+		}
+		jsChannel.insert("participants", jsParticipants);
+		channels.append(jsChannel);
+	}
+	return channels;
 }
 
 QJsonValue WebSocketStatusServer::getWebSocketsInfo() const
 {
-  QJsonArray jsWsSockets;
-  foreach(auto socket, _sockets) {
-    QJsonObject o;
-    o.insert("address", socket->peerAddress().toString());
-    o.insert("port", socket->peerPort());
-    jsWsSockets.append(o);
-  }
-  return jsWsSockets;
+	QJsonArray jsWsSockets;
+	foreach (auto socket, _sockets)
+	{
+		QJsonObject o;
+		o.insert("address", socket->peerAddress().toString());
+		o.insert("port", socket->peerPort());
+		jsWsSockets.append(o);
+	}
+	return jsWsSockets;
 }

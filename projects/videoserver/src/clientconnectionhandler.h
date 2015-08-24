@@ -16,11 +16,11 @@ class ServerClientEntity;
     JSON Example Request
     --------------------
     {
-        "action": "auth",
-    "parameters": {
-      "key1": "value1",
-      "key2": [1, 2, 3]
-    }
+      "action": "auth",
+      "parameters": {
+        "key1": "value1",
+        "key2": [1, 2, 3]
+      }
     }
 
     JSON Example Response

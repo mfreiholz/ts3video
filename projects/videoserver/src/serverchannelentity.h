@@ -6,11 +6,11 @@
 class ServerChannelEntity : public ChannelEntity
 {
 public:
-  ServerChannelEntity();
-  ServerChannelEntity(const ServerChannelEntity &other);
+	ServerChannelEntity();
+	ServerChannelEntity(const ServerChannelEntity& other);
 
 public:
-  QString password; ///< Do not serialize this value.
+	QString password; ///< Do not serialize this value.
 };
 
 #endif

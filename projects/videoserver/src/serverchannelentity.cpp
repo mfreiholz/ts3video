@@ -1,12 +1,12 @@
 #include "serverchannelentity.h"
 
 ServerChannelEntity::ServerChannelEntity() :
-  ChannelEntity()
+	ChannelEntity()
 {
 }
 
-ServerChannelEntity::ServerChannelEntity(const ServerChannelEntity &other) :
-  ChannelEntity(other)
+ServerChannelEntity::ServerChannelEntity(const ServerChannelEntity& other) :
+	ChannelEntity(other)
 {
-  password = other.password;
+	password = other.password;
 }

@@ -1,11 +1,11 @@
 #include "servercliententity.h"
 
 ServerClientEntity::ServerClientEntity() :
-  ClientEntity()
+	ClientEntity()
 {
 }
 
-ServerClientEntity::ServerClientEntity(const ServerClientEntity &other) :
-  ClientEntity(other)
+ServerClientEntity::ServerClientEntity(const ServerClientEntity& other) :
+	ClientEntity(other)
 {
 }
