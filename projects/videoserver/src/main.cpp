@@ -73,7 +73,8 @@ int updateOptionsByConfig(VirtualServerOptions& opts, const QString& filePath)
 
   auto sgl = conf.value("allowedservergroups").toStringList();
   for (auto i = 0; i < sgl.size(); ++i)
-    opts.ts3AllowedServerGroups.append(sgl[i].toULongLong());
+    if (!sgl[i].isEmpty())
+      opts.ts3AllowedServerGroups.append(sgl[i].toULongLong());
 
   conf.endGroup();
   return 0;
