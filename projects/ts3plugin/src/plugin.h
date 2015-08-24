@@ -1,8 +1,8 @@
 /*
- * TeamSpeak 3 demo plugin
- *
- * Copyright (c) 2008-2014 TeamSpeak Systems GmbH
- */
+    TeamSpeak 3 demo plugin
+
+    Copyright (c) 2008-2014 TeamSpeak Systems GmbH
+*/
 
 #ifndef PLUGIN_H
 #define PLUGIN_H
@@ -38,8 +38,8 @@ PLUGINS_EXPORTDLL const char* ts3plugin_infoTitle();
 PLUGINS_EXPORTDLL void ts3plugin_infoData(uint64 serverConnectionHandlerID, uint64 id, enum PluginItemType type, char** data);
 PLUGINS_EXPORTDLL void ts3plugin_freeMemory(void* data);
 PLUGINS_EXPORTDLL int ts3plugin_requestAutoload();
-PLUGINS_EXPORTDLL void ts3plugin_initMenus(struct PluginMenuItem*** menuItems, char** menuIcon);
-PLUGINS_EXPORTDLL void ts3plugin_initHotkeys(struct PluginHotkey*** hotkeys);
+PLUGINS_EXPORTDLL void ts3plugin_initMenus(struct PluginMenuItem** * menuItems, char** menuIcon);
+PLUGINS_EXPORTDLL void ts3plugin_initHotkeys(struct PluginHotkey** * hotkeys);
 
 /* Clientlib */
 PLUGINS_EXPORTDLL void ts3plugin_onConnectStatusChangeEvent(uint64 serverConnectionHandlerID, int newStatus, unsigned int errorNumber);
