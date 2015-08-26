@@ -12,7 +12,9 @@ typedef struct
 {
 	struct TS3Functions* funcs;
 
-	uint64 clientId;                   ///< The ID of the client.
+	uint64 clientId;                   ///< The current ID of the client.
+	char clientUniqueIdentifier[4096]; ///< The unique client identifier.
+	uint64 clientDatabaseId;           ///< The client's DBID requested from server.
 	char clientName[MAX_PATH];         ///< The name of the client.
 	uint64 channelId;                  ///< The current channel-ID of the client.
 	char serverAddress[MAX_PATH];      ///< The address of the current virtual server.

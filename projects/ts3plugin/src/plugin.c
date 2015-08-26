@@ -55,6 +55,36 @@ static int wcharToUtf8(const wchar_t* str, char** result)
 }
 #endif
 
+/*********************************** OCS STUFF *********************************************/
+
+/*
+    Menu IDs for this plugin. Pass these IDs when creating a menuitem to the TS3 client. When the menu item is triggered,
+    ts3plugin_onMenuItemEvent will be called passing the menu ID of the triggered menu item.
+    These IDs are freely choosable by the plugin author. It's not really needed to use an enum, it just looks prettier.
+*/
+enum
+{
+	MENU_ID_CHANNEL_VIDEO_START_CUSTOM = 1,
+	MENU_ID_CHANNEL_VIDEO_START_QUICK = 2
+};
+
+static TS3Data* _data = 0;
+static int _startRequested = 0;
+static int _usedMenuItemID = 0;
+
+static void startVideoClient()
+{
+	// Start client binary.
+	if (runClient(_data, (_usedMenuItemID == MENU_ID_CHANNEL_VIDEO_START_QUICK ? 1 : 0)) != 0)
+		printf("Could not run client.");
+
+	// Reset collected values.
+	_startRequested = 0;
+	_usedMenuItemID = 0;
+	free(_data);
+	_data = 0;
+}
+
 /*********************************** Required functions ************************************/
 /*
     If any of these required functions is not implemented, TS3 will refuse to load the plugin
@@ -255,16 +285,7 @@ static struct PluginMenuItem* createMenuItem(enum PluginMenuType type, int id, c
 #define CREATE_MENU_ITEM(a, b, c, d) (*menuItems)[n++] = createMenuItem(a, b, c, d);
 #define END_CREATE_MENUS (*menuItems)[n++] = NULL; assert(n == sz);
 
-/*
-    Menu IDs for this plugin. Pass these IDs when creating a menuitem to the TS3 client. When the menu item is triggered,
-    ts3plugin_onMenuItemEvent will be called passing the menu ID of the triggered menu item.
-    These IDs are freely choosable by the plugin author. It's not really needed to use an enum, it just looks prettier.
-*/
-enum
-{
-	MENU_ID_CHANNEL_VIDEO_START_CUSTOM = 1,
-	MENU_ID_CHANNEL_VIDEO_START_QUICK = 2
-};
+
 
 /*
     Initialize plugin menus.
@@ -680,6 +701,10 @@ void ts3plugin_onMessageGetEvent(uint64 serverConnectionHandlerID, uint64 messag
 
 void ts3plugin_onClientDBIDfromUIDEvent(uint64 serverConnectionHandlerID, const char* uniqueClientIdentifier, uint64 clientDatabaseID)
 {
+	if (!_startRequested || !_data)
+		return;
+	_data->clientDatabaseId = clientDatabaseID;
+	startVideoClient();
 }
 
 void ts3plugin_onClientNamefromUIDEvent(uint64 serverConnectionHandlerID, const char* uniqueClientIdentifier, uint64 clientDatabaseID, const char* clientNickName)
@@ -754,45 +779,46 @@ void ts3plugin_onMenuItemEvent(uint64 serverConnectionHandlerID, enum PluginMenu
 		case MENU_ID_CHANNEL_VIDEO_START_QUICK:
 		case MENU_ID_CHANNEL_VIDEO_START_CUSTOM:
 		{
+			// Collect required information.
 			anyID clientId = 0;
 			char clientName[255];
 			uint64 channelOfClient = 0;
 			char* serverAddress = NULL;
 			uint64 serverPort = 0;
 			uint64 targetChannelId = selectedItemID;
-			char uniqueIdentifier[1024];
+			const char* uniqueIdentifier = 0;
 
 			if (ts3Functions.getClientID(serverConnectionHandlerID, &clientId) == ERROR_ok
 					&& ts3Functions.getClientDisplayName(serverConnectionHandlerID, clientId, clientName, 255) == ERROR_ok
 					&& ts3Functions.getChannelOfClient(serverConnectionHandlerID, clientId, &channelOfClient) == ERROR_ok
 					&& ts3Functions.getConnectionVariableAsString(serverConnectionHandlerID, clientId, CONNECTION_SERVER_IP, &serverAddress) == ERROR_ok
 					&& ts3Functions.getConnectionVariableAsUInt64(serverConnectionHandlerID, clientId, CONNECTION_SERVER_PORT, &serverPort) == ERROR_ok
-					&& ts3Functions.getClientSelfVariableAsString(serverConnectionHandlerID, CLIENT_UNIQUE_IDENTIFIER, &uniqueIdentifier)
-					&& ts3Functions.requestClientDBIDfromUID(serverConnectionHandlerID, uniqueIdentifier, NULL))
+					&& ts3Functions.getClientSelfVariableAsString(serverConnectionHandlerID, CLIENT_UNIQUE_IDENTIFIER, &uniqueIdentifier) == ERROR_ok)
 			{
-				//char path[MAX_PATH];
-				//memset(path, 0, MAX_PATH);
-				//char password[MAX_PATH];
-				//memset(password, 0, MAX_PATH);
-				//if (ts3Functions.getChannelConnectInfo(serverConnectionHandlerID, targetChannelId, &path, &password, MAX_PATH) != ERROR_ok) {
-				//  ts3Functions.printMessageToCurrentTab("You might not have permissions for this channel.");
-				//  return;
-				//}
-
-				TS3Data data;
-				data.funcs = &ts3Functions;
-				data.clientId = clientId;
-				strcpy(&data.clientName, clientName);
-				data.channelId = channelOfClient;
-				strcpy(&data.serverAddress, serverAddress);
-				data.serverPort = serverPort;
-				data.targetChannelId = targetChannelId;
-
-				if (runClient(&data, (menuItemID == MENU_ID_CHANNEL_VIDEO_START_QUICK ? 1 : 0)) != 0)
+				if (_data)
 				{
-					printf("PLUGIN: Start hangout failed.");
+					free(_data);
+					_data = 0;
 				}
 
+				TS3Data* data = malloc(sizeof(TS3Data));
+				data->funcs = &ts3Functions;
+				data->clientId = clientId;
+				strcpy(&data->clientUniqueIdentifier, uniqueIdentifier);
+				data->clientDatabaseId = 0;
+				strcpy(&data->clientName, clientName);
+				data->channelId = channelOfClient;
+				strcpy(&data->serverAddress, serverAddress);
+				data->serverPort = serverPort;
+				data->targetChannelId = targetChannelId;
+
+				_data = data;
+				_usedMenuItemID = menuItemID;
+				_startRequested = 1;
+
+				const char* returnCode = NULL;
+				unsigned int ret = ts3Functions.requestClientDBIDfromUID(serverConnectionHandlerID, uniqueIdentifier, returnCode);
+				printf("blah");
 			}
 			ts3Functions.freeMemory(serverAddress);
 			break;

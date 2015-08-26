@@ -172,6 +172,13 @@ int runClient(TS3Data* ts3data, int skipStartupDialog)
 	strcat(params, channelPassword);
 	strcat(params, "\" ");
 
+	char clientDatabaseIdString[64];
+	ltoa(ts3data->clientDatabaseId, clientDatabaseIdString, 10);
+	strcat(params, " --ts3-client-database-id ");
+	strcat(params, " ");
+	strcat(params, clientDatabaseIdString);
+	strcat(params, " ");
+
 	if (skipStartupDialog)
 		strcat(params, " --skip-startup-dialog ");
 
