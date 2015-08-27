@@ -62,7 +62,7 @@ int updateOptionsByConfig(VirtualServerOptions& opts, const QString& filePath)
 	opts.adminPassword = conf.value("adminpassword", opts.adminPassword).toString();
 	conf.endGroup();
 
-	conf.beginGroup("teamspeak3-serverquery-bridge");
+	conf.beginGroup("teamspeak3-bridge");
 	opts.ts3Enabled = conf.value("enabled", opts.ts3Enabled).toBool();
 	opts.ts3Address = ELWS::getQHostAddressFromString(conf.value("address", opts.ts3Address.toString()).toString());
 	opts.ts3Port = conf.value("port", opts.port).toUInt();

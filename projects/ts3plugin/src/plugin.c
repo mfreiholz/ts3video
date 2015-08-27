@@ -818,7 +818,6 @@ void ts3plugin_onMenuItemEvent(uint64 serverConnectionHandlerID, enum PluginMenu
 
 				const char* returnCode = NULL;
 				unsigned int ret = ts3Functions.requestClientDBIDfromUID(serverConnectionHandlerID, uniqueIdentifier, returnCode);
-				printf("blah");
 			}
 			ts3Functions.freeMemory(serverAddress);
 			break;

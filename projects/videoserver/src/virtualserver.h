@@ -58,9 +58,9 @@ public:
 	bool ts3Enabled = false;
 	QHostAddress ts3Address = QHostAddress::LocalHost;
 	quint16 ts3Port = 10011;
-	QString ts3LoginName = "serveradmin";
+	QString ts3LoginName;
 	QString ts3LoginPassword;
-	QString ts3Nickname = "Video Server TeamSpeak Bridge";
+	QString ts3Nickname;
 	quint16 ts3VirtualServerPort = 9987;
 	QList<quint64> ts3AllowedServerGroups;
 };
@@ -121,9 +121,6 @@ public:
 
 	// Network usages (COR, Media, WebSocket, ...)
 	NetworkUsageEntity _networkUsageMediaSocket;
-
-	// TS3 Bridge stuff.
-	class TS3ServerBridge* _ts3bridge;
 };
 
 #endif
