@@ -25,4 +25,7 @@ private:
   int _elapsedMillis;
 };
 
+#define QCORREPLY_AUTODELETE(R) \
+  do { if (R) { QObject::connect(R, &QCorReply::finished, R, &QCorReply::deleteLater); } } while (false)
+
 #endif

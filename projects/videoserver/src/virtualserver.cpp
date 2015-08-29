@@ -74,39 +74,9 @@ bool VirtualServer::init()
 	{
 		return false;
 	}
+	connect(_mediaSocketHandler, &MediaSocketHandler::tokenAuthentication, this, &VirtualServer::onMediaSocketTokenAuthentication);
+	connect(_mediaSocketHandler, &MediaSocketHandler::networkUsageUpdated, this, &VirtualServer::onMediaSocketNetworkUsageUpdated);
 	HL_INFO(HL, QString("Listening for media data (protocol=UDP; address=%1; port=%2)").arg(_opts.address.toString()).arg(port).toStdString());
-	// Handle media authentications.
-	// Note: This lambda slot is not thread-safe. If MediaSocketHandler should run in a separate thread, we need to reimplement this function.
-	connect(_mediaSocketHandler, &MediaSocketHandler::tokenAuthentication, [this](const QString & token, const QHostAddress & address, quint16 port)
-	{
-		if (!_tokens.contains(token))
-		{
-			HL_WARN(HL, QString("Received invalid media auth token (token=%1; address=%2; port=%3)").arg(token).arg(address.toString()).arg(port).toStdString());
-			return;
-		}
-		// Update client-info with address and port.
-		auto clientId = _tokens.take(token);
-		auto clientEntity = _clients.value(clientId);
-		if (!clientEntity)
-		{
-			HL_WARN(HL, QString("No matching client-entity for auth token (token=%1; client-id=%2)").arg(token).arg(clientId).toStdString());
-			return;
-		}
-		clientEntity->mediaAddress = address.toString();
-		clientEntity->mediaPort = port;
-
-		// Notify client about the successful media authentication.
-		auto conn = _connections.value(clientId);
-		if (conn)
-		{
-			conn->sendMediaAuthSuccessNotify();
-		}
-		this->updateMediaRecipients();
-	});
-	QObject::connect(_mediaSocketHandler, &MediaSocketHandler::networkUsageUpdated, [this](const NetworkUsageEntity & networkUsage)
-	{
-		_networkUsageMediaSocket = networkUsage;
-	});
 
 	// Init status web-socket.
 	WebSocketStatusServer::Options wsopts;
@@ -261,4 +231,39 @@ void VirtualServer::onNewConnection(QCorConnection* c)
 {
 	auto sc = QSharedPointer<QCorConnection>(c);
 	new ClientConnectionHandler(this, sc, nullptr);
+}
+
+void VirtualServer::onMediaSocketTokenAuthentication(const QString& token, const QHostAddress& address, quint16 port)
+{
+	if (!_tokens.contains(token))
+	{
+		HL_WARN(HL, QString("Received invalid media auth token (token=%1; address=%2; port=%3)").arg(token).arg(address.toString()).arg(port).toStdString());
+		return;
+	}
+
+	// Find matching client.
+	auto clientId = _tokens.take(token);
+	auto clientEntity = _clients.value(clientId);
+	if (!clientEntity)
+	{
+		HL_WARN(HL, QString("No matching client-entity for auth token (token=%1; client-id=%2)").arg(token).arg(clientId).toStdString());
+		return;
+	}
+
+	// Update client-info.
+	clientEntity->mediaAddress = address.toString();
+	clientEntity->mediaPort = port;
+
+	// Notify client about the successful media authentication.
+	auto conn = _connections.value(clientId);
+	if (conn)
+	{
+		conn->sendMediaAuthSuccessNotify();
+	}
+	this->updateMediaRecipients();
+}
+
+void VirtualServer::onMediaSocketNetworkUsageUpdated(const NetworkUsageEntity& networkUsage)
+{
+	_networkUsageMediaSocket = networkUsage;
 }

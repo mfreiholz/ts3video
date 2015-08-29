@@ -93,6 +93,8 @@ public:
 
 private slots:
 	void onNewConnection(QCorConnection* c);
+	void onMediaSocketTokenAuthentication(const QString& token, const QHostAddress& address, quint16 port);
+	void onMediaSocketNetworkUsageUpdated(const NetworkUsageEntity& networkUsage);
 
 public:
 	QScopedPointer<VirtualServerPrivate> d;

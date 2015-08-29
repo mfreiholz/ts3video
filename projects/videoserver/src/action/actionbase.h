@@ -10,6 +10,18 @@ class QCorConnection;
 class VirtualServer;
 class ClientConnectionHandler;
 
+/*
+	List of notifications
+		notify.mediaauthsuccess
+		notify.clientdisconnected
+
+		notify.clientvideoenabled
+		notify.clientvideodisabled
+		notify.clientjoinedchannel
+		notify.clientleftchannel
+		notify.kicked
+*/
+
 ///////////////////////////////////////////////////////////////////////
 
 class ActionData

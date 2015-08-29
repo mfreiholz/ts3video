@@ -2,7 +2,7 @@
 #include <QMessageBox>
 #include "networkclient/networkclient.h"
 
-AdminAuthWidget::AdminAuthWidget(NetworkClient *networkClient, QWidget *parent) :
+AdminAuthWidget::AdminAuthWidget(const QSharedPointer<NetworkClient>& networkClient, QWidget *parent) :
   QDialog(parent),
   _networkClient(networkClient)
 {

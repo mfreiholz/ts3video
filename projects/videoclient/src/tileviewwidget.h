@@ -17,14 +17,14 @@ public:
   virtual ~TileViewWidget();
 
   virtual void setClientListModel(ClientListModel *model);
-  virtual void setCameraWidget(QWidget *w);
+  virtual void setCamera(const QSharedPointer<QCamera>& c);
   virtual void addClient(const ClientEntity &client, const ChannelEntity &channel);
   virtual void removeClient(const ClientEntity &client, const ChannelEntity &channel);
   virtual void updateClientVideo(YuvFrameRefPtr frame, int senderId);
-  virtual void updateNetworkUsage(const NetworkUsageEntity &networkUsage); // TODO Implement from super class
 
 public slots:
   void setTileSize(const QSize &size);
+  void setVideoEnabled(bool b);
 
 protected:
   virtual void wheelEvent(QWheelEvent *e);

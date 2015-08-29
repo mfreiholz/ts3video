@@ -17,6 +17,7 @@
 #include "networkusageentity.h"
 
 #include "clientapplogic.h"
+#include "clientcameravideowidget.h"
 #include "flowlayout.h"
 #include "remoteclientvideowidget.h"
 #include "aboutwidget.h"
@@ -43,7 +44,6 @@ TileViewWidget::TileViewWidget(QWidget *parent, Qt::WindowFlags f) :
   QWidget(parent),
   d(new TileViewWidgetPrivate(this))
 {
-  d->logic = qobject_cast<ClientAppLogic*>(parent);
   d->tilesCurrentSize.scale(200, 200, Qt::KeepAspectRatio);
 
   // Scroll area content widget.
@@ -69,17 +69,18 @@ TileViewWidget::TileViewWidget(QWidget *parent, Qt::WindowFlags f) :
   // Camera.
   d->cameraWidget = new TileViewCameraWidget();
   d->cameraWidget->setFixedSize(d->tilesCurrentSize);
-  d->tilesLayout->addWidget(d->cameraWidget);
   d->cameraWidget->setVisible(false);
+  d->tilesLayout->addWidget(d->cameraWidget);
 
   // Buttons.
-  auto cameraButton = new QPushButton();
-  cameraButton->setIcon(QIcon(":/ic_videocam_grey600_48dp.png"));
-  cameraButton->setIconSize(__sideBarIconSize);
-  cameraButton->setFlat(true);
-  cameraButton->setToolTip(tr("Turn camera on/off"));
-  cameraButton->setCheckable(true);
-  cameraButton->setVisible(false);
+  d->enableVideoToggleButton = new QPushButton();
+  d->enableVideoToggleButton->setIcon(QIcon(":/ic_videocam_grey600_48dp.png"));
+  d->enableVideoToggleButton->setIconSize(__sideBarIconSize);
+  d->enableVideoToggleButton->setToolTip(tr("Start/stop video."));
+  d->enableVideoToggleButton->setFlat(true);
+  d->enableVideoToggleButton->setCheckable(true);
+  d->enableVideoToggleButton->setVisible(false);
+  QObject::connect(d->enableVideoToggleButton, &QPushButton::toggled, this, &TileViewWidget::setVideoEnabled);
 
   d->zoomInButton = new QPushButton();
   d->zoomInButton->setIcon(QIcon(":/ic_add_circle_outline_grey600_48dp.png"));
@@ -156,7 +157,7 @@ TileViewWidget::TileViewWidget(QWidget *parent, Qt::WindowFlags f) :
   auto leftPanelLayout = new QBoxLayout(QBoxLayout::TopToBottom);
   leftPanelLayout->setContentsMargins(0, 0, 0, 0);
   leftPanelLayout->setSpacing(0);
-  leftPanelLayout->addWidget(cameraButton);
+  leftPanelLayout->addWidget(d->enableVideoToggleButton);
   leftPanelLayout->addWidget(d->zoomInButton);
   leftPanelLayout->addWidget(d->zoomOutButton);
   leftPanelLayout->addWidget(d->userListButton);
@@ -185,21 +186,9 @@ TileViewWidget::TileViewWidget(QWidget *parent, Qt::WindowFlags f) :
   setLayout(mainLayout);
 
   // Events
-  QObject::connect(cameraButton, &QPushButton::toggled, [this, cameraButton](bool checked) {
-    HL_DEBUG(HL, QString("Toggle camera (on=%1)").arg(checked).toStdString());
-    cameraButton->setEnabled(false);
-    QCorReply *reply = nullptr;
-    if (checked)
-      reply = d->logic->networkClient()->enableVideoStream();
-    else
-      reply = d->logic->networkClient()->disableVideoStream();
-    if (!reply)
-      return;
-    QObject::connect(reply, &QCorReply::finished, [reply, cameraButton]()
-    {
-      cameraButton->setEnabled(true);
-      reply->deleteLater();
-    });
+  QObject::connect(ClientAppLogic::instance()->networkClient().data(), &NetworkClient::networkUsageUpdated, [this](const NetworkUsageEntity& networkUsage) {
+	d->bandwidthRead->setText(QString("D: %1").arg(ELWS::humanReadableBandwidth(networkUsage.bandwidthRead)));
+	d->bandwidthWrite->setText(QString("U: %1").arg(ELWS::humanReadableBandwidth(networkUsage.bandwidthWrite)));
   });
   QObject::connect(d->zoomInButton, &QPushButton::clicked, [this]() {
     auto newSize = d->tilesCurrentSize;
@@ -231,10 +220,10 @@ TileViewWidget::TileViewWidget(QWidget *parent, Qt::WindowFlags f) :
     d->leftPanelVisible = true;
   });
   QObject::connect(adminAuthButton, &QPushButton::clicked, [this, adminAuthButton]() {
-    auto w = new AdminAuthWidget(d->logic->networkClient(), this);
+    auto w = new AdminAuthWidget(ClientAppLogic::instance()->networkClient(), this);
     w->setModal(true);
     w->exec();
-    if (d->logic->networkClient()->isAdmin())
+    if (ClientAppLogic::instance()->networkClient()->isAdmin())
       adminAuthButton->setVisible(false);
   });
   QObject::connect(aboutButton, &QPushButton::clicked, [this]() {
@@ -280,10 +269,44 @@ void TileViewWidget::setClientListModel(ClientListModel *model)
   d->userCountLabel->setText(QString::number(m->rowCount()));
 }
 
-void TileViewWidget::setCameraWidget(QWidget *w)
+void TileViewWidget::setCamera(const QSharedPointer<QCamera>& c)
 {
-  d->cameraWidget->setWidget(w);
-  d->cameraWidget->setVisible(true);
+	d->cameraWidget->setCamera(c);
+	d->cameraWidget->setVisible(true);
+	d->enableVideoToggleButton->setVisible(true);
+	QObject::connect(c.data(), &QCamera::statusChanged, [this](QCamera::Status s) {
+		switch (s)
+		{
+			case QCamera::ActiveStatus:
+				d->enableVideoToggleButton->setEnabled(true);
+				break;
+			case QCamera::StartingStatus:
+				d->enableVideoToggleButton->setEnabled(false);
+				break;
+			case QCamera::StoppingStatus:
+				d->enableVideoToggleButton->setEnabled(false);
+				break;
+			case QCamera::StandbyStatus:
+				d->enableVideoToggleButton->setEnabled(true);
+				break;
+			case QCamera::LoadedStatus:
+				d->enableVideoToggleButton->setEnabled(true);
+				d->cameraWidget->_cameraWidget->setFrame(QImage());
+				break;
+			case QCamera::LoadingStatus:
+				d->enableVideoToggleButton->setEnabled(false);
+				break;
+			case QCamera::UnloadingStatus:
+				d->enableVideoToggleButton->setEnabled(false);
+				break;
+			case QCamera::UnloadedStatus:
+				d->enableVideoToggleButton->setEnabled(true);
+				break;
+			case QCamera::UnavailableStatus:
+				d->enableVideoToggleButton->setEnabled(false);
+				break;
+		}
+	});
 }
 
 void TileViewWidget::addClient(const ClientEntity &client, const ChannelEntity &channel)
@@ -321,12 +344,6 @@ void TileViewWidget::updateClientVideo(YuvFrameRefPtr frame, int senderId)
   tileWidget->_videoWidget->videoWidget()->setFrame(frame);
 }
 
-void TileViewWidget::updateNetworkUsage(const NetworkUsageEntity &networkUsage)
-{
-  d->bandwidthRead->setText(QString("D: %1").arg(ELWS::humanReadableBandwidth(networkUsage.bandwidthRead)));
-  d->bandwidthWrite->setText(QString("U: %1").arg(ELWS::humanReadableBandwidth(networkUsage.bandwidthWrite)));
-}
-
 void TileViewWidget::setTileSize(const QSize &size)
 {
   auto newSize = d->tilesAspectRatio.scaled(size, Qt::KeepAspectRatio);
@@ -340,6 +357,40 @@ void TileViewWidget::setTileSize(const QSize &size)
   Q_FOREACH(auto w, widgets) {
     w->setFixedSize(newSize);
   }
+}
+
+void TileViewWidget::setVideoEnabled(bool b)
+{
+	auto nc = ClientAppLogic::instance()->networkClient();
+	auto cam = d->cameraWidget->_camera;
+	if (cam)
+	{
+		if (b)
+		{
+			if (cam->state() != QCamera::ActiveState)
+			{
+				cam->start();
+				if (nc)
+				{
+					auto reply = nc->enableVideoStream();
+					QCORREPLY_AUTODELETE(reply);
+				}
+			}
+		}
+		else
+		{
+			if (cam->state() == QCamera::ActiveState)
+			{
+				cam->stop();
+				if (nc)
+				{
+					auto reply = nc->disableVideoStream();
+					QCORREPLY_AUTODELETE(reply);
+				}
+			}
+		}
+	}
+	d->enableVideoToggleButton->setChecked(b);
 }
 
 void TileViewWidget::wheelEvent(QWheelEvent *e)
@@ -388,7 +439,8 @@ void TileViewWidget::hideEvent(QHideEvent *e)
 
 TileViewCameraWidget::TileViewCameraWidget(QWidget *parent) :
   QFrame(parent),
-  _mainLayout(nullptr)
+  _mainLayout(nullptr),
+  _cameraWidget(nullptr)
 {
   ViewBase::addDropShadowEffect(this);
 
@@ -396,6 +448,7 @@ TileViewCameraWidget::TileViewCameraWidget(QWidget *parent) :
   l->setContentsMargins(0, 0, 0, 0);
   l->setSpacing(0);
   setLayout(l);
+
   _mainLayout = l;
 }
 
@@ -403,9 +456,11 @@ TileViewCameraWidget::~TileViewCameraWidget()
 {
 }
 
-void TileViewCameraWidget::setWidget(QWidget *w)
+void TileViewCameraWidget::setCamera(const QSharedPointer<QCamera>& c)
 {
-  _mainLayout->addWidget(w, 1);
+	_camera = c;
+	_cameraWidget = new ClientCameraVideoWidget(ClientAppLogic::instance()->networkClient(), _camera, this);
+	_mainLayout->addWidget(_cameraWidget, 1);
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -473,19 +528,19 @@ TileViewUserListWidget::TileViewUserListWidget(QWidget *parent) :
     QMenu menu;
 
     // Admin actions.
-    if (ClientAppLogic::I()->networkClient()->isAdmin() && !ClientAppLogic::I()->networkClient()->isSelf(ci)) {
+    if (ClientAppLogic::instance()->networkClient()->isAdmin() && !ClientAppLogic::instance()->networkClient()->isSelf(ci)) {
       // Kick client.
       auto kickAction = menu.addAction(QIcon(), tr("Kick client"));
       QObject::connect(kickAction, &QAction::triggered, [ci]()
       {
-        const auto reply = ClientAppLogic::I()->networkClient()->kickClient(ci.id, false);
+        const auto reply = ClientAppLogic::instance()->networkClient()->kickClient(ci.id, false);
         QObject::connect(reply, &QCorReply::finished, reply, &QCorReply::deleteLater);
       });
       // Ban client.
       auto banAction = menu.addAction(QIcon(), tr("Ban client"));
       QObject::connect(banAction, &QAction::triggered, [ci]()
       {
-        const auto reply = ClientAppLogic::I()->networkClient()->kickClient(ci.id, true);
+        const auto reply = ClientAppLogic::instance()->networkClient()->kickClient(ci.id, true);
         QObject::connect(reply, &QCorReply::finished, reply, &QCorReply::deleteLater);
       });
     }

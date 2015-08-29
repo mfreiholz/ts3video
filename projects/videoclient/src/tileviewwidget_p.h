@@ -10,7 +10,7 @@
 
 class QPushButton;
 class QLabel;
-class ClientAppLogic;
+class QCamera;
 class FlowLayout;
 class RemoteClientVideoWidget;
 class TileViewTileWidget;
@@ -25,8 +25,8 @@ class TileViewWidgetPrivate : public QObject
 
 public:
   TileViewWidgetPrivate(TileViewWidget *o) :
+    QObject(o),
     owner(o),
-    logic(nullptr),
     tilesAspectRatio(4, 3),
     tilesCurrentSize(tilesAspectRatio),
     leftPanelVisible(true),
@@ -39,7 +39,6 @@ public:
 
 public:
   TileViewWidget *owner;
-  ClientAppLogic *logic;
 
   QSize tilesAspectRatio;
   QSize tilesCurrentSize;
@@ -56,6 +55,7 @@ public:
   QPushButton *zoomInButton;
   QPushButton *zoomOutButton;
   QPushButton *userListButton;
+  QPushButton *enableVideoToggleButton;
   QPushButton *hideLeftPanelButton;
   QPushButton *showLeftPanelButton;
   QLabel *userCountLabel;
@@ -75,10 +75,13 @@ class TileViewCameraWidget : public QFrame
 public:
   TileViewCameraWidget(QWidget *parent = nullptr);
   ~TileViewCameraWidget();
-  void setWidget(QWidget *w);
+
+  void setCamera(const QSharedPointer<QCamera>& c);
 
 private:
+  QSharedPointer<QCamera> _camera;
   class QBoxLayout *_mainLayout;
+  ClientCameraVideoWidget *_cameraWidget;
 };
 
 ///////////////////////////////////////////////////////////////////////

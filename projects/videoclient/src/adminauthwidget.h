@@ -9,7 +9,7 @@ class AdminAuthWidget : public QDialog
   Q_OBJECT
 
 public:
-  AdminAuthWidget(NetworkClient *networkClient, QWidget *parent);
+  AdminAuthWidget(const QSharedPointer<NetworkClient>& networkClient, QWidget *parent);
 
 private slots:
   void onLogin();
@@ -17,7 +17,7 @@ private slots:
 
 private:
   Ui::AdminAuthDialogForm _ui;
-  NetworkClient *_networkClient;
+  QSharedPointer<NetworkClient> _networkClient;
 };
 
 #endif

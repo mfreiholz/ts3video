@@ -25,13 +25,13 @@ HUMBLE_LOGGER(HL, "networkclient");
 ///////////////////////////////////////////////////////////////////////
 
 #define REQUEST_PRECHECK \
-  if (d->corSocket->socket()->state() != QAbstractSocket::ConnectedState) { \
+  if (!d->corSocket->socket() || d->corSocket->socket()->state() != QAbstractSocket::ConnectedState) { \
     HL_ERROR(HL, QString("Connection is not established.").toStdString()); \
     return nullptr; \
   }
 
 #define REQUEST_PRECHECK_VOID \
-  if (d->corSocket->socket()->state() != QAbstractSocket::ConnectedState) { \
+  if (!d->corSocket->socket() || d->corSocket->socket()->state() != QAbstractSocket::ConnectedState) { \
     HL_ERROR(HL, QString("Connection is not established.").toStdString()); \
     return; \
   }
