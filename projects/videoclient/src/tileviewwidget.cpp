@@ -325,7 +325,7 @@ void TileViewWidget::setCamera(const QSharedPointer<QCamera>& c)
 
 void TileViewWidget::addClient(const ClientEntity& client, const ChannelEntity& channel)
 {
-	if (client.videoEnabled)
+	if (client.videoEnabled && !d->tilesMap.contains(client.id))
 	{
 		auto tileWidget = new TileViewTileWidget(client, this);
 		tileWidget->setFixedSize(d->tilesCurrentSize);
@@ -457,6 +457,7 @@ void TileViewWidget::hideEvent(QHideEvent* e)
 
 void TileViewWidget::onClientEnabledVideo(const ClientEntity& c)
 {
+	addClient(c, ChannelEntity());
 }
 
 void TileViewWidget::onClientDisabledVideo(const ClientEntity& c)

@@ -257,8 +257,8 @@ void AuthenticationAction::run(const ActionData& req)
 			return;
 
 		// Update self ClientEntity and generate auth-token for media socket.
-		req.session->_authenticated = true;
 		req.session->_clientEntity->name = username;
+		req.session->_clientEntity->authenticated = true;
 
 		const auto token = QString("%1-%2").arg(req.session->_clientEntity->id).arg(QDateTime::currentDateTimeUtc().toString());
 		req.server->_tokens.insert(token, req.session->_clientEntity->id);
@@ -465,7 +465,7 @@ void AdminAuthAction::run(const ActionData& req)
 		return;
 	}
 
-	req.session->_isAdmin = true;
+	req.session->_clientEntity->admin = true;
 
 	sendDefaultOkResponse(req);
 }

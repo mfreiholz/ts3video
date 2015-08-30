@@ -9,8 +9,11 @@ class ServerClientEntity : public ClientEntity
 public:
 	ServerClientEntity();
 	ServerClientEntity(const ServerClientEntity& other);
+	ServerClientEntity& operator=(const ServerClientEntity& other);
 
 public:
+	bool authenticated;
+	bool admin;
 	QSet<int> remoteVideoExcludes; ///< "This" client, doesn't want to receive the video of clients in this list.
 };
 

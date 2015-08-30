@@ -49,7 +49,7 @@ HUMBLE_LOGGER(HL, "client");
 
     Some sample commands
     --------------------
-    --server-address 127.0.0.1 --server-port 13370 --username TEST --channel-identifier default --ts3-client-database-id 2 --skip-startup-dialog
+    --server-address 127.0.0.1 --server-port 13370 --username TEST --channel-identifier default
     --server-address 127.0.0.1 --server-port  13370  --username  "iF.Manuel"  --channel-identifier  "127.0.0.1#9987#1#"  --channel-password  "2e302e302e373231"  --ts3-client-database-id  2  --skip-startup-dialog
 	--server-address teamspeak.insanefactory.com --server-port  13370  --username  "iF.Manuel"  --channel-identifier  "127.0.0.1#9987#1#"  --channel-password  "2e302e302e373231"  --ts3-client-database-id  2  --skip-startup-dialog
 */

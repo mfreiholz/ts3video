@@ -9,23 +9,24 @@
 
 class VirtualServerPrivate : public QObject
 {
-  Q_OBJECT
+	Q_OBJECT
+
 public:
-  VirtualServer *owner;
-  QHash<QString, ActionPtr> actions;
+	VirtualServer* owner;
+	QHash<QString, ActionPtr> actions;
 
-  VirtualServerPrivate(VirtualServer *o) :
-    owner(o)
-  {}
+	VirtualServerPrivate(VirtualServer* o) :
+		owner(o)
+	{}
 
-  void registerAction(const ActionPtr &action)
-  {
-    if (actions.contains(action->name())) {
-      return;
-    }
-    actions.insert(action->name(), action);
-  }
-
+	void registerAction(const ActionPtr& action)
+	{
+		if (actions.contains(action->name()))
+		{
+			return;
+		}
+		actions.insert(action->name(), action);
+	}
 };
 
 #endif

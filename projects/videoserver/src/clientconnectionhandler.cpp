@@ -30,8 +30,6 @@ ClientConnectionHandler::ClientConnectionHandler(VirtualServer* server, QSharedP
 	QObject(parent),
 	_server(server),
 	_connection(connection),
-	_authenticated(false),
-	_isAdmin(false),
 	_clientEntity(nullptr),
 	_networkUsage(),
 	_networkUsageHelper(_networkUsage)
@@ -46,7 +44,7 @@ ClientConnectionHandler::ClientConnectionHandler(VirtualServer* server, QSharedP
 	onStateChanged(QAbstractSocket::ConnectedState);
 
 	// Authentication timer: Close connection, if it doesn't authentication within X seconds.
-	QTimer::singleShot(5000, this, &ClientConnectionHandler::onAuthenticationTimeout);
+	QTimer::singleShot(60000, this, &ClientConnectionHandler::onAuthenticationTimeout);
 
 	// Connection timer: Close connection, if there wasn't a keep-alive or other package for X seconds.
 	_connectionTimeoutTimer.start(20000);
@@ -147,14 +145,14 @@ void ClientConnectionHandler::onNewIncomingRequest(QCorFrameRefPtr frame)
 	}
 
 	// The client needs to be authenticated before he can request any action with RequiresAuthentication flag.
-	if (actionHandler->flags().testFlag(ActionBase::RequiresAuthentication) && !_authenticated)
+	if (actionHandler->flags().testFlag(ActionBase::RequiresAuthentication) && !_clientEntity->authenticated)
 	{
 		ActionBase::sendErrorResponse(*_connection.data(), *frame.data(), IFVS_STATUS_FORBIDDEN, QString("You are not allowed to perform this action (action=%1)").arg(action));
 		return;
 	}
 
 	// The client may require admin-privileges for the found action.
-	if (actionHandler->flags().testFlag(ActionBase::RequiresAdminPrivileges) && !_isAdmin)
+	if (actionHandler->flags().testFlag(ActionBase::RequiresAdminPrivileges) && !_clientEntity->admin)
 	{
 		ActionBase::sendErrorResponse(*_connection.data(), *frame.data(), IFVS_STATUS_FORBIDDEN, QString("You are not allowed to perform this action (action=%1)").arg(action));
 		return;
@@ -175,9 +173,9 @@ void ClientConnectionHandler::onNewIncomingRequest(QCorFrameRefPtr frame)
 
 void ClientConnectionHandler::onAuthenticationTimeout()
 {
-	if (_authenticated)
+	if (_clientEntity->authenticated)
 		return;
-	HL_WARN(HL, QString("Client did not authenticate within 5 seconds.").toStdString());
+	HL_WARN(HL, QString("Client did not authenticate within 60 seconds.").toStdString());
 	ActionBase::sendErrorRequest(*_connection.data(), IFVS_STATUS_AUTHENTICATION_TIMEOUT, "Authentication process took too long. Check your connection and try it again.");
 	QMetaObject::invokeMethod(_connection.data(), "disconnectFromHost", Qt::QueuedConnection);
 }

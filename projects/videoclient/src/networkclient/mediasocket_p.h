@@ -9,38 +9,38 @@
 
 class MediaSocketPrivate : public QObject
 {
-  Q_OBJECT
+	Q_OBJECT
 
 public:
-  MediaSocketPrivate(MediaSocket *o) :
-    owner(o),
-    authenticated(false),
-    authenticationTimerId(-1),
-    videoEncodingThread(new VideoEncodingThread(this)),
-    lastFrameRequestTimestamp(0),
-    videoDecodingThread(new VideoDecodingThread(this)),
-    networkUsage(),
-    networkUsageHelper(networkUsage)
-  {}
+	MediaSocketPrivate(MediaSocket* o) :
+		owner(o),
+		authenticated(false),
+		authenticationTimerId(-1),
+		videoEncodingThread(new VideoEncodingThread(this)),
+		lastFrameRequestTimestamp(0),
+		videoDecodingThread(new VideoDecodingThread(this)),
+		networkUsage(),
+		networkUsageHelper(networkUsage)
+	{}
 
 public:
-  MediaSocket *owner;
+	MediaSocket* owner;
 
-  bool authenticated;
-  QString token;
-  int authenticationTimerId;
+	bool authenticated;
+	QString token;
+	int authenticationTimerId;
 
-  // Encoding.
-  VideoEncodingThread *videoEncodingThread;
-  unsigned long long lastFrameRequestTimestamp;
+	// Encoding.
+	VideoEncodingThread* videoEncodingThread;
+	unsigned long long lastFrameRequestTimestamp;
 
-  // Decoding.
-  QHash<int, VideoFrameUdpDecoder *> videoFrameDatagramDecoders; ///< Maps client-id to it's decoder.
-  VideoDecodingThread *videoDecodingThread;
+	// Decoding.
+	QHash<int, VideoFrameUdpDecoder*> videoFrameDatagramDecoders;  ///< Maps client-id to it's decoder.
+	VideoDecodingThread* videoDecodingThread;
 
-  // Network usage.
-  NetworkUsageEntity networkUsage;
-  NetworkUsageEntityHelper networkUsageHelper;
+	// Network usage.
+	NetworkUsageEntity networkUsage;
+	NetworkUsageEntityHelper networkUsageHelper;
 };
 
 #endif
