@@ -34,4 +34,20 @@ public:
 	QProgressDialog* progressDialog; ///< Global progress dialog.
 };
 
+/*
+	AutoNetworkInitLogicProtocol initializes the app's network connection
+	to the server and automatically turns on some stuff (e.g. camera),
+	defined by the ClientAppLogic::Options.
+*/
+class AutoNetworkInitLogicProtocol : public QObject
+{
+	Q_OBJECT
+
+public:
+	AutoNetworkInitLogicProtocol(ClientAppLogic *l);
+
+public:
+	ClientAppLogic* _logic;
+};
+
 #endif

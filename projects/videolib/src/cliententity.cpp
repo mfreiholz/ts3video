@@ -3,50 +3,50 @@
 #include <QStringList>
 
 ClientEntity::ClientEntity() :
-  id(0), name(), mediaAddress(), mediaPort(0), videoEnabled(false)
+	id(0), name(), mediaAddress(), mediaPort(0), videoEnabled(false)
 {}
 
-ClientEntity::ClientEntity(const ClientEntity &other)
+ClientEntity::ClientEntity(const ClientEntity& other)
 {
-  this->id = other.id;
-  this->name = other.name;
-  this->mediaAddress = other.mediaAddress;
-  this->mediaPort = other.mediaPort;
-  this->videoEnabled = other.videoEnabled;
+	this->id = other.id;
+	this->name = other.name;
+	this->mediaAddress = other.mediaAddress;
+	this->mediaPort = other.mediaPort;
+	this->videoEnabled = other.videoEnabled;
 }
 
-ClientEntity& ClientEntity::operator = (const ClientEntity &other)
+ClientEntity& ClientEntity::operator = (const ClientEntity& other)
 {
-  this->id = other.id;
-  this->name = other.name;
-  this->mediaAddress = other.mediaAddress;
-  this->mediaPort = other.mediaPort;
-  this->videoEnabled = other.videoEnabled;
-  return *this;
+	this->id = other.id;
+	this->name = other.name;
+	this->mediaAddress = other.mediaAddress;
+	this->mediaPort = other.mediaPort;
+	this->videoEnabled = other.videoEnabled;
+	return *this;
 }
 
 ClientEntity::~ClientEntity()
 {}
 
-void ClientEntity::fromQJsonObject(const QJsonObject &obj)
+void ClientEntity::fromQJsonObject(const QJsonObject& obj)
 {
-  id = obj["id"].toInt();
-  name = obj["name"].toString();
-  videoEnabled = obj["videoenabled"].toBool();
+	id = obj["id"].toInt();
+	name = obj["name"].toString();
+	videoEnabled = obj["videoenabled"].toBool();
 }
 
 QJsonObject ClientEntity::toQJsonObject() const
 {
-  QJsonObject obj;
-  obj["id"] = id;
-  obj["name"] = name;
-  obj["videoenabled"] = videoEnabled;
-  return obj;
+	QJsonObject obj;
+	obj["id"] = id;
+	obj["name"] = name;
+	obj["videoenabled"] = videoEnabled;
+	return obj;
 }
 
 QString ClientEntity::toString() const
 {
-  QStringList sl;
-  sl << QString::number(id) << name << mediaAddress << QString::number(mediaPort) << QString::number(videoEnabled ? 1 : 0);
-  return sl.join("#");
+	QStringList sl;
+	sl << QString::number(id) << name << mediaAddress << QString::number(mediaPort) << QString::number(videoEnabled ? 1 : 0);
+	return sl.join("#");
 }

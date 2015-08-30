@@ -98,7 +98,6 @@ void AuthenticationAction::run(const ActionData& req)
 	const auto clientSupportedServerVersions = req.params["supportedversions"].toString();
 	const auto username = req.params["username"].toString();
 	const auto password = req.params["password"].toString();
-	const auto videoEnabled = req.params["videoenabled"].toBool();
 	const auto ts3ClientDbId = req.params["ts3_client_database_id"].toVariant().toULongLong();
 	const auto peerAddress = req.connection->socket()->peerAddress();
 
@@ -260,7 +259,6 @@ void AuthenticationAction::run(const ActionData& req)
 		// Update self ClientEntity and generate auth-token for media socket.
 		req.session->_authenticated = true;
 		req.session->_clientEntity->name = username;
-		req.session->_clientEntity->videoEnabled = videoEnabled;
 
 		const auto token = QString("%1-%2").arg(req.session->_clientEntity->id).arg(QDateTime::currentDateTimeUtc().toString());
 		req.server->_tokens.insert(token, req.session->_clientEntity->id);

@@ -105,7 +105,7 @@ void VirtualServer::updateMediaRecipients()
 	auto clients = _clients.values();
 	foreach (auto client, clients)
 	{
-		if (!client || client->mediaAddress.isEmpty() || client->mediaPort <= 0)
+		if (!client || client->mediaAddress.isEmpty() || client->mediaPort <= 0 || !client->videoEnabled)
 		{
 			continue;
 		}

@@ -53,7 +53,6 @@ ClientAppLogic::ClientAppLogic(const Options& opts, QWidget* parent, Qt::WindowF
 
 	d->opts = opts;
 	d->nc = QSharedPointer<NetworkClient>(new NetworkClient());
-	d->camera = d->createCameraFromOptions();
 
 	// Network connection events.
 	connect(d->nc.data(), &NetworkClient::connected, this, &ClientAppLogic::onConnected);
@@ -83,8 +82,8 @@ ClientAppLogic::ClientAppLogic(const Options& opts, QWidget* parent, Qt::WindowF
 	// Start camera.
 	if (!d->opts.cameraDeviceId.isEmpty())
 	{
+		d->camera = d->createCameraFromOptions();
 		viewWidget->setCamera(d->camera);
-		viewWidget->setVideoEnabled(true);
 	}
 
 	d->view = viewWidget;
@@ -113,7 +112,7 @@ QSharedPointer<QCamera> ClientAppLogic::camera()
 	return d->camera;
 }
 
-void ClientAppLogic::init()
+void ClientAppLogic::initNetwork()
 {
 	// If the address is already an IP, we don't need a lookup.
 	auto address = QHostAddress(d->opts.serverAddress);
@@ -149,7 +148,7 @@ void ClientAppLogic::onConnected()
 {
 	// Authenticate.
 	showProgress(tr("Authenticating..."));
-	auto reply = d->nc->auth(d->opts.username, d->opts.serverPassword, !d->opts.cameraDeviceId.isEmpty(), d->opts.authParams);
+	auto reply = d->nc->auth(d->opts.username, d->opts.serverPassword, d->opts.authParams);
 	QObject::connect(reply, &QCorReply::finished, [this, reply]()
 	{
 		HL_DEBUG(HL, QString("Auth answer: %1").arg(QString(reply->frame()->data())).toStdString());
@@ -211,6 +210,14 @@ void ClientAppLogic::onConnected()
 				onClientJoinedChannel(client, channel);
 			}
 			hideProgress();
+
+			// Auto turn ON camera.
+			if (d->camera)
+			{
+				TileViewWidget* tvw = nullptr;
+				if ((tvw = dynamic_cast<TileViewWidget*>(d->view)) != nullptr)
+					tvw->setVideoEnabled(true);
+			}
 		});
 	});
 }
@@ -260,22 +267,12 @@ void ClientAppLogic::onNewVideoFrame(YuvFrameRefPtr frame, int senderId)
 
 void ClientAppLogic::onNetworkUsageUpdated(const NetworkUsageEntity& networkUsage)
 {
-	TileViewWidget* tileView = nullptr;
-	QWidget* w = nullptr;
-
-	//if (d->view && (tileView = dynamic_cast<TileViewWidget*>(d->view)) != nullptr)
-	//{
-	//	tileView->updateNetworkUsage(networkUsage);
-	//}
-	if (d->view && (w = dynamic_cast<QWidget*>(d->view)) != nullptr)
-	{
-		auto s = QString("Received=%1; Sent=%2; D=%3; U=%4")
-				 .arg(ELWS::humanReadableSize(networkUsage.bytesRead))
-				 .arg(ELWS::humanReadableSize(networkUsage.bytesWritten))
-				 .arg(ELWS::humanReadableBandwidth(networkUsage.bandwidthRead))
-				 .arg(ELWS::humanReadableBandwidth(networkUsage.bandwidthWrite));
-		w->setWindowTitle(s);
-	}
+	auto s = QString("Received=%1; Sent=%2; D=%3; U=%4")
+			 .arg(ELWS::humanReadableSize(networkUsage.bytesRead))
+			 .arg(ELWS::humanReadableSize(networkUsage.bytesWritten))
+			 .arg(ELWS::humanReadableBandwidth(networkUsage.bandwidthRead))
+			 .arg(ELWS::humanReadableBandwidth(networkUsage.bandwidthWrite));
+	this->setWindowTitle(QString("%1 (%2)").arg(QApplication::applicationDisplayName()).arg(s));
 }
 
 void ClientAppLogic::showEvent(QShowEvent* e)
@@ -361,4 +358,13 @@ QSharedPointer<QCamera> ClientAppLogicPrivate::createCameraFromOptions() const
 		}
 	}
 	return QSharedPointer<QCamera>(new QCamera(cameraInfo));
+}
+
+///////////////////////////////////////////////////////////////////////
+// AutoNetworkInitLogicProtocol
+///////////////////////////////////////////////////////////////////////
+
+AutoNetworkInitLogicProtocol::AutoNetworkInitLogicProtocol(ClientAppLogic* l) :
+	QObject(l), _logic(l)
+{
 }

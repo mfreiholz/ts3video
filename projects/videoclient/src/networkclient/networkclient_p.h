@@ -27,45 +27,45 @@ class MediaSocket;
 
 class NetworkClientPrivate : public QObject
 {
-  Q_OBJECT
+	Q_OBJECT
 public:
-  NetworkClientPrivate(NetworkClient *o) :
-    QObject(o),
-    owner(o),
-    corSocket(nullptr),
-    mediaSocket(nullptr),
-    goodbye(false),
-    videoStreamingEnabled(false),
-    isAdmin(false),
-    useMediaSocket(true),
-    clientModel(o)
-  {}
-  NetworkClientPrivate(const NetworkClientPrivate &);
-  void reset();
+	NetworkClientPrivate(NetworkClient* o) :
+		QObject(o),
+		owner(o),
+		corSocket(nullptr),
+		mediaSocket(nullptr),
+		goodbye(false),
+		videoStreamingEnabled(false),
+		isAdmin(false),
+		useMediaSocket(true),
+		clientModel(o)
+	{}
+	NetworkClientPrivate(const NetworkClientPrivate&);
+	void reset();
 
 public slots:
-  void onAuthFinished();
-  void onJoinChannelFinished();
+	void onAuthFinished();
+	void onJoinChannelFinished();
 
 public:
-  NetworkClient *owner;
+	NetworkClient* owner;
 
-  // Connection objects.
-  QCorConnection *corSocket;
-  MediaSocket *mediaSocket;
-  QTimer heartbeatTimer;
-  bool goodbye;
+	// Connection objects.
+	QCorConnection* corSocket;
+	MediaSocket* mediaSocket;
+	QTimer heartbeatTimer;
+	bool goodbye;
 
-  // Data about self.
-  ClientEntity clientEntity;
-  bool videoStreamingEnabled;
-  bool isAdmin;
+	// Data about self.
+	ClientEntity clientEntity;
+	bool videoStreamingEnabled;
+	bool isAdmin;
 
-  // Data about others.
-  ClientListModel clientModel;
+	// Data about others.
+	ClientListModel clientModel;
 
-  // DEV
-  bool useMediaSocket; ///< TODO Remove me (DEV ONLY)
+	// DEV
+	bool useMediaSocket; ///< TODO Remove me (DEV ONLY)
 };
 
 #endif

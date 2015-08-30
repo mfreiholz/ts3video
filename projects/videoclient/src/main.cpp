@@ -116,7 +116,7 @@ int runClientAppLogic(QApplication& a)
 	ClientAppLogic win(opts, nullptr, 0);
 	win.resize(600, 400);
 	win.show();
-	win.init();
+	win.initNetwork();
 
 	auto returnCode = a.exec();
 	HL_INFO(HL, QString("Client shutdown (code=%1)").arg(returnCode).toStdString());
@@ -134,7 +134,7 @@ int main(int argc, char* argv[])
 	fac.changeGlobalLogLevel(humble::logging::LogLevel::Debug);
 
 	// Show console window?
-	if (ELWS::getArgsValue("--console", false).toBool())
+	if (ELWS::hasArgsValue("--console"))
 	{
 #ifdef _WIN32
 		AllocConsole();

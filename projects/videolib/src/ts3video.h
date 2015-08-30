@@ -20,7 +20,7 @@
 // Server specific defines.
 ///////////////////////////////////////////////////////////////////////
 
-#define IFVS_SERVER_SUPPORTED_CLIENT_VERSIONS "0.1,0.2,0.3"            ///< Comma separated list of client versions, which the current server build supports.
+#define IFVS_SERVER_SUPPORTED_CLIENT_VERSIONS "0.4"                    ///< Comma separated list of client versions, which the current server build supports.
 #define IFVS_SERVER_ADDRESS "teamspeak.insanefactory.com"              ///< The default server address. Good for testing.
 #define IFVS_SERVER_CONNECTION_PORT 13370                              ///< The default server port to accept connections from clients.
 #define IFVS_SERVER_MEDIA_PORT 13370                                   ///< The default server port to handle media data (e.g. video-stream).
@@ -30,7 +30,7 @@
 // Client specific defines.
 ///////////////////////////////////////////////////////////////////////
 
-#define IFVS_CLIENT_SUPPORTED_SERVER_VERSIONS "0.3"                    ///< Comma separated list of server versions, which the current client build supports.
+#define IFVS_CLIENT_SUPPORTED_SERVER_VERSIONS "0.4"                ///< Comma separated list of server versions, which the current client build supports.
 #define IFVS_CLIENT_VIDEO_SIZE 640, 480                                ///< Keep 4:3 ratio (e.g.: 960x720, 640x480, 480x360)
 
 ///////////////////////////////////////////////////////////////////////

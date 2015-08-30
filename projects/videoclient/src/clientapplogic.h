@@ -76,7 +76,7 @@ public:
 	QSharedPointer<QCamera> camera();
 
 public slots:
-	void init();
+	void initNetwork();
 
 private slots:
 	void onConnected();
