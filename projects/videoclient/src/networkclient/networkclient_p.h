@@ -35,7 +35,6 @@ public:
 		corSocket(nullptr),
 		mediaSocket(nullptr),
 		goodbye(false),
-		videoStreamingEnabled(false),
 		isAdmin(false),
 		useMediaSocket(true),
 		clientModel(o)
@@ -58,7 +57,6 @@ public:
 
 	// Data about self.
 	ClientEntity clientEntity;
-	bool videoStreamingEnabled;
 	bool isAdmin;
 
 	// Data about others.

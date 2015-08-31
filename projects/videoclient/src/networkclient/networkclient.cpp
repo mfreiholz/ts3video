@@ -45,7 +45,6 @@ void NetworkClientPrivate::reset()
 	heartbeatTimer.stop();
 	goodbye = false;
 	clientEntity = ClientEntity();
-	videoStreamingEnabled = false;
 	isAdmin = false;
 	useMediaSocket = true;
 }
@@ -273,7 +272,8 @@ QCorReply* NetworkClient::enableVideoStream()
 
 	HL_DEBUG(HL, QString("Enable video stream").toStdString());
 
-	d->videoStreamingEnabled = true;
+	d->clientEntity.videoEnabled = true;
+	d->clientModel.updateClient(d->clientEntity);
 
 	QCorFrame req;
 	req.setData(JsonProtocolHelper::createJsonRequest("clientenablevideo", QJsonObject()));
@@ -286,7 +286,8 @@ QCorReply* NetworkClient::disableVideoStream()
 
 	HL_DEBUG(HL, QString("Disable video stream").toStdString());
 
-	d->videoStreamingEnabled = false;
+	d->clientEntity.videoEnabled = false;
+	d->clientModel.updateClient(d->clientEntity);
 
 	QCorFrame req;
 	req.setData(JsonProtocolHelper::createJsonRequest("clientdisablevideo", QJsonObject()));
@@ -323,7 +324,7 @@ QCorReply* NetworkClient::disableRemoteVideoStream(int clientId)
 
 void NetworkClient::sendVideoFrame(const QImage& image)
 {
-	if (!d->mediaSocket || !d->videoStreamingEnabled)
+	if (!d->mediaSocket || !d->clientEntity.videoEnabled)
 		return;
 	d->mediaSocket->sendVideoFrame(image, d->clientEntity.id);
 }
