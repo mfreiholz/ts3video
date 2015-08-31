@@ -389,11 +389,11 @@ void TileViewWidget::setVideoEnabled(bool b)
 			if (cam->state() != QCamera::ActiveState)
 			{
 				cam->start();
-				if (nc)
-				{
-					auto reply = nc->enableVideoStream();
-					QCORREPLY_AUTODELETE(reply);
-				}
+			}
+			if (nc)
+			{
+				auto reply = nc->enableVideoStream();
+				QCORREPLY_AUTODELETE(reply);
 			}
 		}
 		else
@@ -401,11 +401,11 @@ void TileViewWidget::setVideoEnabled(bool b)
 			if (cam->state() == QCamera::ActiveState)
 			{
 				cam->stop();
-				if (nc)
-				{
-					auto reply = nc->disableVideoStream();
-					QCORREPLY_AUTODELETE(reply);
-				}
+			}
+			if (nc)
+			{
+				auto reply = nc->disableVideoStream();
+				QCORREPLY_AUTODELETE(reply);
 			}
 		}
 	}

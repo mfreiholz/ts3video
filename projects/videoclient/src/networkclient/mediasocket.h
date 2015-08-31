@@ -42,6 +42,7 @@ protected:
 
 private slots:
 	void onSocketStateChanged(QAbstractSocket::SocketState state);
+	void onSocketError(QAbstractSocket::SocketError error);
 	void onReadyRead();
 };
 

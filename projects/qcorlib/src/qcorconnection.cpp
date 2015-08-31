@@ -1,5 +1,5 @@
+#include <QDataStream>
 #include <QTcpSocket>
-#include "qcorconnection.h"
 #include "qcorconnection_p.h"
 #include "qcorreply.h"
 

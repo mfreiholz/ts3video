@@ -3,7 +3,7 @@ call "%VS120COMNTOOLS%\..\..\Vc\vcvarsall.bat" x86
 
 set MF_BUILD_DIR_NAME=build-win-x86-32
 set MF_BUILD_DIR_PATH=%~dp0%MF_BUILD_DIR_NAME%
-set QTDIR=D:\Development\Libraries\Qt\Online\5.4\msvc2013_opengl
+set QTDIR=D:\Development\Libraries\Qt\Online\5.5\msvc2013
 set PATH=%PATH%;%QTDIR%\bin
 
 rem Print build environment settings.

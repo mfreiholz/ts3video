@@ -5,6 +5,7 @@
 #include <QQueue>
 #include <QHash>
 #include <QDateTime>
+#include "qcorconnection.h"
 #include "corprotocol.h"
 #include "corparser.h"
 #include "qcorframe.h"

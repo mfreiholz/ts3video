@@ -187,16 +187,16 @@ TS3ServerQueryResponse TS3ServerQuery::parse(const QByteArray& data)
 }
 
 
-TS3ServerQueryResponse TS3ServerQuery::parseNext(QIODevice* device) const
-{
-  QTextStream in(device);
-  in.setCodec("UTF-8");
-
-  QString line;
-
-
-  return TS3ServerQueryResponse();
-}
+//TS3ServerQueryResponse TS3ServerQuery::parseNext(QIODevice* device) const
+//{
+//  QTextStream in(device);
+//  in.setCodec("UTF-8");
+//
+//  QString line;
+//
+//
+//  return TS3ServerQueryResponse();
+//}
 
 
 QHash<QString, QString> TS3ServerQuery::findItem(const QList<QHash<QString, QString> >& itemList, const QString& key, const QString& value)

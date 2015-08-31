@@ -71,7 +71,7 @@ public:
   bool isErrorLine(const QString& data) const;
 
   TS3ServerQueryResponse parse(const QByteArray& data);
-  TS3ServerQueryResponse parseNext(QIODevice* device) const;
+  //TS3ServerQueryResponse parseNext(QIODevice* device) const;
 
   /*
     Finds the first Item with a matching key<=>value combination.

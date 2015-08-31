@@ -35,8 +35,9 @@ MediaSocket::MediaSocket(const QString& token, QObject* parent) :
 	d(new MediaSocketPrivate(this))
 {
 	connect(this, &MediaSocket::stateChanged, this, &MediaSocket::onSocketStateChanged);
+	connect(this, static_cast<void(MediaSocket::*)(QAbstractSocket::SocketError)>(&MediaSocket::error), this, &MediaSocket::onSocketError);
 	connect(this, &MediaSocket::readyRead, this, &MediaSocket::onReadyRead);
-
+	
 	d->token = token;
 
 	static quint64 __frameId = 1;
@@ -207,6 +208,7 @@ void MediaSocket::timerEvent(QTimerEvent* ev)
 
 void MediaSocket::onSocketStateChanged(QAbstractSocket::SocketState state)
 {
+	HL_DEBUG(HL, QString("Socket state changed (state=%1)").arg(state).toStdString());
 	switch (state)
 	{
 	case QAbstractSocket::ConnectedState:
@@ -218,6 +220,11 @@ void MediaSocket::onSocketStateChanged(QAbstractSocket::SocketState state)
 	case QAbstractSocket::UnconnectedState:
 		break;
 	}
+}
+
+void MediaSocket::onSocketError(QAbstractSocket::SocketError error)
+{
+	HL_ERROR(HL, QString("Socket error (err=%1; message=%2)").arg(error).arg(errorString()).toStdString());
 }
 
 void MediaSocket::onReadyRead()
@@ -249,7 +256,6 @@ void MediaSocket::onReadyRead()
 		in >> dg.type;
 		switch (dg.type)
 		{
-
 		// Video data.
 		case UDP::VideoFrameDatagram::TYPE:
 		{
@@ -305,7 +311,6 @@ void MediaSocket::onReadyRead()
 			}
 			break;
 		}
-
 		// Video recovery.
 		case UDP::VideoFrameRecoveryDatagram::TYPE:
 		{
@@ -316,7 +321,6 @@ void MediaSocket::onReadyRead()
 			d->videoEncodingThread->enqueueRecovery();
 			break;
 		}
-
 		}
 	}
 }
