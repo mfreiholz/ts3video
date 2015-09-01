@@ -267,12 +267,12 @@ void ClientAppLogic::onNewVideoFrame(YuvFrameRefPtr frame, int senderId)
 
 void ClientAppLogic::onNetworkUsageUpdated(const NetworkUsageEntity& networkUsage)
 {
-	auto s = QString("Received=%1; Sent=%2; D=%3; U=%4")
-			 .arg(ELWS::humanReadableSize(networkUsage.bytesRead))
-			 .arg(ELWS::humanReadableSize(networkUsage.bytesWritten))
-			 .arg(ELWS::humanReadableBandwidth(networkUsage.bandwidthRead))
-			 .arg(ELWS::humanReadableBandwidth(networkUsage.bandwidthWrite));
-	this->setWindowTitle(QString("%1 (%2)").arg(QApplication::applicationDisplayName()).arg(s));
+	//auto s = QString("Received=%1; Sent=%2; D=%3; U=%4")
+	//		 .arg(ELWS::humanReadableSize(networkUsage.bytesRead))
+	//		 .arg(ELWS::humanReadableSize(networkUsage.bytesWritten))
+	//		 .arg(ELWS::humanReadableBandwidth(networkUsage.bandwidthRead))
+	//		 .arg(ELWS::humanReadableBandwidth(networkUsage.bandwidthWrite));
+	//this->setWindowTitle(QString("%1 (%2)").arg(QApplication::applicationDisplayName()).arg(s));
 }
 
 void ClientAppLogic::showEvent(QShowEvent* e)
