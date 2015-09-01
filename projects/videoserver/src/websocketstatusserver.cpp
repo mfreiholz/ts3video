@@ -227,7 +227,7 @@ QJsonValue WebSocketStatusServer::getClientsInfo() const
 			QJsonObject jsConn;
 			jsConn.insert("address", "n/a");
 			jsConn.insert("port", 0);
-			jsConn.insert("mediaaddress", clientEntity->mediaAddress);
+			jsConn.insert("mediaaddress", clientEntity->mediaAddress.toString());
 			jsConn.insert("mediaport", clientEntity->mediaPort);
 			jsClient.insert("connection", jsConn);
 		}

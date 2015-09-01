@@ -105,7 +105,7 @@ void VirtualServer::updateMediaRecipients()
 	auto clients = _clients.values();
 	foreach (auto client, clients)
 	{
-		if (!client || client->mediaAddress.isEmpty() || client->mediaPort <= 0 || !client->videoEnabled)
+		if (!client || client->mediaAddress.isNull() || client->mediaPort <= 0 || !client->videoEnabled)
 		{
 			continue;
 		}
@@ -115,24 +115,25 @@ void VirtualServer::updateMediaRecipients()
 		sender.port = client->mediaPort;
 		sender.id = MediaSenderEntity::createID(sender.address, sender.port);
 
+		MediaReceiverEntity r;
+		r.clientId = client->id;
+		r.address = client->mediaAddress;
+		r.port = client->mediaPort;
+		recips.clientid2receiver.insert(r.clientId, r);
+
 		auto siblingClientIds = getSiblingClientIds(client->id);
 		foreach (auto siblingClientId, siblingClientIds)
 		{
 			auto client2 = _clients.value(siblingClientId);
-			if (!client2 || (!sendBackOwnVideo && client2 == client) || client2->mediaAddress.isEmpty() || client2->mediaPort <= 0)
+			if (!client2 || (!sendBackOwnVideo && client2 == client) || client2->mediaAddress.isNull() || client2->mediaPort <= 0)
 			{
 				continue;
 			}
 			MediaReceiverEntity receiver;
 			receiver.clientId = client2->id;
-			receiver.address = QHostAddress(client2->mediaAddress);
+			receiver.address = client2->mediaAddress;
 			receiver.port = client2->mediaPort;
 			sender.receivers.append(receiver);
-
-			if (!recips.clientid2receiver.contains(receiver.clientId))
-			{
-				recips.clientid2receiver.insert(receiver.clientId, receiver);
-			}
 		}
 		recips.id2sender.insert(sender.id, sender);
 	}
@@ -251,7 +252,7 @@ void VirtualServer::onMediaSocketTokenAuthentication(const QString& token, const
 	}
 
 	// Update client-info.
-	clientEntity->mediaAddress = address.toString();
+	clientEntity->mediaAddress = address;
 	clientEntity->mediaPort = port;
 
 	// Notify client about the successful media authentication.

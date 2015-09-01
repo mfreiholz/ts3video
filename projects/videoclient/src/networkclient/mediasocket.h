@@ -35,6 +35,7 @@ signals:
 	void networkUsageUpdated(const NetworkUsageEntity& networkUsage);
 
 protected:
+	void sendKeepAliveDatagram();
 	void sendAuthTokenDatagram(const QString& token);
 	void sendVideoFrame(const QByteArray& frame, quint64 frameId, quint32 senderId);
 	void sendVideoFrameRecoveryDatagram(quint64 frameId, quint32 fromSenderId);

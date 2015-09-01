@@ -4,6 +4,7 @@
 #include <QString>
 #include <QJsonObject>
 #include <QMetaType>
+#include <QHostAddress>
 
 /*!
     This object always needs to be fully copyable.
@@ -22,7 +23,8 @@ public:
 public:
 	int id; ///< The client's ID assigned by server.
 	QString name; ///< Visible name of the client.
-	QString mediaAddress; ///< Do not serialize, as long as we don't support P2P streaming.
+
+	QHostAddress mediaAddress; ///< Do not serialize, as long as we don't support P2P streaming.
 	quint16 mediaPort; ///< Do not serialize, as long as we don't support P2P streaming.
 
 	// Video settings.

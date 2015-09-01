@@ -47,6 +47,6 @@ QJsonObject ClientEntity::toQJsonObject() const
 QString ClientEntity::toString() const
 {
 	QStringList sl;
-	sl << QString::number(id) << name << mediaAddress << QString::number(mediaPort) << QString::number(videoEnabled ? 1 : 0);
+	sl << QString::number(id) << name << mediaAddress.toString() << QString::number(mediaPort) << QString::number(videoEnabled ? 1 : 0);
 	return sl.join("#");
 }

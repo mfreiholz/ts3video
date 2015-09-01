@@ -68,6 +68,11 @@ MediaSocket::~MediaSocket()
 		killTimer(d->authenticationTimerId);
 	}
 
+	if (d->keepAliveTimerId != -1)
+	{
+		killTimer(d->keepAliveTimerId);
+	}
+
 	while (!d->videoFrameDatagramDecoders.isEmpty())
 	{
 		auto obj = d->videoFrameDatagramDecoders.take(d->videoFrameDatagramDecoders.begin().key());
@@ -102,6 +107,10 @@ void MediaSocket::setAuthenticated(bool yesno)
 		killTimer(d->authenticationTimerId);
 		d->authenticationTimerId = -1;
 	}
+	if (d->authenticated)
+	{
+		d->keepAliveTimerId = startTimer(1000);
+	}
 }
 
 void MediaSocket::sendVideoFrame(const QImage& image, int senderId)
@@ -112,6 +121,24 @@ void MediaSocket::sendVideoFrame(const QImage& image, int senderId)
 		return;
 	}
 	d->videoEncodingThread->enqueue(image, senderId);
+}
+
+void MediaSocket::sendKeepAliveDatagram()
+{
+	UDP::Datagram dg;
+	dg.type = 100;
+
+	QByteArray data;
+	QDataStream out(&data, QIODevice::WriteOnly);
+	out.setByteOrder(QDataStream::BigEndian);
+	out << dg.magic;
+	out << dg.type;
+	
+	auto written = writeDatagram(data, peerAddress(), peerPort());
+	if (written <= 0)
+		HL_ERROR(HL, "Can not write keep alive datagram.");
+	else
+		d->networkUsage.bytesWritten += written;
 }
 
 void MediaSocket::sendAuthTokenDatagram(const QString& token)
@@ -203,6 +230,10 @@ void MediaSocket::timerEvent(QTimerEvent* ev)
 	if (ev->timerId() == d->authenticationTimerId)
 	{
 		sendAuthTokenDatagram(d->token);
+	}
+	else if (ev->timerId() == d->keepAliveTimerId)
+	{
+		sendKeepAliveDatagram();
 	}
 }
 

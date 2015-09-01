@@ -36,8 +36,8 @@ ClientCameraVideoWidget::ClientCameraVideoWidget(const QSharedPointer<NetworkCli
 	setLayout(mainLayout);
 
 	// Create widget to render video frames.
-	//auto videoWidget = new VideoWidget(VideoWidget::OpenGL_ImageWidget);
-	auto videoWidget = new VideoWidget(VideoWidget::CPU);
+	auto videoWidget = new VideoWidget(VideoWidget::OpenGL_ImageWidget);
+	//auto videoWidget = new VideoWidget(VideoWidget::CPU);
 	mainLayout->addWidget(videoWidget, 1);
 	_videoWidget = videoWidget;
 

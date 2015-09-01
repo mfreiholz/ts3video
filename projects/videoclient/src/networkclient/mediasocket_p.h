@@ -16,6 +16,7 @@ public:
 		owner(o),
 		authenticated(false),
 		authenticationTimerId(-1),
+		keepAliveTimerId(-1),
 		videoEncodingThread(new VideoEncodingThread(this)),
 		lastFrameRequestTimestamp(0),
 		videoDecodingThread(new VideoDecodingThread(this)),
@@ -29,6 +30,7 @@ public:
 	bool authenticated;
 	QString token;
 	int authenticationTimerId;
+	int keepAliveTimerId;
 
 	// Encoding.
 	VideoEncodingThread* videoEncodingThread;
