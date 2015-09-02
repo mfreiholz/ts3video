@@ -1,18 +1,5 @@
 @echo off
-call "%VS120COMNTOOLS%\..\..\Vc\vcvarsall.bat" x86
-
-set MF_BUILD_DIR_NAME=build-win-x86-32
-set MF_BUILD_DIR_PATH=%~dp0%MF_BUILD_DIR_NAME%
-set QTDIR=D:\Development\Libraries\Qt\Online\5.3\msvc2013_opengl
-set PATH=%PATH%;%QTDIR%\bin
-
-rem Print build environment settings.
-echo.
-echo Build environment
-echo     MF_BUILD_DIR_NAME: %MF_BUILD_DIR_NAME%
-echo     MF_BUILD_DIR_PATH: %MF_BUILD_DIR_PATH%
-echo     QTDIR: %QTDIR%
-echo.
+call "env-win-x86-32.bat"
 
 rem Create and enter build directory.
 cd /d %~dp0
