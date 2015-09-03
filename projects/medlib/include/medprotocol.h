@@ -58,6 +58,18 @@ public:
 	dg_byte_t* data;
 };
 
+/*
+*/
+class KeepAliveDatagram : public Datagram
+{
+public:
+	static const dg_type_t TYPE = 0x10;
+	static const dg_size_t MAXSIZE = Datagram::MAXSIZE - 0;
+
+	KeepAliveDatagram() : Datagram(TYPE) {}
+	~KeepAliveDatagram() {}
+};
+
 ///////////////////////////////////////////////////////////////////////
 // Video
 ///////////////////////////////////////////////////////////////////////
