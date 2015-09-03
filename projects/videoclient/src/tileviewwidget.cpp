@@ -193,6 +193,12 @@ TileViewWidget::TileViewWidget(QWidget* parent, Qt::WindowFlags f) :
 	{
 		d->bandwidthRead->setText(QString("D: %1").arg(ELWS::humanReadableBandwidth(networkUsage.bandwidthRead)));
 		d->bandwidthWrite->setText(QString("U: %1").arg(ELWS::humanReadableBandwidth(networkUsage.bandwidthWrite)));
+		if (d->bandwidthRead->parentWidget())
+		{
+			d->bandwidthRead->parentWidget()->setToolTip(tr("Received: %1\nSent: %2")
+					.arg(ELWS::humanReadableSize(networkUsage.bytesRead))
+					.arg(ELWS::humanReadableSize(networkUsage.bytesWritten)));
+		}
 	});
 	QObject::connect(d->zoomInButton, &QPushButton::clicked, [this]()
 	{
@@ -368,11 +374,11 @@ void TileViewWidget::setTileSize(const QSize& size)
 
 	QList<QWidget*> widgets;
 	widgets.append(d->cameraWidget);
-	Q_FOREACH (auto w, d->tilesMap.values())
+	foreach (auto w, d->tilesMap.values())
 	{
 		widgets.append(w);
 	}
-	Q_FOREACH (auto w, widgets)
+	foreach (auto w, widgets)
 	{
 		w->setFixedSize(newSize);
 	}
@@ -465,7 +471,8 @@ void TileViewWidget::onClientDisabledVideo(const ClientEntity& c)
 	auto w = d->tilesMap.value(c.id);
 	if (w)
 	{
-		w->_videoWidget->videoWidget()->setFrame(QImage());
+		auto yuv = YuvFrameRefPtr(YuvFrame::createBlackImage(10, 10));
+		w->_videoWidget->videoWidget()->setFrame(yuv->toQImage());
 	}
 }
 
