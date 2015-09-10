@@ -59,24 +59,23 @@ VirtualServer::~VirtualServer()
 bool VirtualServer::init()
 {
 	// Init QCorServer listening for new client connections.
-	const quint16 port = _opts.port;
-	if (!_corServer.listen(_opts.address, port))
+	if (!_corServer.listen(_opts.address, _opts.port))
 	{
-		HL_ERROR(HL, QString("Can not bind to TCP port (port=%1)").arg(port).toStdString());
+		HL_ERROR(HL, QString("Can not bind to TCP port (port=%1)").arg(_opts.port).toStdString());
 		return false;
 	}
 	connect(&_corServer, &QCorServer::newConnection, this, &VirtualServer::onNewConnection);
-	HL_INFO(HL, QString("Listening for client connections (protocol=TCP; address=%1; port=%2)").arg(_opts.address.toString()).arg(port).toStdString());
+	HL_INFO(HL, QString("Listening for client connections (protocol=TCP; address=%1; port=%2)").arg(_opts.address.toString()).arg(_opts.port).toStdString());
 
 	// Init media socket.
-	_mediaSocketHandler = new MediaSocketHandler(port, this);
+	_mediaSocketHandler = new MediaSocketHandler(_opts.address, _opts.port, this);
 	if (!_mediaSocketHandler->init())
 	{
 		return false;
 	}
 	connect(_mediaSocketHandler, &MediaSocketHandler::tokenAuthentication, this, &VirtualServer::onMediaSocketTokenAuthentication);
 	connect(_mediaSocketHandler, &MediaSocketHandler::networkUsageUpdated, this, &VirtualServer::onMediaSocketNetworkUsageUpdated);
-	HL_INFO(HL, QString("Listening for media data (protocol=UDP; address=%1; port=%2)").arg(_opts.address.toString()).arg(port).toStdString());
+	HL_INFO(HL, QString("Listening for media data (protocol=UDP; address=%1; port=%2)").arg(_opts.address.toString()).arg(_opts.port).toStdString());
 
 	// Init status web-socket.
 	WebSocketStatusServer::Options wsopts;

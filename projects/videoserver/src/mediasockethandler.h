@@ -55,7 +55,7 @@ class MediaSocketHandler : public QObject
 	Q_OBJECT
 
 public:
-	MediaSocketHandler(quint16 port, QObject* parent);
+	MediaSocketHandler(const QHostAddress& address, quint16 port, QObject* parent);
 	~MediaSocketHandler();
 	bool init();
 	void setRecipients(const MediaRecipients& rec);
@@ -74,6 +74,7 @@ private slots:
 	void onReadyRead();
 
 private:
+	QHostAddress _address;
 	quint16 _port;
 	QUdpSocket _socket;
 	MediaRecipients _recipients;

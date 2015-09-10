@@ -14,8 +14,9 @@ HUMBLE_LOGGER(HL, "server.mediasocket");
 
 ///////////////////////////////////////////////////////////////////////
 
-MediaSocketHandler::MediaSocketHandler(quint16 port, QObject* parent) :
+MediaSocketHandler::MediaSocketHandler(const QHostAddress& address, quint16 port, QObject* parent) :
 	QObject(parent),
+	_address(address),
 	_port(port),
 	_socket(this),
 	_networkUsage(),
@@ -41,7 +42,7 @@ MediaSocketHandler::~MediaSocketHandler()
 
 bool MediaSocketHandler::init()
 {
-	if (!_socket.bind(QHostAddress::Any, _port, QAbstractSocket::DontShareAddress))
+	if (!_socket.bind(_address, _port, QAbstractSocket::DontShareAddress))
 	{
 		HL_ERROR(HL, QString("Can not bind to UDP port (port=%1)").arg(_port).toStdString());
 		return false;
