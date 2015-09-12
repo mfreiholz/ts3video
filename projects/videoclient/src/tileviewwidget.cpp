@@ -257,13 +257,14 @@ TileViewWidget::TileViewWidget(QWidget* parent, Qt::WindowFlags f) :
 	d->showLeftPanelButton = showLeftPanelButton;
 	d->userListWidget = userListWidget;
 
-
 	resize(800, 600);
 	setVisible(true);
 }
 
 TileViewWidget::~TileViewWidget()
 {
+	if (d->camera)
+		d->camera->disconnect(this);
 }
 
 void TileViewWidget::setClientListModel(ClientListModel* model)
@@ -290,43 +291,11 @@ void TileViewWidget::setClientListModel(ClientListModel* model)
 
 void TileViewWidget::setCamera(const QSharedPointer<QCamera>& c)
 {
+	d->camera = c;
 	d->cameraWidget->setCamera(c);
 	d->cameraWidget->setVisible(true);
 	d->enableVideoToggleButton->setVisible(true);
-	QObject::connect(c.data(), &QCamera::statusChanged, [this](QCamera::Status s)
-	{
-		switch (s)
-		{
-		case QCamera::ActiveStatus:
-			d->enableVideoToggleButton->setEnabled(true);
-			break;
-		case QCamera::StartingStatus:
-			d->enableVideoToggleButton->setEnabled(false);
-			break;
-		case QCamera::StoppingStatus:
-			d->enableVideoToggleButton->setEnabled(false);
-			break;
-		case QCamera::StandbyStatus:
-			d->enableVideoToggleButton->setEnabled(true);
-			break;
-		case QCamera::LoadedStatus:
-			d->enableVideoToggleButton->setEnabled(true);
-			d->cameraWidget->_cameraWidget->setFrame(QImage());
-			break;
-		case QCamera::LoadingStatus:
-			d->enableVideoToggleButton->setEnabled(false);
-			break;
-		case QCamera::UnloadingStatus:
-			d->enableVideoToggleButton->setEnabled(false);
-			break;
-		case QCamera::UnloadedStatus:
-			d->enableVideoToggleButton->setEnabled(true);
-			break;
-		case QCamera::UnavailableStatus:
-			d->enableVideoToggleButton->setEnabled(false);
-			break;
-		}
-	});
+	QObject::connect(c.data(), &QCamera::statusChanged, this, &TileViewWidget::onCameraStatusChanged);
 }
 
 void TileViewWidget::addClient(const ClientEntity& client, const ChannelEntity& channel)
@@ -473,6 +442,41 @@ void TileViewWidget::onClientDisabledVideo(const ClientEntity& c)
 	{
 		auto yuv = YuvFrameRefPtr(YuvFrame::createBlackImage(10, 10));
 		w->_videoWidget->videoWidget()->setFrame(yuv->toQImage());
+	}
+}
+
+void TileViewWidget::onCameraStatusChanged(QCamera::Status s)
+{
+	switch (s)
+	{
+	case QCamera::ActiveStatus:
+		d->enableVideoToggleButton->setEnabled(true);
+		break;
+	case QCamera::StartingStatus:
+		d->enableVideoToggleButton->setEnabled(false);
+		break;
+	case QCamera::StoppingStatus:
+		d->enableVideoToggleButton->setEnabled(false);
+		break;
+	case QCamera::StandbyStatus:
+		d->enableVideoToggleButton->setEnabled(true);
+		break;
+	case QCamera::LoadedStatus:
+		d->enableVideoToggleButton->setEnabled(true);
+		d->cameraWidget->_cameraWidget->setFrame(QImage());
+		break;
+	case QCamera::LoadingStatus:
+		d->enableVideoToggleButton->setEnabled(false);
+		break;
+	case QCamera::UnloadingStatus:
+		d->enableVideoToggleButton->setEnabled(false);
+		break;
+	case QCamera::UnloadedStatus:
+		d->enableVideoToggleButton->setEnabled(true);
+		break;
+	case QCamera::UnavailableStatus:
+		d->enableVideoToggleButton->setEnabled(false);
+		break;
 	}
 }
 

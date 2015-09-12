@@ -3,6 +3,7 @@
 
 #include <QScopedPointer>
 #include <QWidget>
+#include <QCamera>
 
 #include "viewbase.h"
 
@@ -34,6 +35,7 @@ protected:
 private slots:
 	void onClientEnabledVideo(const ClientEntity& c);
 	void onClientDisabledVideo(const ClientEntity& c);
+	void onCameraStatusChanged(QCamera::Status s);
 };
 
 #endif

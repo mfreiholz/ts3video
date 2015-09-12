@@ -44,7 +44,7 @@ ClientAppLogic* ClientAppLogic::instance()
 
 ///////////////////////////////////////////////////////////////////////
 
-ClientAppLogic::ClientAppLogic(const Options& opts, QWidget* parent, Qt::WindowFlags flags) :
+ClientAppLogic::ClientAppLogic(const Options& opts, const QSharedPointer<NetworkClient>& nc, QWidget* parent, Qt::WindowFlags flags) :
 	QMainWindow(parent, flags),
 	d(new ClientAppLogicPrivate(this))
 {
@@ -52,18 +52,19 @@ ClientAppLogic::ClientAppLogic(const Options& opts, QWidget* parent, Qt::WindowF
 		gFirstInstance = this;
 
 	d->opts = opts;
-	d->nc = QSharedPointer<NetworkClient>(new NetworkClient());
+	d->nc = nc;
 
 	// Network connection events.
-	connect(d->nc.data(), &NetworkClient::connected, this, &ClientAppLogic::onConnected);
-	connect(d->nc.data(), &NetworkClient::disconnected, this, &ClientAppLogic::onDisconnected);
-	connect(d->nc.data(), &NetworkClient::error, this, &ClientAppLogic::onError);
-	connect(d->nc.data(), &NetworkClient::serverError, this, &ClientAppLogic::onServerError);
-	connect(d->nc.data(), &NetworkClient::clientJoinedChannel, this, &ClientAppLogic::onClientJoinedChannel);
-	connect(d->nc.data(), &NetworkClient::clientLeftChannel, this, &ClientAppLogic::onClientLeftChannel);
-	connect(d->nc.data(), &NetworkClient::clientDisconnected, this, &ClientAppLogic::onClientDisconnected);
-	connect(d->nc.data(), &NetworkClient::newVideoFrame, this, &ClientAppLogic::onNewVideoFrame);
-	connect(d->nc.data(), &NetworkClient::networkUsageUpdated, this, &ClientAppLogic::onNetworkUsageUpdated);
+	//d->nc = QSharedPointer<NetworkClient>(new NetworkClient());
+	//connect(d->nc.data(), &NetworkClient::connected, this, &ClientAppLogic::onConnected);
+	//connect(d->nc.data(), &NetworkClient::disconnected, this, &ClientAppLogic::onDisconnected);
+	//connect(d->nc.data(), &NetworkClient::error, this, &ClientAppLogic::onError);
+	//connect(d->nc.data(), &NetworkClient::serverError, this, &ClientAppLogic::onServerError);
+	//connect(d->nc.data(), &NetworkClient::clientJoinedChannel, this, &ClientAppLogic::onClientJoinedChannel);
+	//connect(d->nc.data(), &NetworkClient::clientLeftChannel, this, &ClientAppLogic::onClientLeftChannel);
+	//connect(d->nc.data(), &NetworkClient::clientDisconnected, this, &ClientAppLogic::onClientDisconnected);
+	//connect(d->nc.data(), &NetworkClient::newVideoFrame, this, &ClientAppLogic::onNewVideoFrame);
+	//connect(d->nc.data(), &NetworkClient::networkUsageUpdated, this, &ClientAppLogic::onNetworkUsageUpdated);
 
 	// Global progress dialog.
 	d->progressDialog = new QProgressDialog(this, Qt::FramelessWindowHint);
@@ -76,7 +77,6 @@ ClientAppLogic::ClientAppLogic(const Options& opts, QWidget* parent, Qt::WindowF
 
 	// Central view widget.
 	auto viewWidget = new TileViewWidget(this);
-	viewWidget->setClientListModel(d->nc->clientModel());
 	setCentralWidget(viewWidget);
 
 	// Start camera.
@@ -96,9 +96,42 @@ ClientAppLogic::~ClientAppLogic()
 		gFirstInstance = nullptr;
 	}
 	hideProgress();
+	if (d->nc)
+	{
+		d->nc->disconnect(this);
+	}
 	if (d->view)
 	{
 		delete d->view;
+	}
+	if (d->camera)
+	{
+		d->camera->stop();
+	}
+}
+
+void ClientAppLogic::start()
+{
+	connect(d->nc.data(), &NetworkClient::error, this, &ClientAppLogic::onError);
+	connect(d->nc.data(), &NetworkClient::serverError, this, &ClientAppLogic::onServerError);
+	connect(d->nc.data(), &NetworkClient::clientJoinedChannel, this, &ClientAppLogic::onClientJoinedChannel);
+	connect(d->nc.data(), &NetworkClient::clientLeftChannel, this, &ClientAppLogic::onClientLeftChannel);
+	connect(d->nc.data(), &NetworkClient::clientDisconnected, this, &ClientAppLogic::onClientDisconnected);
+	connect(d->nc.data(), &NetworkClient::newVideoFrame, this, &ClientAppLogic::onNewVideoFrame);
+
+	auto m = d->nc->clientModel();
+	for (auto i = 0; i < m->rowCount(); ++i)
+	{
+		auto c = m->data(m->index(i), ClientListModel::ClientEntityRole).value<ClientEntity>();
+		onClientJoinedChannel(c, ChannelEntity());
+	}
+
+	// Auto turn ON camera.
+	if (d->camera)
+	{
+		TileViewWidget* tvw = nullptr;
+		if ((tvw = dynamic_cast<TileViewWidget*>(d->view)) != nullptr)
+			tvw->setVideoEnabled(true);
 	}
 }
 
@@ -107,12 +140,7 @@ QSharedPointer<NetworkClient> ClientAppLogic::networkClient()
 	return d->nc;
 }
 
-QSharedPointer<QCamera> ClientAppLogic::camera()
-{
-	return d->camera;
-}
-
-void ClientAppLogic::initNetwork()
+/*void ClientAppLogic::initNetwork()
 {
 	// If the address is already an IP, we don't need a lookup.
 	auto address = QHostAddress(d->opts.serverAddress);
@@ -142,9 +170,9 @@ void ClientAppLogic::initNetwork()
 		showProgress(tr("Connecting to server %1:%2 (address=%3)").arg(d->opts.serverAddress).arg(d->opts.serverPort).arg(address.toString()));
 		d->nc->connectToHost(address, d->opts.serverPort);
 	});
-}
+}*/
 
-void ClientAppLogic::onConnected()
+/*void ClientAppLogic::onConnected()
 {
 	// Authenticate.
 	showProgress(tr("Authenticating..."));
@@ -220,12 +248,12 @@ void ClientAppLogic::onConnected()
 			}
 		});
 	});
-}
+}*/
 
-void ClientAppLogic::onDisconnected()
+/*void ClientAppLogic::onDisconnected()
 {
 	HL_INFO(HL, QString("Disconnected").toStdString());
-}
+}*/
 
 void ClientAppLogic::onError(QAbstractSocket::SocketError socketError)
 {
@@ -263,16 +291,6 @@ void ClientAppLogic::onClientDisconnected(const ClientEntity& client)
 void ClientAppLogic::onNewVideoFrame(YuvFrameRefPtr frame, int senderId)
 {
 	d->view->updateClientVideo(frame, senderId);
-}
-
-void ClientAppLogic::onNetworkUsageUpdated(const NetworkUsageEntity& networkUsage)
-{
-	//auto s = QString("Received=%1; Sent=%2; D=%3; U=%4")
-	//		 .arg(ELWS::humanReadableSize(networkUsage.bytesRead))
-	//		 .arg(ELWS::humanReadableSize(networkUsage.bytesWritten))
-	//		 .arg(ELWS::humanReadableBandwidth(networkUsage.bandwidthRead))
-	//		 .arg(ELWS::humanReadableBandwidth(networkUsage.bandwidthWrite));
-	//this->setWindowTitle(QString("%1 (%2)").arg(QApplication::applicationDisplayName()).arg(s));
 }
 
 void ClientAppLogic::showEvent(QShowEvent* e)
@@ -358,13 +376,4 @@ QSharedPointer<QCamera> ClientAppLogicPrivate::createCameraFromOptions() const
 		}
 	}
 	return QSharedPointer<QCamera>(new QCamera(cameraInfo));
-}
-
-///////////////////////////////////////////////////////////////////////
-// AutoNetworkInitLogicProtocol
-///////////////////////////////////////////////////////////////////////
-
-AutoNetworkInitLogicProtocol::AutoNetworkInitLogicProtocol(ClientAppLogic* l) :
-	QObject(l), _logic(l)
-{
 }

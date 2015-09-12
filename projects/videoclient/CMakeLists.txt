@@ -30,6 +30,7 @@ set(qheaders
   src/clientapplogic_p.h
   src/clientcameravideowidget.h
   src/remoteclientvideowidget.h
+  src/startuplogic.h
   src/startupwidget.h
 #  src/hangoutviewwidget.h
 #  src/hangoutviewwidget_p.h
@@ -55,6 +56,7 @@ set(qheaders
   src/networkclient/vp8decoder.h
   src/networkclient/clientlistmodel.h
   src/networkclient/clientlistmodel_p.h
+  src/startup/ts3videostartuplogic.h
 )
 
 set(sources
@@ -67,6 +69,7 @@ set(sources
   src/clientapplogic.cpp
   src/clientcameravideowidget.cpp
   src/remoteclientvideowidget.cpp
+  src/startuplogic.cpp
   src/startupwidget.cpp
 #  src/hangoutviewwidget.cpp
   src/viewbase.cpp
@@ -85,12 +88,14 @@ set(sources
   src/networkclient/vp8encoder.cpp
   src/networkclient/vp8decoder.cpp
   src/networkclient/clientlistmodel.cpp
+  src/startup/ts3videostartuplogic.cpp
 )
 
 set(qforms
   src/adminauthwidget.ui
   src/startupwidget.ui
   src/aboutwidget.ui
+  src/startup/ts3videostartuplogic.ui
 )
 
 set(qresources

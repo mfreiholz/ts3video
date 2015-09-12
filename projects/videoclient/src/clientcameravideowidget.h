@@ -4,6 +4,8 @@
 #include <QPointer>
 #include <QWidget>
 #include <QCamera>
+#include <QScopedPointer>
+#include "cameraframegrabber.h"
 class QImage;
 class QCameraInfo;
 class NetworkClient;
@@ -15,16 +17,20 @@ class ClientCameraVideoWidget : public QWidget
 
 public:
 	ClientCameraVideoWidget(const QSharedPointer<NetworkClient>& nc, const QSharedPointer<QCamera>& camera, QWidget* parent);
-	~ClientCameraVideoWidget();
+	virtual ~ClientCameraVideoWidget();
 	QSharedPointer<NetworkClient> networkClient() const;
 	QSharedPointer<QCamera> camera() const;
 
 public slots:
 	void setFrame(const QImage& f);
 
+private slots:
+	void onNewQImage(const QImage& image);
+
 private:
 	QSharedPointer<NetworkClient> _ts3vc;
 	QSharedPointer<QCamera> _camera;
+	QScopedPointer<CameraFrameGrabber> _grabber;
 	VideoWidget* _videoWidget;
 };
 

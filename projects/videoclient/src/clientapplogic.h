@@ -14,6 +14,7 @@
 #include "yuvframe.h"
 
 #include "networkclient/networkclient.h"
+#include "networkclient/clientlistmodel.h"
 
 class QWidget;
 class QProgressDialog;
@@ -70,24 +71,23 @@ public:
 	static ClientAppLogic* instance();
 
 public:
-	ClientAppLogic(const Options& opts, QWidget* parent, Qt::WindowFlags flags);
+	ClientAppLogic(const Options& opts, const QSharedPointer<NetworkClient>& nc, QWidget* parent, Qt::WindowFlags flags);
 	virtual ~ClientAppLogic();
+	void start();
 	QSharedPointer<NetworkClient> networkClient();
-	QSharedPointer<QCamera> camera();
 
-public slots:
-	void initNetwork();
+//public slots:
+//	void initNetwork();
 
 private slots:
-	void onConnected();
-	void onDisconnected();
+	//void onConnected();
+	//void onDisconnected();
 	void onError(QAbstractSocket::SocketError socketError);
 	void onServerError(int code, const QString& message);
 	void onClientJoinedChannel(const ClientEntity& client, const ChannelEntity& channel);
 	void onClientLeftChannel(const ClientEntity& client, const ChannelEntity& channel);
 	void onClientDisconnected(const ClientEntity& client);
 	void onNewVideoFrame(YuvFrameRefPtr frame, int senderId);
-	void onNetworkUsageUpdated(const NetworkUsageEntity& networkUsage);
 
 protected:
 	virtual void showEvent(QShowEvent* e);

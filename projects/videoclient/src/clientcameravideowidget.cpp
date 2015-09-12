@@ -4,7 +4,6 @@
 #include <QBoxLayout>
 #include <QLabel>
 #include <QCameraInfo>
-#include <QCamera>
 #include <QMessageBox>
 
 #include "humblelogging/api.h"
@@ -12,7 +11,6 @@
 #include "elws.h"
 
 #include "networkclient/networkclient.h"
-#include "cameraframegrabber.h"
 #include "videowidget.h"
 
 HUMBLE_LOGGER(HL, "client.camera");
@@ -26,9 +24,8 @@ ClientCameraVideoWidget::ClientCameraVideoWidget(const QSharedPointer<NetworkCli
 	_videoWidget(nullptr)
 {
 	// Load camera and forward frames to grabber.
-	auto grabber = new CameraFrameGrabber(this);
-	camera->setViewfinder(grabber);
-	//camera->start();
+	_grabber.reset(new CameraFrameGrabber(this));
+	camera->setViewfinder(_grabber.data());
 
 	// GUI
 	auto mainLayout = new QBoxLayout(QBoxLayout::TopToBottom);
@@ -36,24 +33,13 @@ ClientCameraVideoWidget::ClientCameraVideoWidget(const QSharedPointer<NetworkCli
 	setLayout(mainLayout);
 
 	// Create widget to render video frames.
-	auto videoWidget = new VideoWidget(VideoWidget::OpenGL_ImageWidget);
-	//auto videoWidget = new VideoWidget(VideoWidget::CPU);
-	mainLayout->addWidget(videoWidget, 1);
-	_videoWidget = videoWidget;
+	_videoWidget = new VideoWidget(VideoWidget::OpenGL_ImageWidget);
+	mainLayout->addWidget(_videoWidget, 1);
 
 	// EVENTS
 	// Grabber events.
-	QObject::connect(grabber, &CameraFrameGrabber::newQImage, [this](const QImage & image)
-	{
-		_videoWidget->setFrame(image);
-	});
-	QObject::connect(grabber, &CameraFrameGrabber::newQImage, [this](const QImage & image)
-	{
-		if (_ts3vc->isReadyForStreaming())
-		{
-			_ts3vc->sendVideoFrame(image);
-		}
-	});
+	QObject::connect(_grabber.data(), &CameraFrameGrabber::newQImage, this, &ClientCameraVideoWidget::onNewQImage);
+
 	// Camera events.
 	QObject::connect(camera.data(), static_cast<void(QCamera::*)(QCamera::Error)>(&QCamera::error), [this, camera](QCamera::Error error)
 	{
@@ -69,6 +55,10 @@ ClientCameraVideoWidget::ClientCameraVideoWidget(const QSharedPointer<NetworkCli
 
 ClientCameraVideoWidget::~ClientCameraVideoWidget()
 {
+	if (_grabber)
+	{
+		_grabber->disconnect(this);
+	}
 }
 
 QSharedPointer<NetworkClient> ClientCameraVideoWidget::networkClient() const
@@ -84,4 +74,13 @@ QSharedPointer<QCamera> ClientCameraVideoWidget::camera() const
 void ClientCameraVideoWidget::setFrame(const QImage& f)
 {
 	_videoWidget->setFrame(f);
+}
+
+void ClientCameraVideoWidget::onNewQImage(const QImage& image)
+{
+	_videoWidget->setFrame(image);
+	if (_ts3vc->isReadyForStreaming())
+	{
+		_ts3vc->sendVideoFrame(image);
+	}
 }

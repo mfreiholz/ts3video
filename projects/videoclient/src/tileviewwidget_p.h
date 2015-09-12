@@ -62,6 +62,7 @@ public:
   QLabel *bandwidthRead;
   QLabel *bandwidthWrite;
 
+  QSharedPointer<QCamera> camera;
   QHash<int, TileViewTileWidget*> tilesMap; ///< Maps client's ID to it's widget.
 };
 

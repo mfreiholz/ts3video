@@ -21,6 +21,9 @@
 #include "cliententity.h"
 #include "channelentity.h"
 
+#include "startuplogic.h"
+#include "startup/ts3videostartuplogic.h"
+
 #include "cameraframegrabber.h"
 #include "videowidget.h"
 #include "videocollectionwidget.h"
@@ -53,7 +56,7 @@ HUMBLE_LOGGER(HL, "client");
     --server-address 127.0.0.1 --server-port  13370  --username  "iF.Manuel"  --channel-identifier  "127.0.0.1#9987#1#"  --channel-password  "2e302e302e373231"  --ts3-client-database-id  2  --skip-startup-dialog
 	--server-address teamspeak.insanefactory.com --server-port  13370  --username  "iF.Manuel"  --channel-identifier  "127.0.0.1#9987#1#"  --channel-password  "2e302e302e373231"  --ts3-client-database-id  2  --skip-startup-dialog
 */
-int runClientAppLogic(QApplication& a)
+/*int runClientAppLogic(QApplication& a)
 {
 	a.setOrganizationName("insaneFactory");
 	a.setOrganizationDomain("http://ts3video.insanefactory.com/");
@@ -121,13 +124,30 @@ int runClientAppLogic(QApplication& a)
 	auto returnCode = a.exec();
 	HL_INFO(HL, QString("Client shutdown (code=%1)").arg(returnCode).toStdString());
 	return returnCode;
-}
+}*/
 
+/*
+	Runs a implementation of AbstractStartupLogic based on command line
+	parameter "--mode".
+*/
 int main(int argc, char* argv[])
 {
 	QApplication a(argc, argv);
+	QScopedPointer<AbstractStartupLogic> sl;
+	const auto mode = ELWS::getArgsValue("--mode",QString("ts3video")).toString();
+	if (mode.compare("ts3video", Qt::CaseInsensitive) == 0)
+	{
+		sl.reset(new Ts3VideoStartupLogic(&a));
+	}
+	if (!sl)
+	{
+		return 500; // No startup logic.
+	}
+	auto returnCode = sl->exec();
+	HL_INFO(HL, QString("Application exit (code=%1)").arg(returnCode).toStdString());
+	return returnCode;
 
-	// Initialize logging.
+/*	// Initialize logging.
 	auto& fac = humble::logging::Factory::getInstance();
 	fac.setDefaultFormatter(new humble::logging::PatternFormatter("[%date][%lls][pid=%pid][tid=%tid] %m\n"));
 	fac.registerAppender(new humble::logging::FileAppender(QDir::temp().filePath("ts3video-client.log").toStdString(), true));
@@ -150,5 +170,5 @@ int main(int argc, char* argv[])
 		f.close();
 	}
 
-	return runClientAppLogic(a);
+	return runClientAppLogic(a);*/
 }
