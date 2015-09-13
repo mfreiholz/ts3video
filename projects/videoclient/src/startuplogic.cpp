@@ -66,9 +66,9 @@ void AbstractStartupLogic::initLogging()
 
 	QSettings conf(configFilePath());
 	conf.beginGroup("logging");
-	auto logFilePath = conf.value("FilePath", QString("$TEMPDIR/clientapp.log")).toString();
-	auto logConfigFilePath = conf.value("ConfigFilePath", QString("$APPDIR/logging.conf")).toString();
-	auto consoleLoggerEnabled = conf.value("ConsoleAppenderEnabled", 0).toInt() == 1;
+	auto logFilePath = conf.value("FilePath").toString();
+	auto logConfigFilePath = conf.value("ConfigFilePath").toString();
+	auto consoleLoggerEnabled = conf.value("ConsoleAppenderEnabled", false).toBool();
 	conf.endGroup();
 
 	QHashIterator<QString, QString> itr(env);
@@ -80,12 +80,12 @@ void AbstractStartupLogic::initLogging()
 	}
 
 	auto& fac = humble::logging::Factory::getInstance();
-	if (!QFile::exists(logConfigFilePath))
+	if (logConfigFilePath.isEmpty() || !QFile::exists(logConfigFilePath))
 		fac.setConfiguration(new humble::logging::SimpleConfiguration(humble::logging::LogLevel::Info));
 	else
 		fac.setConfiguration(humble::logging::DefaultConfiguration::createFromFile(logConfigFilePath.toStdString()));
 	fac.setDefaultFormatter(new humble::logging::PatternFormatter("%date\t%lls\tpid=%pid\ttid=%tid\t%m\n"));
-	if (true)
+	if (!logFilePath.isEmpty())
 		fac.registerAppender(new humble::logging::FileAppender(logFilePath.toStdString(), true));
 	if (consoleLoggerEnabled)
 		fac.registerAppender(new humble::logging::ConsoleAppender());

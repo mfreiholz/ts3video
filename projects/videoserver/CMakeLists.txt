@@ -99,11 +99,15 @@ set_target_properties(${PROJECT_NAME}
   PROPERTIES OUTPUT_NAME "videoserver"
 )
 
+add_custom_command(
+  TARGET ${PROJECT_NAME}
+  POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/res/default.ini ${PROJECT_BINARY_DIR}/$<CONFIGURATION>
+  COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/res/logging.conf ${PROJECT_BINARY_DIR}/$<CONFIGURATION>
+)
+
 #######################################################################
 # Install
-# -------
-# ToDo's:
-# - Copy humblelogging into deploy directory.
 #######################################################################
 
 if(WIN32)
@@ -116,3 +120,4 @@ endif(CMAKE_COMPILER_IS_GNUCC)
 
 install(TARGETS ${PROJECT_NAME} DESTINATION ${INST_BINARY_DIR})
 install(FILES res/default.ini DESTINATION ${INST_BINARY_DIR})
+install(FILES res/logging.conf DESTINATION ${INST_BINARY_DIR})

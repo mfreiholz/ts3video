@@ -20,7 +20,7 @@ HUMBLE_LOGGER(HL, "server");
 /*!
     \return 0 = OK;
 */
-int updateOptionsByArgs(VirtualServerOptions& opts)
+static int updateOptionsByArgs(VirtualServerOptions& opts)
 {
 	//HL_INFO(HL, QString("Configure by arguments").toStdString());
 	opts.address = ELWS::getQHostAddressFromString(ELWS::getArgsValue("--address", opts.address.toString()).toString());
@@ -39,7 +39,7 @@ int updateOptionsByArgs(VirtualServerOptions& opts)
 /*!
     \return 0 = OK;
 */
-int updateOptionsByConfig(VirtualServerOptions& opts, const QString& filePath)
+static int updateOptionsByConfig(VirtualServerOptions& opts, const QString& filePath)
 {
 	//HL_INFO(HL, QString("Configure by file (path=%1)").arg(filePath).toStdString());
 	if (filePath.isEmpty())
@@ -88,10 +88,44 @@ int updateOptionsByConfig(VirtualServerOptions& opts, const QString& filePath)
     Updates server options by license.
     \return 0 = OK; 1 = No valid license;
 */
-bool updateOptionsByLicense(VirtualServerOptions& opts, const QString& filePath)
+static bool updateOptionsByLicense(VirtualServerOptions& opts, const QString& filePath)
 {
 	//HL_INFO(HL, QString("Configure by license (file=%1)").arg(filePath).toStdString());
 	return 0;
+}
+
+static void initLogging()
+{
+	QHash<QString, QString> env;
+	env.insert("$APPDIR", qApp->applicationDirPath());
+	env.insert("$TEMPDIR", QDir::tempPath());
+
+	auto confFilePath = ELWS::getArgsValue("--config", qApp->applicationDirPath() + QString("/default.ini")).toString();
+	QSettings conf(confFilePath, QSettings::IniFormat);
+	conf.beginGroup("logging");
+	auto logFilePath = conf.value("FilePath").toString();
+	auto logConfigFilePath = conf.value("ConfigFilePath").toString();
+	auto consoleLoggerEnabled = conf.value("ConsoleAppenderEnabled", false).toBool();
+	conf.endGroup();
+
+	QHashIterator<QString, QString> itr(env);
+	while (itr.hasNext())
+	{
+		itr.next();
+		logFilePath = logFilePath.replace(itr.key(), itr.value(), Qt::CaseSensitive);
+		logConfigFilePath = logConfigFilePath.replace(itr.key(), itr.value(), Qt::CaseSensitive);
+	}
+
+	auto& fac = humble::logging::Factory::getInstance();
+	if (logConfigFilePath.isEmpty() || !QFile::exists(logConfigFilePath))
+		fac.setConfiguration(new humble::logging::SimpleConfiguration(humble::logging::LogLevel::Info));
+	else
+		fac.setConfiguration(humble::logging::DefaultConfiguration::createFromFile(logConfigFilePath.toStdString()));
+	fac.setDefaultFormatter(new humble::logging::PatternFormatter("%date\t%lls\tpid=%pid\ttid=%tid\t%m\n"));
+	if (!logFilePath.isEmpty())
+		fac.registerAppender(new humble::logging::FileAppender(logFilePath.toStdString(), true));
+	if (consoleLoggerEnabled)
+		fac.registerAppender(new humble::logging::ConsoleAppender());
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -110,12 +144,7 @@ public:
 	int init()
 	{
 		auto& a = *qApp;
-
-		// Initialize logging.
-		auto& fac = humble::logging::Factory::getInstance();
-		fac.setConfiguration(new humble::logging::SimpleConfiguration(humble::logging::LogLevel::Info));
-		fac.setDefaultFormatter(new humble::logging::PatternFormatter("%date\t%lls\tpid=%pid\ttid=%tid\t%m\n"));
-		fac.registerAppender(new humble::logging::FileAppender(QDir::temp().filePath("ts3video-server.log").toStdString(), true));
+		initLogging();
 
 		// Initialize server options (from ARGS).
 		VirtualServerOptions opts;
