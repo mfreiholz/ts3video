@@ -18,11 +18,10 @@
 HUMBLE_LOGGER(HL, "server");
 
 /*!
-    \return 0 = OK;
+	\return 0 = OK;
 */
 static int updateOptionsByArgs(VirtualServerOptions& opts)
 {
-	//HL_INFO(HL, QString("Configure by arguments").toStdString());
 	opts.address = ELWS::getQHostAddressFromString(ELWS::getArgsValue("--address", opts.address.toString()).toString());
 	opts.port = ELWS::getArgsValue("--port", opts.port).toUInt();
 	opts.wsStatusAddress = ELWS::getQHostAddressFromString(ELWS::getArgsValue("--wsstatus-address", opts.wsStatusAddress.toString()).toString());
@@ -37,11 +36,10 @@ static int updateOptionsByArgs(VirtualServerOptions& opts)
 }
 
 /*!
-    \return 0 = OK;
+	\return 0 = OK;
 */
 static int updateOptionsByConfig(VirtualServerOptions& opts, const QString& filePath)
 {
-	//HL_INFO(HL, QString("Configure by file (path=%1)").arg(filePath).toStdString());
 	if (filePath.isEmpty())
 	{
 		HL_WARN(HL, QString("No config file specified").toStdString());
@@ -81,16 +79,6 @@ static int updateOptionsByConfig(VirtualServerOptions& opts, const QString& file
 			opts.ts3AllowedServerGroups.append(sgl[i].toULongLong());
 
 	conf.endGroup();
-	return 0;
-}
-
-/*!
-    Updates server options by license.
-    \return 0 = OK; 1 = No valid license;
-*/
-static bool updateOptionsByLicense(VirtualServerOptions& opts, const QString& filePath)
-{
-	//HL_INFO(HL, QString("Configure by license (file=%1)").arg(filePath).toStdString());
 	return 0;
 }
 
@@ -157,12 +145,6 @@ public:
 		if (!configFilePath.isEmpty() && updateOptionsByConfig(opts, configFilePath) != 0)
 		{
 			return 1;
-		}
-		// Override server options by license.
-		if (updateOptionsByLicense(opts, "FREE") != 0)
-		{
-			HL_FATAL(HL, QString("No valid license!").toStdString());
-			return 7353;
 		}
 
 		HL_INFO(HL, QString("----- Server startup ----").toStdString());
@@ -237,7 +219,7 @@ public:
 
 ///////////////////////////////////////////////////////////////////////
 
-AppThread* gAppThread = nullptr;
+static AppThread* gAppThread = nullptr;
 
 int serviceStart()
 {
@@ -295,49 +277,16 @@ int _main(int argc, char* argv[])
 
 #ifdef _WIN32
 	if (ELWS::hasArgsValue("--console"))
+	{
 		AllocConsole();
+	}
 #endif
 
 	return a.exec();
 }
 
-/*  #include "teamspeak3/ts3serverquery.h"
-    int test_serverquery(int argc, char* argv[])
-    {
-    (void)argc;
-    (void)argv;
-
-    TS3ServerQuery sq;
-
-    // Write
-
-    QList<QPair<QString, QStringList> > p;
-
-    p.clear();
-    p.append(qMakePair(QString("client_login_name"), QStringList() << "admin"));
-    p.append(qMakePair(QString("client_login_password"), QStringList() << "Very Complicated Password here!"));
-    qDebug() << sq.createCommand("login", p);
-
-    p.clear();
-    qDebug() << sq.createCommand("quit", p);
-
-    p.clear();
-    p.append(qMakePair(QString("client_login_name"), QStringList() << "admin"));
-    qDebug() << sq.createCommand("clientlist", p);
-
-    // Read (Parse)
-    auto res = sq.parse(QByteArray("clid=5 cid=7 client_database_id=40 client_nickname=ScP client_type=0 client_away=1 client_away_message=not\\shere|clid=6 cid=7 client_database_id=41 client_nickname=Manuel\\sFreiholz client_type=0 client_away=0 client_unique_identifier=FPMPSC6MXqXq751dX7BKV0JniSo=\r\nerror id=0 msg=ok\r\n"));
-    res.debugOut();
-    res = sq.parse(QByteArray("key=value"));
-    res = sq.parse(QByteArray("key"));
-    res = sq.parse(QByteArray("client_unique_identifier=gZ7K[...]GIik="));
-
-    return 0;
-    }*/
-
 int main(int argc, char* argv[])
 {
-	//return test_serverquery(argc, argv);
 	return _main(argc, argv);
 }
 
