@@ -69,10 +69,13 @@ p, li { white-space: pre-wrap; }
        <item>
         <widget class="QLabel" name="label_3">
          <property name="text">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;A few special thanks go to:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Michael Stein, Software Developer&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;A few special thanks go to:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Michael Stein, Software Developer&lt;/p&gt;&lt;p&gt;[mtG] Lore (&lt;a href=&quot;mailto:lore@mtg-esport.de&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;lore@mtg-esport.de&lt;/span&gt;&lt;/a&gt;, &lt;a href=&quot;https://www.mtg-esport.de/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;www.mtg-esport.de&lt;/span&gt;&lt;/a&gt;)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+         </property>
+         <property name="openExternalLinks">
+          <bool>true</bool>
          </property>
         </widget>
        </item>
