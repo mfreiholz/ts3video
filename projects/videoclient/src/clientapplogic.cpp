@@ -58,6 +58,7 @@ ClientAppLogic::ClientAppLogic(const Options& opts, const QSharedPointer<Network
 
 	// Central view widget.
 	auto viewWidget = new TileViewWidget(this);
+	viewWidget->setClientListModel(d->nc->clientModel());
 	d->view = viewWidget;
 	setCentralWidget(viewWidget);
 
@@ -67,6 +68,10 @@ ClientAppLogic::ClientAppLogic(const Options& opts, const QSharedPointer<Network
 		d->camera = d->createCameraFromOptions();
 		viewWidget->setCamera(d->camera);
 	}
+
+	resize(1024, 768);
+	QSettings settings;
+	restoreGeometry(settings.value("UI/ClientApp-Geometry").toByteArray());
 }
 
 ClientAppLogic::~ClientAppLogic()
@@ -155,13 +160,6 @@ void ClientAppLogic::onClientDisconnected(const ClientEntity& client)
 void ClientAppLogic::onNewVideoFrame(YuvFrameRefPtr frame, int senderId)
 {
 	d->view->updateClientVideo(frame, senderId);
-}
-
-void ClientAppLogic::showEvent(QShowEvent* e)
-{
-	// TODO: Do not load when it comes back from minimized state.
-	QSettings settings;
-	restoreGeometry(settings.value("UI/ClientApp-Geometry").toByteArray());
 }
 
 void ClientAppLogic::closeEvent(QCloseEvent* e)

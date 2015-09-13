@@ -48,11 +48,11 @@ TileViewWidget QLabel#bandwidthWrite {
   qproperty-alignment: AlignCenter;
 }
 
-TileViewWidget QScrollBar {
+TileViewWidget > QScrollBar {
   background: rgb(30, 30, 30);
 }
 
-TileViewWidget QScrollBar:vertical {
+TileViewWidget > QScrollBar:vertical {
   width: 10px;
 }
 

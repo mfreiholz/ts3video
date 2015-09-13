@@ -19,9 +19,7 @@ class ViewBase;
 class ClientCameraVideoWidget;
 class RemoteClientVideoWidget;
 
-/*!
-    Logic to control the GUI and connection on client-side.
-*/
+
 class ClientAppLogicPrivate;
 class ClientAppLogic : public QMainWindow
 {
@@ -82,10 +80,10 @@ private slots:
 	void onNewVideoFrame(YuvFrameRefPtr frame, int senderId);
 
 protected:
-	virtual void showEvent(QShowEvent* e);
 	virtual void closeEvent(QCloseEvent* e);
 	void showResponseError(int status, const QString& errorMessage, const QString& details = QString());
 	void showError(const QString& shortText, const QString& longText = QString());
 };
+
 
 #endif

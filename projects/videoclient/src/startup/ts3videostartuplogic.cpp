@@ -259,7 +259,6 @@ void Ts3VideoStartupLogic::authAndJoinConference()
 void Ts3VideoStartupLogic::startVideoGui()
 {
 	auto w = new ClientAppLogic(_opts, _nc, nullptr, 0);
-	w->resize(1024, 768);
 	w->show();
 	w->start();
 
