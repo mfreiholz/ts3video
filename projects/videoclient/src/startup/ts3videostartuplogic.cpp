@@ -24,6 +24,30 @@ HUMBLE_LOGGER(HL, "client");
 
 ///////////////////////////////////////////////////////////////////////
 
+#include <QEventLoop>
+#include <QNetworkAccessManager>
+#include <QNetworkRequest>
+#include <QNetworkReply>
+#include <QUrl>
+#include <QJsonDocument>
+#include <QJsonValue>
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QList>
+#include <QMetaType>
+
+class VersionInfo
+{
+public:
+	QString version;
+	QString homepageUrl;
+	QString message;
+	QString releasedOn;
+};
+Q_DECLARE_METATYPE(VersionInfo);
+
+///////////////////////////////////////////////////////////////////////
+
 /*!
     Runs the basic application.
 
@@ -49,8 +73,10 @@ HUMBLE_LOGGER(HL, "client");
 Ts3VideoStartupLogic::Ts3VideoStartupLogic(QApplication* a) :
 	QDialog(nullptr), AbstractStartupLogic(a)
 {
+	qRegisterMetaType<QList<VersionInfo> >("QList<VersionInfo>");
 	_ui.setupUi(this);
 	a->setQuitOnLastWindowClosed(true);
+	QObject::connect(this, &Ts3VideoStartupLogic::newProgress, this, &Ts3VideoStartupLogic::showProgress);
 }
 
 Ts3VideoStartupLogic::~Ts3VideoStartupLogic()
@@ -143,13 +169,70 @@ void Ts3VideoStartupLogic::showError(const QString& shortText, const QString& lo
 
 void Ts3VideoStartupLogic::start()
 {
+	if (!checkVersion())
+	{
+		// Abort everything...
+		return;
+	}
 	lookupVideoServer();
+}
+
+bool Ts3VideoStartupLogic::checkVersion()
+{
+	showProgress(tr("Checking for plugin updates..."));
+	auto urlString = QString("http://mfreiholz.de/ocs/1.0/ts3video/versioncheck/%1").arg(IFVS_SOFTWARE_VERSION);
+
+	QEventLoop loop;
+	QNetworkAccessManager mgr;
+	auto reply = mgr.get(QNetworkRequest(QUrl(urlString)));
+	QObject::connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+	loop.exec();
+	reply->deleteLater();
+
+	if (reply->error() != QNetworkReply::NoError)
+	{
+		showError(tr("Update check failed"), reply->errorString());
+		return true;
+	}
+
+	auto data = reply->readAll();
+	QJsonParseError err;
+	auto doc = QJsonDocument::fromJson(data, &err);
+	if (err.error != QJsonParseError::NoError)
+	{
+		showError(err.errorString());
+		return true;
+	}
+
+	QList<VersionInfo> versions;
+	auto jversions = doc.array();
+	for (auto i = 0; i < jversions.size(); ++i)
+	{
+		auto jv = jversions.at(i).toObject();
+		VersionInfo vi;
+		vi.version = jv.value("version").toString();
+		vi.message = jv.value("message").toString();
+		vi.homepageUrl = jv.value("homepageurl").toString();
+		vi.releasedOn = jv.value("releasedon").toString();
+		versions.append(vi);
+	}
+
+	if (versions.size() <= 1)
+	{
+		showProgress(tr("No updates available."));
+	}
+	else if (versions.size() > 1)
+	{
+		showProgress(tr("<font color=green>Updates available!</font>"));
+		// TODO show dialog here...
+	}
+	return true;
 }
 
 void Ts3VideoStartupLogic::lookupVideoServer()
 {
 	// Lookup video server on master server.
-	showProgress(tr("Lookup conference on master server..."));
+	showProgress(tr("Looking for conference on master server..."));
 	QtAsync::async([this]()
 	{
 		QThread::sleep(1);
@@ -178,7 +261,7 @@ void Ts3VideoStartupLogic::initNetwork()
 	}
 
 	// Async DNS lookup.
-	showProgress(tr("DNS lookup for server %1").arg(_opts.serverAddress));
+	showProgress(tr("Resolve DNS for %1").arg(_opts.serverAddress));
 	QtAsync::async([this]()
 	{
 		auto hostInfo = QHostInfo::fromName(_opts.serverAddress);
@@ -201,7 +284,7 @@ void Ts3VideoStartupLogic::initNetwork()
 void Ts3VideoStartupLogic::authAndJoinConference()
 {
 	// Authenticate.
-	showProgress(tr("Authenticate..."));
+	showProgress(tr("Authenticating..."));
 	auto reply = _nc->auth(_opts.username, _opts.serverPassword, _opts.authParams);
 	QObject::connect(reply, &QCorReply::finished, [this, reply]()
 	{

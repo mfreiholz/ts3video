@@ -23,12 +23,14 @@ public:
 	virtual ~Ts3VideoStartupLogic();
 	virtual int exec();
 
-private:
+private slots:
 	void showProgress(const QString& text);
 	void showResponseError(int status, const QString& errorMessage, const QString& details = QString());
 	void showError(const QString& shortText, const QString& longText = QString());
 
+private:
 	void start();
+	bool checkVersion();
 	void lookupVideoServer();
 	void initNetwork();
 	void authAndJoinConference();
@@ -39,6 +41,9 @@ private slots:
 	void onConnected();
 	void onDisconnected();
 	void onError(QAbstractSocket::SocketError socketError);
+
+signals:
+	void newProgress(const QString& text);
 };
 
 
