@@ -49,8 +49,8 @@ HUMBLE_LOGGER(HL, "client");
 Ts3VideoStartupLogic::Ts3VideoStartupLogic(QApplication* a) :
 	QDialog(nullptr), AbstractStartupLogic(a)
 {
-	a->setQuitOnLastWindowClosed(true);
 	_ui.setupUi(this);
+	a->setQuitOnLastWindowClosed(true);
 }
 
 Ts3VideoStartupLogic::~Ts3VideoStartupLogic()
@@ -126,19 +126,19 @@ int Ts3VideoStartupLogic::exec()
 
 void Ts3VideoStartupLogic::showProgress(const QString& text)
 {
-	_ui.progress->append(text + QString("\n"));
+	_ui.progress->append(text.trimmed() + QString("<br>\n"));
 }
 
 void Ts3VideoStartupLogic::showResponseError(int status, const QString& errorMessage, const QString& details)
 {
-	HL_ERROR(HL, QString("Network response error (status=%1; message=%2; details=%3)").arg(status).arg(errorMessage).arg(details).toStdString());
-	_ui.progress->append(QString("ERROR %1: %2\n").arg(QString::number(status)).arg(errorMessage));
+	HL_ERROR(HL, details.toStdString());
+	showProgress(QString("<font color=red>ERROR:</font> ") + QString::number(status) + QString(": ") + errorMessage);
 }
 
-void Ts3VideoStartupLogic::showError(const QString& shortText, const QString& longText, bool exitApp)
+void Ts3VideoStartupLogic::showError(const QString& shortText, const QString& longText)
 {
-	HL_ERROR(HL, QString("%1: %2").arg(shortText).arg(longText).toStdString());
-	_ui.progress->append(QString("ERROR: %1\n").arg(shortText));
+	HL_ERROR(HL, longText.isEmpty() ? shortText.toStdString() : longText.toStdString());
+	showProgress(QString("<font color=red>ERROR:</font> ") + shortText);
 }
 
 void Ts3VideoStartupLogic::start()
@@ -152,7 +152,7 @@ void Ts3VideoStartupLogic::lookupVideoServer()
 	showProgress(tr("Lookup conference on master server..."));
 	QtAsync::async([this]()
 	{
-		QThread::sleep(2);
+		QThread::sleep(1);
 		return QVariant();
 	},
 	[this](QVariant v)
@@ -189,7 +189,7 @@ void Ts3VideoStartupLogic::initNetwork()
 		auto hostInfo = v.value<QHostInfo>();
 		if (hostInfo.error() != QHostInfo::NoError || hostInfo.addresses().isEmpty())
 		{
-			showError(tr("DNS lookup failed"), hostInfo.errorString(), true);
+			showError(tr("DNS lookup failed"), hostInfo.errorString());
 			return;
 		}
 		auto address = hostInfo.addresses().first();
@@ -252,27 +252,6 @@ void Ts3VideoStartupLogic::authAndJoinConference()
 				return;
 			}
 			this->startVideoGui();
-
-			// Extract channel.
-			//ChannelEntity channel;
-			//channel.fromQJsonObject(params["channel"].toObject());
-
-			// Extract participants and create widgets.
-			//foreach (auto v, params["participants"].toArray())
-			//{
-			//	ClientEntity client;
-			//	client.fromQJsonObject(v.toObject());
-			//	onClientJoinedChannel(client, channel);
-			//}
-			//hideProgress();
-
-			// Auto turn ON camera.
-			//if (d->camera)
-			//{
-			//	TileViewWidget* tvw = nullptr;
-			//	if ((tvw = dynamic_cast<TileViewWidget*>(d->view)) != nullptr)
-			//		tvw->setVideoEnabled(true);
-			//}
 		});
 	});
 }
@@ -283,7 +262,13 @@ void Ts3VideoStartupLogic::startVideoGui()
 	w->resize(1024, 768);
 	w->show();
 	w->start();
+
 	close();
+	if (_nc)
+	{
+		_nc->disconnect(this);
+		_nc.clear();
+	}
 }
 
 void Ts3VideoStartupLogic::quitDelayed()
@@ -298,8 +283,10 @@ void Ts3VideoStartupLogic::onConnected()
 
 void Ts3VideoStartupLogic::onDisconnected()
 {
+	showProgress(tr("Disconnected!"));
 }
 
 void Ts3VideoStartupLogic::onError(QAbstractSocket::SocketError socketError)
 {
+	showError(_nc->socket()->errorString());
 }

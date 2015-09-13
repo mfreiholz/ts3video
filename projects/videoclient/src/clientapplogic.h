@@ -6,15 +6,12 @@
 #include <QString>
 #include <QHash>
 #include <QVariant>
-#include <QHostAddress>
 #include <QMainWindow>
-#include <QCamera>
 
-#include "ts3video.h"
-#include "yuvframe.h"
+#include "videolib/src/ts3video.h"
+#include "videolib/src/yuvframe.h"
 
 #include "networkclient/networkclient.h"
-#include "networkclient/clientlistmodel.h"
 
 class QWidget;
 class QProgressDialog;
@@ -76,12 +73,7 @@ public:
 	void start();
 	QSharedPointer<NetworkClient> networkClient();
 
-//public slots:
-//	void initNetwork();
-
 private slots:
-	//void onConnected();
-	//void onDisconnected();
 	void onError(QAbstractSocket::SocketError socketError);
 	void onServerError(int code, const QString& message);
 	void onClientJoinedChannel(const ClientEntity& client, const ChannelEntity& channel);
@@ -92,10 +84,8 @@ private slots:
 protected:
 	virtual void showEvent(QShowEvent* e);
 	virtual void closeEvent(QCloseEvent* e);
-	void showProgress(const QString& text);
-	void hideProgress();
 	void showResponseError(int status, const QString& errorMessage, const QString& details = QString());
-	void showError(const QString& shortText, const QString& longText = QString(), bool exitApp = false);
+	void showError(const QString& shortText, const QString& longText = QString());
 };
 
 #endif

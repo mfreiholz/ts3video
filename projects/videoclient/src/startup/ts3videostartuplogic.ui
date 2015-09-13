@@ -7,17 +7,17 @@
     <x>0</x>
     <y>0</y>
     <width>500</width>
-    <height>278</height>
+    <height>199</height>
    </rect>
   </property>
-  <property name="sizeGripEnabled">
-   <bool>false</bool>
-  </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QVBoxLayout">
    <item>
     <widget class="QTextEdit" name="progress">
      <property name="verticalScrollBarPolicy">
       <enum>Qt::ScrollBarAlwaysOn</enum>
+     </property>
+     <property name="autoFormatting">
+      <set>QTextEdit::AutoAll</set>
      </property>
      <property name="readOnly">
       <bool>true</bool>
@@ -29,30 +29,6 @@
       <string>Please wait...</string>
      </property>
     </widget>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout">
-     <item>
-      <spacer name="horizontalSpacer">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item>
-      <widget class="QPushButton" name="cancel">
-       <property name="text">
-        <string>Cancel</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
    </item>
   </layout>
  </widget>

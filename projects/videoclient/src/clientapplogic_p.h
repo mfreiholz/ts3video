@@ -1,23 +1,22 @@
 #ifndef CLIENTAPPLOGICPRIVATE_H
 #define CLIENTAPPLOGICPRIVATE_H
 
+#include <QSharedPointer>
+#include <QCamera>
+
 #include "clientapplogic.h"
+#include "networkclient/networkclient.h"
+
+class ViewBase;
+class ClientCameraVideoWidget;
 
 class ClientAppLogicPrivate : public QObject
 {
 	Q_OBJECT
 
 public:
-	ClientAppLogicPrivate(ClientAppLogic* o) :
-		QObject(o),
-		owner(o),
-		opts(),
-		view(nullptr),
-		cameraWidget(nullptr),
-		progressDialog(nullptr)
-	{}
-	~ClientAppLogicPrivate()
-	{}
+	ClientAppLogicPrivate(ClientAppLogic* o);
+	~ClientAppLogicPrivate();
 	QSharedPointer<QCamera> createCameraFromOptions() const;
 
 public:
@@ -29,9 +28,6 @@ public:
 	// Direct GUI elements.
 	ViewBase* view; ///< Central view to display all video streams.
 	ClientCameraVideoWidget* cameraWidget; ///< Local user's camera widget.
-
-	// Dialogs.
-	QProgressDialog* progressDialog; ///< Global progress dialog.
 };
 
 
