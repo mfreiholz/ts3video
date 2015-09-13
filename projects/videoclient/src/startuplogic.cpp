@@ -80,12 +80,15 @@ void AbstractStartupLogic::initLogging()
 	}
 
 	auto& fac = humble::logging::Factory::getInstance();
-	fac.setDefaultFormatter(new humble::logging::PatternFormatter("%date\t%lls\ttid=%tid\t%m\n"));
+	if (!QFile::exists(logConfigFilePath))
+		fac.setConfiguration(new humble::logging::SimpleConfiguration(humble::logging::LogLevel::Info));
+	else
+		fac.setConfiguration(humble::logging::DefaultConfiguration::createFromFile(logConfigFilePath.toStdString()));
+	fac.setDefaultFormatter(new humble::logging::PatternFormatter("%date\t%lls\tpid=%pid\ttid=%tid\t%m\n"));
 	if (true)
 		fac.registerAppender(new humble::logging::FileAppender(logFilePath.toStdString(), true));
 	if (consoleLoggerEnabled)
 		fac.registerAppender(new humble::logging::ConsoleAppender());
-	fac.changeGlobalLogLevel(humble::logging::LogLevel::Debug);
 }
 
 void AbstractStartupLogic::initStyleSheet()

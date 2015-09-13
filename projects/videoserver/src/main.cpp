@@ -1,3 +1,7 @@
+#ifdef _WIN32
+#include <Windows.h>
+#endif
+
 #include <QCoreApplication>
 #include <QSettings>
 #include <QFile>
@@ -108,11 +112,10 @@ public:
 		auto& a = *qApp;
 
 		// Initialize logging.
-		auto& hlFactory = humble::logging::Factory::getInstance();
-		hlFactory.setDefaultFormatter(new humble::logging::PatternFormatter("[%date][%lls][pid=%pid][tid=%tid] %m\n"));
-		hlFactory.registerAppender(new humble::logging::ConsoleAppender());
-		hlFactory.registerAppender(new humble::logging::FileAppender(QDir::temp().filePath("ts3video-server.log").toStdString(), true));
-		hlFactory.changeGlobalLogLevel(humble::logging::LogLevel::Info);
+		auto& fac = humble::logging::Factory::getInstance();
+		fac.setConfiguration(new humble::logging::SimpleConfiguration(humble::logging::LogLevel::Info));
+		fac.setDefaultFormatter(new humble::logging::PatternFormatter("%date\t%lls\tpid=%pid\ttid=%tid\t%m\n"));
+		fac.registerAppender(new humble::logging::FileAppender(QDir::temp().filePath("ts3video-server.log").toStdString(), true));
 
 		// Initialize server options (from ARGS).
 		VirtualServerOptions opts;
