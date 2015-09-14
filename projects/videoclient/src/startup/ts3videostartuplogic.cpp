@@ -7,6 +7,17 @@
 #include <QHostInfo>
 #include <QThread>
 
+#include <QEventLoop>
+#include <QNetworkAccessManager>
+#include <QNetworkRequest>
+#include <QNetworkReply>
+#include <QUrl>
+#include <QJsonDocument>
+#include <QJsonValue>
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QList>
+
 #include "humblelogging/api.h"
 
 #include "qtasync/src/qtasync.h"
@@ -19,63 +30,38 @@
 
 #include "../startupwidget.h"
 #include "../clientapplogic.h"
+#include "../ts3video/ts3videoentities.h"
+#include "../ts3video/ts3videoupdatedialog.h"
 
 HUMBLE_LOGGER(HL, "client");
 
-///////////////////////////////////////////////////////////////////////
-
-#include <QEventLoop>
-#include <QNetworkAccessManager>
-#include <QNetworkRequest>
-#include <QNetworkReply>
-#include <QUrl>
-#include <QJsonDocument>
-#include <QJsonValue>
-#include <QJsonObject>
-#include <QJsonArray>
-#include <QList>
-#include <QMetaType>
-
-class VersionInfo
-{
-public:
-	QString version;
-	QString homepageUrl;
-	QString message;
-	QString releasedOn;
-};
-Q_DECLARE_METATYPE(VersionInfo);
+const static QString versionCheckUrl = QString("http://api.mfreiholz.de/ts3video/1.0/versioncheck/%1").arg(IFVS_SOFTWARE_VERSION);
 
 ///////////////////////////////////////////////////////////////////////
 
 /*!
-    Runs the basic application.
+	Runs the basic application.
 
-    Logic
-    -----
-    - Connects to server.
-    - Authenticates with server.
-    - Joins channel.
-    - Sends and receives video streams.
+	Logic
+	-----
+	- Checks for updates.
+	- Ask master server for route.
+	- Connect to conference server (videoserver.exe).
+	- Authenticates with conference server.
+	- Joins conference room.
+	- Sends and receives video streams.
 
-    URL Syntax example
-    ------------------
-    By using the "--uri" parameter its possible to define those parameters with a URI.
-    e.g.:
-    ts3video://127.0.0.1:6000/?username=mfreiholz&password=secret1234&channelid=42&...
-
-    Some sample commands
-    --------------------
-    --server-address 127.0.0.1 --server-port 13370 --username TEST --channel-identifier default
-    --server-address 127.0.0.1 --server-port  13370  --username  "iF.Manuel"  --channel-identifier  "127.0.0.1#9987#1#"  --channel-password  "2e302e302e373231"  --ts3-client-database-id  2  --skip-startup-dialog
-    --server-address teamspeak.insanefactory.com --server-port  13370  --username  "iF.Manuel"  --channel-identifier  "127.0.0.1#9987#1#"  --channel-password  "2e302e302e373231"  --ts3-client-database-id  2  --skip-startup-dialog
+	Some sample commands
+	--------------------
+	--server-address 127.0.0.1 --server-port 13370 --username TEST --channel-identifier default
+	--server-address 127.0.0.1 --server-port  13370  --username  "iF.Manuel"  --channel-identifier  "127.0.0.1#9987#1#"  --channel-password  "2e302e302e373231"  --ts3-client-database-id  2  --skip-startup-dialog
+	--server-address teamspeak.insanefactory.com --server-port  13370  --username  "iF.Manuel"  --channel-identifier  "127.0.0.1#9987#1#"  --channel-password  "2e302e302e373231"  --ts3-client-database-id  2  --skip-startup-dialog
 */
 Ts3VideoStartupLogic::Ts3VideoStartupLogic(QApplication* a) :
 	QDialog(nullptr), AbstractStartupLogic(a)
 {
-	qRegisterMetaType<QList<VersionInfo> >("QList<VersionInfo>");
-	_ui.setupUi(this);
 	a->setQuitOnLastWindowClosed(true);
+	_ui.setupUi(this);
 	QObject::connect(this, &Ts3VideoStartupLogic::newProgress, this, &Ts3VideoStartupLogic::showProgress);
 }
 
@@ -102,24 +88,6 @@ int Ts3VideoStartupLogic::exec()
 	opts.channelIdentifier = ELWS::getArgsValue("--channel-identifier", opts.channelIdentifier).toString();
 	opts.channelPassword = ELWS::getArgsValue("--channel-password", opts.channelPassword).toString();
 	opts.authParams.insert("ts3_client_database_id", ELWS::getArgsValue("--ts3-client-database-id", 0).toULongLong());
-
-	// Load options from URI.
-	QUrl url(ELWS::getArgsValue("--uri").toString(), QUrl::StrictMode);
-	if (url.isValid())
-	{
-		QUrlQuery urlQuery(url);
-		opts.serverAddress = url.host();
-		opts.serverPort = url.port(opts.serverPort);
-		opts.serverPassword = urlQuery.queryItemValue("serverpassword");
-		opts.username = urlQuery.queryItemValue("username");
-		opts.channelId = urlQuery.queryItemValue("channelid").toLongLong();
-		opts.channelIdentifier = urlQuery.queryItemValue("channelidentifier");
-		opts.channelPassword = urlQuery.queryItemValue("channelpassword");
-		if (opts.username.isEmpty())
-		{
-			opts.username = ELWS::getUserName();
-		}
-	}
 
 	// Modify startup options with dialog.
 	// Skip dialog with: --skip-startup-dialog
@@ -157,13 +125,13 @@ void Ts3VideoStartupLogic::showProgress(const QString& text)
 
 void Ts3VideoStartupLogic::showResponseError(int status, const QString& errorMessage, const QString& details)
 {
-	HL_ERROR(HL, details.toStdString());
+	HL_ERROR(HL, QString("%1: %2 => %3").arg(QString::number(status)).arg(errorMessage).arg(details).toStdString());
 	showProgress(QString("<font color=red>ERROR:</font> ") + QString::number(status) + QString(": ") + errorMessage);
 }
 
 void Ts3VideoStartupLogic::showError(const QString& shortText, const QString& longText)
 {
-	HL_ERROR(HL, longText.isEmpty() ? shortText.toStdString() : longText.toStdString());
+	HL_ERROR(HL, QString("%1 => %2").arg(shortText).arg(longText).toStdString());
 	showProgress(QString("<font color=red>ERROR:</font> ") + shortText);
 }
 
@@ -171,7 +139,7 @@ void Ts3VideoStartupLogic::start()
 {
 	if (!checkVersion())
 	{
-		// Abort everything...
+		quitDelayed();
 		return;
 	}
 	lookupVideoServer();
@@ -180,11 +148,10 @@ void Ts3VideoStartupLogic::start()
 bool Ts3VideoStartupLogic::checkVersion()
 {
 	showProgress(tr("Checking for plugin updates..."));
-	auto urlString = QString("http://mfreiholz.de/ocs/1.0/ts3video/versioncheck/%1").arg(IFVS_SOFTWARE_VERSION);
 
 	QEventLoop loop;
 	QNetworkAccessManager mgr;
-	auto reply = mgr.get(QNetworkRequest(QUrl(urlString)));
+	auto reply = mgr.get(QNetworkRequest(QUrl(versionCheckUrl)));
 	QObject::connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
 	loop.exec();
 	reply->deleteLater();
@@ -200,7 +167,7 @@ bool Ts3VideoStartupLogic::checkVersion()
 	auto doc = QJsonDocument::fromJson(data, &err);
 	if (err.error != QJsonParseError::NoError)
 	{
-		showError(err.errorString());
+		showError(err.errorString(), QString::fromUtf8(data));
 		return true;
 	}
 
@@ -217,15 +184,20 @@ bool Ts3VideoStartupLogic::checkVersion()
 		versions.append(vi);
 	}
 
-	if (versions.size() <= 1)
+	if (versions.isEmpty())
 	{
 		showProgress(tr("No updates available."));
+		return true;
 	}
-	else if (versions.size() > 1)
+
+	showProgress(tr("<font color=green>Updates available!</font>"));
+	Ts3VideoUpdateDialog dlg;
+	dlg.setVersions(versions);
+	if (dlg.exec() == QDialog::Accepted)
 	{
-		showProgress(tr("<font color=green>Updates available!</font>"));
-		// TODO show dialog here...
+		return false; // Abort: User choosed update-now.
 	}
+
 	return true;
 }
 

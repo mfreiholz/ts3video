@@ -10,6 +10,9 @@
     <height>199</height>
    </rect>
   </property>
+  <property name="windowTitle">
+   <string>Update</string>
+  </property>
   <layout class="QVBoxLayout">
    <item>
     <widget class="QTextEdit" name="progress">

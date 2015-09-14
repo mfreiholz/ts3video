@@ -57,6 +57,8 @@ set(qheaders
   src/networkclient/clientlistmodel.h
   src/networkclient/clientlistmodel_p.h
   src/startup/ts3videostartuplogic.h
+  src/ts3video/ts3videoentities.h
+  src/ts3video/ts3videoupdatedialog.h
 )
 
 set(sources
@@ -89,6 +91,8 @@ set(sources
   src/networkclient/vp8decoder.cpp
   src/networkclient/clientlistmodel.cpp
   src/startup/ts3videostartuplogic.cpp
+  src/ts3video/ts3videoentities.cpp
+  src/ts3video/ts3videoupdatedialog.cpp
 )
 
 set(qforms
@@ -96,6 +100,7 @@ set(qforms
   src/startupwidget.ui
   src/aboutwidget.ui
   src/startup/ts3videostartuplogic.ui
+  src/ts3video/ts3videoupdatedialog.ui
 )
 
 set(qresources
@@ -181,6 +186,13 @@ endif()
 
 set_target_properties(${PROJECT_NAME}
   PROPERTIES OUTPUT_NAME "videoclient"
+)
+
+add_custom_command(
+  TARGET ${PROJECT_NAME}
+  POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/res/default.ini ${PROJECT_BINARY_DIR}/$<CONFIGURATION>
+  COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/res/logging.conf ${PROJECT_BINARY_DIR}/$<CONFIGURATION>
 )
 
 #######################################################################

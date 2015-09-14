@@ -64,7 +64,7 @@ void AbstractStartupLogic::initLogging()
 	env.insert("$APPDIR", _qapp->applicationDirPath());
 	env.insert("$TEMPDIR", QDir::tempPath());
 
-	QSettings conf(configFilePath());
+	QSettings conf(configFilePath(), QSettings::IniFormat);
 	conf.beginGroup("logging");
 	auto logFilePath = conf.value("FilePath").toString();
 	auto logConfigFilePath = conf.value("ConfigFilePath").toString();
