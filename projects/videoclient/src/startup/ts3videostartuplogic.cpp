@@ -35,7 +35,18 @@
 
 HUMBLE_LOGGER(HL, "client");
 
+// Endpoint to check for updates.
+// e.g.: %1 = 0.2
 const static QString versionCheckUrl = QString("http://api.mfreiholz.de/ts3video/1.0/versioncheck/%1").arg(IFVS_SOFTWARE_VERSION);
+
+// Endpoint to lookup conference server.
+// e.g.: %1 = TeamSpeak address    = teamspeak.insanefactory.com
+//       %2 = TeamSpeak port       = 9987
+//       %3 = TeamSpeak channel id = 34
+//
+// TODO Pass these settings as an encrypted value. It shouldn't be too easy
+//      to guess the parameters and make use of them.
+const static QString serverLookupUrl = QString("http://api.mfreiholz.de/ts3video/1.0/lookup/%1:%2:%3:%4");
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -51,11 +62,20 @@ const static QString versionCheckUrl = QString("http://api.mfreiholz.de/ts3video
 	- Joins conference room.
 	- Sends and receives video streams.
 
-	Some sample commands
-	--------------------
+	Some sample commands (obsolete)
+	-------------------------------
 	--server-address 127.0.0.1 --server-port 13370 --username TEST --channel-identifier default
 	--server-address 127.0.0.1 --server-port  13370  --username  "iF.Manuel"  --channel-identifier  "127.0.0.1#9987#1#"  --channel-password  "2e302e302e373231"  --ts3-client-database-id  2  --skip-startup-dialog
 	--server-address teamspeak.insanefactory.com --server-port  13370  --username  "iF.Manuel"  --channel-identifier  "127.0.0.1#9987#1#"  --channel-password  "2e302e302e373231"  --ts3-client-database-id  2  --skip-startup-dialog
+
+	Parameters (--mode ts3video):
+		--address       The address of the TeamSpeak server.
+		--port	        The port of the TeamSpeak server.
+		--channelid     The channel-id of the TeamSpeak server.
+		--data          Encrypted parameters.
+
+	Commands:
+		--mode ts3video --address teamspeak.insanefactory.com --port 9987 --channelid 3
 */
 Ts3VideoStartupLogic::Ts3VideoStartupLogic(QApplication* a) :
 	QDialog(nullptr), AbstractStartupLogic(a)
@@ -77,6 +97,14 @@ Ts3VideoStartupLogic::~Ts3VideoStartupLogic()
 int Ts3VideoStartupLogic::exec()
 {
 	setVisible(true);
+
+	// Load options from arguments.
+	_ts3opts.ts3ServerAddress = ELWS::getArgsValue("--address").toString();
+	_ts3opts.ts3ServerPort = ELWS::getArgsValue("--port").toString().toULongLong();
+	_ts3opts.ts3ChannelId = ELWS::getArgsValue("--channelid").toString().toULongLong();
+
+	// TODO Load options from single encrypted argument.
+	//auto enc = ELWS::getArgsValue("--data").toString();
 
 	// Load options from arguments.
 	ClientAppLogic::Options opts;
@@ -142,7 +170,11 @@ void Ts3VideoStartupLogic::start()
 		quitDelayed();
 		return;
 	}
-	lookupVideoServer();
+	if (!lookupVideoServer())
+	{
+		return;
+	}
+	initNetwork();
 }
 
 bool Ts3VideoStartupLogic::checkVersion()
@@ -177,10 +209,7 @@ bool Ts3VideoStartupLogic::checkVersion()
 	{
 		auto jv = jversions.at(i).toObject();
 		VersionInfo vi;
-		vi.version = jv.value("version").toString();
-		vi.message = jv.value("message").toString();
-		vi.homepageUrl = jv.value("homepageurl").toString();
-		vi.releasedOn = jv.value("releasedon").toString();
+		vi.fromJson(jv);
 		versions.append(vi);
 	}
 
@@ -201,19 +230,41 @@ bool Ts3VideoStartupLogic::checkVersion()
 	return true;
 }
 
-void Ts3VideoStartupLogic::lookupVideoServer()
+bool Ts3VideoStartupLogic::lookupVideoServer()
 {
 	// Lookup video server on master server.
 	showProgress(tr("Looking for conference on master server..."));
-	QtAsync::async([this]()
+
+	QEventLoop loop;
+	QNetworkAccessManager mgr;
+	auto url = serverLookupUrl.arg(_ts3opts.ts3ServerAddress).arg(_ts3opts.ts3ServerPort).arg(_ts3opts.ts3ChannelId).arg(_ts3opts.ts3ClientDbId);
+	auto reply = mgr.get(QNetworkRequest(QUrl(url)));
+	QObject::connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+	loop.exec();
+	reply->deleteLater();
+
+	if (reply->error() != QNetworkReply::NoError)
 	{
-		QThread::sleep(1);
-		return QVariant();
-	},
-	[this](QVariant v)
+		showError(tr("Conference lookup failed"), reply->errorString());
+		return false;
+	}
+
+	auto data = reply->readAll();
+	QJsonParseError err;
+	auto doc = QJsonDocument::fromJson(data, &err);
+	if (err.error != QJsonParseError::NoError)
 	{
-		this->initNetwork();
-	});
+		showError(err.errorString(), QString::fromUtf8(data));
+		return false;
+	}
+
+	ConferenceJoinInfo info;
+	if (!info.fromJson(doc.object()))
+	{
+		showError("Received invalid conference information", QString::fromUtf8(data));
+		return false;
+	}
+	return true;
 }
 
 void Ts3VideoStartupLogic::initNetwork()
