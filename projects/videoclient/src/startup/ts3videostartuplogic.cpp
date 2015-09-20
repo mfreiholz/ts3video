@@ -30,7 +30,6 @@
 
 #include "../startupwidget.h"
 #include "../clientapplogic.h"
-#include "../ts3video/ts3videoentities.h"
 #include "../ts3video/ts3videoupdatedialog.h"
 
 HUMBLE_LOGGER(HL, "client");
@@ -38,23 +37,38 @@ HUMBLE_LOGGER(HL, "client");
 // Endpoint to check for updates.
 // e.g.: %1 = 0.2
 const static QString versionCheckUrl = QString("http://api.mfreiholz.de/ts3video/1.0/versioncheck/%1").arg(IFVS_SOFTWARE_VERSION);
+//const static QString versionCheckUrl = QString("http://127.0.0.1:8080/ts3video/1.0/versioncheck/%1").arg("0.2");
 
 // Endpoint to lookup conference server.
-// e.g.: %1 = TeamSpeak address    = teamspeak.insanefactory.com
-//       %2 = TeamSpeak port       = 9987
-//       %3 = TeamSpeak channel id = 34
+// e.g.: %1 = TeamSpeak address            = teamspeak.insanefactory.com
+//       %2 = TeamSpeak port               = 9987
+//       %3 = TeamSpeak channel id         = 34
+//       %4 = TeamSpeak client database id = 12
 //
 // TODO Pass these settings as an encrypted value. It shouldn't be too easy
 //      to guess the parameters and make use of them.
-const static QString serverLookupUrl = QString("http://api.mfreiholz.de/ts3video/1.0/lookup/%1:%2:%3:%4");
+const static QString serverLookupUrl = QString("http://api.mfreiholz2.de/ts3video/1.0/lookup/%1:%2:%3:%4");
+//const static QString serverLookupUrl = QString("http://127.0.0.1:8080/ts3video/1.0/lookup/%1:%2:%3:%4");
 
 ///////////////////////////////////////////////////////////////////////
+
+static QString generateConferenceRoomPassword(const QString& uid)
+{
+	QString s;
+	for (auto i = uid.size() - 1; i >= 0; i--)
+	{
+		auto c = uid[i].toLatin1();
+		auto ci = (int) c;
+		s.append(QString::number(ci, 16));
+	}
+	return s;
+}
 
 /*!
 	Runs the basic application.
 
-	Logic
-	-----
+	# Logic
+
 	- Checks for updates.
 	- Ask master server for route.
 	- Connect to conference server (videoserver.exe).
@@ -62,20 +76,18 @@ const static QString serverLookupUrl = QString("http://api.mfreiholz.de/ts3video
 	- Joins conference room.
 	- Sends and receives video streams.
 
-	Some sample commands (obsolete)
-	-------------------------------
-	--server-address 127.0.0.1 --server-port 13370 --username TEST --channel-identifier default
-	--server-address 127.0.0.1 --server-port  13370  --username  "iF.Manuel"  --channel-identifier  "127.0.0.1#9987#1#"  --channel-password  "2e302e302e373231"  --ts3-client-database-id  2  --skip-startup-dialog
-	--server-address teamspeak.insanefactory.com --server-port  13370  --username  "iF.Manuel"  --channel-identifier  "127.0.0.1#9987#1#"  --channel-password  "2e302e302e373231"  --ts3-client-database-id  2  --skip-startup-dialog
+	# Parameters (--mode ts3video)
 
-	Parameters (--mode ts3video):
-		--address       The address of the TeamSpeak server.
-		--port	        The port of the TeamSpeak server.
-		--channelid     The channel-id of the TeamSpeak server.
-		--data          Encrypted parameters.
+	--address       The address of the TeamSpeak server.
+	--port          The port of the TeamSpeak server.
+	--channelid     The channel-id of the TeamSpeak server.
+	--clientdbid    The clients database ID on TeamSpeak server.
+	--username      The name of the TeamSpeak user.
+	--data          Encrypted parameters.
 
-	Commands:
-		--mode ts3video --address teamspeak.insanefactory.com --port 9987 --channelid 3
+	# Commands
+
+	--mode ts3video --address teamspeak.insanefactory.com --port 9987 --channelid 1 --clientdbid 2 --username "Manuel"
 */
 Ts3VideoStartupLogic::Ts3VideoStartupLogic(QApplication* a) :
 	QDialog(nullptr), AbstractStartupLogic(a)
@@ -99,48 +111,22 @@ int Ts3VideoStartupLogic::exec()
 	setVisible(true);
 
 	// Load options from arguments.
-	_ts3opts.ts3ServerAddress = ELWS::getArgsValue("--address").toString();
-	_ts3opts.ts3ServerPort = ELWS::getArgsValue("--port").toString().toULongLong();
-	_ts3opts.ts3ChannelId = ELWS::getArgsValue("--channelid").toString().toULongLong();
+	_args.ts3ServerAddress = ELWS::getArgsValue("--address").toString();
+	_args.ts3ServerPort = ELWS::getArgsValue("--port").toString().toULongLong();
+	_args.ts3ChannelId = ELWS::getArgsValue("--channelid").toString().toULongLong();
+	_args.ts3ClientDbId = ELWS::getArgsValue("--clientdbid").toString().toULongLong();
+	_args.ts3Username = ELWS::getArgsValue("--username").toString();
 
 	// TODO Load options from single encrypted argument.
 	//auto enc = ELWS::getArgsValue("--data").toString();
 
-	// Load options from arguments.
-	ClientAppLogic::Options opts;
-	opts.serverAddress = ELWS::getArgsValue("--server-address", opts.serverAddress).toString();
-	opts.serverPort = ELWS::getArgsValue("--server-port", opts.serverPort).toUInt();
-	opts.serverPassword = ELWS::getArgsValue("--server-password", opts.serverPassword).toString();
-	opts.username = ELWS::getArgsValue("--username", ELWS::getUserName()).toString();
-	opts.channelId = ELWS::getArgsValue("--channel-id", opts.channelId).toLongLong();
-	opts.channelIdentifier = ELWS::getArgsValue("--channel-identifier", opts.channelIdentifier).toString();
-	opts.channelPassword = ELWS::getArgsValue("--channel-password", opts.channelPassword).toString();
-	opts.authParams.insert("ts3_client_database_id", ELWS::getArgsValue("--ts3-client-database-id", 0).toULongLong());
+	HL_INFO(HL, QString("-- START (version=%1) -----").arg(IFVS_SOFTWARE_VERSION).toStdString());
+	HL_INFO(HL, QString("TS3-Address: %1").arg(_args.ts3ServerAddress).toStdString());
+	HL_INFO(HL, QString("TS3-Port: %1").arg(_args.ts3ServerPort).toStdString());
+	HL_INFO(HL, QString("TS3-Channel ID: %1").arg(_args.ts3ChannelId).toStdString());
+	HL_INFO(HL, QString("TS3-Client DBID: %1").arg(_args.ts3ClientDbId).toStdString());
+	HL_INFO(HL, QString("TS3-Username: %1").arg(_args.ts3Username).toStdString());
 
-	// Modify startup options with dialog.
-	// Skip dialog with: --skip-startup-dialog
-	StartupDialog dialog(this);
-	dialog.setValues(opts);
-	if (!ELWS::hasArgsValue("--skip-startup-dialog"))
-	{
-		if (dialog.exec() != QDialog::Accepted)
-		{
-			quitDelayed();
-			return AbstractStartupLogic::exec();
-		}
-	}
-	opts = dialog.values();
-	_opts = opts;
-
-	HL_INFO(HL, QString("-- START (version=%1) -----").arg(qapp()->applicationVersion()).toStdString());
-	HL_INFO(HL, QString("Address: %1").arg(opts.serverAddress).toStdString());
-	HL_INFO(HL, QString("Port: %1").arg(opts.serverPort).toStdString());
-	HL_INFO(HL, QString("Username: %1").arg(opts.username).toStdString());
-	HL_INFO(HL, QString("Channel ID: %1").arg(opts.channelId).toStdString());
-	HL_INFO(HL, QString("Channel Ident: %1").arg(opts.channelIdentifier).toStdString());
-	HL_INFO(HL, QString("Camera device ID: %1").arg(opts.cameraDeviceId).toStdString());
-
-	HL_INFO(HL, QString("-- CONNECT ----------------").toStdString());
 	start();
 
 	return AbstractStartupLogic::exec();
@@ -165,15 +151,26 @@ void Ts3VideoStartupLogic::showError(const QString& shortText, const QString& lo
 
 void Ts3VideoStartupLogic::start()
 {
+	// Check for updates.
 	if (!checkVersion())
 	{
 		quitDelayed();
 		return;
 	}
-	if (!lookupVideoServer())
+
+	// Lookup conference.
+	if (!lookupConference())
 	{
-		return;
+		// Lookup failed.
+		// Fallback to old behavior and join own dedicated server.
+		_joinInfo.server.address = _args.ts3ServerAddress;
+		_joinInfo.server.port = 13370;
+		_joinInfo.server.password = QString();
+		_joinInfo.room.uid = QString("%1#%2#%3").arg(_args.ts3ServerAddress).arg(QString::number(_args.ts3ServerPort)).arg(_args.ts3ChannelId);
+		_joinInfo.room.password = generateConferenceRoomPassword(_joinInfo.room.uid);
 	}
+
+	// Connect to conference.
 	initNetwork();
 }
 
@@ -230,14 +227,14 @@ bool Ts3VideoStartupLogic::checkVersion()
 	return true;
 }
 
-bool Ts3VideoStartupLogic::lookupVideoServer()
+bool Ts3VideoStartupLogic::lookupConference()
 {
 	// Lookup video server on master server.
 	showProgress(tr("Looking for conference on master server..."));
 
 	QEventLoop loop;
 	QNetworkAccessManager mgr;
-	auto url = serverLookupUrl.arg(_ts3opts.ts3ServerAddress).arg(_ts3opts.ts3ServerPort).arg(_ts3opts.ts3ChannelId).arg(_ts3opts.ts3ClientDbId);
+	auto url = serverLookupUrl.arg(_args.ts3ServerAddress).arg(_args.ts3ServerPort).arg(_args.ts3ChannelId).arg(_args.ts3ClientDbId);
 	auto reply = mgr.get(QNetworkRequest(QUrl(url)));
 	QObject::connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
 	loop.exec();
@@ -258,8 +255,7 @@ bool Ts3VideoStartupLogic::lookupVideoServer()
 		return false;
 	}
 
-	ConferenceJoinInfo info;
-	if (!info.fromJson(doc.object()))
+	if (!_joinInfo.fromJson(doc.object()))
 	{
 		showError("Received invalid conference information", QString::fromUtf8(data));
 		return false;
@@ -269,28 +265,31 @@ bool Ts3VideoStartupLogic::lookupVideoServer()
 
 void Ts3VideoStartupLogic::initNetwork()
 {
+	const auto address = _joinInfo.server.address;
+	const auto port = _joinInfo.server.port;
+
 	_nc = QSharedPointer<NetworkClient>(new NetworkClient());
 	connect(_nc.data(), &NetworkClient::connected, this, &Ts3VideoStartupLogic::onConnected);
 	connect(_nc.data(), &NetworkClient::disconnected, this, &Ts3VideoStartupLogic::onDisconnected);
 	connect(_nc.data(), &NetworkClient::error, this, &Ts3VideoStartupLogic::onError);
 
 	// If the address is already an IP, we don't need a lookup.
-	auto address = QHostAddress(_opts.serverAddress);
-	if (!address.isNull())
+	auto hostAddress = QHostAddress(address);
+	if (!hostAddress.isNull())
 	{
-		showProgress(tr("Connecting to server %1:%2 (address=%3)").arg(_opts.serverAddress).arg(_opts.serverPort).arg(address.toString()));
-		_nc->connectToHost(address, _opts.serverPort);
+		showProgress(tr("Connecting to server %1:%2 (address=%3)").arg(address).arg(port).arg(hostAddress.toString()));
+		_nc->connectToHost(hostAddress, port);
 		return;
 	}
 
 	// Async DNS lookup.
-	showProgress(tr("Resolve DNS for %1").arg(_opts.serverAddress));
-	QtAsync::async([this]()
+	showProgress(tr("Resolve DNS for %1").arg(address));
+	QtAsync::async([address]()
 	{
-		auto hostInfo = QHostInfo::fromName(_opts.serverAddress);
+		auto hostInfo = QHostInfo::fromName(address);
 		return QVariant::fromValue(hostInfo);
 	},
-	[this](QVariant v)
+	[this, address, port](QVariant v)
 	{
 		auto hostInfo = v.value<QHostInfo>();
 		if (hostInfo.error() != QHostInfo::NoError || hostInfo.addresses().isEmpty())
@@ -298,9 +297,9 @@ void Ts3VideoStartupLogic::initNetwork()
 			showError(tr("DNS lookup failed"), hostInfo.errorString());
 			return;
 		}
-		auto address = hostInfo.addresses().first();
-		showProgress(tr("Connecting to server %1:%2 (address=%3)").arg(_opts.serverAddress).arg(_opts.serverPort).arg(address.toString()));
-		_nc->connectToHost(address, _opts.serverPort);
+		auto hostAddress = hostInfo.addresses().first();
+		showProgress(tr("Connecting to server %1:%2 (address=%3)").arg(address).arg(port).arg(hostAddress.toString()));
+		_nc->connectToHost(hostAddress, port);
 	});
 }
 
@@ -308,7 +307,9 @@ void Ts3VideoStartupLogic::authAndJoinConference()
 {
 	// Authenticate.
 	showProgress(tr("Authenticating..."));
-	auto reply = _nc->auth(_opts.username, _opts.serverPassword, _opts.authParams);
+	QHash<QString, QVariant> authParams;
+	authParams.insert("ts3_client_database_id", _args.ts3ClientDbId);
+	auto reply = _nc->auth(_args.ts3Username, _joinInfo.server.password, authParams);
 	QObject::connect(reply, &QCorReply::finished, [this, reply]()
 	{
 		HL_DEBUG(HL, QString("Auth answer: %1").arg(QString(reply->frame()->data())).toStdString());
@@ -330,15 +331,7 @@ void Ts3VideoStartupLogic::authAndJoinConference()
 
 		// Join channel.
 		showProgress(tr("Joining conference..."));
-		QCorReply* reply2 = nullptr;
-		if (_opts.channelId != 0)
-		{
-			reply2 = _nc->joinChannel(_opts.channelId, _opts.channelPassword);
-		}
-		else
-		{
-			reply2 = _nc->joinChannelByIdentifier(_opts.channelIdentifier, _opts.channelPassword);
-		}
+		auto reply2 = _nc->joinChannelByIdentifier(_joinInfo.room.uid, _joinInfo.room.password);
 		QObject::connect(reply2, &QCorReply::finished, [this, reply2]()
 		{
 			HL_DEBUG(HL, QString("Join channel answer: %1").arg(QString(reply2->frame()->data())).toStdString());
@@ -364,10 +357,24 @@ void Ts3VideoStartupLogic::authAndJoinConference()
 
 void Ts3VideoStartupLogic::startVideoGui()
 {
-	auto w = new ClientAppLogic(_opts, _nc, nullptr, 0);
+	// Conference settings.
+	// Skip dialog with: --skip-startup-dialog
+	StartupDialog dialog(this);
+	if (!ELWS::hasArgsValue("--skip-startup-dialog"))
+	{
+		if (dialog.exec() != QDialog::Accepted)
+		{
+			quitDelayed();
+			return;
+		}
+	}
+
+	// Open conference video-chat UI.
+	auto w = new ClientAppLogic(dialog.values(), _nc, nullptr, 0);
 	w->show();
 	w->start();
 
+	// Close startup logic.
 	close();
 	if (_nc)
 	{

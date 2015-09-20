@@ -31,25 +31,9 @@ public:
 	class Options
 	{
 	public:
-		// The address and port of the remote server.
-		// The address can either be a name like "myhost.com" or and IPv4/IPv6 address.
-		QString serverAddress = IFVS_SERVER_ADDRESS;
-		quint16 serverPort = IFVS_SERVER_CONNECTION_PORT;
-		QString serverPassword;
-
-		// The visible username of the client.
-		QString username;
-
-		// Information about the channel to join.
-		qint64 channelId = 0;                                              ///< The channel's ID.
-		QString channelIdentifier;                                         ///< String based identifier. An ID will be calculated from this string.
-		QString channelPassword;                                           ///< The channel's password.
-
 		// The camera's device ID to stream video.
-		QString cameraDeviceId;
-
-		// Custom parameters for authentication.
-		QHash<QString, QVariant> authParams;
+		QString cameraDeviceId = QString();
+		bool cameraAutoEnable = false;
 	};
 
 	/*!

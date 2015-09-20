@@ -37,6 +37,7 @@ public:
 	bool fromJson(const QJsonObject& json);
 };
 
+
 class ConferenceJoinInfo
 {
 public:

@@ -31,7 +31,7 @@ bool ConferenceRoomInfo::fromJson(const QJsonObject& json)
 
 bool ConferenceJoinInfo::fromJson(const QJsonObject& json)
 {
-	if (!json.contains("server") || !server.fromJson(json))
+	if (!json.contains("server") || !server.fromJson(json.value("server").toObject()))
 		return false;
 	if (!json.contains("room") || !room.fromJson(json.value("room").toObject()))
 		return false;

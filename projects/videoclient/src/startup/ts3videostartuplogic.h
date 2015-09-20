@@ -7,6 +7,7 @@
 #include "../startuplogic.h"
 #include "../clientapplogic.h"
 #include "../networkclient/networkclient.h"
+#include "../ts3video/ts3videoentities.h"
 
 #include "ui_ts3videostartuplogic.h"
 
@@ -18,6 +19,7 @@ public:
 	quint16 ts3ServerPort = 0;
 	quint64 ts3ChannelId = 0;
 	quint64 ts3ClientDbId = 0;
+	QString ts3Username;
 };
 
 
@@ -25,8 +27,8 @@ class Ts3VideoStartupLogic : public QDialog, public AbstractStartupLogic
 {
 	Q_OBJECT
 	Ui::TS3VideoStartupLogicDialogForm _ui;
-	Ts3VideoStartOptions _ts3opts;
-	ClientAppLogic::Options _opts;
+	Ts3VideoStartOptions _args;
+	ConferenceJoinInfo _joinInfo;
 	QSharedPointer<NetworkClient> _nc;
 
 public:
@@ -42,7 +44,7 @@ private slots:
 private:
 	void start();
 	bool checkVersion();
-	bool lookupVideoServer();
+	bool lookupConference();
 	void initNetwork();
 	void authAndJoinConference();
 	void startVideoGui();
