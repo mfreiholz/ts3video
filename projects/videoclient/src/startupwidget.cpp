@@ -67,7 +67,7 @@ ClientAppLogic::Options StartupDialog::values() const
 {
 	auto v = d->opts;
 	v.cameraDeviceId = d->ui.cameraComboBox->currentData().toString();
-	v.cameraAutoEnable = d->ui.cameraAutoEnable->isChecked();
+	v.cameraAutoEnable = d->ui.cameraAutoEnable->isEnabled() && d->ui.cameraAutoEnable->isChecked();
 	return v;
 }
 
@@ -109,7 +109,10 @@ bool StartupDialogPrivate::validateUi()
 	auto d = this;
 	auto valid = true;
 
-	// Checks here...
+	if (d->ui.cameraComboBox->currentData().isNull())
+		d->ui.cameraAutoEnable->setEnabled(false);
+	else
+		d->ui.cameraAutoEnable->setEnabled(true);
 
 	d->ui.okButton->setEnabled(valid);
 	return valid;

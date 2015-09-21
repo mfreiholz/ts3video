@@ -47,7 +47,7 @@ const static QString versionCheckUrl = QString("http://api.mfreiholz.de/ts3video
 //
 // TODO Pass these settings as an encrypted value. It shouldn't be too easy
 //      to guess the parameters and make use of them.
-const static QString serverLookupUrl = QString("http://api.mfreiholz2.de/ts3video/1.0/lookup/%1:%2:%3:%4");
+const static QString serverLookupUrl = QString("http://api.mfreiholz.de/ts3video/1.0/lookup/%1:%2:%3:%4");
 //const static QString serverLookupUrl = QString("http://127.0.0.1:8080/ts3video/1.0/lookup/%1:%2:%3:%4");
 
 ///////////////////////////////////////////////////////////////////////
@@ -87,7 +87,7 @@ static QString generateConferenceRoomPassword(const QString& uid)
 
 	# Commands
 
-	--mode ts3video --address teamspeak.insanefactory.com --port 9987 --channelid 1 --clientdbid 2 --username "Manuel"
+	--mode ts3video --address teamspeak.insanefactory.com --port 9987 --channelid 1 --clientdbid 6 --username "Manuel"
 */
 Ts3VideoStartupLogic::Ts3VideoStartupLogic(QApplication* a) :
 	QDialog(nullptr), AbstractStartupLogic(a)
