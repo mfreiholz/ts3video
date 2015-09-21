@@ -372,7 +372,6 @@ void Ts3VideoStartupLogic::startVideoGui()
 	// Open conference video-chat UI.
 	auto w = new ClientAppLogic(dialog.values(), _nc, nullptr, 0);
 	w->show();
-	w->start();
 
 	// Close startup logic.
 	close();

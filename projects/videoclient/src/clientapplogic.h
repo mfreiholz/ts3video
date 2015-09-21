@@ -52,7 +52,6 @@ public:
 public:
 	ClientAppLogic(const Options& opts, const QSharedPointer<NetworkClient>& nc, QWidget* parent, Qt::WindowFlags flags);
 	virtual ~ClientAppLogic();
-	void start();
 	QSharedPointer<NetworkClient> networkClient();
 
 private slots:

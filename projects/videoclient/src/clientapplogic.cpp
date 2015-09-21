@@ -56,6 +56,13 @@ ClientAppLogic::ClientAppLogic(const Options& opts, const QSharedPointer<Network
 	d->opts = opts;
 	d->nc = nc;
 
+	connect(d->nc.data(), &NetworkClient::error, this, &ClientAppLogic::onError);
+	connect(d->nc.data(), &NetworkClient::serverError, this, &ClientAppLogic::onServerError);
+	connect(d->nc.data(), &NetworkClient::clientJoinedChannel, this, &ClientAppLogic::onClientJoinedChannel);
+	connect(d->nc.data(), &NetworkClient::clientLeftChannel, this, &ClientAppLogic::onClientLeftChannel);
+	connect(d->nc.data(), &NetworkClient::clientDisconnected, this, &ClientAppLogic::onClientDisconnected);
+	connect(d->nc.data(), &NetworkClient::newVideoFrame, this, &ClientAppLogic::onNewVideoFrame);
+
 	// Central view widget.
 	auto viewWidget = new TileViewWidget(this);
 	viewWidget->setClientListModel(d->nc->clientModel());
@@ -67,6 +74,22 @@ ClientAppLogic::ClientAppLogic(const Options& opts, const QSharedPointer<Network
 	{
 		d->camera = d->createCameraFromOptions();
 		viewWidget->setCamera(d->camera);
+	}
+
+	// Create initial tiles.
+	auto m = d->nc->clientModel();
+	for (auto i = 0; i < m->rowCount(); ++i)
+	{
+		auto c = m->data(m->index(i), ClientListModel::ClientEntityRole).value<ClientEntity>();
+		onClientJoinedChannel(c, ChannelEntity());
+	}
+
+	// Auto turn ON camera.
+	if (d->camera && d->opts.cameraAutoEnable)
+	{
+		TileViewWidget* tvw = nullptr;
+		if ((tvw = dynamic_cast<TileViewWidget*>(d->view)) != nullptr)
+			tvw->setVideoEnabled(true);
 	}
 
 	resize(1024, 768);
@@ -91,31 +114,6 @@ ClientAppLogic::~ClientAppLogic()
 	if (d->camera)
 	{
 		d->camera->stop();
-	}
-}
-
-void ClientAppLogic::start()
-{
-	connect(d->nc.data(), &NetworkClient::error, this, &ClientAppLogic::onError);
-	connect(d->nc.data(), &NetworkClient::serverError, this, &ClientAppLogic::onServerError);
-	connect(d->nc.data(), &NetworkClient::clientJoinedChannel, this, &ClientAppLogic::onClientJoinedChannel);
-	connect(d->nc.data(), &NetworkClient::clientLeftChannel, this, &ClientAppLogic::onClientLeftChannel);
-	connect(d->nc.data(), &NetworkClient::clientDisconnected, this, &ClientAppLogic::onClientDisconnected);
-	connect(d->nc.data(), &NetworkClient::newVideoFrame, this, &ClientAppLogic::onNewVideoFrame);
-
-	auto m = d->nc->clientModel();
-	for (auto i = 0; i < m->rowCount(); ++i)
-	{
-		auto c = m->data(m->index(i), ClientListModel::ClientEntityRole).value<ClientEntity>();
-		onClientJoinedChannel(c, ChannelEntity());
-	}
-
-	// Auto turn ON camera.
-	if (d->camera)
-	{
-		TileViewWidget* tvw = nullptr;
-		if ((tvw = dynamic_cast<TileViewWidget*>(d->view)) != nullptr)
-			tvw->setVideoEnabled(true);
 	}
 }
 
