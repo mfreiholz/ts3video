@@ -141,43 +141,41 @@ int runClient(TS3Data* ts3data, int skipStartupDialog)
 	}
 
 	// Command line parameters.
-	// e.g.: --server-address 0.0.0.0 --server-port 6000 --username "Foo Bar" ...
+	// --mode ts3video --address teamspeak.insanefactory.com --port 9987 --channelid 1 --clientdbid 6 --username "Manuel"
 	char params[PATH_MAX_LENGTH];
 	params[0] = 0;
 
-	strcat(params, " --server-address ");
+	strcat(params, " --mode ");
+	strcat(params, " ts3video ");
+
+	strcat(params, " --address ");
 	strcat(params, ts3data->serverAddress);
 
 	char serverPortString[64];
-	itoa(13370, serverPortString, 10);
-	strcat(params, " --server-port ");
+	itoa(ts3data->serverPort, serverPortString, 10);
+	strcat(params, " --port ");
 	strcat(params, " ");
 	strcat(params, serverPortString);
+	strcat(params, " ");
+
+	char channelIdString[64];
+	itoa(ts3data->channelId, channelIdString, 10);
+	strcat(params, " --channelid ");
+	strcat(params, " ");
+	strcat(params, channelIdString);
+	strcat(params, " ");
+
+	char clientDatabaseIdString[64];
+	ltoa(ts3data->clientDatabaseId, clientDatabaseIdString, 10);
+	strcat(params, " --clientdbid ");
+	strcat(params, " ");
+	strcat(params, clientDatabaseIdString);
 	strcat(params, " ");
 
 	strcat(params, " --username ");
 	strcat(params, " \"");
 	strcat(params, ts3data->clientName);
 	strcat(params, "\" ");
-
-	char* channelIdent = generateUniqueChannelIdentifier(ts3data);
-	strcat(params, " --channel-identifier ");
-	strcat(params, " \"");
-	strcat(params, channelIdent);
-	strcat(params, "\" ");
-
-	char* channelPassword = generateChannelPassword(ts3data);
-	strcat(params, " --channel-password ");
-	strcat(params, " \"");
-	strcat(params, channelPassword);
-	strcat(params, "\" ");
-
-	char clientDatabaseIdString[64];
-	ltoa(ts3data->clientDatabaseId, clientDatabaseIdString, 10);
-	strcat(params, " --ts3-client-database-id ");
-	strcat(params, " ");
-	strcat(params, clientDatabaseIdString);
-	strcat(params, " ");
 
 	if (skipStartupDialog)
 		strcat(params, " --skip-startup-dialog ");
@@ -194,16 +192,12 @@ int runClient(TS3Data* ts3data, int skipStartupDialog)
 	execInfo.nShow = SW_SHOWNORMAL;
 	if (!ShellExecuteEx(&execInfo))
 	{
-		delete[] channelIdent;
-		delete[] channelPassword;
 		delete[] workingDirectory;
 		delete[] filePath;
 		return 3;
 	}
 #endif
 
-	delete[] channelIdent;
-	delete[] channelPassword;
 	delete[] workingDirectory;
 	delete[] filePath;
 	return 0;
