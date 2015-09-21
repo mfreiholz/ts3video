@@ -57,8 +57,7 @@ static QString generateConferenceRoomPassword(const QString& uid)
 	QString s;
 	for (auto i = uid.size() - 1; i >= 0; i--)
 	{
-		auto c = uid[i].toLatin1();
-		auto ci = (int) c;
+		const int ci = uid[i].toLatin1();
 		s.append(QString::number(ci, 16));
 	}
 	return s;
