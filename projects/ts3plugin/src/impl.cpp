@@ -72,50 +72,6 @@ char* getParentPath(const char* path)
 	return parentPath;
 }
 
-char* generateUniqueChannelIdentifier(const TS3Data* data)
-{
-	// Concenate all important data which makes the TS3Data unique
-	// in the same way for all clients (do not include the client's ID!).
-	// e.g.: <server-address>#<server-port>#<channel-id>
-	char* s = new char[MAX_PATH];
-	memset(s, 0, MAX_PATH);
-
-	strcat(s, data->serverAddress);
-	strcat(s, "#");
-
-	char serverPortString[64];
-	ltoa(data->serverPort, serverPortString, 10);
-	strcat(s, serverPortString);
-	strcat(s, "#");
-
-	char channelIdString[64];
-	ltoa(data->targetChannelId, channelIdString, 10);
-	strcat(s, channelIdString);
-	strcat(s, "#");
-
-	return s;
-}
-
-char* generateChannelPassword(const TS3Data* data)
-{
-	const char* ident = generateUniqueChannelIdentifier(data);
-	const int identLen = strlen(ident);
-
-	char* pass = new char[MAX_PATH];
-	memset(pass, 0, MAX_PATH);
-
-	for (int i = identLen / 2 - 1; i >= 0; --i)
-	{
-		const int ival = ident[i];
-		char buff[128];
-		itoa(ival, buff, 16);
-		strcat(pass, buff);
-	}
-
-	delete[] ident;
-	return pass;
-}
-
 // API ////////////////////////////////////////////////////////////////
 
 int runClient(TS3Data* ts3data, int skipStartupDialog)
