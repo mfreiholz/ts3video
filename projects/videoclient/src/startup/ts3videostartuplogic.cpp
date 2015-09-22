@@ -55,7 +55,7 @@ const static QString serverLookupUrl = QString("http://api.mfreiholz.de/ts3video
 static QString generateConferenceRoomPassword(const QString& uid)
 {
 	QString s;
-	for (auto i = uid.size() - 1; i >= 0; i--)
+	for (auto i = uid.size() / 2 - 1; i >= 0; i--)
 	{
 		const int ci = uid[i].toLatin1();
 		s.append(QString::number(ci, 16));
@@ -91,7 +91,10 @@ static QString generateConferenceRoomPassword(const QString& uid)
 Ts3VideoStartupLogic::Ts3VideoStartupLogic(QApplication* a) :
 	QDialog(nullptr), AbstractStartupLogic(a)
 {
+	// Setup application.
 	a->setQuitOnLastWindowClosed(true);
+
+	// Init GUI.
 	_ui.setupUi(this);
 	QObject::connect(this, &Ts3VideoStartupLogic::newProgress, this, &Ts3VideoStartupLogic::showProgress);
 }
