@@ -1,40 +1,12 @@
 #ifdef _WIN32
 #include <Windows.h>
 #endif
-
-#include <QObject>
-#include <QTimer>
 #include <QApplication>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QUrl>
-#include <QUrlQuery>
-#include <QCamera>
-#include <QCameraInfo>
-#include <QMediaRecorder>
-#include <QVideoWidget>
-#include <QMediaPlayer>
-#include <QDir>
-
+#include <QScopedPointer>
 #include "humblelogging/api.h"
-
-#include "qcorreply.h"
-
-#include "ts3video.h"
-#include "elws.h"
-#include "cliententity.h"
-#include "channelentity.h"
-
-#include "startuplogic.h"
+#include "videolib/src/ts3video.h"
+#include "videolib/src/elws.h"
 #include "startup/ts3videostartuplogic.h"
-
-#include "cameraframegrabber.h"
-#include "videowidget.h"
-#include "videocollectionwidget.h"
-#include "networkclient/networkclient.h"
-#include "clientapplogic.h"
-#include "startupwidget.h"
-#include "tileviewwidget.h"
 
 HUMBLE_LOGGER(HL, "client");
 

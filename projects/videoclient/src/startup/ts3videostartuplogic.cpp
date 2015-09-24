@@ -50,6 +50,13 @@ const static QString versionCheckUrl = QString("http://api.mfreiholz.de/ts3video
 const static QString serverLookupUrl = QString("http://api.mfreiholz.de/ts3video/1.0/lookup/%1:%2:%3:%4");
 //const static QString serverLookupUrl = QString("http://127.0.0.1:8080/ts3video/1.0/lookup/%1:%2:%3:%4");
 
+// Endpoint to lookup public conference server.
+// e.g.: %1 = TeamSpeak address            = teamspeak.insanefactory.com
+//       %2 = TeamSpeak port               = 9987
+//       %3 = TeamSpeak channel id         = 34
+const static QString serverLookupPublicUrl = QString("http://api.mfreiholz.de/ts3video/1.0/lookup-public/%1:%2:%3");
+//const static QString serverLookupPublicUrl = QString("http://127.0.0.1:8080/ts3video/1.0/lookup-public/%1:%2:%3");
+
 ///////////////////////////////////////////////////////////////////////
 
 static QString generateConferenceRoomPassword(const QString& uid)
@@ -118,6 +125,7 @@ int Ts3VideoStartupLogic::exec()
 	_args.ts3ChannelId = ELWS::getArgsValue("--channelid").toString().toULongLong();
 	_args.ts3ClientDbId = ELWS::getArgsValue("--clientdbid").toString().toULongLong();
 	_args.ts3Username = ELWS::getArgsValue("--username").toString();
+	_args.usePublicConferenceServer = ELWS::hasArgsValue("--public");
 
 	// TODO Load options from single encrypted argument.
 	//auto enc = ELWS::getArgsValue("--data").toString();
@@ -161,15 +169,26 @@ void Ts3VideoStartupLogic::start()
 	}
 
 	// Lookup conference.
-	if (!lookupConference())
+	if (_args.usePublicConferenceServer)
 	{
-		// Lookup failed.
-		// Fallback to old behavior and join own dedicated server.
-		_joinInfo.server.address = _args.ts3ServerAddress;
-		_joinInfo.server.port = 13370;
-		_joinInfo.server.password = QString();
-		_joinInfo.room.uid = QString("%1#%2#%3").arg(_args.ts3ServerAddress).arg(QString::number(_args.ts3ServerPort)).arg(_args.ts3ChannelId);
-		_joinInfo.room.password = generateConferenceRoomPassword(_joinInfo.room.uid);
+		if (!lookupPublicConference())
+		{
+			showError("Public server lookup failed");
+			return;
+		}
+	}
+	else
+	{
+		if (!lookupConference())
+		{
+			// Lookup failed.
+			// Fallback to old behavior and join own dedicated server.
+			_joinInfo.server.address = _args.ts3ServerAddress;
+			_joinInfo.server.port = 13370;
+			_joinInfo.server.password = QString();
+			_joinInfo.room.uid = QString("%1#%2#%3#").arg(_args.ts3ServerAddress).arg(QString::number(_args.ts3ServerPort)).arg(_args.ts3ChannelId);
+			_joinInfo.room.password = generateConferenceRoomPassword(_joinInfo.room.uid);
+		}
 	}
 
 	// Connect to conference.
@@ -237,6 +256,42 @@ bool Ts3VideoStartupLogic::lookupConference()
 	QEventLoop loop;
 	QNetworkAccessManager mgr;
 	auto url = serverLookupUrl.arg(_args.ts3ServerAddress).arg(_args.ts3ServerPort).arg(_args.ts3ChannelId).arg(_args.ts3ClientDbId);
+	auto reply = mgr.get(QNetworkRequest(QUrl(url)));
+	QObject::connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+	loop.exec();
+	reply->deleteLater();
+
+	if (reply->error() != QNetworkReply::NoError)
+	{
+		showError(tr("Conference lookup failed"), reply->errorString());
+		return false;
+	}
+
+	auto data = reply->readAll();
+	QJsonParseError err;
+	auto doc = QJsonDocument::fromJson(data, &err);
+	if (err.error != QJsonParseError::NoError)
+	{
+		showError(err.errorString(), QString::fromUtf8(data));
+		return false;
+	}
+
+	if (!_joinInfo.fromJson(doc.object()))
+	{
+		showError("Received invalid conference information", QString::fromUtf8(data));
+		return false;
+	}
+	return true;
+}
+
+bool Ts3VideoStartupLogic::lookupPublicConference()
+{
+	// Lookup video server on master server.
+	showProgress(tr("Looking for public conference on master server..."));
+
+	QEventLoop loop;
+	QNetworkAccessManager mgr;
+	auto url = serverLookupPublicUrl.arg(_args.ts3ServerAddress).arg(_args.ts3ServerPort).arg(_args.ts3ChannelId);
 	auto reply = mgr.get(QNetworkRequest(QUrl(url)));
 	QObject::connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
 	loop.exec();

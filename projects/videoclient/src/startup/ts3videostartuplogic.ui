@@ -7,15 +7,18 @@
     <x>0</x>
     <y>0</y>
     <width>500</width>
-    <height>199</height>
+    <height>311</height>
    </rect>
-  </property>
-  <property name="windowTitle">
-   <string>Update</string>
   </property>
   <layout class="QVBoxLayout">
    <item>
     <widget class="QTextEdit" name="progress">
+     <property name="font">
+      <font>
+       <family>Consolas</family>
+       <pointsize>8</pointsize>
+      </font>
+     </property>
      <property name="verticalScrollBarPolicy">
       <enum>Qt::ScrollBarAlwaysOn</enum>
      </property>
