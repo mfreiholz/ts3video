@@ -74,7 +74,7 @@ char* getParentPath(const char* path)
 
 // API ////////////////////////////////////////////////////////////////
 
-int runClient(TS3Data* ts3data, int skipStartupDialog)
+int runClient(TS3Data* ts3data, int runOpts)
 {
 	// It's not allowed to join a conference of a different channel.
 	if (ts3data->channelId != ts3data->targetChannelId)
@@ -133,8 +133,8 @@ int runClient(TS3Data* ts3data, int skipStartupDialog)
 	strcat(params, ts3data->clientName);
 	strcat(params, "\" ");
 
-	if (skipStartupDialog)
-		strcat(params, " --skip-startup-dialog ");
+	if (runOpts & RUNOPT_PUBLIC)
+		strcat(params, " --public ");
 
 #ifdef _WIN32
 	SHELLEXECUTEINFO execInfo;

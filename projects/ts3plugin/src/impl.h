@@ -23,14 +23,20 @@ typedef struct
 	uint64 targetChannelId;            ///< The ID of the channel the client wants to join.
 } TS3Data;
 
+enum
+{
+	RUNOPT_DEFAULT = 0,
+	RUNOPT_PUBLIC = 1
+};
+
 /*!
     Starts the video-app in an external process and automatically joins the given channel defined in <em>ts3data</em>.
 
     \param ts3data Basic information from TS3, which are used to join the correct channel.
-    \param skipStartupDialog 1=Skips the startup dialog and uses default values.
+    \param runOpts Run option flags.
     \return 0 = OK; Everything else may indicate an error.
 */
-int runClient(TS3Data* ts3data, int skipStartupDialog);
+int runClient(TS3Data* ts3data, int runOpts);
 
 #ifdef __cplusplus
 }

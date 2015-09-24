@@ -64,8 +64,8 @@ static int wcharToUtf8(const wchar_t* str, char** result)
 */
 enum
 {
-	MENU_ID_CHANNEL_VIDEO_START_CUSTOM = 1,
-	MENU_ID_CHANNEL_VIDEO_START_QUICK = 2
+	MENU_ID_CHANNEL_VIDEO_START_PRIVATE = 1,
+	MENU_ID_CHANNEL_VIDEO_START_PUBLIC = 2
 };
 
 static TS3Data* _data = 0;
@@ -74,8 +74,13 @@ static int _usedMenuItemID = 0;
 
 static void startVideoClient()
 {
-	// Start client binary.
-	if (runClient(_data, (_usedMenuItemID == MENU_ID_CHANNEL_VIDEO_START_QUICK ? 1 : 0)) != 0)
+	// Run videoclient.exe.
+	int f = RUNOPT_DEFAULT;
+	if (_usedMenuItemID == MENU_ID_CHANNEL_VIDEO_START_PUBLIC)
+	{
+		f |= RUNOPT_PUBLIC;
+	}
+	if (runClient(_data, f) != 0)
 		printf("Could not run client.");
 
 	// Reset collected values.
@@ -313,8 +318,8 @@ void ts3plugin_initMenus(struct PluginMenuItem** * menuItems, char** menuIcon)
 	*/
 
 	BEGIN_CREATE_MENUS(2);  /* IMPORTANT: Number of menu items must be correct! */
-	CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_CHANNEL, MENU_ID_CHANNEL_VIDEO_START_QUICK, "Join now", "join-now.png")
-	CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_CHANNEL, MENU_ID_CHANNEL_VIDEO_START_CUSTOM, "Join...", "join-custom.png")
+	CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_CHANNEL, MENU_ID_CHANNEL_VIDEO_START_PRIVATE, "Join now", "join-now.png")
+	CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_CHANNEL, MENU_ID_CHANNEL_VIDEO_START_PUBLIC, "Join via public server", "join-public.png")
 	END_CREATE_MENUS;  /* Includes an assert checking if the number of menu items matched */
 
 	/*
@@ -776,8 +781,8 @@ void ts3plugin_onMenuItemEvent(uint64 serverConnectionHandlerID, enum PluginMenu
 		/* Channel contextmenu item was triggered. selectedItemID is the channelID of the selected channel */
 		switch (menuItemID)
 		{
-		case MENU_ID_CHANNEL_VIDEO_START_QUICK:
-		case MENU_ID_CHANNEL_VIDEO_START_CUSTOM:
+		case MENU_ID_CHANNEL_VIDEO_START_PRIVATE:
+		case MENU_ID_CHANNEL_VIDEO_START_PUBLIC:
 		{
 			// Collect required information.
 			anyID clientId = 0;
