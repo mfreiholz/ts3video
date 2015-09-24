@@ -138,7 +138,7 @@ const char* ts3plugin_author()
 const char* ts3plugin_description()
 {
 	/* If you want to use wchar_t, see ts3plugin_name() on how to use */
-	return "This plugin provides video conferencing for Teamspeak 3.\n\nCheckout the plugin's website for more information:\nhttp://ts3video.insanefactory.com/";
+	return "This plugin provides video conferencing for Teamspeak 3.\n\nCheckout the plugin's website for more information:\nhttps://mfreiholz.de/ts3video";
 }
 
 /* Set TeamSpeak 3 callback functions */

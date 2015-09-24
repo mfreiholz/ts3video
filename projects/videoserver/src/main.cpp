@@ -241,9 +241,9 @@ int serviceStop()
 int _main(int argc, char* argv[])
 {
 	QCoreApplication a(argc, argv);
-	a.setOrganizationName("insaneFactory");
-	a.setOrganizationDomain("http://www.insanefactory.com/");
-	a.setApplicationName("Video Server");
+	a.setOrganizationName("mfreiholz");
+	a.setOrganizationDomain("https://mfreiholz.de");
+	a.setApplicationName("ocs-server");
 	a.setApplicationVersion(IFVS_SOFTWARE_VERSION_QSTRING);
 
 #ifdef _WIN32

@@ -14,7 +14,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #define IFVS_SOFTWARE_VERSION_BUILD "0"                                ///< Incrementing number with each build, which can be mapped to a revision in source repository.
-#define IFVS_SOFTWARE_VERSION_QSTRING QString("%1 %2").arg(IFVS_SOFTWARE_VERSION).arg(IFVS_SOFTWARE_VERSION_POSTFIX)
+#define IFVS_SOFTWARE_VERSION_QSTRING QString("%1%2").arg(IFVS_SOFTWARE_VERSION).arg(IFVS_SOFTWARE_VERSION_POSTFIX)
 
 ///////////////////////////////////////////////////////////////////////
 // Server specific defines.

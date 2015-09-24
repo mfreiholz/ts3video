@@ -21,9 +21,10 @@
 AbstractStartupLogic::AbstractStartupLogic(QApplication* a) :
 	_qapp(a)
 {
-	a->setOrganizationName("insaneFactory");
-	a->setOrganizationDomain("http://ts3video.insanefactory.com/");
-	a->setApplicationName("Video Client");
+	a->setOrganizationName("mfreiholz");
+	a->setOrganizationDomain("https://mfreiholz.de");
+	a->setApplicationName("ocs-client");
+	a->setApplicationDisplayName("Video Conference Client");
 	a->setApplicationVersion(IFVS_SOFTWARE_VERSION_QSTRING);
 
 #ifdef _WIN32
