@@ -293,8 +293,11 @@ bool Ts3VideoStartupLogic::lookupPublicConference()
 
 	QEventLoop loop;
 	QNetworkAccessManager mgr;
-	auto url = serverLookupPublicUrl.arg(_args.ts3ServerAddress).arg(_args.ts3ServerPort).arg(_args.ts3ChannelId);
-	auto reply = mgr.get(QNetworkRequest(QUrl(url)));
+	QUrlQuery query;
+	query.addQueryItem("version", IFVS_SOFTWARE_VERSION);
+	auto url = QUrl(serverLookupPublicUrl.arg(_args.ts3ServerAddress).arg(_args.ts3ServerPort).arg(_args.ts3ChannelId));
+	url.setQuery(query);
+	auto reply = mgr.get(QNetworkRequest(url));
 	QObject::connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
 	loop.exec();
 	reply->deleteLater();
