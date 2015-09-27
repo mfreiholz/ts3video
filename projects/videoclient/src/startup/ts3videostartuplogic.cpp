@@ -43,11 +43,10 @@ const static QString versionCheckUrl = QString("http://api.mfreiholz.de/ts3video
 // e.g.: %1 = TeamSpeak address            = teamspeak.insanefactory.com
 //       %2 = TeamSpeak port               = 9987
 //       %3 = TeamSpeak channel id         = 34
-//       %4 = TeamSpeak client database id = 12
 //
 // TODO Pass these settings as an encrypted value. It shouldn't be too easy
 //      to guess the parameters and make use of them.
-const static QString serverLookupUrl = QString("http://api.mfreiholz.de/ts3video/1.0/lookup/%1:%2:%3:%4");
+const static QString serverLookupUrl = QString("http://api.mfreiholz.de/ts3video/1.0/lookup/%1:%2:%3");
 //const static QString serverLookupUrl = QString("http://127.0.0.1:8080/ts3video/1.0/lookup/%1:%2:%3:%4");
 
 // Endpoint to lookup public conference server.
@@ -255,8 +254,11 @@ bool Ts3VideoStartupLogic::lookupConference()
 
 	QEventLoop loop;
 	QNetworkAccessManager mgr;
-	auto url = serverLookupUrl.arg(_args.ts3ServerAddress).arg(_args.ts3ServerPort).arg(_args.ts3ChannelId).arg(_args.ts3ClientDbId);
-	auto reply = mgr.get(QNetworkRequest(QUrl(url)));
+	QUrlQuery query;
+	query.addQueryItem("version", IFVS_SOFTWARE_VERSION);
+	auto url = QUrl(serverLookupUrl.arg(_args.ts3ServerAddress).arg(_args.ts3ServerPort).arg(_args.ts3ChannelId));
+	url.setQuery(query);
+	auto reply = mgr.get(QNetworkRequest(url));
 	QObject::connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
 	loop.exec();
 	reply->deleteLater();
