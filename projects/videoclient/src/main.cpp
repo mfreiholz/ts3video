@@ -6,6 +6,7 @@
 #include "humblelogging/api.h"
 #include "videolib/src/ts3video.h"
 #include "videolib/src/elws.h"
+#include "startup/devstartuplogic.h"
 #include "startup/ts3videostartuplogic.h"
 
 HUMBLE_LOGGER(HL, "client");
@@ -32,6 +33,10 @@ int main(int argc, char* argv[])
 	if (mode.compare("ts3video", Qt::CaseInsensitive) == 0)
 	{
 		sl.reset(new Ts3VideoStartupLogic(&a));
+	}
+	else if (mode.compare("dev", Qt::CaseInsensitive) == 0)
+	{
+		sl.reset(new DevStartupLogic(&a));
 	}
 	if (!sl)
 	{

@@ -56,6 +56,7 @@ set(qheaders
   src/networkclient/vp8decoder.h
   src/networkclient/clientlistmodel.h
   src/networkclient/clientlistmodel_p.h
+  src/startup/devstartuplogic.h
   src/startup/ts3videostartuplogic.h
   src/ts3video/ts3videoentities.h
   src/ts3video/ts3videoupdatedialog.h
@@ -90,6 +91,7 @@ set(sources
   src/networkclient/vp8encoder.cpp
   src/networkclient/vp8decoder.cpp
   src/networkclient/clientlistmodel.cpp
+  src/startup/devstartuplogic.cpp
   src/startup/ts3videostartuplogic.cpp
   src/ts3video/ts3videoentities.cpp
   src/ts3video/ts3videoupdatedialog.cpp
