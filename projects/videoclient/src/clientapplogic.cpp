@@ -8,6 +8,7 @@
 #include <QMessageBox>
 #include <QProgressDialog>
 #include <QCameraInfo>
+#include <QAudioDeviceInfo>
 #include <QHostInfo>
 #include <QtConcurrent>
 #include <QFuture>
@@ -69,11 +70,19 @@ ClientAppLogic::ClientAppLogic(const Options& opts, const QSharedPointer<Network
 	d->view = viewWidget;
 	setCentralWidget(viewWidget);
 
-	// Start camera.
+	// Create QCamera by device ID.
 	if (!d->opts.cameraDeviceId.isEmpty())
 	{
 		d->camera = d->createCameraFromOptions();
 		viewWidget->setCamera(d->camera);
+	}
+
+	// Create QAudioInput (microphone).
+	if (true || !d->opts.audioInputDeviceId.isEmpty())
+	{
+		d->audioInput = d->createMicrophoneFromOptions();
+		auto audioOutput = new QAudioOutput(QAudioDeviceInfo::defaultOutputDevice(), d->createAudioFormat(), this);
+		audioOutput->start(d->audioInput->start());
 	}
 
 	// Create initial tiles.
@@ -222,4 +231,24 @@ QSharedPointer<QCamera> ClientAppLogicPrivate::createCameraFromOptions() const
 		}
 	}
 	return QSharedPointer<QCamera>(new QCamera(cameraInfo));
+}
+
+QSharedPointer<QAudioInput> ClientAppLogicPrivate::createMicrophoneFromOptions() const
+{
+	auto d = this;
+	auto info = QAudioDeviceInfo::defaultInputDevice();
+	foreach (auto item, QAudioDeviceInfo::availableDevices(QAudio::AudioInput))
+	{
+		if (item.deviceName() == d->opts.audioInputDeviceId)
+		{
+			info = item;
+			break;
+		}
+	}
+	auto format = d->createAudioFormat();
+	if (!info.isFormatSupported(format))
+	{
+		return QSharedPointer<QAudioInput>();
+	}
+	return QSharedPointer<QAudioInput>(new QAudioInput(info, format));
 }

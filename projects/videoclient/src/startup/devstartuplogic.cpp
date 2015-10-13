@@ -1,4 +1,6 @@
 #include "devstartuplogic.h"
+#include "../networkclient/networkclient.h"
+#include <QCameraInfo>
 
 DevStartupLogic::DevStartupLogic(QApplication* a) :
 	AbstractStartupLogic(a)
@@ -18,6 +20,8 @@ int DevStartupLogic::exec()
 
 	// Open conference video-chat UI.
 	ClientAppLogic::Options opts;
+	opts.cameraDeviceId = QCameraInfo::defaultCamera().deviceName();
+	opts.cameraAutoEnable = true;
 	auto w = new ClientAppLogic(opts, nc, nullptr, 0);
 	w->show();
 

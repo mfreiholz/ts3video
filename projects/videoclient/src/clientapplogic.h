@@ -34,6 +34,10 @@ public:
 		// The camera's device ID to stream video.
 		QString cameraDeviceId = QString();
 		bool cameraAutoEnable = false;
+
+		// The microphones device ID (audio-in).
+		QString audioInputDeviceId = QString();
+		bool audioInputAutoEnable = false;
 	};
 
 	/*!
