@@ -38,6 +38,20 @@ if(WIN32)
 endif(WIN32)
 
 # ---------------------------------------------------------------------
+# Third party (Opus)
+# ---------------------------------------------------------------------
+
+set(opus_INCLUDE_DIRS
+  ${PROJECT_SOURCE_DIR}/thirdparty/opus/include
+)
+if(WIN32)
+  set(opus_LIBRARIES
+    optimized "${PROJECT_SOURCE_DIR}/thirdparty/opus/lib-win-${ARCH}-vc12-release/opus.lib"
+    debug "${PROJECT_SOURCE_DIR}/thirdparty/opus/lib-win-${ARCH}-vc12-debug/opus.lib"
+  )
+endif(WIN32)
+
+# ---------------------------------------------------------------------
 # Third party (ts3pluginsdk)
 # ---------------------------------------------------------------------
 

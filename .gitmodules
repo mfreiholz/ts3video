@@ -7,3 +7,6 @@
 [submodule "thirdparty/teamspeak3-clientpluginsdk"]
 	path = thirdparty/teamspeak3-clientpluginsdk
 	url = https://github.com/mfreiholz/ocs-ts3clientpluginsdk.git
+[submodule "thirdparty/opus"]
+	path = thirdparty/opus
+	url = git@insanefactory.com:/opt/git/ocs-opus.git

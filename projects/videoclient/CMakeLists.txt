@@ -140,6 +140,7 @@ add_definitions(
 include_directories(
   ${CMAKE_CURRENT_BINARY_DIR}
   ${vpx_INCLUDE_DIRS}
+  ${opus_INCLUDE_DIRS}
   ${humblelogging_INCLUDE_DIRS}
   ../qtasync/src
   ../medlib/include
@@ -175,6 +176,7 @@ target_link_libraries(
   Qt5::OpenGL
   Qt5::Concurrent
   ${vpx_LIBRARIES}
+  ${opus_LIBRARIES}
   ${humblelogging_LIBRARIES}
   qtasync
   qcorlib
