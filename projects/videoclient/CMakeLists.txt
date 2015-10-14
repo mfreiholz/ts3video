@@ -54,6 +54,7 @@ set(qheaders
   src/networkclient/udpvideoframedecoder.h
   src/networkclient/vp8encoder.h
   src/networkclient/vp8decoder.h
+  #src/networkclient/opusencoder.h
   src/networkclient/clientlistmodel.h
   src/networkclient/clientlistmodel_p.h
   src/startup/devstartuplogic.h
@@ -90,6 +91,7 @@ set(sources
   src/networkclient/udpvideoframedecoder.cpp
   src/networkclient/vp8encoder.cpp
   src/networkclient/vp8decoder.cpp
+  #src/networkclient/opusencoder.cpp
   src/networkclient/clientlistmodel.cpp
   src/startup/devstartuplogic.cpp
   src/startup/ts3videostartuplogic.cpp
@@ -176,7 +178,7 @@ target_link_libraries(
   Qt5::OpenGL
   Qt5::Concurrent
   ${vpx_LIBRARIES}
-  ${opus_LIBRARIES}
+  #${opus_LIBRARIES}
   ${humblelogging_LIBRARIES}
   qtasync
   qcorlib

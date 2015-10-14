@@ -16,6 +16,8 @@ set(headers
   src/elws.h
   src/yuvframe.h
   src/vp8frame.h
+  src/pcmframe.h
+  src/opusframe.h
   src/imageutil.h
   src/timeutil.h
   src/networkusageentity.h
@@ -29,6 +31,8 @@ set(sources
   src/channelentity.cpp
   src/jsonprotocolhelper.cpp
   src/elws.cpp
+  src/pcmframe.cpp
+  src/opusframe.cpp
   src/yuvframe.cpp
   src/vp8frame.cpp
   src/imageutil.cpp
