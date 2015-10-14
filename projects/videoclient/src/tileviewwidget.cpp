@@ -545,59 +545,59 @@ TileViewUserListWidget::TileViewUserListWidget(QWidget* parent) :
 	filterEdit->setPlaceholderText(tr("Participants..."));
 	filterEdit->setClearButtonEnabled(true);
 	mainLayout->addWidget(filterEdit);
+	connect(filterEdit, &QLineEdit::textChanged, this, &TileViewUserListWidget::onFilterTextChanged);
 
-	auto listView = new QListView();
-	listView->setContextMenuPolicy(Qt::CustomContextMenu);
-	mainLayout->addWidget(listView);
+	_listView = new QListView();
+	_listView->setContextMenuPolicy(Qt::CustomContextMenu);
+	mainLayout->addWidget(_listView);
+	connect(_listView, &QWidget::customContextMenuRequested, this, &TileViewUserListWidget::onCustomContextMenuRequested);
+}
 
-	_listView = listView;
+void TileViewUserListWidget::onFilterTextChanged(const QString& text)
+{
+	auto m = _listView->model();
+	if (!m)
+		return;
+	auto pm = qobject_cast<QSortFilterProxyModel*>(m);
+	if (!pm)
+		return;
+	pm->setFilterWildcard(text);
+}
 
-	QObject::connect(filterEdit, &QLineEdit::textChanged, [listView](const QString & text)
+void TileViewUserListWidget::onCustomContextMenuRequested(const QPoint& point)
+{
+	const auto mi = _listView->indexAt(point);
+	if (!mi.isValid())
 	{
-		auto m = listView->model();
-		if (!m)
-			return;
-		auto pm = qobject_cast<QSortFilterProxyModel*>(m);
-		if (!pm)
-			return;
-		pm->setFilterWildcard(text);
-	});
+		return;
+	}
+	const auto ci = mi.data(ClientListModel::ClientEntityRole).value<ClientEntity>();
 
-	QObject::connect(listView, &QWidget::customContextMenuRequested, [listView](const QPoint & point)
+	// Create context menu.
+	QMenu menu;
+
+	// Admin actions.
+	if (ClientAppLogic::instance()->networkClient()->isAdmin() && !ClientAppLogic::instance()->networkClient()->isSelf(ci))
 	{
-		const auto mi = listView->indexAt(point);
-		if (!mi.isValid())
+		// Kick client.
+		auto kickAction = menu.addAction(QIcon(), tr("Kick client"));
+		QObject::connect(kickAction, &QAction::triggered, [this, ci]()
 		{
-			return;
-		}
-		const auto ci = mi.data(ClientListModel::ClientEntityRole).value<ClientEntity>();
-
-		// Create context menu.
-		QMenu menu;
-
-		// Admin actions.
-		if (ClientAppLogic::instance()->networkClient()->isAdmin() && !ClientAppLogic::instance()->networkClient()->isSelf(ci))
+			const auto reply = ClientAppLogic::instance()->networkClient()->kickClient(ci.id, false);
+			QCORREPLY_AUTODELETE(reply);
+		});
+		// Ban client.
+		auto banAction = menu.addAction(QIcon(), tr("Ban client"));
+		QObject::connect(banAction, &QAction::triggered, [this, ci]()
 		{
-			// Kick client.
-			auto kickAction = menu.addAction(QIcon(), tr("Kick client"));
-			QObject::connect(kickAction, &QAction::triggered, [ci]()
-			{
-				const auto reply = ClientAppLogic::instance()->networkClient()->kickClient(ci.id, false);
-				QObject::connect(reply, &QCorReply::finished, reply, &QCorReply::deleteLater);
-			});
-			// Ban client.
-			auto banAction = menu.addAction(QIcon(), tr("Ban client"));
-			QObject::connect(banAction, &QAction::triggered, [ci]()
-			{
-				const auto reply = ClientAppLogic::instance()->networkClient()->kickClient(ci.id, true);
-				QObject::connect(reply, &QCorReply::finished, reply, &QCorReply::deleteLater);
-			});
-		}
-		if (menu.actions().isEmpty())
-		{
-			auto a = menu.addAction(tr("No actions available."));
-			a->setEnabled(false);
-		}
-		menu.exec(listView->mapToGlobal(point));
-	});
+			const auto reply = ClientAppLogic::instance()->networkClient()->kickClient(ci.id, true);
+			QCORREPLY_AUTODELETE(reply);
+		});
+	}
+	if (menu.actions().isEmpty())
+	{
+		auto a = menu.addAction(tr("No actions available."));
+		a->setEnabled(false);
+	}
+	menu.exec(_listView->mapToGlobal(point));
 }
