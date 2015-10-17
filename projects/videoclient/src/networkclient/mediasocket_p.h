@@ -6,6 +6,8 @@
 #include "udpvideoframedecoder.h"
 #include "videoencodingthread.h"
 #include "videodecodingthread.h"
+#include "audioencodingthread.h"
+#include "audiodecodingthread.h"
 
 class MediaSocketPrivate : public QObject
 {
@@ -20,6 +22,8 @@ public:
 		videoEncodingThread(new VideoEncodingThread(this)),
 		lastFrameRequestTimestamp(0),
 		videoDecodingThread(new VideoDecodingThread(this)),
+		audioEncodingThread(new AudioEncodingThread(this)),
+		audioDecodingThread(new AudioDecodingThread(this)),
 		networkUsage(),
 		networkUsageHelper(networkUsage)
 	{}
@@ -32,13 +36,19 @@ public:
 	int authenticationTimerId;
 	int keepAliveTimerId;
 
-	// Encoding.
+	// VIDEO
+	// Encoding
 	VideoEncodingThread* videoEncodingThread;
 	unsigned long long lastFrameRequestTimestamp;
-
-	// Decoding.
+	// Decoding
 	QHash<int, VideoFrameUdpDecoder*> videoFrameDatagramDecoders;  ///< Maps client-id to it's decoder.
 	VideoDecodingThread* videoDecodingThread;
+
+	// AUDIO
+	// Encoding
+	AudioEncodingThread* audioEncodingThread;
+	// Decoding
+	AudioDecodingThread* audioDecodingThread;
 
 	// Network usage.
 	NetworkUsageEntity networkUsage;

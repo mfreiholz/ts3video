@@ -40,15 +40,37 @@ MediaSocket::MediaSocket(const QString& token, QObject* parent) :
 
 	d->token = token;
 
-	static quint64 __frameId = 1;
-	d->videoEncodingThread->start();
-	connect(d->videoEncodingThread, &VideoEncodingThread::encoded, [this](const QByteArray & frame, int senderId)
+	// Video
+	if (true)
 	{
-		sendVideoFrame(frame, __frameId++, senderId);
-	});
+		// Encoding
+		static quint64 __nextVideoFrameId = 1;
+		d->videoEncodingThread->start();
+		connect(d->videoEncodingThread, &VideoEncodingThread::encoded, [this](const QByteArray & frame, int senderId)
+		{
+			sendVideoFrame(frame, __nextVideoFrameId++, senderId);
+		});
 
-	d->videoDecodingThread->start();
-	connect(d->videoDecodingThread, &VideoDecodingThread::decoded, this, &MediaSocket::newVideoFrame);
+		// Decoding
+		d->videoDecodingThread->start();
+		connect(d->videoDecodingThread, &VideoDecodingThread::decoded, this, &MediaSocket::newVideoFrame);
+	}
+
+	// Audio
+	if (true)
+	{
+		// Encoding
+		static quint64 __nextAudioFrameId = 1;
+		d->audioEncodingThread->start();
+		connect(d->audioEncodingThread, &AudioEncodingThread::encoded, [this](const QByteArray & f, int senderId)
+		{
+			sendAudioFrame(f, __nextAudioFrameId++, senderId);
+		});
+
+		// Decoding
+		d->audioDecodingThread->start();
+		connect(d->audioDecodingThread, &AudioDecodingThread::decoded, this, &MediaSocket::newAudioFrame);
+	}
 
 	// Network usage calculation.
 	auto bandwidthTimer = new QTimer(this);
@@ -92,6 +114,20 @@ MediaSocket::~MediaSocket()
 		d->videoDecodingThread->wait();
 		delete d->videoDecodingThread;
 	}
+
+	if (d->audioEncodingThread)
+	{
+		d->audioEncodingThread->stop();
+		d->audioEncodingThread->wait();
+		delete d->audioEncodingThread;
+	}
+
+	if (d->audioDecodingThread)
+	{
+		d->audioDecodingThread->stop();
+		d->audioDecodingThread->wait();
+		delete d->audioDecodingThread;
+	}
 }
 
 bool MediaSocket::isAuthenticated() const
@@ -121,6 +157,16 @@ void MediaSocket::sendVideoFrame(const QImage& image, int senderId)
 		return;
 	}
 	d->videoEncodingThread->enqueue(image, senderId);
+}
+
+void MediaSocket::sendAudioFrame(const PcmFrameRefPtr& f, int senderId)
+{
+	if (!d->audioEncodingThread || !d->audioEncodingThread->isRunning())
+	{
+		HL_WARN(HL, QString("Can not send audio. Encoding thread not yet running.").toStdString());
+		return;
+	}
+	d->audioEncodingThread->enqueue(f, senderId);
 }
 
 void MediaSocket::sendKeepAliveDatagram()
@@ -176,8 +222,7 @@ void MediaSocket::sendVideoFrame(const QByteArray& frame_, quint64 frameId_, qui
 	HL_TRACE(HL, QString("Send video frame datagram (frame-size=%1; frame-id=%2; sender-id=%3)").arg(frame_.size()).arg(frameId_).arg(senderId_).toStdString());
 	if (frame_.isEmpty() || frameId_ == 0)
 	{
-		HL_ERROR(HL, QString("Missing data to send video frame (frame-size=%1; frame-id=%2; sender-id=%3)")
-				 .arg(frame_.size()).arg(frameId_).arg(senderId_).toStdString());
+		HL_ERROR(HL, QString("Missing data to send video frame (frame-size=%1; frame-id=%2; sender-id=%3)").arg(frame_.size()).arg(frameId_).arg(senderId_).toStdString());
 		return;
 	}
 
@@ -248,6 +293,18 @@ void MediaSocket::sendVideoFrameRecoveryDatagram(quint64 frameId_, quint32 fromS
 		HL_ERROR(HL, QString("Can not write datagram (error=%1; msg=%2)").arg(error()).arg(errorString()).toStdString());
 	else
 		d->networkUsage.bytesWritten += written;
+}
+
+void MediaSocket::sendAudioFrame(const QByteArray& f, quint64 fid, quint32 sid)
+{
+	HL_TRACE(HL, QString("Send audio frame datagram (frame-size=%1; frame-id=%2; sender-id=%3)").arg(f.size()).arg(fid).arg(sid).toStdString());
+	if (f.isEmpty() || fid == 0)
+	{
+		HL_ERROR(HL, QString("Missing data to send video frame (frame-size=%1; frame-id=%2; sender-id=%3)").arg(f.size()).arg(fid).arg(sid).toStdString());
+		return;
+	}
+
+	// TODO Not yet implemented.
 }
 
 void MediaSocket::timerEvent(QTimerEvent* ev)

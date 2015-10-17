@@ -27,6 +27,7 @@ OpusAudioEncoder::~OpusAudioEncoder()
 	if (_enc)
 	{
 		opus_encoder_destroy(_enc);
+		_enc = nullptr;
 	}
 }
 

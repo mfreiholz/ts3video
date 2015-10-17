@@ -4,6 +4,7 @@
 #include <QScopedPointer>
 #include <QUdpSocket>
 #include "yuvframe.h"
+#include "pcmframe.h"
 class NetworkUsageEntity;
 
 class MediaSocketPrivate;
@@ -20,15 +21,17 @@ public:
 	bool isAuthenticated() const;
 	void setAuthenticated(bool yesno);
 
-	/*! Encodes and sends the image as new video frame of the current
-	    video stream to the server.
-	*/
 	void sendVideoFrame(const QImage& image, int senderId);
+	void sendAudioFrame(const PcmFrameRefPtr& f, int senderId);
 
 signals:
 	/*! Emits with every new arrived and decoded video frame.
 	*/
 	void newVideoFrame(YuvFrameRefPtr frame, int senderId);
+
+	/*!	Emits with every new arrived and decoded audio frame.
+	*/
+	void newAudioFrame(PcmFrameRefPtr frame, int senderId);
 
 	/*! Emits periodically with newest calculated network-usage information.
 	*/
@@ -39,6 +42,7 @@ protected:
 	void sendAuthTokenDatagram(const QString& token);
 	void sendVideoFrame(const QByteArray& frame, quint64 frameId, quint32 senderId);
 	void sendVideoFrameRecoveryDatagram(quint64 frameId, quint32 fromSenderId);
+	void sendAudioFrame(const QByteArray& frame, quint64 frameId, quint32 senderId);
 	virtual void timerEvent(QTimerEvent* ev);
 
 private slots:

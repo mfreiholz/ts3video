@@ -49,12 +49,15 @@ set(qheaders
   src/networkclient/mediasocket_p.h
   src/networkclient/mediasocketthread.h
   src/networkclient/mediasocketthread_p.h
+  src/networkclient/audioencodingthread.h
+  src/networkclient/audiodecodingthread.h
   src/networkclient/videoencodingthread.h
   src/networkclient/videodecodingthread.h
   src/networkclient/udpvideoframedecoder.h
   src/networkclient/vp8encoder.h
   src/networkclient/vp8decoder.h
-  #src/networkclient/opusencoder.h
+  src/networkclient/opusencoder.h
+  src/networkclient/opusdecoder.h
   src/networkclient/clientlistmodel.h
   src/networkclient/clientlistmodel_p.h
   src/startup/devstartuplogic.h
@@ -86,12 +89,15 @@ set(sources
   src/networkclient/networkclient.cpp
   src/networkclient/mediasocket.cpp
   src/networkclient/mediasocketthread.cpp
+  src/networkclient/audioencodingthread.cpp
+  src/networkclient/audiodecodingthread.cpp
   src/networkclient/videoencodingthread.cpp
   src/networkclient/videodecodingthread.cpp
   src/networkclient/udpvideoframedecoder.cpp
   src/networkclient/vp8encoder.cpp
   src/networkclient/vp8decoder.cpp
-  #src/networkclient/opusencoder.cpp
+  src/networkclient/opusencoder.cpp
+  src/networkclient/opusdecoder.cpp
   src/networkclient/clientlistmodel.cpp
   src/startup/devstartuplogic.cpp
   src/startup/ts3videostartuplogic.cpp
