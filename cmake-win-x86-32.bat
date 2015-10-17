@@ -7,6 +7,6 @@ if not exist %MF_BUILD_DIR_PATH% mkdir %MF_BUILD_DIR_PATH%
 cd %MF_BUILD_DIR_PATH%
 
 rem Configure with CMake.
-cmake -G "Visual Studio 12" -DCMAKE_INSTALL_PREFIX=install ..
+cmake -G "Visual Studio 14 2015" -DCMAKE_INSTALL_PREFIX=install ..
 
 pause

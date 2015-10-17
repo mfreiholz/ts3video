@@ -32,8 +32,8 @@ set(vpx_INCLUDE_DIRS
 )
 if(WIN32)
   set(vpx_LIBRARIES
-    optimized "${PROJECT_SOURCE_DIR}/thirdparty/vpx/lib-win-${ARCH}-vc12-release/vpxmd.lib"
-    debug "${PROJECT_SOURCE_DIR}/thirdparty/vpx/lib-win-${ARCH}-vc12-debug/vpxmdd.lib"
+    optimized "${PROJECT_SOURCE_DIR}/thirdparty/vpx/lib-win-${ARCH}-vc14-md-release/vpxmd.lib"
+    debug "${PROJECT_SOURCE_DIR}/thirdparty/vpx/lib-win-${ARCH}-vc14-md-debug/vpxmdd.lib"
   )
 endif(WIN32)
 
