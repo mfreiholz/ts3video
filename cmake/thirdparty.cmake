@@ -46,8 +46,16 @@ set(opus_INCLUDE_DIRS
 )
 if(WIN32)
   set(opus_LIBRARIES
-    optimized "${PROJECT_SOURCE_DIR}/thirdparty/opus/lib-win-${ARCH}-vc12-release/opus.lib"
-    debug "${PROJECT_SOURCE_DIR}/thirdparty/opus/lib-win-${ARCH}-vc12-debug/opus.lib"
+    optimized "${PROJECT_SOURCE_DIR}/thirdparty/opus/lib-win-${ARCH}-vc14-md-release/celt.lib"
+	optimized "${PROJECT_SOURCE_DIR}/thirdparty/opus/lib-win-${ARCH}-vc14-md-release/opus.lib"
+	optimized "${PROJECT_SOURCE_DIR}/thirdparty/opus/lib-win-${ARCH}-vc14-md-release/silk_common.lib"
+	optimized "${PROJECT_SOURCE_DIR}/thirdparty/opus/lib-win-${ARCH}-vc14-md-release/silk_fixed.lib"
+	optimized "${PROJECT_SOURCE_DIR}/thirdparty/opus/lib-win-${ARCH}-vc14-md-release/silk_float.lib"
+    debug "${PROJECT_SOURCE_DIR}/thirdparty/opus/lib-win-${ARCH}-vc14-md-debug/celt.lib"
+	debug "${PROJECT_SOURCE_DIR}/thirdparty/opus/lib-win-${ARCH}-vc14-md-debug/opus.lib"
+	debug "${PROJECT_SOURCE_DIR}/thirdparty/opus/lib-win-${ARCH}-vc14-md-debug/silk_common.lib"
+	debug "${PROJECT_SOURCE_DIR}/thirdparty/opus/lib-win-${ARCH}-vc14-md-debug/silk_fixed.lib"
+	debug "${PROJECT_SOURCE_DIR}/thirdparty/opus/lib-win-${ARCH}-vc14-md-debug/silk_float.lib"
   )
 endif(WIN32)
 

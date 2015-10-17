@@ -178,7 +178,7 @@ target_link_libraries(
   Qt5::OpenGL
   Qt5::Concurrent
   ${vpx_LIBRARIES}
-  #${opus_LIBRARIES}
+  ${opus_LIBRARIES}
   ${humblelogging_LIBRARIES}
   qtasync
   qcorlib
