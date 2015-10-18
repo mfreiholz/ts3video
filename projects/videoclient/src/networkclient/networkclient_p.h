@@ -1,6 +1,8 @@
 #ifndef NetworkClient_P_H
 #define NetworkClient_P_H
 
+#include <memory>
+
 #include <QHash>
 #include <QPair>
 #include <QUdpSocket>
@@ -36,8 +38,7 @@ public:
 		mediaSocket(nullptr),
 		goodbye(false),
 		isAdmin(false),
-		useMediaSocket(true),
-		clientModel(o)
+		useMediaSocket(true)
 	{}
 	NetworkClientPrivate(const NetworkClientPrivate&);
 	void reset();
@@ -60,7 +61,7 @@ public:
 	bool isAdmin;
 
 	// Data about others.
-	ClientListModel clientModel;
+	std::unique_ptr<ClientListModel> clientModel;
 
 	// DEV
 	bool useMediaSocket; ///< TODO Remove me (DEV ONLY)

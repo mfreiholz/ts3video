@@ -24,7 +24,7 @@ class Datagram
 {
 public:
 	typedef uint8_t dg_magic_t;
-	typedef uint8_t dg_type_t;
+	typedef uint8_t dg_type_t; // Range: 0x00-0xFF (0-255)
 
 	static const dg_magic_t MAGIC = 0xAE;
 	static const dg_size_t MAXSIZE = 512 - sizeof(dg_type_t) - sizeof(dg_magic_t);
@@ -172,7 +172,7 @@ public:
 	typedef uint16_t dg_data_index_t;
 	typedef uint16_t dg_data_count_t;
 
-	const static dg_type_t TYPE = 0x03;
+	const static dg_type_t TYPE = 0xA0;
 	const static dg_size_t MAXSIZE = Datagram::MAXSIZE - (sizeof(dg_frame_id_t) + sizeof(dg_data_index_t) + sizeof(dg_data_count_t) + sizeof(dg_size_t));
 
 	AudioFrameDatagram() : Datagram(TYPE) {}

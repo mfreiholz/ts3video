@@ -99,14 +99,14 @@ void NetworkClientPrivate::onJoinChannelFinished()
 	// Extract channel.
 	ChannelEntity channel;
 	channel.fromQJsonObject(params["channel"].toObject());
-	d->clientModel.setChannel(channel);
+	d->clientModel->setChannel(channel);
 
 	// Extract participants and create widgets.
 	foreach (auto v, params["participants"].toArray())
 	{
 		ClientEntity client;
 		client.fromQJsonObject(v.toObject());
-		d->clientModel.addClient(client);
+		d->clientModel->addClient(client);
 	}
 }
 
@@ -129,7 +129,8 @@ NetworkClient::NetworkClient(QObject* parent) :
 	d->heartbeatTimer.setInterval(10000);
 	QObject::connect(&d->heartbeatTimer, &QTimer::timeout, this, &NetworkClient::sendHeartbeat);
 
-	d->clientModel.setNetworkClient(this);
+	d->clientModel = std::make_unique<ClientListModel>(this);
+	d->clientModel->setNetworkClient(this);
 
 	d->reset();
 }
@@ -176,7 +177,7 @@ bool NetworkClient::isSelf(const ClientEntity& ci) const
 
 ClientListModel* NetworkClient::clientModel() const
 {
-	return &d->clientModel;
+	return d->clientModel.get();
 }
 
 void NetworkClient::connectToHost(const QHostAddress& address, qint16 port)
@@ -273,7 +274,7 @@ QCorReply* NetworkClient::enableVideoStream()
 	HL_DEBUG(HL, QString("Enable video stream").toStdString());
 
 	d->clientEntity.videoEnabled = true;
-	d->clientModel.updateClient(d->clientEntity);
+	d->clientModel->updateClient(d->clientEntity);
 
 	QCorFrame req;
 	req.setData(JsonProtocolHelper::createJsonRequest("clientenablevideo", QJsonObject()));
@@ -287,7 +288,7 @@ QCorReply* NetworkClient::disableVideoStream()
 	HL_DEBUG(HL, QString("Disable video stream").toStdString());
 
 	d->clientEntity.videoEnabled = false;
-	d->clientModel.updateClient(d->clientEntity);
+	d->clientModel->updateClient(d->clientEntity);
 
 	QCorFrame req;
 	req.setData(JsonProtocolHelper::createJsonRequest("clientdisablevideo", QJsonObject()));
