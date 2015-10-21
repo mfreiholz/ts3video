@@ -3,11 +3,14 @@
 
 #include "mediasocket.h"
 #include "networkusageentity.h"
+
 #include "udpvideoframedecoder.h"
 #include "videoencodingthread.h"
 #include "videodecodingthread.h"
+
 #include "audioencodingthread.h"
 #include "audiodecodingthread.h"
+#include "audioudpdecoder.h"
 
 class MediaSocketPrivate : public QObject
 {
@@ -37,9 +40,11 @@ public:
 	int keepAliveTimerId;
 
 	// VIDEO
+	
 	// Encoding
 	VideoEncodingThread* videoEncodingThread;
 	unsigned long long lastFrameRequestTimestamp;
+	
 	// Decoding
 	QHash<int, VideoFrameUdpDecoder*> videoFrameDatagramDecoders;  ///< Maps client-id to it's decoder.
 	VideoDecodingThread* videoDecodingThread;
@@ -47,8 +52,12 @@ public:
 	// AUDIO
 	// Encoding
 	AudioEncodingThread* audioEncodingThread;
+
 	// Decoding
+	QHash<int, AudioUdpDecoder*> audioFrameDatagramDecoders;
 	AudioDecodingThread* audioDecodingThread;
+
+	// STATISTICS
 
 	// Network usage.
 	NetworkUsageEntity networkUsage;

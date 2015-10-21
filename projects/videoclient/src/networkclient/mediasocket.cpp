@@ -304,7 +304,41 @@ void MediaSocket::sendAudioFrame(const QByteArray& f, quint64 fid, quint32 sid)
 		return;
 	}
 
-	// TODO Not yet implemented.
+	UDP::AudioFrameDatagram::dg_frame_id_t frameId = fid;
+	UDP::AudioFrameDatagram::dg_sender_t senderId = sid;
+
+	// Split frame into datagrams.
+	UDP::AudioFrameDatagram** datagrams = 0;
+	UDP::AudioFrameDatagram::dg_data_count_t datagramsLength;
+	if (UDP::AudioFrameDatagram::split((UDP::dg_byte_t*)f.data(), f.size(), frameId, senderId, &datagrams, datagramsLength) != 0)
+	{
+		HL_ERROR(HL, QString("Can not split frame data into multiple parts").toStdString());
+		return;
+	}
+
+	// Send datagrams.
+	for (auto i = 0; i < datagramsLength; ++i)
+	{
+		const auto& dgvideo = *datagrams[i];
+		QByteArray datagram;
+		QDataStream out(&datagram, QIODevice::WriteOnly);
+		out.setByteOrder(QDataStream::BigEndian);
+		out << dgvideo.magic;
+		out << dgvideo.type;
+		out << dgvideo.sender;
+		out << dgvideo.frameId;
+		out << dgvideo.index;
+		out << dgvideo.count;
+		out << dgvideo.size;
+		out.writeRawData((char*)dgvideo.data, dgvideo.size);
+
+		auto written = writeDatagram(datagram, peerAddress(), peerPort());
+		if (written < 0)
+			HL_ERROR(HL, QString("Can not write datagram (error=%1; msg=%2)").arg(error()).arg(errorString()).toStdString());
+		else
+			d->networkUsage.bytesWritten += written;
+	}
+	UDP::AudioFrameDatagram::freeData(datagrams, datagramsLength);
 }
 
 void MediaSocket::timerEvent(QTimerEvent* ev)
@@ -442,6 +476,61 @@ void MediaSocket::onReadyRead()
 			in >> dgrec.frameId;
 			in >> dgrec.index;
 			d->videoEncodingThread->enqueueRecovery();
+			break;
+		}
+
+		case UDP::AudioFrameDatagram::TYPE:
+		{
+			// Parse datagram.
+			auto dgvideo = new UDP::AudioFrameDatagram();
+			in >> dgvideo->sender;
+			in >> dgvideo->frameId;
+			in >> dgvideo->index;
+			in >> dgvideo->count;
+			in >> dgvideo->size;
+			if (dgvideo->size > 0)
+			{
+				dgvideo->data = new UDP::dg_byte_t[dgvideo->size];
+				in.readRawData((char*)dgvideo->data, dgvideo->size);
+			}
+			if (dgvideo->size == 0)
+			{
+				delete dgvideo;
+				continue;
+			}
+
+			auto senderId = dgvideo->sender;
+			auto frameId = dgvideo->frameId;
+
+			// UDP Decode.
+			auto decoder = d->audioFrameDatagramDecoders.value(dgvideo->sender);
+			if (!decoder)
+			{
+				decoder = new AudioUdpDecoder();
+				d->audioFrameDatagramDecoders.insert(dgvideo->sender, decoder);
+			}
+			decoder->add(dgvideo);
+
+			// Check for new decoded frame.
+			auto frame = decoder->next();
+			if (frame)
+			{
+				OpusFrameRefPtr p(frame);
+				d->audioDecodingThread->enqueue(p, senderId);
+			}
+
+			//// Handle the case, that the UDP decoder requires some special data.
+			//auto waitForType = decoder->getWaitsForType();
+			//if (waitForType != VP8Frame::NORMAL)
+			//{
+			//	// Request recovery frame (for now only key-frames).
+			//	auto now = get_local_timestamp();
+			//	if (get_local_timestamp_diff(d->lastFrameRequestTimestamp, now) > 1000)
+			//	{
+			//		d->lastFrameRequestTimestamp = now;
+			//		sendVideoFrameRecoveryDatagram(frameId, senderId);
+			//	}
+			//}
 			break;
 		}
 		} // switch (type)

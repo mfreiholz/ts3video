@@ -41,6 +41,7 @@ set(qheaders
   src/movablewidgetcontainer.h
   src/hintoverlaywidget.h
   src/hintoverlaywidget_p.h
+  src/audio/audioframegrabber.h
   src/camera/cameracontroller.h
   src/camera/cameracontroller_p.h
   src/networkclient/networkclient.h
@@ -51,6 +52,7 @@ set(qheaders
   src/networkclient/mediasocketthread_p.h
   src/networkclient/audioencodingthread.h
   src/networkclient/audiodecodingthread.h
+  src/networkclient/audioudpdecoder.h
   src/networkclient/videoencodingthread.h
   src/networkclient/videodecodingthread.h
   src/networkclient/udpvideoframedecoder.h
@@ -85,12 +87,14 @@ set(sources
   src/aboutwidget.cpp
   src/movablewidgetcontainer.cpp
   src/hintoverlaywidget.cpp
+  src/audio/audioframegrabber.cpp
   src/camera/cameracontroller.cpp
   src/networkclient/networkclient.cpp
   src/networkclient/mediasocket.cpp
   src/networkclient/mediasocketthread.cpp
   src/networkclient/audioencodingthread.cpp
   src/networkclient/audiodecodingthread.cpp
+  src/networkclient/audioudpdecoder.cpp
   src/networkclient/videoencodingthread.cpp
   src/networkclient/videodecodingthread.cpp
   src/networkclient/udpvideoframedecoder.cpp

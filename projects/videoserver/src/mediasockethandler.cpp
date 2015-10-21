@@ -146,6 +146,20 @@ void MediaSocketHandler::onReadyRead()
 			_networkUsage.bytesWritten += data.size();
 			break;
 		}
+
+		// Audio data.
+		case UDP::AudioFrameDatagram::TYPE:
+		{
+			const auto senderId = MediaSenderEntity::createID(senderAddress, senderPort);
+			const auto& senderEntity = _recipients.id2sender[senderId];
+			for (auto i = 0; i < senderEntity.receivers.size(); ++i)
+			{
+				const auto& receiverEntity = senderEntity.receivers[i];
+				_socket.writeDatagram(data, receiverEntity.address, receiverEntity.port);
+				_networkUsage.bytesWritten += data.size();
+			}
+			break;
+		}
 		}
 
 	} // while (datagrams)

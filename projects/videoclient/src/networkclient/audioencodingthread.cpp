@@ -82,8 +82,8 @@ void AudioEncodingThread::run()
 
 		// Serialize for network transfer.
 		QByteArray data;
-		//QDataStream out(&data, QIODevice::WriteOnly);
-		//out << *f;
+		QDataStream out(&data, QIODevice::WriteOnly);
+		out << *f.get();
 		emit encoded(data, item.second);
 	}
 

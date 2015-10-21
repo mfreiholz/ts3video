@@ -274,4 +274,51 @@ bool AudioFrameDatagram::read(FILE* f)
 	return true;
 }
 
+int AudioFrameDatagram::split(const dg_byte_t* data, size_t dataLength, AudioFrameDatagram::dg_frame_id_t frameId, AudioFrameDatagram::dg_sender_t senderId, AudioFrameDatagram** *datagrams_, AudioFrameDatagram::dg_data_count_t& datagramsLength_)
+{
+	const dg_byte_t* pdata = data;
+	if (!data || dataLength <= 0)
+	{
+		return -1;
+	}
+
+	// Calculate and create buffer.
+	datagramsLength_ = (dg_data_count_t)ceil((double)dataLength / AudioFrameDatagram::MAXSIZE);
+	*datagrams_ = new AudioFrameDatagram*[datagramsLength_];
+
+	// Fill buffer.
+	for (dg_data_count_t i = 0; i < datagramsLength_; ++i)
+	{
+		AudioFrameDatagram* dg = new AudioFrameDatagram();
+		dg->sender = senderId;
+		dg->frameId = frameId;
+		dg->index = i;
+		dg->count = datagramsLength_;
+		dg->size = 0;
+		dg->data = 0;
+		(*datagrams_)[i] = dg;
+
+		size_t offset = i * AudioFrameDatagram::MAXSIZE;
+		dg_size_t len = AudioFrameDatagram::MAXSIZE;
+		if (offset + len > dataLength)
+		{
+			len = dataLength - offset;
+		}
+		dg->size = len;
+		dg->data = new dg_byte_t[len];
+		memcpy(dg->data, pdata, len);
+		pdata += len;
+	}
+	return 0;
+}
+
+void AudioFrameDatagram::freeData(AudioFrameDatagram** datagrams, AudioFrameDatagram::dg_data_count_t length)
+{
+	for (dg_data_count_t i = 0; i < length; ++i)
+	{
+		delete datagrams[i];
+	}
+	delete[] datagrams;
+}
+
 } // End of namespace.

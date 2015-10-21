@@ -29,6 +29,7 @@
 #include "networkusageentity.h"
 #include "jsonprotocolhelper.h"
 
+#include "audio/audioframegrabber.h"
 #include "networkclient/clientlistmodel.h"
 #include "clientcameravideowidget.h"
 #include "remoteclientvideowidget.h"
@@ -81,8 +82,16 @@ ClientAppLogic::ClientAppLogic(const Options& opts, const QSharedPointer<Network
 	if (true || !d->opts.audioInputDeviceId.isEmpty())
 	{
 		d->audioInput = d->createMicrophoneFromOptions();
-		auto audioOutput = new QAudioOutput(QAudioDeviceInfo::defaultOutputDevice(), d->createAudioFormat(), this);
-		audioOutput->start(d->audioInput->start());
+		d->audioInput->setNotifyInterval(10);
+		
+		auto grabber = new AudioFrameGrabber(d->audioInput, this);
+		QObject::connect(grabber, &AudioFrameGrabber::newFrame, [this](const PcmFrameRefPtr& f)
+		{
+			d->nc->sendAudioFrame(f);
+		});
+
+		//auto audioOutput = new QAudioOutput(QAudioDeviceInfo::defaultOutputDevice(), d->createAudioFormat(), this);
+		//audioOutput->start(d->audioInput->start());
 	}
 
 	// Create initial tiles.

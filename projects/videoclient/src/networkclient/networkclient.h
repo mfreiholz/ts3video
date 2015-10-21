@@ -12,6 +12,7 @@
 #include "qcorconnection.h"
 
 #include "yuvframe.h"
+#include "pcmframe.h"
 
 class QHostAddress;
 class ClientEntity;
@@ -101,6 +102,14 @@ public:
 	    \param image A single frame of the video.
 	*/
 	void sendVideoFrame(const QImage& image);
+
+	/*!
+		Sends a single frame to the server, which will then broadcast it to other clients.
+		Internally encodes the frame with Opus codec.
+		\thread-safe
+		\param f A single raw audio frame.
+	*/
+	void sendAudioFrame(const PcmFrameRefPtr& f);
 
 	/*!
 	    Tries to authorize the client as administrator.

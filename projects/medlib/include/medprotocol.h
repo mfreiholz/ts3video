@@ -168,6 +168,7 @@ public:
 class AudioFrameDatagram : public Datagram
 {
 public:
+	typedef uint16_t dg_sender_t;
 	typedef uint64_t dg_frame_id_t;
 	typedef uint16_t dg_data_index_t;
 	typedef uint16_t dg_data_count_t;
@@ -179,6 +180,10 @@ public:
 	bool write(FILE* f) const;
 	bool read(FILE* f);
 
+	static int split(const dg_byte_t* data, size_t dataLength, dg_frame_id_t frameId, dg_sender_t senderId, AudioFrameDatagram** *datagrams_, AudioFrameDatagram::dg_data_count_t& datagramsLength_);
+	static void freeData(AudioFrameDatagram** datagrams, dg_data_count_t length);
+
+	dg_sender_t sender;
 	dg_frame_id_t frameId;
 	dg_data_index_t index;
 	dg_data_count_t count;

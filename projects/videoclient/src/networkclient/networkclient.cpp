@@ -330,6 +330,13 @@ void NetworkClient::sendVideoFrame(const QImage& image)
 	d->mediaSocket->sendVideoFrame(image, d->clientEntity.id);
 }
 
+void NetworkClient::sendAudioFrame(const PcmFrameRefPtr& f)
+{
+	if (!d->mediaSocket)
+		return;
+	d->mediaSocket->sendAudioFrame(f, d->clientEntity.id);
+}
+
 QCorReply* NetworkClient::authAsAdmin(const QString& password)
 {
 	REQUEST_PRECHECK

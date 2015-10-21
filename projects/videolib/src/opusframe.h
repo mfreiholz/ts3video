@@ -5,6 +5,7 @@
 #include <QByteArray>
 #include <QString>
 #include <QSharedPointer>
+#include <QDataStream>
 class QIODevice;
 class QDataStream;
 
@@ -25,5 +26,8 @@ public:
 	QByteArray data;
 };
 typedef QSharedPointer<OpusFrame> OpusFrameRefPtr;
+
+QDataStream& operator<<(QDataStream &ds, const OpusFrame &frame);
+QDataStream& operator>>(QDataStream &ds, OpusFrame &frame);
 
 #endif
