@@ -87,7 +87,7 @@ void VideoDecodingThread::run()
 
     if (true)
     {
-      // Decode VPX frame to YuvFrame.
+      // Decoder
       auto decoder = decoders.value(item.second);
       if (!decoder)
       {
@@ -95,8 +95,9 @@ void VideoDecodingThread::run()
         decoder->initialize();
         decoders.insert(item.second, decoder);
       }
-      auto yuv = YuvFrameRefPtr(decoder->decodeFrameRaw(item.first->data));
-      //auto image = yuv->toQImage(); ///< TODO This call is VERY instense! We may want to work with YuvFrame's directly.
+
+      // Decode
+      YuvFrameRefPtr yuv(decoder->decodeFrameRaw(item.first->data));
       emit decoded(yuv, item.second);
     }
 

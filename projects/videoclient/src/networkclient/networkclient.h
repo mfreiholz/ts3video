@@ -143,6 +143,7 @@ signals:
 	void clientKicked(const ClientEntity& client);
 	void clientDisconnected(const ClientEntity& client);
 	void newVideoFrame(YuvFrameRefPtr frame, int senderId);
+	void newAudioFrame(PcmFrameRefPtr frame, int senderId);
 
 	// Periodically updated information to display.
 	void networkUsageUpdated(const NetworkUsageEntity& networkUsage);

@@ -62,8 +62,7 @@ void NetworkClientPrivate::onAuthFinished()
 	else if (status != 0)
 		return;
 
-	// Parse self client info from response and
-	// connect MediaSocket for media data streaming.
+	// Parse self client info and media-authentication-token from response.
 	const auto client = params["client"].toObject();
 	const auto authtoken = params["authtoken"].toString();
 	d->clientEntity.fromQJsonObject(client);
@@ -79,6 +78,7 @@ void NetworkClientPrivate::onAuthFinished()
 		d->mediaSocket = new MediaSocket(authtoken, this);
 		d->mediaSocket->connectToHost(d->corSocket->socket()->peerAddress(), d->corSocket->socket()->peerPort());
 		QObject::connect(d->mediaSocket, &MediaSocket::newVideoFrame, d->owner, &NetworkClient::newVideoFrame);
+		QObject::connect(d->mediaSocket, &MediaSocket::newAudioFrame, d->owner, &NetworkClient::newAudioFrame);
 		QObject::connect(d->mediaSocket, &MediaSocket::networkUsageUpdated, d->owner, &NetworkClient::networkUsageUpdated);
 	}
 }
@@ -119,6 +119,7 @@ NetworkClient::NetworkClient(QObject* parent) :
 	d(new NetworkClientPrivate(this))
 {
 	qRegisterMetaType<YuvFrameRefPtr>("YuvFrameRefPtr");
+	qRegisterMetaType<PcmFrameRefPtr>("PcmFrameRefPtr");
 	qRegisterMetaType<NetworkUsageEntity>("NetworkUsageEntity");
 
 	d->corSocket = new QCorConnection(this);

@@ -61,7 +61,7 @@ void AudioDecodingThread::run()
 		}
 
 		// Decode
-		auto pcm = PcmFrameRefPtr(dec->decode(*item.first.data()));
+		PcmFrameRefPtr pcm(dec->decode(*item.first.data()));
 		emit decoded(pcm, item.second);
 	}
 

@@ -402,50 +402,52 @@ void MediaSocket::onReadyRead()
 		in.setByteOrder(QDataStream::BigEndian);
 
 		// Check magic.
-		UDP::Datagram dg;
-		in >> dg.magic;
-		if (dg.magic != UDP::Datagram::MAGIC)
+		UDP::Datagram datagram;
+		in >> datagram.magic;
+		if (datagram.magic != UDP::Datagram::MAGIC)
 		{
 			HL_WARN(HL, QString("Received invalid datagram (size=%1; data=%2)").arg(data.size()).arg(QString(data)).toStdString());
 			continue;
 		}
 
 		// Handle by type.
-		in >> dg.type;
-		switch (dg.type)
+		in >> datagram.type;
+		switch (datagram.type)
 		{
+		//
+		// VIDEO
+		//
 		case UDP::VideoFrameDatagram::TYPE:
 		{
-			// Parse datagram.
-			auto dgvideo = new UDP::VideoFrameDatagram();
-			in >> dgvideo->flags;
-			in >> dgvideo->sender;
-			in >> dgvideo->frameId;
-			in >> dgvideo->index;
-			in >> dgvideo->count;
-			in >> dgvideo->size;
-			if (dgvideo->size > 0)
+			auto dg = new UDP::VideoFrameDatagram();
+			in >> dg->flags;
+			in >> dg->sender;
+			in >> dg->frameId;
+			in >> dg->index;
+			in >> dg->count;
+			in >> dg->size;
+			if (dg->size > 0)
 			{
-				dgvideo->data = new UDP::dg_byte_t[dgvideo->size];
-				in.readRawData((char*)dgvideo->data, dgvideo->size);
+				dg->data = new UDP::dg_byte_t[dg->size];
+				in.readRawData((char*)dg->data, dg->size);
 			}
-			if (dgvideo->size == 0)
+			else if (dg->size == 0)
 			{
-				delete dgvideo;
+				delete dg;
 				continue;
 			}
 
-			auto senderId = dgvideo->sender;
-			auto frameId = dgvideo->frameId;
+			auto senderId = dg->sender;
+			auto frameId = dg->frameId;
 
 			// UDP Decode.
-			auto decoder = d->videoFrameDatagramDecoders.value(dgvideo->sender);
+			auto decoder = d->videoFrameDatagramDecoders.value(dg->sender);
 			if (!decoder)
 			{
 				decoder = new VideoFrameUdpDecoder();
-				d->videoFrameDatagramDecoders.insert(dgvideo->sender, decoder);
+				d->videoFrameDatagramDecoders.insert(dg->sender, decoder);
 			}
-			decoder->add(dgvideo);
+			decoder->add(dg);
 
 			// Check for new decoded frame.
 			auto frame = decoder->next();
@@ -471,45 +473,47 @@ void MediaSocket::onReadyRead()
 
 		case UDP::VideoFrameRecoveryDatagram::TYPE:
 		{
-			UDP::VideoFrameRecoveryDatagram dgrec;
-			in >> dgrec.sender;
-			in >> dgrec.frameId;
-			in >> dgrec.index;
+			UDP::VideoFrameRecoveryDatagram dg;
+			in >> dg.sender;
+			in >> dg.frameId;
+			in >> dg.index;
 			d->videoEncodingThread->enqueueRecovery();
 			break;
 		}
-
+		//
+		// AUDIO
+		//
 		case UDP::AudioFrameDatagram::TYPE:
 		{
 			// Parse datagram.
-			auto dgvideo = new UDP::AudioFrameDatagram();
-			in >> dgvideo->sender;
-			in >> dgvideo->frameId;
-			in >> dgvideo->index;
-			in >> dgvideo->count;
-			in >> dgvideo->size;
-			if (dgvideo->size > 0)
+			auto dg = new UDP::AudioFrameDatagram();
+			in >> dg->sender;
+			in >> dg->frameId;
+			in >> dg->index;
+			in >> dg->count;
+			in >> dg->size;
+			if (dg->size > 0)
 			{
-				dgvideo->data = new UDP::dg_byte_t[dgvideo->size];
-				in.readRawData((char*)dgvideo->data, dgvideo->size);
+				dg->data = new UDP::dg_byte_t[dg->size];
+				in.readRawData((char*)dg->data, dg->size);
 			}
-			if (dgvideo->size == 0)
+			if (dg->size == 0)
 			{
-				delete dgvideo;
+				delete dg;
 				continue;
 			}
 
-			auto senderId = dgvideo->sender;
-			auto frameId = dgvideo->frameId;
+			auto senderId = dg->sender;
+			auto frameId = dg->frameId;
 
 			// UDP Decode.
-			auto decoder = d->audioFrameDatagramDecoders.value(dgvideo->sender);
+			auto decoder = d->audioFrameDatagramDecoders.value(dg->sender);
 			if (!decoder)
 			{
 				decoder = new AudioUdpDecoder();
-				d->audioFrameDatagramDecoders.insert(dgvideo->sender, decoder);
+				d->audioFrameDatagramDecoders.insert(dg->sender, decoder);
 			}
-			decoder->add(dgvideo);
+			decoder->add(dg);
 
 			// Check for new decoded frame.
 			auto frame = decoder->next();
@@ -533,6 +537,7 @@ void MediaSocket::onReadyRead()
 			//}
 			break;
 		}
+
 		} // switch (type)
 	}
 }
