@@ -142,6 +142,10 @@ ClientAppLogic::~ClientAppLogic()
 	{
 		d->camera->stop();
 	}
+	if (d->audioInput)
+	{
+		d->audioInput->stop();
+	}
 }
 
 QSharedPointer<NetworkClient> ClientAppLogic::networkClient()
