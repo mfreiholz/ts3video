@@ -79,7 +79,7 @@ ClientAppLogic::ClientAppLogic(const Options& opts, const QSharedPointer<Network
 	}
 
 	// Create QAudioInput (microphone).
-	if (true || !d->opts.audioInputDeviceId.isEmpty())
+	if (!d->opts.audioInputDeviceId.isEmpty())
 	{
 		d->audioInput = d->createMicrophoneFromOptions();
 		d->audioInput->setNotifyInterval(10);
