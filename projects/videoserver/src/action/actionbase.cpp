@@ -353,6 +353,36 @@ void DisableRemoteVideoAction::run(const ActionData& req)
 
 ///////////////////////////////////////////////////////////////////////
 
+void EnableAudioInputAction::run(const ActionData& req)
+{
+	req.session->_clientEntity->audioInputEnabled = true;
+	req.server->updateMediaRecipients();
+
+	sendDefaultOkResponse(req);
+
+	// Broadcast to sibling clients.
+	QJsonObject params;
+	params["client"] = req.session->_clientEntity->toQJsonObject();
+	broadcastNotificationToSiblingClients(req, "notify.clientaudioinputenabled", params);
+}
+
+///////////////////////////////////////////////////////////////////////
+
+void DisableAudioInputAction::run(const ActionData& req)
+{
+	req.session->_clientEntity->audioInputEnabled = false;
+	req.server->updateMediaRecipients();
+
+	sendDefaultOkResponse(req);
+
+	// Broadcast to sibling clients.
+	QJsonObject params;
+	params["client"] = req.session->_clientEntity->toQJsonObject();
+	broadcastNotificationToSiblingClients(req, "notify.clientaudioinputdisabled", params);
+}
+
+///////////////////////////////////////////////////////////////////////
+
 void JoinChannelAction::run(const ActionData& req)
 {
 	int channelId = 0;

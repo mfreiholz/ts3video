@@ -38,6 +38,10 @@ public:
 		// The microphones device ID (audio-in).
 		QString audioInputDeviceId = QString();
 		bool audioInputAutoEnable = false;
+
+		// The headphones device ID (audio-out).
+		QString audioOutputDeviceId = QString();
+		bool audioOutputAutoEnable = false;
 	};
 
 	/*!

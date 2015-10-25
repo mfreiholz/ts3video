@@ -154,6 +154,30 @@ public:
 
 ///////////////////////////////////////////////////////////////////////
 
+class EnableAudioInputAction : public ActionBase
+{
+public:
+	QString name() const
+	{
+		return QString("clientenableaudioinput");
+	}
+	void run(const ActionData& req);
+};
+
+///////////////////////////////////////////////////////////////////////
+
+class DisableAudioInputAction : public ActionBase
+{
+public:
+	QString name() const
+	{
+		return QString("clientdisableaudioinput");
+	}
+	void run(const ActionData& req);
+};
+
+///////////////////////////////////////////////////////////////////////
+
 class JoinChannelAction : public ActionBase
 {
 public:

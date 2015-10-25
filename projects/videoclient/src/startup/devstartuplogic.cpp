@@ -1,6 +1,7 @@
 #include "devstartuplogic.h"
 #include "../networkclient/networkclient.h"
 #include <QCameraInfo>
+#include <QAudioDeviceInfo>
 
 DevStartupLogic::DevStartupLogic(QApplication* a) :
 	AbstractStartupLogic(a)
@@ -22,6 +23,8 @@ int DevStartupLogic::exec()
 	ClientAppLogic::Options opts;
 	opts.cameraDeviceId = QCameraInfo::defaultCamera().deviceName();
 	opts.cameraAutoEnable = true;
+	opts.audioInputDeviceId = QAudioDeviceInfo::defaultInputDevice().deviceName();
+	opts.audioInputAutoEnable = true;
 	auto w = new ClientAppLogic(opts, nc, nullptr, 0);
 	w->show();
 

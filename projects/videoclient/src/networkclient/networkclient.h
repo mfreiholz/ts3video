@@ -104,6 +104,15 @@ public:
 	void sendVideoFrame(const QImage& image);
 
 	/*!
+		Enables/disables sending of audio-input data to server (microphone).
+		Requires an authenticated connection.
+		\see auth()
+		\return QCorReply* Ownership goes over to caller who needs to delete it with "deleteLater()".
+	*/
+	QCorReply* enableAudioInputStream();
+	QCorReply* disableAudioInputStream();
+
+	/*!
 		Sends a single frame to the server, which will then broadcast it to other clients.
 		Internally encodes the frame with Opus codec.
 		\thread-safe

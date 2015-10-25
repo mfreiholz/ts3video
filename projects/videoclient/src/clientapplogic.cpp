@@ -83,15 +83,24 @@ ClientAppLogic::ClientAppLogic(const Options& opts, const QSharedPointer<Network
 	{
 		d->audioInput = d->createMicrophoneFromOptions();
 		d->audioInput->setNotifyInterval(10);
-		
+
 		auto grabber = new AudioFrameGrabber(d->audioInput, this);
-		QObject::connect(grabber, &AudioFrameGrabber::newFrame, [this](const PcmFrameRefPtr& f)
+		QObject::connect(grabber, &AudioFrameGrabber::newFrame, [this](const PcmFrameRefPtr & f)
 		{
 			d->nc->sendAudioFrame(f);
 		});
+	}
 
-		//auto audioOutput = new QAudioOutput(QAudioDeviceInfo::defaultOutputDevice(), d->createAudioFormat(), this);
-		//audioOutput->start(d->audioInput->start());
+	// Create QAudioOutput (headphones).
+	if (true)
+	{
+		auto audioOutput = QSharedPointer<QAudioOutput>(new QAudioOutput(QAudioDeviceInfo::defaultOutputDevice(), d->createAudioFormat(), this));
+		d->audioPlayer = QSharedPointer<AudioFramePlayer>(new AudioFramePlayer());
+		d->audioPlayer->setAudioOutput(audioOutput);
+		QObject::connect(d->nc.data(), &NetworkClient::newAudioFrame, [this](PcmFrameRefPtr f, int senderId)
+		{
+			d->audioPlayer->add(f);
+		});
 	}
 
 	// Create initial tiles.

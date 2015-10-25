@@ -42,6 +42,7 @@ set(qheaders
   src/hintoverlaywidget.h
   src/hintoverlaywidget_p.h
   src/audio/audioframegrabber.h
+  src/audio/audioframeplayer.h
   src/camera/cameracontroller.h
   src/camera/cameracontroller_p.h
   src/networkclient/networkclient.h
@@ -88,6 +89,7 @@ set(sources
   src/movablewidgetcontainer.cpp
   src/hintoverlaywidget.cpp
   src/audio/audioframegrabber.cpp
+  src/audio/audioframeplayer.cpp
   src/camera/cameracontroller.cpp
   src/networkclient/networkclient.cpp
   src/networkclient/mediasocket.cpp

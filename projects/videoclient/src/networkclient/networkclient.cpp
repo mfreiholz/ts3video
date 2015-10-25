@@ -331,9 +331,37 @@ void NetworkClient::sendVideoFrame(const QImage& image)
 	d->mediaSocket->sendVideoFrame(image, d->clientEntity.id);
 }
 
+QCorReply* NetworkClient::enableAudioInputStream()
+{
+	REQUEST_PRECHECK
+
+	HL_DEBUG(HL, QString("Enable audio-input stream").toStdString());
+
+	d->clientEntity.audioInputEnabled = true;
+	d->clientModel->updateClient(d->clientEntity);
+
+	QCorFrame req;
+	req.setData(JsonProtocolHelper::createJsonRequest("clientenableaudioinput", QJsonObject()));
+	return d->corSocket->sendRequest(req);
+}
+
+QCorReply* NetworkClient::disableAudioInputStream()
+{
+	REQUEST_PRECHECK
+
+	HL_DEBUG(HL, QString("Disable audio-input stream").toStdString());
+
+	d->clientEntity.audioInputEnabled = false;
+	d->clientModel->updateClient(d->clientEntity);
+
+	QCorFrame req;
+	req.setData(JsonProtocolHelper::createJsonRequest("clientdisableaudioinput", QJsonObject()));
+	return d->corSocket->sendRequest(req);
+}
+
 void NetworkClient::sendAudioFrame(const PcmFrameRefPtr& f)
 {
-	if (!d->mediaSocket)
+	if (!d->mediaSocket || !d->clientEntity.audioInputEnabled)
 		return;
 	d->mediaSocket->sendAudioFrame(f, d->clientEntity.id);
 }

@@ -36,18 +36,32 @@ VirtualServer::VirtualServer(const VirtualServerOptions& opts, QObject* parent) 
 	d->registerAction(ActionPtr(new AuthenticationAction()));
 
 	// Authenticated actions (RequiresAuthentication).
-	d->registerAction(ActionPtr(new GoodbyeAction()));
-	d->registerAction(ActionPtr(new HeartbeatAction()));
-	d->registerAction(ActionPtr(new JoinChannelAction()));
-	d->registerAction(ActionPtr(new JoinChannel2Action()));
-	d->registerAction(ActionPtr(new EnableVideoAction()));
-	d->registerAction(ActionPtr(new DisableVideoAction()));
-	d->registerAction(ActionPtr(new EnableRemoteVideoAction()));
-	d->registerAction(ActionPtr(new DisableRemoteVideoAction()));
+	if (true)
+	{
+		d->registerAction(ActionPtr(new GoodbyeAction()));
+		d->registerAction(ActionPtr(new HeartbeatAction()));
+
+		// Channels, Conferences
+		d->registerAction(ActionPtr(new JoinChannelAction()));
+		d->registerAction(ActionPtr(new JoinChannel2Action()));
+
+		// Video
+		d->registerAction(ActionPtr(new EnableVideoAction()));
+		d->registerAction(ActionPtr(new DisableVideoAction()));
+		d->registerAction(ActionPtr(new EnableRemoteVideoAction()));
+		d->registerAction(ActionPtr(new DisableRemoteVideoAction()));
+
+		// Audio
+		d->registerAction(ActionPtr(new EnableAudioInputAction()));
+		d->registerAction(ActionPtr(new DisableAudioInputAction()));
+	}
 
 	// Admin actions (RequiresAdminPrivileges)
-	d->registerAction(ActionPtr(new AdminAuthAction()));
-	d->registerAction(ActionPtr(new KickClientAction()));
+	if (true)
+	{
+		d->registerAction(ActionPtr(new AdminAuthAction()));
+		d->registerAction(ActionPtr(new KickClientAction()));
+	}
 }
 
 VirtualServer::~VirtualServer()

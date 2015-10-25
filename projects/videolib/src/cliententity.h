@@ -29,6 +29,9 @@ public:
 
 	// Video settings.
 	bool videoEnabled; ///< Indicates whether the client has video enabled.
+
+	// Audio settings.
+	bool audioInputEnabled; ///< Indicates whether the client has audio input enabled (microphone).
 };
 Q_DECLARE_METATYPE(ClientEntity);
 #endif

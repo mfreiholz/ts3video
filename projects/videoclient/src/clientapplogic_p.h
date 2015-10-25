@@ -8,6 +8,7 @@
 #include <QAudioFormat>
 
 #include "clientapplogic.h"
+#include "audio/audioframeplayer.h"
 #include "networkclient/networkclient.h"
 
 class ViewBase;
@@ -41,6 +42,8 @@ public:
 	QSharedPointer<NetworkClient> nc;
 	QSharedPointer<QCamera> camera;
 	QSharedPointer<QAudioInput> audioInput;
+	QSharedPointer<QAudioOutput> audioOutput;
+	QSharedPointer<AudioFramePlayer> audioPlayer;
 
 	// Direct GUI elements.
 	ViewBase* view; ///< Central view to display all video streams.
