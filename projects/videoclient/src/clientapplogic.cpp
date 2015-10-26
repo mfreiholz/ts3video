@@ -94,12 +94,12 @@ ClientAppLogic::ClientAppLogic(const Options& opts, const QSharedPointer<Network
 	// Create QAudioOutput (headphones).
 	if (true)
 	{
-		auto audioOutput = QSharedPointer<QAudioOutput>(new QAudioOutput(QAudioDeviceInfo::defaultOutputDevice(), d->createAudioFormat(), this));
 		d->audioPlayer = QSharedPointer<AudioFramePlayer>(new AudioFramePlayer());
-		d->audioPlayer->setAudioOutput(audioOutput);
+		d->audioPlayer->setDeviceInfo(QAudioDeviceInfo::defaultOutputDevice());
+		d->audioPlayer->setFormat(d->createAudioFormat());
 		QObject::connect(d->nc.data(), &NetworkClient::newAudioFrame, [this](PcmFrameRefPtr f, int senderId)
 		{
-			d->audioPlayer->add(f);
+			d->audioPlayer->add(f, senderId);
 		});
 	}
 

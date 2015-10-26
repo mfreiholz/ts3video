@@ -1,29 +1,28 @@
 #include "audioframeplayer.h"
 
 AudioFramePlayer::AudioFramePlayer(QObject* parent) :
-	QObject(parent), _output(), _outputDevice(0)
+	QObject(parent)
 {
-
 }
 
 AudioFramePlayer::~AudioFramePlayer()
 {
+	qDeleteAll(_outputs);
 }
 
-QSharedPointer<QAudioOutput> AudioFramePlayer::audioOutput() const
+void AudioFramePlayer::add(const PcmFrameRefPtr& f, int senderId)
 {
-	return _output;
-}
-
-void AudioFramePlayer::setAudioOutput(const QSharedPointer<QAudioOutput>& out)
-{
-	_output = out;
-	_outputDevice = _output->start();
-}
-
-void AudioFramePlayer::add(const PcmFrameRefPtr& f)
-{
-	if (!_outputDevice || !_outputDevice->isOpen())
+	auto out = _outputs.value(senderId);
+	if (!out)
+	{
+		out = new Output();
+		out->out = QSharedPointer<QAudioOutput>(new QAudioOutput(_deviceInfo, _format));
+		out->device = out->out->start();
+		_outputs.insert(senderId, out);
+	}
+	if (!out || !out->device || !out->device || !out->device->isOpen())
+	{
 		return;
-	_outputDevice->write(f->data, f->dataLength());
+	}
+	out->device->write(f->data, f->dataLength());
 }

@@ -4,6 +4,8 @@
 #include <QObject>
 #include <QSharedPointer>
 #include <QAudioOutput>
+#include <QAudioDeviceInfo>
+#include <QAudioFormat>
 #include "videolib/src/pcmframe.h"
 class QIODevice;
 
@@ -15,14 +17,23 @@ public:
 	AudioFramePlayer(QObject* parent = 0);
 	virtual ~AudioFramePlayer();
 
-	QSharedPointer<QAudioOutput> audioOutput() const;
-	void setAudioOutput(const QSharedPointer<QAudioOutput>& out);
+	QAudioDeviceInfo deviceInfo() const { return _deviceInfo; }
+	void setDeviceInfo(const QAudioDeviceInfo& info) { _deviceInfo = info; }
 
-	void add(const PcmFrameRefPtr& f);
+	QAudioFormat format() const { return _format; }
+	void setFormat(const QAudioFormat& format) { _format = format; }
+
+	void add(const PcmFrameRefPtr& f, int senderId);
 
 private:
-	QSharedPointer<QAudioOutput> _output;
-	QIODevice* _outputDevice;
+	struct Output
+	{
+		QSharedPointer<QAudioOutput> out;
+		QIODevice* device;
+	};
+	QHash<int, Output*> _outputs;
+	QAudioDeviceInfo _deviceInfo;
+	QAudioFormat _format;
 };
 
 #endif
