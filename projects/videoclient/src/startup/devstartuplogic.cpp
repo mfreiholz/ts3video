@@ -38,9 +38,6 @@ int DevStartupLogic::exec()
 				opts.audioInputAutoEnable = true;
 				auto w = new ClientAppLogic(opts, nc, nullptr, 0);
 				w->show();
-
-				auto r = nc->enableAudioInputStream();
-				QCORREPLY_AUTODELETE(r);
 			});
 			QCORREPLY_AUTODELETE(reply);
 		});

@@ -82,6 +82,14 @@ TileViewWidget::TileViewWidget(QWidget* parent, Qt::WindowFlags f) :
 	d->enableVideoToggleButton->setVisible(false);
 	QObject::connect(d->enableVideoToggleButton, &QPushButton::toggled, this, &TileViewWidget::setVideoEnabled);
 
+	d->enableAudioInputToggleButton = new QPushButton();
+	d->enableAudioInputToggleButton->setIcon(QIcon(":/ic_mic_grey600_48dp.png"));
+	d->enableAudioInputToggleButton->setIconSize(__sideBarIconSize);
+	d->enableAudioInputToggleButton->setToolTip(tr("Start/stop microphone."));
+	d->enableAudioInputToggleButton->setFlat(true);
+	d->enableAudioInputToggleButton->setCheckable(true);
+	QObject::connect(d->enableAudioInputToggleButton, &QPushButton::toggled, this, &TileViewWidget::setAudioInputEnabled);
+
 	d->zoomInButton = new QPushButton();
 	d->zoomInButton->setIcon(QIcon(":/ic_add_circle_outline_grey600_48dp.png"));
 	d->zoomInButton->setIconSize(__sideBarIconSize);
@@ -158,6 +166,7 @@ TileViewWidget::TileViewWidget(QWidget* parent, Qt::WindowFlags f) :
 	leftPanelLayout->setContentsMargins(0, 0, 0, 0);
 	leftPanelLayout->setSpacing(0);
 	leftPanelLayout->addWidget(d->enableVideoToggleButton);
+	leftPanelLayout->addWidget(d->enableAudioInputToggleButton);
 	leftPanelLayout->addWidget(d->zoomInButton);
 	leftPanelLayout->addWidget(d->zoomOutButton);
 	leftPanelLayout->addWidget(d->userListButton);
@@ -331,7 +340,13 @@ void TileViewWidget::updateClientVideo(YuvFrameRefPtr frame, int senderId)
 	auto tileWidget = d->tilesMap.value(senderId);
 	if (!tileWidget)
 	{
-		return;
+		//ClientEntity ce;
+		//ce.id = senderId;
+		//ce.videoEnabled=true;
+		//addClient(ce, ChannelEntity());
+		//tileWidget = d->tilesMap.value(senderId);
+		//if (!tileWidget)
+			return;
 	}
 	tileWidget->_videoWidget->videoWidget()->setFrame(frame);
 }
@@ -385,6 +400,40 @@ void TileViewWidget::setVideoEnabled(bool b)
 		}
 	}
 	d->enableVideoToggleButton->setChecked(b);
+}
+
+void TileViewWidget::setAudioInputEnabled(bool b)
+{
+	auto nc = ClientAppLogic::instance()->networkClient();
+	auto dev = ClientAppLogic::instance()->audioInput();
+	if (dev)
+	{
+		if (b)
+		{
+			if (dev->state() != QAudio::ActiveState)
+			{
+				//dev->start();
+			}
+			if (nc)
+			{
+				auto reply = nc->enableAudioInputStream();
+				QCORREPLY_AUTODELETE(reply);
+			}
+		}
+		else
+		{
+			if (dev->state() == QAudio::ActiveState)
+			{
+				//dev->stop();
+			}
+			if (nc)
+			{
+				auto reply = nc->disableAudioInputStream();
+				QCORREPLY_AUTODELETE(reply);
+			}
+		}
+	}
+	d->enableAudioInputToggleButton->setChecked(b);
 }
 
 void TileViewWidget::wheelEvent(QWheelEvent* e)

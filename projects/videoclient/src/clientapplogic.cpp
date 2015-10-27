@@ -82,7 +82,6 @@ ClientAppLogic::ClientAppLogic(const Options& opts, const QSharedPointer<Network
 	if (!d->opts.audioInputDeviceId.isEmpty())
 	{
 		d->audioInput = d->createMicrophoneFromOptions();
-		d->audioInput->setNotifyInterval(10);
 
 		auto grabber = new AudioFrameGrabber(d->audioInput, this);
 		QObject::connect(grabber, &AudioFrameGrabber::newFrame, [this](const PcmFrameRefPtr & f)
@@ -116,7 +115,19 @@ ClientAppLogic::ClientAppLogic(const Options& opts, const QSharedPointer<Network
 	{
 		TileViewWidget* tvw = nullptr;
 		if ((tvw = dynamic_cast<TileViewWidget*>(d->view)) != nullptr)
+		{
 			tvw->setVideoEnabled(true);
+		}
+	}
+
+	// Auto turn ON microphone.
+	if (d->audioInput && d->opts.audioInputAutoEnable)
+	{
+		TileViewWidget* tvw = nullptr;
+		if ((tvw = dynamic_cast<TileViewWidget*>(d->view)) != nullptr)
+		{
+			tvw->setAudioInputEnabled(true);
+		}
 	}
 
 	resize(1024, 768);
@@ -151,6 +162,11 @@ ClientAppLogic::~ClientAppLogic()
 QSharedPointer<NetworkClient> ClientAppLogic::networkClient()
 {
 	return d->nc;
+}
+
+QSharedPointer<QAudioInput> ClientAppLogic::audioInput()
+{
+	return d->audioInput;
 }
 
 void ClientAppLogic::onError(QAbstractSocket::SocketError socketError)

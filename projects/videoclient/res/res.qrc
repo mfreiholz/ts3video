@@ -21,7 +21,11 @@
         <file>ic_more_vert_grey600_48dp.png</file>
         <file>ic_chevron_right_grey600_48dp.png</file>
         <file>ic_videocam_black_48dp.png</file>
+        <file>ic_mic_grey600_48dp.png</file>
+        <file>ic_mic_off_grey600_48dp.png</file>
         <file>ic_lock_grey600_48dp.png</file>
+        <file>ic_volume_off_grey600_48dp.png</file>
+        <file>ic_volume_up_grey600_48dp.png</file>
         <file>logo-48x48.png</file>
     </qresource>
     <qresource prefix="/opengl">

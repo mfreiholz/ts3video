@@ -7,6 +7,7 @@
 #include <QHash>
 #include <QVariant>
 #include <QMainWindow>
+#include <QAudioInput>
 
 #include "videolib/src/ts3video.h"
 #include "videolib/src/yuvframe.h"
@@ -61,6 +62,7 @@ public:
 	ClientAppLogic(const Options& opts, const QSharedPointer<NetworkClient>& nc, QWidget* parent, Qt::WindowFlags flags);
 	virtual ~ClientAppLogic();
 	QSharedPointer<NetworkClient> networkClient();
+	QSharedPointer<QAudioInput> audioInput();
 
 private slots:
 	void onError(QAbstractSocket::SocketError socketError);

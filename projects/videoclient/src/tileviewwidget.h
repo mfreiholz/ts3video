@@ -26,6 +26,7 @@ public:
 public slots:
 	void setTileSize(const QSize& size);
 	void setVideoEnabled(bool b);
+	void setAudioInputEnabled(bool b);
 
 protected:
 	virtual void wheelEvent(QWheelEvent* e);
