@@ -41,6 +41,7 @@ set(qheaders
   src/movablewidgetcontainer.h
   src/hintoverlaywidget.h
   src/hintoverlaywidget_p.h
+  src/proxysettingswidget.h
   src/audio/audioframegrabber.h
   src/audio/audioframeplayer.h
   src/camera/cameracontroller.h
@@ -88,6 +89,7 @@ set(sources
   src/aboutwidget.cpp
   src/movablewidgetcontainer.cpp
   src/hintoverlaywidget.cpp
+  src/proxysettingswidget.cpp
   src/audio/audioframegrabber.cpp
   src/audio/audioframeplayer.cpp
   src/camera/cameracontroller.cpp
@@ -115,6 +117,7 @@ set(qforms
   src/adminauthwidget.ui
   src/startupwidget.ui
   src/aboutwidget.ui
+  src/proxysettingswidget.ui
   src/startup/ts3videostartuplogic.ui
   src/ts3video/ts3videoupdatedialog.ui
 )
