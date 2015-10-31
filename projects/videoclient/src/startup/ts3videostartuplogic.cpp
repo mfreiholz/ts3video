@@ -47,7 +47,7 @@ const static QString versionCheckUrl = QString("http://127.0.0.1:8080/ts3video/1
 // TODO Pass these settings as an encrypted value. It shouldn't be too easy
 //      to guess the parameters and make use of them.
 //const static QString serverLookupUrl = QString("http://api.mfreiholz.de/ts3video/1.0/lookup/%1:%2:%3");
-const static QString serverLookupUrl = QString("http://127.0.0.1:8080/ts3video/1.0/lookup/%1:%2:%3:%4");
+const static QString serverLookupUrl = QString("http://127.0.0.1:8080/ts3video/1.0/lookup/%1:%2:%3");
 
 // Endpoint to lookup public conference server.
 // e.g.: %1 = TeamSpeak address            = teamspeak.insanefactory.com
@@ -88,7 +88,7 @@ static QString generateConferenceRoomPassword(const QString& uid)
 	--channelid     The channel-id of the TeamSpeak server.
 	--clientdbid    The clients database ID on TeamSpeak server.
 	--username      The name of the TeamSpeak user.
-	--data          Encrypted parameters.
+	--public        Indicates that a public server should be used.
 
 	# Commands
 
@@ -155,7 +155,7 @@ void Ts3VideoStartupLogic::showResponseError(int status, const QString& errorMes
 void Ts3VideoStartupLogic::showError(const QString& shortText, const QString& longText)
 {
 	HL_ERROR(HL, QString("%1 => %2").arg(shortText).arg(longText).toStdString());
-	showProgress(QString("<font color=red>ERROR:</font> ") + shortText);
+	showProgress(QString("<font color=red>ERROR:</font> ") + shortText + QString("<br>") + longText);
 }
 
 void Ts3VideoStartupLogic::start()
@@ -172,7 +172,6 @@ void Ts3VideoStartupLogic::start()
 	{
 		if (!lookupPublicConference())
 		{
-			showError("Public server lookup failed");
 			return;
 		}
 	}
@@ -265,7 +264,7 @@ bool Ts3VideoStartupLogic::lookupConference()
 
 	if (reply->error() != QNetworkReply::NoError)
 	{
-		showError(tr("Conference lookup failed"), reply->errorString());
+		showError(tr("Conference lookup failed"), QString("%1: %2").arg(reply->errorString()).arg(QString::fromUtf8(reply->readAll())));
 		return false;
 	}
 
@@ -304,7 +303,7 @@ bool Ts3VideoStartupLogic::lookupPublicConference()
 
 	if (reply->error() != QNetworkReply::NoError)
 	{
-		showError(tr("Conference lookup failed"), reply->errorString());
+		showError(tr("Conference lookup failed"), QString("%1: %2").arg(reply->errorString()).arg(QString::fromUtf8(reply->readAll())));
 		return false;
 	}
 
