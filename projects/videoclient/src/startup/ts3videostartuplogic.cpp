@@ -31,6 +31,7 @@
 #include "../startupwidget.h"
 #include "../clientapplogic.h"
 #include "../ts3video/ts3videoupdatedialog.h"
+#include "../util/qwidgetutil.h"
 
 HUMBLE_LOGGER(HL, "client");
 
@@ -103,6 +104,8 @@ Ts3VideoStartupLogic::Ts3VideoStartupLogic(QApplication* a) :
 	// Init GUI.
 	_ui.setupUi(this);
 	QObject::connect(this, &Ts3VideoStartupLogic::newProgress, this, &Ts3VideoStartupLogic::showProgress);
+
+	QWidgetUtil::resizeWidgetPerCent(this, 50.0, 50.0);
 }
 
 Ts3VideoStartupLogic::~Ts3VideoStartupLogic()
