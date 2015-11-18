@@ -31,6 +31,7 @@
 
 #include "audio/audioframegrabber.h"
 #include "networkclient/clientlistmodel.h"
+#include "util/qwidgetutil.h"
 #include "clientcameravideowidget.h"
 #include "remoteclientvideowidget.h"
 #include "tileviewwidget.h"
@@ -130,7 +131,8 @@ ClientAppLogic::ClientAppLogic(const Options& opts, const QSharedPointer<Network
 		}
 	}
 
-	resize(1024, 768);
+	QWidgetUtil::resizeWidgetPerCent(this, 75.0, 75.0);
+
 	QSettings settings;
 	restoreGeometry(settings.value("UI/ClientApp-Geometry").toByteArray());
 }
