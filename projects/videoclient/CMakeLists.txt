@@ -17,6 +17,7 @@ find_package(Qt5Concurrent REQUIRED)
 # Sources
 set(headers
   src/viewbase.h
+  src/util/qwidgetutil.h
 )
 
 set(qheaders
@@ -111,6 +112,7 @@ set(sources
   src/startup/ts3videostartuplogic.cpp
   src/ts3video/ts3videoentities.cpp
   src/ts3video/ts3videoupdatedialog.cpp
+  src/util/qwidgetutil.cpp
 )
 
 set(qforms
