@@ -195,10 +195,10 @@ TileViewWidget::TileViewWidget(QWidget* parent, Qt::WindowFlags f) :
 	setLayout(mainLayout);
 
 	// Events
-	auto nc = ClientAppLogic::instance()->networkClient();
+	auto nc = ConferenceVideoWindow::instance()->networkClient();
 	QObject::connect(nc.data(), &NetworkClient::clientEnabledVideo, this, &TileViewWidget::onClientEnabledVideo);
 	QObject::connect(nc.data(), &NetworkClient::clientDisabledVideo, this, &TileViewWidget::onClientDisabledVideo);
-	QObject::connect(ClientAppLogic::instance()->networkClient().data(), &NetworkClient::networkUsageUpdated, [this](const NetworkUsageEntity & networkUsage)
+	QObject::connect(ConferenceVideoWindow::instance()->networkClient().data(), &NetworkClient::networkUsageUpdated, [this](const NetworkUsageEntity & networkUsage)
 	{
 		d->bandwidthRead->setText(QString("D: %1").arg(ELWS::humanReadableBandwidth(networkUsage.bandwidthRead)));
 		d->bandwidthWrite->setText(QString("U: %1").arg(ELWS::humanReadableBandwidth(networkUsage.bandwidthWrite)));
@@ -245,10 +245,10 @@ TileViewWidget::TileViewWidget(QWidget* parent, Qt::WindowFlags f) :
 	});
 	QObject::connect(adminAuthButton, &QPushButton::clicked, [this, adminAuthButton]()
 	{
-		auto w = new AdminAuthWidget(ClientAppLogic::instance()->networkClient(), this);
+		auto w = new AdminAuthWidget(ConferenceVideoWindow::instance()->networkClient(), this);
 		w->setModal(true);
 		w->exec();
-		if (ClientAppLogic::instance()->networkClient()->isAdmin())
+		if (ConferenceVideoWindow::instance()->networkClient()->isAdmin())
 			adminAuthButton->setVisible(false);
 	});
 	QObject::connect(aboutButton, &QPushButton::clicked, [this]()
@@ -370,7 +370,7 @@ void TileViewWidget::setTileSize(const QSize& size)
 
 void TileViewWidget::setVideoEnabled(bool b)
 {
-	auto nc = ClientAppLogic::instance()->networkClient();
+	auto nc = ConferenceVideoWindow::instance()->networkClient();
 	auto cam = d->cameraWidget->_camera;
 	if (cam)
 	{
@@ -404,8 +404,8 @@ void TileViewWidget::setVideoEnabled(bool b)
 
 void TileViewWidget::setAudioInputEnabled(bool b)
 {
-	auto nc = ClientAppLogic::instance()->networkClient();
-	auto dev = ClientAppLogic::instance()->audioInput();
+	auto nc = ConferenceVideoWindow::instance()->networkClient();
+	auto dev = ConferenceVideoWindow::instance()->audioInput();
 	if (dev)
 	{
 		if (b)
@@ -555,7 +555,7 @@ TileViewCameraWidget::~TileViewCameraWidget()
 void TileViewCameraWidget::setCamera(const QSharedPointer<QCamera>& c)
 {
 	_camera = c;
-	_cameraWidget = new ClientCameraVideoWidget(ClientAppLogic::instance()->networkClient(), _camera, this);
+	_cameraWidget = new ClientCameraVideoWidget(ConferenceVideoWindow::instance()->networkClient(), _camera, this);
 	_mainLayout->addWidget(_cameraWidget, 1);
 }
 
@@ -626,20 +626,20 @@ void TileViewUserListWidget::onCustomContextMenuRequested(const QPoint& point)
 	QMenu menu;
 
 	// Admin actions.
-	if (ClientAppLogic::instance()->networkClient()->isAdmin() && !ClientAppLogic::instance()->networkClient()->isSelf(ci))
+	if (ConferenceVideoWindow::instance()->networkClient()->isAdmin() && !ConferenceVideoWindow::instance()->networkClient()->isSelf(ci))
 	{
 		// Kick client.
 		auto kickAction = menu.addAction(QIcon(), tr("Kick client"));
 		QObject::connect(kickAction, &QAction::triggered, [this, ci]()
 		{
-			const auto reply = ClientAppLogic::instance()->networkClient()->kickClient(ci.id, false);
+			const auto reply = ConferenceVideoWindow::instance()->networkClient()->kickClient(ci.id, false);
 			QCORREPLY_AUTODELETE(reply);
 		});
 		// Ban client.
 		auto banAction = menu.addAction(QIcon(), tr("Ban client"));
 		QObject::connect(banAction, &QAction::triggered, [this, ci]()
 		{
-			const auto reply = ClientAppLogic::instance()->networkClient()->kickClient(ci.id, true);
+			const auto reply = ConferenceVideoWindow::instance()->networkClient()->kickClient(ci.id, true);
 			QCORREPLY_AUTODELETE(reply);
 		});
 	}

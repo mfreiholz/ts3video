@@ -21,8 +21,8 @@ public:
   StartupDialog(QWidget *parent);
   virtual ~StartupDialog();
 
-  ClientAppLogic::Options values() const;
-  void setValues(const ClientAppLogic::Options &values);
+  ConferenceVideoWindow::Options values() const;
+  void setValues(const ConferenceVideoWindow::Options &values);
 
 protected:
   void showEvent(QShowEvent *ev);

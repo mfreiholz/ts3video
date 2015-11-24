@@ -1,5 +1,5 @@
-#ifndef CLIENTAPPLOGICPRIVATE_H
-#define CLIENTAPPLOGICPRIVATE_H
+#ifndef ConferenceVideoWindowPRIVATE_H
+#define ConferenceVideoWindowPRIVATE_H
 
 #include <QSharedPointer>
 #include <QCamera>
@@ -14,13 +14,13 @@
 class ViewBase;
 class ClientCameraVideoWidget;
 
-class ClientAppLogicPrivate : public QObject
+class ConferenceVideoWindowPrivate : public QObject
 {
 	Q_OBJECT
 
 public:
-	ClientAppLogicPrivate(ClientAppLogic* o);
-	~ClientAppLogicPrivate();
+	ConferenceVideoWindowPrivate(ConferenceVideoWindow* o);
+	~ConferenceVideoWindowPrivate();
 	QSharedPointer<QCamera> createCameraFromOptions() const;
 	QSharedPointer<QAudioInput> createMicrophoneFromOptions() const;
 
@@ -37,8 +37,8 @@ public:
 	}
 
 public:
-	ClientAppLogic* owner;
-	ClientAppLogic::Options opts;
+	ConferenceVideoWindow* owner;
+	ConferenceVideoWindow::Options opts;
 	QSharedPointer<NetworkClient> nc;
 	QSharedPointer<QCamera> camera;
 	QSharedPointer<QAudioInput> audioInput;

@@ -20,13 +20,12 @@ class ViewBase;
 class ClientCameraVideoWidget;
 class RemoteClientVideoWidget;
 
-
-class ClientAppLogicPrivate;
-class ClientAppLogic : public QMainWindow
+class ConferenceVideoWindowPrivate;
+class ConferenceVideoWindow : public QMainWindow
 {
 	Q_OBJECT
-	friend class ClientAppLogicPrivate;
-	QScopedPointer<ClientAppLogicPrivate> d;
+	friend class ConferenceVideoWindowPrivate;
+	QScopedPointer<ConferenceVideoWindowPrivate> d;
 
 public:
 	class Options
@@ -46,21 +45,21 @@ public:
 	};
 
 	/*!
-	    This is very, very dirty.
-	    I'm currently using this approach, because i don't want to pass
-	    the object into every small object/dialog which might need it.
+		This is very, very dirty.
+		I'm currently using this approach, because i don't want to pass
+		the object into every small object/dialog which might need it.
 
-	    This method does not actually create the object.
-	    As soon as the normal constructor gets called it will return the
-	    created instance. As i said... very dirty.
+		This method does not actually create the object.
+		As soon as the normal constructor gets called it will return the
+		created instance. As i said... very dirty.
 
-	    \todo As long as we use this way, we can't not have multiple instances.
+		\todo As long as we use this way, we can't not have multiple instances.
 	*/
-	static ClientAppLogic* instance();
+	static ConferenceVideoWindow* instance();
 
 public:
-	ClientAppLogic(const Options& opts, const QSharedPointer<NetworkClient>& nc, QWidget* parent, Qt::WindowFlags flags);
-	virtual ~ClientAppLogic();
+	ConferenceVideoWindow(const Options& opts, const QSharedPointer<NetworkClient>& nc, QWidget* parent, Qt::WindowFlags flags);
+	virtual ~ConferenceVideoWindow();
 	QSharedPointer<NetworkClient> networkClient();
 	QSharedPointer<QAudioInput> audioInput();
 
@@ -77,6 +76,5 @@ protected:
 	void showResponseError(int status, const QString& errorMessage, const QString& details = QString());
 	void showError(const QString& shortText, const QString& longText = QString());
 };
-
 
 #endif

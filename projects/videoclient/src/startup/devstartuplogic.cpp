@@ -31,12 +31,12 @@ int DevStartupLogic::exec()
 			QObject::connect(reply, &QCorReply::finished, [this, nc]()
 			{
 				// Open conference video-chat UI.
-				ClientAppLogic::Options opts;
+				ConferenceVideoWindow::Options opts;
 				opts.cameraDeviceId = QCameraInfo::defaultCamera().deviceName();
 				opts.cameraAutoEnable = true;
 				opts.audioInputDeviceId = QAudioDeviceInfo::defaultInputDevice().deviceName();
 				opts.audioInputAutoEnable = true;
-				auto w = new ClientAppLogic(opts, nc, nullptr, 0);
+				auto w = new ConferenceVideoWindow(opts, nc, nullptr, 0);
 				w->show();
 			});
 			QCORREPLY_AUTODELETE(reply);

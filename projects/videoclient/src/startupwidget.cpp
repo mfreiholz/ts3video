@@ -15,7 +15,7 @@ public:
 public:
 	StartupDialog* owner;
 	Ui::StartupWidgetForm ui;
-	ClientAppLogic::Options opts;
+	ConferenceVideoWindow::Options opts;
 };
 
 ///////////////////////////////////////////////////////////////////////
@@ -63,7 +63,7 @@ StartupDialog::~StartupDialog()
 	conf.setValue("UI/StartupDialog-CameraAutoEnable", v.cameraAutoEnable);
 }
 
-ClientAppLogic::Options StartupDialog::values() const
+ConferenceVideoWindow::Options StartupDialog::values() const
 {
 	auto v = d->opts;
 	v.cameraDeviceId = d->ui.cameraComboBox->currentData().toString();
@@ -71,7 +71,7 @@ ClientAppLogic::Options StartupDialog::values() const
 	return v;
 }
 
-void StartupDialog::setValues(const ClientAppLogic::Options& v)
+void StartupDialog::setValues(const ConferenceVideoWindow::Options& v)
 {
 	d->opts = v;
 

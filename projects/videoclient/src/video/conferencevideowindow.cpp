@@ -40,18 +40,18 @@ HUMBLE_LOGGER(HL, "client.logic");
 
 ///////////////////////////////////////////////////////////////////////
 
-static ClientAppLogic* gFirstInstance;
+static ConferenceVideoWindow* gFirstInstance;
 
-ClientAppLogic* ClientAppLogic::instance()
+ConferenceVideoWindow* ConferenceVideoWindow::instance()
 {
 	return gFirstInstance;
 }
 
 ///////////////////////////////////////////////////////////////////////
 
-ClientAppLogic::ClientAppLogic(const Options& opts, const QSharedPointer<NetworkClient>& nc, QWidget* parent, Qt::WindowFlags flags) :
+ConferenceVideoWindow::ConferenceVideoWindow(const Options& opts, const QSharedPointer<NetworkClient>& nc, QWidget* parent, Qt::WindowFlags flags) :
 	QMainWindow(parent, flags),
-	d(new ClientAppLogicPrivate(this))
+	d(new ConferenceVideoWindowPrivate(this))
 {
 	if (!gFirstInstance)
 		gFirstInstance = this;
@@ -59,12 +59,12 @@ ClientAppLogic::ClientAppLogic(const Options& opts, const QSharedPointer<Network
 	d->opts = opts;
 	d->nc = nc;
 
-	connect(d->nc.data(), &NetworkClient::error, this, &ClientAppLogic::onError);
-	connect(d->nc.data(), &NetworkClient::serverError, this, &ClientAppLogic::onServerError);
-	connect(d->nc.data(), &NetworkClient::clientJoinedChannel, this, &ClientAppLogic::onClientJoinedChannel);
-	connect(d->nc.data(), &NetworkClient::clientLeftChannel, this, &ClientAppLogic::onClientLeftChannel);
-	connect(d->nc.data(), &NetworkClient::clientDisconnected, this, &ClientAppLogic::onClientDisconnected);
-	connect(d->nc.data(), &NetworkClient::newVideoFrame, this, &ClientAppLogic::onNewVideoFrame);
+	connect(d->nc.data(), &NetworkClient::error, this, &ConferenceVideoWindow::onError);
+	connect(d->nc.data(), &NetworkClient::serverError, this, &ConferenceVideoWindow::onServerError);
+	connect(d->nc.data(), &NetworkClient::clientJoinedChannel, this, &ConferenceVideoWindow::onClientJoinedChannel);
+	connect(d->nc.data(), &NetworkClient::clientLeftChannel, this, &ConferenceVideoWindow::onClientLeftChannel);
+	connect(d->nc.data(), &NetworkClient::clientDisconnected, this, &ConferenceVideoWindow::onClientDisconnected);
+	connect(d->nc.data(), &NetworkClient::newVideoFrame, this, &ConferenceVideoWindow::onNewVideoFrame);
 
 	// Central view widget.
 	auto viewWidget = new TileViewWidget(this);
@@ -137,7 +137,7 @@ ClientAppLogic::ClientAppLogic(const Options& opts, const QSharedPointer<Network
 	restoreGeometry(settings.value("UI/ClientApp-Geometry").toByteArray());
 }
 
-ClientAppLogic::~ClientAppLogic()
+ConferenceVideoWindow::~ConferenceVideoWindow()
 {
 	if (gFirstInstance == this)
 	{
@@ -161,29 +161,29 @@ ClientAppLogic::~ClientAppLogic()
 	}
 }
 
-QSharedPointer<NetworkClient> ClientAppLogic::networkClient()
+QSharedPointer<NetworkClient> ConferenceVideoWindow::networkClient()
 {
 	return d->nc;
 }
 
-QSharedPointer<QAudioInput> ClientAppLogic::audioInput()
+QSharedPointer<QAudioInput> ConferenceVideoWindow::audioInput()
 {
 	return d->audioInput;
 }
 
-void ClientAppLogic::onError(QAbstractSocket::SocketError socketError)
+void ConferenceVideoWindow::onError(QAbstractSocket::SocketError socketError)
 {
 	HL_INFO(HL, QString("Socket error (error=%1; message=%2)").arg(socketError).arg(d->nc->socket()->errorString()).toStdString());
 	showError(tr("Network socket error."), d->nc->socket()->errorString());
 }
 
-void ClientAppLogic::onServerError(int code, const QString& message)
+void ConferenceVideoWindow::onServerError(int code, const QString& message)
 {
 	HL_INFO(HL, QString("Server error (error=%1; message=%2)").arg(code).arg(message).toStdString());
 	showError(tr("Server error."),  QString("%1: %2").arg(code).arg(message));
 }
 
-void ClientAppLogic::onClientJoinedChannel(const ClientEntity& client, const ChannelEntity& channel)
+void ConferenceVideoWindow::onClientJoinedChannel(const ClientEntity& client, const ChannelEntity& channel)
 {
 	HL_INFO(HL, QString("Client joined channel (client-id=%1; channel-id=%2)").arg(client.id).arg(channel.id).toStdString());
 	if (client.id != d->nc->clientEntity().id)
@@ -192,24 +192,24 @@ void ClientAppLogic::onClientJoinedChannel(const ClientEntity& client, const Cha
 	}
 }
 
-void ClientAppLogic::onClientLeftChannel(const ClientEntity& client, const ChannelEntity& channel)
+void ConferenceVideoWindow::onClientLeftChannel(const ClientEntity& client, const ChannelEntity& channel)
 {
 	HL_INFO(HL, QString("Client left channel (client-id=%1; channel-id=%2)").arg(client.id).arg(channel.id).toStdString());
 	d->view->removeClient(client, channel);
 }
 
-void ClientAppLogic::onClientDisconnected(const ClientEntity& client)
+void ConferenceVideoWindow::onClientDisconnected(const ClientEntity& client)
 {
 	HL_INFO(HL, QString("Client disconnected (client-id=%1)").arg(client.id).toStdString());
 	d->view->removeClient(client, ChannelEntity());
 }
 
-void ClientAppLogic::onNewVideoFrame(YuvFrameRefPtr frame, int senderId)
+void ConferenceVideoWindow::onNewVideoFrame(YuvFrameRefPtr frame, int senderId)
 {
 	d->view->updateClientVideo(frame, senderId);
 }
 
-void ClientAppLogic::closeEvent(QCloseEvent* e)
+void ConferenceVideoWindow::closeEvent(QCloseEvent* e)
 {
 	QSettings settings;
 	settings.setValue("UI/ClientApp-Geometry", saveGeometry());
@@ -218,7 +218,7 @@ void ClientAppLogic::closeEvent(QCloseEvent* e)
 	QCORREPLY_AUTODELETE(reply);
 }
 
-void ClientAppLogic::showResponseError(int status, const QString& errorMessage, const QString& details)
+void ConferenceVideoWindow::showResponseError(int status, const QString& errorMessage, const QString& details)
 {
 	HL_ERROR(HL, QString("Network response error (status=%1; message=%2)").arg(status).arg(errorMessage).toStdString());
 	QMessageBox box(this);
@@ -232,7 +232,7 @@ void ClientAppLogic::showResponseError(int status, const QString& errorMessage, 
 	box.exec();
 }
 
-void ClientAppLogic::showError(const QString& shortText, const QString& longText)
+void ConferenceVideoWindow::showError(const QString& shortText, const QString& longText)
 {
 	HL_ERROR(HL, QString("%1: %2").arg(shortText).arg(longText).toStdString());
 	QMessageBox box(this);
@@ -249,16 +249,16 @@ void ClientAppLogic::showError(const QString& shortText, const QString& longText
 // Private Impl
 ///////////////////////////////////////////////////////////////////////
 
-ClientAppLogicPrivate::ClientAppLogicPrivate(ClientAppLogic* o) :
+ConferenceVideoWindowPrivate::ConferenceVideoWindowPrivate(ConferenceVideoWindow* o) :
 	QObject(o), owner(o), opts(), view(nullptr), cameraWidget(nullptr)
 {
 }
 
-ClientAppLogicPrivate::~ClientAppLogicPrivate()
+ConferenceVideoWindowPrivate::~ConferenceVideoWindowPrivate()
 {
 }
 
-QSharedPointer<QCamera> ClientAppLogicPrivate::createCameraFromOptions() const
+QSharedPointer<QCamera> ConferenceVideoWindowPrivate::createCameraFromOptions() const
 {
 	auto d = this;
 	auto cameraInfo = QCameraInfo::defaultCamera();
@@ -273,7 +273,7 @@ QSharedPointer<QCamera> ClientAppLogicPrivate::createCameraFromOptions() const
 	return QSharedPointer<QCamera>(new QCamera(cameraInfo));
 }
 
-QSharedPointer<QAudioInput> ClientAppLogicPrivate::createMicrophoneFromOptions() const
+QSharedPointer<QAudioInput> ConferenceVideoWindowPrivate::createMicrophoneFromOptions() const
 {
 	auto d = this;
 	auto info = QAudioDeviceInfo::defaultInputDevice();
