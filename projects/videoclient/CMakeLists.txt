@@ -16,27 +16,23 @@ find_package(Qt5Concurrent REQUIRED)
 
 # Sources
 set(headers
-	src/viewbase.h
+	src/video/viewbase.h
 	src/util/qwidgetutil.h
 )
 
 set(qheaders
-	src/adminauthwidget.h
-	src/cameraframegrabber.h
-	src/videowidget.h
-	src/videowidget_p.h
-#	src/gridviewwidgetarranger.h
-	src/videocollectionwidget.h
 	src/video/conferencevideowindow.h
 	src/video/conferencevideowindow_p.h
-	src/clientcameravideowidget.h
-	src/remoteclientvideowidget.h
+	src/video/cameraframegrabber.h
+	src/video/clientcameravideowidget.h
+	src/video/remoteclientvideowidget.h
+	src/video/tileviewwidget.h
+	src/video/tileviewwidget_p.h
+	src/video/videowidget.h
+	src/video/videowidget_p.h
 	src/startuplogic.h
 	src/startupwidget.h
-#	src/hangoutviewwidget.h
-#	src/hangoutviewwidget_p.h
-	src/tileviewwidget.h
-	src/tileviewwidget_p.h
+	src/adminauthwidget.h
 	src/flowlayout.h
 	src/aboutwidget.h
 	src/movablewidgetcontainer.h
@@ -73,19 +69,16 @@ set(qheaders
 
 set(sources
 	src/main.cpp
-	src/adminauthwidget.cpp
-	src/cameraframegrabber.cpp
-	src/videowidget.cpp
-#	src/gridviewwidgetarranger.cpp
-	src/videocollectionwidget.cpp
 	src/video/conferencevideowindow.cpp
-	src/clientcameravideowidget.cpp
-	src/remoteclientvideowidget.cpp
+	src/video/cameraframegrabber.cpp
+	src/video/clientcameravideowidget.cpp
+	src/video/remoteclientvideowidget.cpp
+	src/video/viewbase.cpp
+	src/video/tileviewwidget.cpp
+	src/video/videowidget.cpp
 	src/startuplogic.cpp
 	src/startupwidget.cpp
-#	src/hangoutviewwidget.cpp
-	src/viewbase.cpp
-	src/tileviewwidget.cpp
+	src/adminauthwidget.cpp
 	src/flowlayout.cpp
 	src/aboutwidget.cpp
 	src/movablewidgetcontainer.cpp
@@ -129,17 +122,17 @@ set(qresources
 )
 
 if(IncludeOpenGLSupport)
-	list(APPEND qheaders src/opengl/openglrenderthread.h)
-	list(APPEND qheaders src/opengl/openglwindow.h)
-	list(APPEND sources src/opengl/openglrenderthread.cpp)
-	list(APPEND sources src/opengl/openglwindow.cpp)
+	list(APPEND qheaders src/video/opengl/openglrenderthread.h)
+	list(APPEND qheaders src/video/opengl/openglwindow.h)
+	list(APPEND sources src/video/opengl/openglrenderthread.cpp)
+	list(APPEND sources src/video/opengl/openglwindow.cpp)
 
-	list(APPEND qheaders src/opengl2/yuvvideowindow.h)
-	list(APPEND sources src/opengl2/yuvvideowindow.cpp)
+	list(APPEND qheaders src/video/opengl2/yuvvideowindow.h)
+	list(APPEND sources src/video/opengl2/yuvvideowindow.cpp)
 
-	list(APPEND qheaders src/opengl3/glvideowidget.h)
-	list(APPEND qheaders src/opengl3/glvideowidget_p.h)
-	list(APPEND sources src/opengl3/glvideowidget.cpp)
+	list(APPEND qheaders src/video/opengl3/glvideowidget.h)
+	list(APPEND headers src/video/opengl3/glvideowidget_p.h)
+	list(APPEND sources src/video/opengl3/glvideowidget.cpp)
 endif()
 
 if(WIN32)

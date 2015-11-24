@@ -1,7 +1,7 @@
 #include "cameracontroller_p.h"
 #include "humblelogging/api.h"
 #include <QMessageBox>
-#include "../cameraframegrabber.h"
+#include "video/cameraframegrabber.h"
 
 HUMBLE_LOGGER(HL, "camera");
 

@@ -16,7 +16,7 @@
 #include "channelentity.h"
 #include "networkusageentity.h"
 
-#include "video/conferencevideowindow.h"
+#include "conferencevideowindow.h"
 #include "clientcameravideowidget.h"
 #include "flowlayout.h"
 #include "remoteclientvideowidget.h"

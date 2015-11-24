@@ -5,7 +5,7 @@
 #include <QWidget>
 #include <QCamera>
 #include <QScopedPointer>
-#include "cameraframegrabber.h"
+#include "video/cameraframegrabber.h"
 class QImage;
 class QCameraInfo;
 class NetworkClient;
