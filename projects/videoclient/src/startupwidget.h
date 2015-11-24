@@ -4,7 +4,7 @@
 #include <QScopedPointer>
 #include <QString>
 #include <QDialog>
-#include "clientapplogic.h"
+#include "video/conferencevideowindow.h"
 
 /*!
   The dialog is used to modify the ClientAppLogic's startup options.

@@ -1,4 +1,4 @@
-#include "clientapplogic_p.h"
+#include "conferencevideowindow_p.h"
 
 #include <QSettings>
 #include <QJsonDocument>

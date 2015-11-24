@@ -1,5 +1,5 @@
-#ifndef CLIENTAPPLOGIC_H
-#define CLIENTAPPLOGIC_H
+#ifndef CONFERENCEVIDEOWINDOW_H
+#define CONFERENCEVIDEOWINDOW_H
 
 #include <QScopedPointer>
 #include <QSharedPointer>

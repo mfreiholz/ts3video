@@ -28,10 +28,10 @@
 #include "videolib/src/cliententity.h"
 #include "videolib/src/channelentity.h"
 
-#include "../startupwidget.h"
-#include "../clientapplogic.h"
-#include "../ts3video/ts3videoupdatedialog.h"
-#include "../util/qwidgetutil.h"
+#include "startupwidget.h"
+#include "video/conferencevideowindow.h"
+#include "ts3video/ts3videoupdatedialog.h"
+#include "util/qwidgetutil.h"
 
 HUMBLE_LOGGER(HL, "client");
 

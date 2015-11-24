@@ -7,7 +7,7 @@
 #include <QAudioOutput>
 #include <QAudioFormat>
 
-#include "clientapplogic.h"
+#include "conferencevideowindow.h"
 #include "audio/audioframeplayer.h"
 #include "networkclient/networkclient.h"
 

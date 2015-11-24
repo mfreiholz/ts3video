@@ -2,8 +2,8 @@
 #define DEVSTARTUPLOGIC_H
 
 #include <QObject>
-#include "../startuplogic.h"
-#include "../clientapplogic.h"
+#include "startuplogic.h"
+#include "video/conferencevideowindow.h"
 
 class DevStartupLogic : public QObject, public AbstractStartupLogic
 {
