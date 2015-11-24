@@ -7,7 +7,7 @@
 #include "videolib/src/ts3video.h"
 #include "videolib/src/elws.h"
 #include "startup/devstartuplogic.h"
-#include "startup/ts3videostartuplogic.h"
+#include "ts3video/ts3videostartuplogic.h"
 
 HUMBLE_LOGGER(HL, "client");
 

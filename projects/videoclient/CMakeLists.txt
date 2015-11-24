@@ -16,6 +16,7 @@ find_package(Qt5Concurrent REQUIRED)
 
 # Sources
 set(headers
+	src/startup/startuplogic.h
 	src/video/viewbase.h
 	src/util/qwidgetutil.h
 )
@@ -30,8 +31,8 @@ set(qheaders
 	src/video/tileviewwidget_p.h
 	src/video/videowidget.h
 	src/video/videowidget_p.h
-	src/startuplogic.h
-	src/startupwidget.h
+	src/startup/startupwidget.h
+	src/startup/devstartuplogic.h
 	src/adminauthwidget.h
 	src/flowlayout.h
 	src/aboutwidget.h
@@ -59,8 +60,7 @@ set(qheaders
 	src/networkclient/opusdecoder.h
 	src/networkclient/clientlistmodel.h
 	src/networkclient/clientlistmodel_p.h
-	src/startup/devstartuplogic.h
-	src/startup/ts3videostartuplogic.h
+	src/ts3video/ts3videostartuplogic.h
 	src/ts3video/ts3videoentities.h
 	src/ts3video/ts3videoupdatedialog.h
 )
@@ -74,8 +74,9 @@ set(sources
 	src/video/viewbase.cpp
 	src/video/tileviewwidget.cpp
 	src/video/videowidget.cpp
-	src/startuplogic.cpp
-	src/startupwidget.cpp
+	src/startup/startuplogic.cpp
+	src/startup/startupwidget.cpp
+	src/startup/devstartuplogic.cpp
 	src/adminauthwidget.cpp
 	src/flowlayout.cpp
 	src/aboutwidget.cpp
@@ -98,8 +99,7 @@ set(sources
 	src/networkclient/opusencoder.cpp
 	src/networkclient/opusdecoder.cpp
 	src/networkclient/clientlistmodel.cpp
-	src/startup/devstartuplogic.cpp
-	src/startup/ts3videostartuplogic.cpp
+	src/ts3video/ts3videostartuplogic.cpp
 	src/ts3video/ts3videoentities.cpp
 	src/ts3video/ts3videoupdatedialog.cpp
 	src/util/qwidgetutil.cpp
@@ -107,10 +107,10 @@ set(sources
 
 set(qforms
 	src/adminauthwidget.ui
-	src/startupwidget.ui
+	src/startup/startupwidget.ui
 	src/aboutwidget.ui
 	src/proxysettingswidget.ui
-	src/startup/ts3videostartuplogic.ui
+	src/ts3video/ts3videostartuplogic.ui
 	src/ts3video/ts3videoupdatedialog.ui
 )
 

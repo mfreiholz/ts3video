@@ -4,7 +4,7 @@
 #include <QDialog>
 #include <QSharedPointer>
 
-#include "startuplogic.h"
+#include "startup/startuplogic.h"
 #include "video/conferencevideowindow.h"
 #include "networkclient/networkclient.h"
 #include "ts3video/ts3videoentities.h"
