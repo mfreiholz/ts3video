@@ -41,8 +41,6 @@ set(qheaders
 	src/proxysettingswidget.h
 	src/audio/audioframegrabber.h
 	src/audio/audioframeplayer.h
-	src/camera/cameracontroller.h
-	src/camera/cameracontroller_p.h
 	src/networkclient/networkclient.h
 	src/networkclient/networkclient_p.h
 	src/networkclient/mediasocket.h
@@ -86,7 +84,6 @@ set(sources
 	src/proxysettingswidget.cpp
 	src/audio/audioframegrabber.cpp
 	src/audio/audioframeplayer.cpp
-	src/camera/cameracontroller.cpp
 	src/networkclient/networkclient.cpp
 	src/networkclient/mediasocket.cpp
 	src/networkclient/mediasocketthread.cpp
