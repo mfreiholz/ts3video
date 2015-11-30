@@ -5,15 +5,15 @@
 
 class HintOverlayWidgetPrivate : public QObject
 {
-  Q_OBJECT
+	Q_OBJECT
 
 public:
-  HintOverlayWidgetPrivate(HintOverlayWidget *o) :
-    owner(o)
-  {}
+	HintOverlayWidgetPrivate(HintOverlayWidget* o) :
+		owner(o)
+	{}
 
 public:
-  HintOverlayWidget *owner;
+	HintOverlayWidget* owner;
 };
 
 #endif
