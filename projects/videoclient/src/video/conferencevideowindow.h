@@ -1,12 +1,12 @@
 #ifndef CONFERENCEVIDEOWINDOW_H
 #define CONFERENCEVIDEOWINDOW_H
 
+#include <QMainWindow>
 #include <QScopedPointer>
 #include <QSharedPointer>
 #include <QString>
 #include <QHash>
 #include <QVariant>
-#include <QMainWindow>
 
 #include "videolib/src/ts3video.h"
 #include "videolib/src/yuvframe.h"
@@ -15,20 +15,19 @@
 
 #if defined(OCS_INCLUDE_AUDIO)
 #include <QAudioInput>
+#include <QAudioOutput>
+#include <QAudioFormat>
 #endif
 
 class QWidget;
 class QProgressDialog;
+class QCamera;
 class ViewBase;
-class ClientCameraVideoWidget;
 class RemoteClientVideoWidget;
 
-class ConferenceVideoWindowPrivate;
 class ConferenceVideoWindow : public QMainWindow
 {
 	Q_OBJECT
-	friend class ConferenceVideoWindowPrivate;
-	QScopedPointer<ConferenceVideoWindowPrivate> d;
 
 public:
 	class Options
@@ -83,6 +82,23 @@ protected:
 	virtual void closeEvent(QCloseEvent* e);
 	void showResponseError(int status, const QString& errorMessage, const QString& details = QString());
 	void showError(const QString& shortText, const QString& longText = QString());
+
+private:
+	ConferenceVideoWindow::Options _opts;                ///< Basic options for video conferencing.
+	QSharedPointer<NetworkClient> _networkClient;        ///< Client for network communication.
+
+	// Video stuff.
+	QSharedPointer<QCamera> _camera;                     ///< The used camera for this conference.
+
+#if defined(OCS_INCLUDE_AUDIO)
+	// Audio stuff.
+	QSharedPointer<QAudioInput> _audioInput;
+	QSharedPointer<QAudioOutput> _audioOutput;
+	QSharedPointer<AudioFramePlayer> _audioPlayer;
+#endif
+
+	// GUI stuff.
+	ViewBase* _view;                                     ///< Central view to display all video streams.
 };
 
 #endif

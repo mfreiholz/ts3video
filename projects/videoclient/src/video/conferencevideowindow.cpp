@@ -1,4 +1,4 @@
-#include "conferencevideowindow_p.h"
+#include "conferencevideowindow.h"
 
 #include <QSettings>
 #include <QJsonDocument>
@@ -14,6 +14,8 @@
 #include <QFutureWatcher>
 #include <QWeakPointer>
 #include <QHostAddress>
+
+#include <QtMultimedia/QCamera>
 
 #include "humblelogging/api.h"
 
@@ -37,6 +39,7 @@
 #if defined(OCS_INCLUDE_AUDIO)
 #include <QAudioDeviceInfo>
 #include "audio/audioframegrabber.h"
+#include "audio/audioframeplayer.h"
 #endif
 
 HUMBLE_LOGGER(HL, "client.logic");
@@ -51,65 +54,116 @@ ConferenceVideoWindow* ConferenceVideoWindow::instance()
 }
 
 ///////////////////////////////////////////////////////////////////////
+// Local Helpers
+///////////////////////////////////////////////////////////////////////
+
+static QSharedPointer<QCamera> createCameraFromOptions(const ConferenceVideoWindow::Options& opts)
+{
+	auto cameraInfo = QCameraInfo::defaultCamera();
+	foreach (auto ci, QCameraInfo::availableCameras())
+	{
+		if (ci.deviceName() == opts.cameraDeviceId)
+		{
+			cameraInfo = ci;
+			break;
+		}
+	}
+	return QSharedPointer<QCamera>(new QCamera(cameraInfo));
+}
+
+#if defined(OCS_INCLUDE_AUDIO)
+static QAudioFormat createAudioFormat()
+{
+	QAudioFormat format;
+	format.setSampleRate(8000);
+	format.setChannelCount(1);
+	format.setSampleSize(16);
+	format.setCodec("audio/pcm");
+	format.setByteOrder(QAudioFormat::LittleEndian);
+	format.setSampleType(QAudioFormat::UnSignedInt);
+	return format;
+}
+
+static QSharedPointer<QAudioInput> createMicrophoneFromOptions(const ConferenceVideoWindow::Options& opts)
+{
+	auto info = QAudioDeviceInfo::defaultInputDevice();
+	foreach (auto item, QAudioDeviceInfo::availableDevices(QAudio::AudioInput))
+	{
+		if (item.deviceName() == opts.audioInputDeviceId)
+		{
+			info = item;
+			break;
+		}
+	}
+	auto format = createAudioFormat();
+	if (!info.isFormatSupported(format))
+	{
+		return QSharedPointer<QAudioInput>();
+	}
+	return QSharedPointer<QAudioInput>(new QAudioInput(info, format));
+}
+#endif
+
+///////////////////////////////////////////////////////////////////////
 
 ConferenceVideoWindow::ConferenceVideoWindow(const Options& opts, const QSharedPointer<NetworkClient>& nc, QWidget* parent, Qt::WindowFlags flags) :
 	QMainWindow(parent, flags),
-	d(new ConferenceVideoWindowPrivate(this))
+	_opts(opts),
+	_networkClient(nc),
+	_camera(),
+	_view(nullptr)
 {
 	if (!gFirstInstance)
 		gFirstInstance = this;
 
-	d->opts = opts;
-	d->nc = nc;
-
-	connect(d->nc.data(), &NetworkClient::error, this, &ConferenceVideoWindow::onError);
-	connect(d->nc.data(), &NetworkClient::serverError, this, &ConferenceVideoWindow::onServerError);
-	connect(d->nc.data(), &NetworkClient::clientJoinedChannel, this, &ConferenceVideoWindow::onClientJoinedChannel);
-	connect(d->nc.data(), &NetworkClient::clientLeftChannel, this, &ConferenceVideoWindow::onClientLeftChannel);
-	connect(d->nc.data(), &NetworkClient::clientDisconnected, this, &ConferenceVideoWindow::onClientDisconnected);
-	connect(d->nc.data(), &NetworkClient::newVideoFrame, this, &ConferenceVideoWindow::onNewVideoFrame);
+	connect(_networkClient.data(), &NetworkClient::error, this, &ConferenceVideoWindow::onError);
+	connect(_networkClient.data(), &NetworkClient::serverError, this, &ConferenceVideoWindow::onServerError);
+	connect(_networkClient.data(), &NetworkClient::clientJoinedChannel, this, &ConferenceVideoWindow::onClientJoinedChannel);
+	connect(_networkClient.data(), &NetworkClient::clientLeftChannel, this, &ConferenceVideoWindow::onClientLeftChannel);
+	connect(_networkClient.data(), &NetworkClient::clientDisconnected, this, &ConferenceVideoWindow::onClientDisconnected);
+	connect(_networkClient.data(), &NetworkClient::newVideoFrame, this, &ConferenceVideoWindow::onNewVideoFrame);
 
 	// Central view widget.
 	auto viewWidget = new TileViewWidget(this);
-	viewWidget->setClientListModel(d->nc->clientModel());
-	d->view = viewWidget;
+	viewWidget->setClientListModel(_networkClient->clientModel());
+	_view = viewWidget;
 	setCentralWidget(viewWidget);
 
 	// Create QCamera by device ID.
-	if (!d->opts.cameraDeviceId.isEmpty())
+	if (!_opts.cameraDeviceId.isEmpty())
 	{
-		d->camera = d->createCameraFromOptions();
-		viewWidget->setCamera(d->camera);
+		_camera = createCameraFromOptions(_opts);
+		viewWidget->setCamera(_camera);
 	}
 
 #if defined(OCS_INCLUDE_AUDIO)
 	// Create QAudioInput (microphone).
-	if (!d->opts.audioInputDeviceId.isEmpty())
+	if (!_opts.audioInputDeviceId.isEmpty())
 	{
-		d->audioInput = d->createMicrophoneFromOptions();
+		_audioInput = createMicrophoneFromOptions(_opts);
 
-		auto grabber = new AudioFrameGrabber(d->audioInput, this);
+		auto grabber = new AudioFrameGrabber(_audioInput, this);
 		QObject::connect(grabber, &AudioFrameGrabber::newFrame, [this](const PcmFrameRefPtr & f)
 		{
-			d->nc->sendAudioFrame(f);
+			_networkClient->sendAudioFrame(f);
 		});
 	}
 
 	// Create QAudioOutput (headphones).
 	if (true)
 	{
-		d->audioPlayer = QSharedPointer<AudioFramePlayer>(new AudioFramePlayer());
-		d->audioPlayer->setDeviceInfo(QAudioDeviceInfo::defaultOutputDevice());
-		d->audioPlayer->setFormat(d->createAudioFormat());
-		QObject::connect(d->nc.data(), &NetworkClient::newAudioFrame, [this](PcmFrameRefPtr f, int senderId)
+		_audioPlayer = QSharedPointer<AudioFramePlayer>(new AudioFramePlayer());
+		_audioPlayer->setDeviceInfo(QAudioDeviceInfo::defaultOutputDevice());
+		_audioPlayer->setFormat(createAudioFormat());
+		QObject::connect(_networkClient.data(), &NetworkClient::newAudioFrame, [this](PcmFrameRefPtr f, int senderId)
 		{
-			d->audioPlayer->add(f, senderId);
+			_audioPlayer->add(f, senderId);
 		});
 	}
 #endif
 
 	// Create initial tiles.
-	auto m = d->nc->clientModel();
+	auto m = _networkClient->clientModel();
 	for (auto i = 0; i < m->rowCount(); ++i)
 	{
 		auto c = m->data(m->index(i), ClientListModel::ClientEntityRole).value<ClientEntity>();
@@ -117,10 +171,10 @@ ConferenceVideoWindow::ConferenceVideoWindow(const Options& opts, const QSharedP
 	}
 
 	// Auto turn ON camera.
-	if (d->camera && d->opts.cameraAutoEnable)
+	if (_camera && _opts.cameraAutoEnable)
 	{
 		TileViewWidget* tvw = nullptr;
-		if ((tvw = dynamic_cast<TileViewWidget*>(d->view)) != nullptr)
+		if ((tvw = dynamic_cast<TileViewWidget*>(_view)) != nullptr)
 		{
 			tvw->setVideoEnabled(true);
 		}
@@ -128,10 +182,10 @@ ConferenceVideoWindow::ConferenceVideoWindow(const Options& opts, const QSharedP
 
 #if defined(OCS_INCLUDE_AUDIO)
 	// Auto turn ON microphone.
-	if (d->audioInput && d->opts.audioInputAutoEnable)
+	if (_audioInput && _opts.audioInputAutoEnable)
 	{
 		TileViewWidget* tvw = nullptr;
-		if ((tvw = dynamic_cast<TileViewWidget*>(d->view)) != nullptr)
+		if ((tvw = dynamic_cast<TileViewWidget*>(_view)) != nullptr)
 		{
 			tvw->setAudioInputEnabled(true);
 		}
@@ -150,42 +204,42 @@ ConferenceVideoWindow::~ConferenceVideoWindow()
 	{
 		gFirstInstance = nullptr;
 	}
-	if (d->nc)
+	if (_networkClient)
 	{
-		d->nc->disconnect(this);
+		_networkClient->disconnect(this);
 	}
-	if (d->view)
+	if (_view)
 	{
-		delete d->view;
+		delete _view;
 	}
-	if (d->camera)
+	if (_camera)
 	{
-		d->camera->stop();
+		_camera->stop();
 	}
 #if defined(OCS_INCLUDE_AUDIO)
-	if (d->audioInput)
+	if (_audioInput)
 	{
-		d->audioInput->stop();
+		_audioInput->stop();
 	}
 #endif
 }
 
 QSharedPointer<NetworkClient> ConferenceVideoWindow::networkClient()
 {
-	return d->nc;
+	return _networkClient;
 }
 
 #if defined(OCS_INCLUDE_AUDIO)
 QSharedPointer<QAudioInput> ConferenceVideoWindow::audioInput()
 {
-	return d->audioInput;
+	return _audioInput;
 }
 #endif
 
 void ConferenceVideoWindow::onError(QAbstractSocket::SocketError socketError)
 {
-	HL_INFO(HL, QString("Socket error (error=%1; message=%2)").arg(socketError).arg(d->nc->socket()->errorString()).toStdString());
-	showError(tr("Network socket error."), d->nc->socket()->errorString());
+	HL_INFO(HL, QString("Socket error (error=%1; message=%2)").arg(socketError).arg(_networkClient->socket()->errorString()).toStdString());
+	showError(tr("Network socket error."), _networkClient->socket()->errorString());
 }
 
 void ConferenceVideoWindow::onServerError(int code, const QString& message)
@@ -197,27 +251,27 @@ void ConferenceVideoWindow::onServerError(int code, const QString& message)
 void ConferenceVideoWindow::onClientJoinedChannel(const ClientEntity& client, const ChannelEntity& channel)
 {
 	HL_INFO(HL, QString("Client joined channel (client-id=%1; channel-id=%2)").arg(client.id).arg(channel.id).toStdString());
-	if (client.id != d->nc->clientEntity().id)
+	if (client.id != _networkClient->clientEntity().id)
 	{
-		d->view->addClient(client, channel);
+		_view->addClient(client, channel);
 	}
 }
 
 void ConferenceVideoWindow::onClientLeftChannel(const ClientEntity& client, const ChannelEntity& channel)
 {
 	HL_INFO(HL, QString("Client left channel (client-id=%1; channel-id=%2)").arg(client.id).arg(channel.id).toStdString());
-	d->view->removeClient(client, channel);
+	_view->removeClient(client, channel);
 }
 
 void ConferenceVideoWindow::onClientDisconnected(const ClientEntity& client)
 {
 	HL_INFO(HL, QString("Client disconnected (client-id=%1)").arg(client.id).toStdString());
-	d->view->removeClient(client, ChannelEntity());
+	_view->removeClient(client, ChannelEntity());
 }
 
 void ConferenceVideoWindow::onNewVideoFrame(YuvFrameRefPtr frame, int senderId)
 {
-	d->view->updateClientVideo(frame, senderId);
+	_view->updateClientVideo(frame, senderId);
 }
 
 void ConferenceVideoWindow::closeEvent(QCloseEvent* e)
@@ -255,53 +309,3 @@ void ConferenceVideoWindow::showError(const QString& shortText, const QString& l
 	box.setMinimumWidth(400);
 	box.exec();
 }
-
-///////////////////////////////////////////////////////////////////////
-// Private Impl
-///////////////////////////////////////////////////////////////////////
-
-ConferenceVideoWindowPrivate::ConferenceVideoWindowPrivate(ConferenceVideoWindow* o) :
-	QObject(o), owner(o), opts(), view(nullptr), cameraWidget(nullptr)
-{
-}
-
-ConferenceVideoWindowPrivate::~ConferenceVideoWindowPrivate()
-{
-}
-
-QSharedPointer<QCamera> ConferenceVideoWindowPrivate::createCameraFromOptions() const
-{
-	auto d = this;
-	auto cameraInfo = QCameraInfo::defaultCamera();
-	foreach (auto ci, QCameraInfo::availableCameras())
-	{
-		if (ci.deviceName() == d->opts.cameraDeviceId)
-		{
-			cameraInfo = ci;
-			break;
-		}
-	}
-	return QSharedPointer<QCamera>(new QCamera(cameraInfo));
-}
-
-#if defined(OCS_INCLUDE_AUDIO)
-QSharedPointer<QAudioInput> ConferenceVideoWindowPrivate::createMicrophoneFromOptions() const
-{
-	auto d = this;
-	auto info = QAudioDeviceInfo::defaultInputDevice();
-	foreach (auto item, QAudioDeviceInfo::availableDevices(QAudio::AudioInput))
-	{
-		if (item.deviceName() == d->opts.audioInputDeviceId)
-		{
-			info = item;
-			break;
-		}
-	}
-	auto format = d->createAudioFormat();
-	if (!info.isFormatSupported(format))
-	{
-		return QSharedPointer<QAudioInput>();
-	}
-	return QSharedPointer<QAudioInput>(new QAudioInput(info, format));
-}
-#endif

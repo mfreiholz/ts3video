@@ -24,7 +24,6 @@ set(headers
 
 set(qheaders
 	src/video/conferencevideowindow.h
-	src/video/conferencevideowindow_p.h
 	src/video/cameraframegrabber.h
 	src/video/clientcameravideowidget.h
 	src/video/remoteclientvideowidget.h
