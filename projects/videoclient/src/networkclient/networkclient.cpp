@@ -78,7 +78,9 @@ void NetworkClientPrivate::onAuthFinished()
 		d->mediaSocket = new MediaSocket(authtoken, this);
 		d->mediaSocket->connectToHost(d->corSocket->socket()->peerAddress(), d->corSocket->socket()->peerPort());
 		QObject::connect(d->mediaSocket, &MediaSocket::newVideoFrame, d->owner, &NetworkClient::newVideoFrame);
+#if defined(OCS_INCLUDE_AUDIO)
 		QObject::connect(d->mediaSocket, &MediaSocket::newAudioFrame, d->owner, &NetworkClient::newAudioFrame);
+#endif
 		QObject::connect(d->mediaSocket, &MediaSocket::networkUsageUpdated, d->owner, &NetworkClient::networkUsageUpdated);
 	}
 }
@@ -331,6 +333,7 @@ void NetworkClient::sendVideoFrame(const QImage& image)
 	d->mediaSocket->sendVideoFrame(image, d->clientEntity.id);
 }
 
+#if defined(OCS_INCLUDE_AUDIO)
 QCorReply* NetworkClient::enableAudioInputStream()
 {
 	REQUEST_PRECHECK
@@ -365,6 +368,7 @@ void NetworkClient::sendAudioFrame(const PcmFrameRefPtr& f)
 		return;
 	d->mediaSocket->sendAudioFrame(f, d->clientEntity.id);
 }
+#endif
 
 QCorReply* NetworkClient::authAsAdmin(const QString& password)
 {

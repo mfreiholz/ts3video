@@ -82,6 +82,7 @@ TileViewWidget::TileViewWidget(QWidget* parent, Qt::WindowFlags f) :
 	d->enableVideoToggleButton->setVisible(false);
 	QObject::connect(d->enableVideoToggleButton, &QPushButton::toggled, this, &TileViewWidget::setVideoEnabled);
 
+#if defined(OCS_INCLUDE_AUDIO)
 	d->enableAudioInputToggleButton = new QPushButton();
 	d->enableAudioInputToggleButton->setIcon(QIcon(":/ic_mic_grey600_48dp.png"));
 	d->enableAudioInputToggleButton->setIconSize(__sideBarIconSize);
@@ -89,6 +90,7 @@ TileViewWidget::TileViewWidget(QWidget* parent, Qt::WindowFlags f) :
 	d->enableAudioInputToggleButton->setFlat(true);
 	d->enableAudioInputToggleButton->setCheckable(true);
 	QObject::connect(d->enableAudioInputToggleButton, &QPushButton::toggled, this, &TileViewWidget::setAudioInputEnabled);
+#endif
 
 	d->zoomInButton = new QPushButton();
 	d->zoomInButton->setIcon(QIcon(":/ic_add_circle_outline_grey600_48dp.png"));
@@ -166,7 +168,9 @@ TileViewWidget::TileViewWidget(QWidget* parent, Qt::WindowFlags f) :
 	leftPanelLayout->setContentsMargins(0, 0, 0, 0);
 	leftPanelLayout->setSpacing(0);
 	leftPanelLayout->addWidget(d->enableVideoToggleButton);
+#if defined(OCS_INCLUDE_AUDIO)
 	leftPanelLayout->addWidget(d->enableAudioInputToggleButton);
+#endif
 	leftPanelLayout->addWidget(d->zoomInButton);
 	leftPanelLayout->addWidget(d->zoomOutButton);
 	leftPanelLayout->addWidget(d->userListButton);
@@ -402,6 +406,7 @@ void TileViewWidget::setVideoEnabled(bool b)
 	d->enableVideoToggleButton->setChecked(b);
 }
 
+#if defined(OCS_INCLUDE_AUDIO)
 void TileViewWidget::setAudioInputEnabled(bool b)
 {
 	auto nc = ConferenceVideoWindow::instance()->networkClient();
@@ -435,6 +440,7 @@ void TileViewWidget::setAudioInputEnabled(bool b)
 	}
 	d->enableAudioInputToggleButton->setChecked(b);
 }
+#endif
 
 void TileViewWidget::wheelEvent(QWheelEvent* e)
 {

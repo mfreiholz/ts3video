@@ -7,12 +7,15 @@
 #include <QHash>
 #include <QVariant>
 #include <QMainWindow>
-#include <QAudioInput>
 
 #include "videolib/src/ts3video.h"
 #include "videolib/src/yuvframe.h"
 
 #include "networkclient/networkclient.h"
+
+#if defined(OCS_INCLUDE_AUDIO)
+#include <QAudioInput>
+#endif
 
 class QWidget;
 class QProgressDialog;
@@ -35,6 +38,7 @@ public:
 		QString cameraDeviceId = QString();
 		bool cameraAutoEnable = false;
 
+#if defined(OCS_INCLUDE_AUDIO)
 		// The microphones device ID (audio-in).
 		QString audioInputDeviceId = QString();
 		bool audioInputAutoEnable = false;
@@ -42,6 +46,7 @@ public:
 		// The headphones device ID (audio-out).
 		QString audioOutputDeviceId = QString();
 		bool audioOutputAutoEnable = false;
+#endif
 	};
 
 	/*!
@@ -61,7 +66,10 @@ public:
 	ConferenceVideoWindow(const Options& opts, const QSharedPointer<NetworkClient>& nc, QWidget* parent, Qt::WindowFlags flags);
 	virtual ~ConferenceVideoWindow();
 	QSharedPointer<NetworkClient> networkClient();
+
+#if defined(OCS_INCLUDE_AUDIO)
 	QSharedPointer<QAudioInput> audioInput();
+#endif
 
 private slots:
 	void onError(QAbstractSocket::SocketError socketError);

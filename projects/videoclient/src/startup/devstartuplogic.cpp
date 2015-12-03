@@ -2,8 +2,11 @@
 #include "videolib/src/elws.h"
 #include "../networkclient/networkclient.h"
 #include <QCameraInfo>
-#include <QAudioDeviceInfo>
 #include <QHostAddress>
+
+#if defined(OCS_INCLUDE_AUDIO)
+#include <QAudioDevicieInfo>
+#endif
 
 DevStartupLogic::DevStartupLogic(QApplication* a) :
 	AbstractStartupLogic(a)
@@ -34,8 +37,10 @@ int DevStartupLogic::exec()
 				ConferenceVideoWindow::Options opts;
 				opts.cameraDeviceId = QCameraInfo::defaultCamera().deviceName();
 				opts.cameraAutoEnable = true;
+#if defined(OCS_INCLUDE_AUDIO)
 				opts.audioInputDeviceId = QAudioDeviceInfo::defaultInputDevice().deviceName();
 				opts.audioInputAutoEnable = true;
+#endif
 				auto w = new ConferenceVideoWindow(opts, nc, nullptr, 0);
 				w->show();
 			});

@@ -56,7 +56,9 @@ public:
 	QPushButton* zoomOutButton;
 	QPushButton* userListButton;
 	QPushButton* enableVideoToggleButton;
+#if defined(OCS_INCLUDE_AUDIO)
 	QPushButton* enableAudioInputToggleButton;
+#endif
 	QPushButton* hideLeftPanelButton;
 	QPushButton* showLeftPanelButton;
 	QLabel* userCountLabel;

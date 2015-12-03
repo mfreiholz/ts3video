@@ -94,6 +94,7 @@ static QString generateConferenceRoomPassword(const QString& uid)
 	# Commands
 
 	--mode ts3video --address teamspeak.insanefactory.com --port 9987 --channelid 1 --clientdbid 6 --username "Manuel"
+	--mode ts3video --address 127.0.0.1 --port 9987 --channelid 1 --username "Manuel"
 */
 Ts3VideoStartupLogic::Ts3VideoStartupLogic(QApplication* a) :
 	QDialog(nullptr), AbstractStartupLogic(a)

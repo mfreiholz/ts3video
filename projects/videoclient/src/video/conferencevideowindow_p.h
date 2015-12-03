@@ -3,13 +3,16 @@
 
 #include <QSharedPointer>
 #include <QCamera>
+
+#include "conferencevideowindow.h"
+#include "networkclient/networkclient.h"
+
+#if defined(OCS_INCLUDE_AUDIO)
 #include <QAudioInput>
 #include <QAudioOutput>
 #include <QAudioFormat>
-
-#include "conferencevideowindow.h"
 #include "audio/audioframeplayer.h"
-#include "networkclient/networkclient.h"
+#endif
 
 class ViewBase;
 class ClientCameraVideoWidget;
@@ -22,6 +25,8 @@ public:
 	ConferenceVideoWindowPrivate(ConferenceVideoWindow* o);
 	~ConferenceVideoWindowPrivate();
 	QSharedPointer<QCamera> createCameraFromOptions() const;
+
+#if defined(OCS_INCLUDE_AUDIO)
 	QSharedPointer<QAudioInput> createMicrophoneFromOptions() const;
 
 	QAudioFormat createAudioFormat() const
@@ -35,15 +40,19 @@ public:
 		format.setSampleType(QAudioFormat::UnSignedInt);
 		return format;
 	}
+#endif
 
 public:
 	ConferenceVideoWindow* owner;
 	ConferenceVideoWindow::Options opts;
 	QSharedPointer<NetworkClient> nc;
 	QSharedPointer<QCamera> camera;
+
+#if defined(OCS_INCLUDE_AUDIO)
 	QSharedPointer<QAudioInput> audioInput;
 	QSharedPointer<QAudioOutput> audioOutput;
 	QSharedPointer<AudioFramePlayer> audioPlayer;
+#endif
 
 	// Direct GUI elements.
 	ViewBase* view; ///< Central view to display all video streams.

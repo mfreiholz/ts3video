@@ -56,6 +56,7 @@ MediaSocket::MediaSocket(const QString& token, QObject* parent) :
 		connect(d->videoDecodingThread, &VideoDecodingThread::decoded, this, &MediaSocket::newVideoFrame);
 	}
 
+#if defined(OCS_INCLUDE_AUDIO)
 	// Audio
 	if (true)
 	{
@@ -71,6 +72,7 @@ MediaSocket::MediaSocket(const QString& token, QObject* parent) :
 		d->audioDecodingThread->start();
 		connect(d->audioDecodingThread, &AudioDecodingThread::decoded, this, &MediaSocket::newAudioFrame);
 	}
+#endif
 
 	// Network usage calculation.
 	auto bandwidthTimer = new QTimer(this);
@@ -115,6 +117,7 @@ MediaSocket::~MediaSocket()
 		delete d->videoDecodingThread;
 	}
 
+#if defined(OCS_INCLUDE_AUDIO)
 	if (d->audioEncodingThread)
 	{
 		d->audioEncodingThread->stop();
@@ -128,6 +131,7 @@ MediaSocket::~MediaSocket()
 		d->audioDecodingThread->wait();
 		delete d->audioDecodingThread;
 	}
+#endif
 }
 
 bool MediaSocket::isAuthenticated() const
@@ -159,6 +163,7 @@ void MediaSocket::sendVideoFrame(const QImage& image, int senderId)
 	d->videoEncodingThread->enqueue(image, senderId);
 }
 
+#if defined(OCS_INCLUDE_AUDIO)
 void MediaSocket::sendAudioFrame(const PcmFrameRefPtr& f, int senderId)
 {
 	if (!d->audioEncodingThread || !d->audioEncodingThread->isRunning())
@@ -168,6 +173,7 @@ void MediaSocket::sendAudioFrame(const PcmFrameRefPtr& f, int senderId)
 	}
 	d->audioEncodingThread->enqueue(f, senderId);
 }
+#endif
 
 void MediaSocket::sendKeepAliveDatagram()
 {
@@ -295,6 +301,7 @@ void MediaSocket::sendVideoFrameRecoveryDatagram(quint64 frameId_, quint32 fromS
 		d->networkUsage.bytesWritten += written;
 }
 
+#if defined(OCS_INCLUDE_AUDIO)
 void MediaSocket::sendAudioFrame(const QByteArray& f, quint64 fid, quint32 sid)
 {
 	HL_TRACE(HL, QString("Send audio frame datagram (frame-size=%1; frame-id=%2; sender-id=%3)").arg(f.size()).arg(fid).arg(sid).toStdString());
@@ -340,6 +347,7 @@ void MediaSocket::sendAudioFrame(const QByteArray& f, quint64 fid, quint32 sid)
 	}
 	UDP::AudioFrameDatagram::freeData(datagrams, datagramsLength);
 }
+#endif
 
 void MediaSocket::timerEvent(QTimerEvent* ev)
 {
@@ -480,6 +488,7 @@ void MediaSocket::onReadyRead()
 			d->videoEncodingThread->enqueueRecovery();
 			break;
 		}
+#if defined(OCS_INCLUDE_AUDIO)
 		//
 		// AUDIO
 		//
@@ -537,6 +546,7 @@ void MediaSocket::onReadyRead()
 			//}
 			break;
 		}
+#endif
 
 		} // switch (type)
 	}

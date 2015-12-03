@@ -3,6 +3,7 @@ project(videoclient)
 cmake_policy(SET CMP0020 NEW)
 
 option(IncludeOpenGLSupport "IncludeOpenGLSupport" ON)
+option(IncludeAudioSupport "IncludeAudioSupport" OFF)
 
 # Qt5
 find_package(Qt5Core REQUIRED)
@@ -40,24 +41,17 @@ set(qheaders
 	src/hintoverlaywidget.h
 	src/hintoverlaywidget_p.h
 	src/proxysettingswidget.h
-	src/audio/audioframegrabber.h
-	src/audio/audioframeplayer.h
 	src/networkclient/networkclient.h
 	src/networkclient/networkclient_p.h
 	src/networkclient/mediasocket.h
 	src/networkclient/mediasocket_p.h
 	src/networkclient/mediasocketthread.h
 	src/networkclient/mediasocketthread_p.h
-	src/networkclient/audioencodingthread.h
-	src/networkclient/audiodecodingthread.h
-	src/networkclient/audioudpdecoder.h
 	src/networkclient/videoencodingthread.h
 	src/networkclient/videodecodingthread.h
 	src/networkclient/udpvideoframedecoder.h
 	src/networkclient/vp8encoder.h
 	src/networkclient/vp8decoder.h
-	src/networkclient/opusencoder.h
-	src/networkclient/opusdecoder.h
 	src/networkclient/clientlistmodel.h
 	src/networkclient/clientlistmodel_p.h
 	src/ts3video/ts3videostartuplogic.h
@@ -83,21 +77,14 @@ set(sources
 	src/movablewidgetcontainer.cpp
 	src/hintoverlaywidget.cpp
 	src/proxysettingswidget.cpp
-	src/audio/audioframegrabber.cpp
-	src/audio/audioframeplayer.cpp
 	src/networkclient/networkclient.cpp
 	src/networkclient/mediasocket.cpp
 	src/networkclient/mediasocketthread.cpp
-	src/networkclient/audioencodingthread.cpp
-	src/networkclient/audiodecodingthread.cpp
-	src/networkclient/audioudpdecoder.cpp
 	src/networkclient/videoencodingthread.cpp
 	src/networkclient/videodecodingthread.cpp
 	src/networkclient/udpvideoframedecoder.cpp
 	src/networkclient/vp8encoder.cpp
 	src/networkclient/vp8decoder.cpp
-	src/networkclient/opusencoder.cpp
-	src/networkclient/opusdecoder.cpp
 	src/networkclient/clientlistmodel.cpp
 	src/ts3video/ts3videostartuplogic.cpp
 	src/ts3video/ts3videoentities.cpp
@@ -130,6 +117,26 @@ if(IncludeOpenGLSupport)
 	list(APPEND qheaders src/video/opengl3/glvideowidget.h)
 	list(APPEND headers src/video/opengl3/glvideowidget_p.h)
 	list(APPEND sources src/video/opengl3/glvideowidget.cpp)
+endif()
+
+if(IncludeAudioSupport)
+	add_definitions(-DOCS_INCLUDE_AUDIO)
+
+	list(APPEND qheaders src/audio/audioframegrabber.h)
+	list(APPEND qheaders src/audio/audioframeplayer.h)
+	list(APPEND qheaders src/networkclient/audioencodingthread.h)
+	list(APPEND qheaders src/networkclient/audiodecodingthread.h)
+	list(APPEND qheaders src/networkclient/audioudpdecoder.h)
+	list(APPEND qheaders src/networkclient/opusencoder.h)
+	list(APPEND qheaders src/networkclient/opusdecoder.h)
+
+	list(APPEND sources src/audio/audioframegrabber.cpp)
+	list(APPEND sources src/audio/audioframeplayer.cpp)
+	list(APPEND sources src/networkclient/audioencodingthread.cpp)
+	list(APPEND sources src/networkclient/audiodecodingthread.cpp)
+	list(APPEND sources src/networkclient/audioudpdecoder.cpp)
+	list(APPEND sources src/networkclient/opusencoder.cpp)
+	list(APPEND sources src/networkclient/opusdecoder.cpp)
 endif()
 
 if(WIN32)
@@ -186,7 +193,6 @@ target_link_libraries(
 	Qt5::OpenGL
 	Qt5::Concurrent
 	${vpx_LIBRARIES}
-	${opus_LIBRARIES}
 	${humblelogging_LIBRARIES}
 	qtasync
 	qcorlib
@@ -196,6 +202,10 @@ target_link_libraries(
 
 if(IncludeOpenGLSupport)
 	target_link_libraries(${PROJECT_NAME} opengl32) # TODO This shouldn't be here!
+endif()
+
+if(IncludeAudioSupport)
+	target_link_libraries(${PROJECT_NAME} ${opus_LIBRARIES})
 endif()
 
 set_target_properties(${PROJECT_NAME}

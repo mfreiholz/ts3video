@@ -8,7 +8,6 @@
 #include <QMessageBox>
 #include <QProgressDialog>
 #include <QCameraInfo>
-#include <QAudioDeviceInfo>
 #include <QHostInfo>
 #include <QtConcurrent>
 #include <QFuture>
@@ -29,12 +28,16 @@
 #include "networkusageentity.h"
 #include "jsonprotocolhelper.h"
 
-#include "audio/audioframegrabber.h"
 #include "networkclient/clientlistmodel.h"
 #include "util/qwidgetutil.h"
 #include "clientcameravideowidget.h"
 #include "remoteclientvideowidget.h"
 #include "tileviewwidget.h"
+
+#if defined(OCS_INCLUDE_AUDIO)
+#include <QAudioDeviceInfo>
+#include "audio/audioframegrabber.h"
+#endif
 
 HUMBLE_LOGGER(HL, "client.logic");
 
@@ -79,6 +82,7 @@ ConferenceVideoWindow::ConferenceVideoWindow(const Options& opts, const QSharedP
 		viewWidget->setCamera(d->camera);
 	}
 
+#if defined(OCS_INCLUDE_AUDIO)
 	// Create QAudioInput (microphone).
 	if (!d->opts.audioInputDeviceId.isEmpty())
 	{
@@ -102,6 +106,7 @@ ConferenceVideoWindow::ConferenceVideoWindow(const Options& opts, const QSharedP
 			d->audioPlayer->add(f, senderId);
 		});
 	}
+#endif
 
 	// Create initial tiles.
 	auto m = d->nc->clientModel();
@@ -121,6 +126,7 @@ ConferenceVideoWindow::ConferenceVideoWindow(const Options& opts, const QSharedP
 		}
 	}
 
+#if defined(OCS_INCLUDE_AUDIO)
 	// Auto turn ON microphone.
 	if (d->audioInput && d->opts.audioInputAutoEnable)
 	{
@@ -130,6 +136,7 @@ ConferenceVideoWindow::ConferenceVideoWindow(const Options& opts, const QSharedP
 			tvw->setAudioInputEnabled(true);
 		}
 	}
+#endif
 
 	QWidgetUtil::resizeWidgetPerCent(this, 75.0, 75.0);
 
@@ -155,10 +162,12 @@ ConferenceVideoWindow::~ConferenceVideoWindow()
 	{
 		d->camera->stop();
 	}
+#if defined(OCS_INCLUDE_AUDIO)
 	if (d->audioInput)
 	{
 		d->audioInput->stop();
 	}
+#endif
 }
 
 QSharedPointer<NetworkClient> ConferenceVideoWindow::networkClient()
@@ -166,10 +175,12 @@ QSharedPointer<NetworkClient> ConferenceVideoWindow::networkClient()
 	return d->nc;
 }
 
+#if defined(OCS_INCLUDE_AUDIO)
 QSharedPointer<QAudioInput> ConferenceVideoWindow::audioInput()
 {
 	return d->audioInput;
 }
+#endif
 
 void ConferenceVideoWindow::onError(QAbstractSocket::SocketError socketError)
 {
@@ -273,6 +284,7 @@ QSharedPointer<QCamera> ConferenceVideoWindowPrivate::createCameraFromOptions() 
 	return QSharedPointer<QCamera>(new QCamera(cameraInfo));
 }
 
+#if defined(OCS_INCLUDE_AUDIO)
 QSharedPointer<QAudioInput> ConferenceVideoWindowPrivate::createMicrophoneFromOptions() const
 {
 	auto d = this;
@@ -292,3 +304,4 @@ QSharedPointer<QAudioInput> ConferenceVideoWindowPrivate::createMicrophoneFromOp
 	}
 	return QSharedPointer<QAudioInput>(new QAudioInput(info, format));
 }
+#endif

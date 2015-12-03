@@ -8,9 +8,11 @@
 #include "videoencodingthread.h"
 #include "videodecodingthread.h"
 
+#if defined(OCS_INCLUDE_AUDIO)
 #include "audioencodingthread.h"
 #include "audiodecodingthread.h"
 #include "audioudpdecoder.h"
+#endif
 
 class MediaSocketPrivate : public QObject
 {
@@ -25,8 +27,10 @@ public:
 		videoEncodingThread(new VideoEncodingThread(this)),
 		lastFrameRequestTimestamp(0),
 		videoDecodingThread(new VideoDecodingThread(this)),
+#if defined(OCS_INCLUDE_AUDIO)
 		audioEncodingThread(new AudioEncodingThread(this)),
 		audioDecodingThread(new AudioDecodingThread(this)),
+#endif
 		networkUsage(),
 		networkUsageHelper(networkUsage)
 	{}
@@ -49,6 +53,7 @@ public:
 	QHash<int, VideoFrameUdpDecoder*> videoFrameDatagramDecoders;  ///< Maps client-id to it's decoder.
 	VideoDecodingThread* videoDecodingThread;
 
+#if defined(OCS_INCLUDE_AUDIO)
 	// AUDIO
 	// Encoding
 	AudioEncodingThread* audioEncodingThread;
@@ -56,6 +61,7 @@ public:
 	// Decoding
 	QHash<int, AudioUdpDecoder*> audioFrameDatagramDecoders;
 	AudioDecodingThread* audioDecodingThread;
+#endif
 
 	// STATISTICS
 

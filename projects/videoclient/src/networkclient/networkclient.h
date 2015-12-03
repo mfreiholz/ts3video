@@ -103,6 +103,7 @@ public:
 	*/
 	void sendVideoFrame(const QImage& image);
 
+#if defined(OCS_INCLUDE_AUDIO)
 	/*!
 		Enables/disables sending of audio-input data to server (microphone).
 		Requires an authenticated connection.
@@ -119,6 +120,7 @@ public:
 		\param f A single raw audio frame.
 	*/
 	void sendAudioFrame(const PcmFrameRefPtr& f);
+#endif
 
 	/*!
 	    Tries to authorize the client as administrator.
@@ -152,7 +154,10 @@ signals:
 	void clientKicked(const ClientEntity& client);
 	void clientDisconnected(const ClientEntity& client);
 	void newVideoFrame(YuvFrameRefPtr frame, int senderId);
+
+#if defined(OCS_INCLUDE_AUDIO)
 	void newAudioFrame(PcmFrameRefPtr frame, int senderId);
+#endif
 
 	// Periodically updated information to display.
 	void networkUsageUpdated(const NetworkUsageEntity& networkUsage);
