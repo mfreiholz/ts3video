@@ -14,6 +14,7 @@
 #include <QFutureWatcher>
 #include <QWeakPointer>
 #include <QHostAddress>
+#include <QSplitter>
 
 #include <QtMultimedia/QCamera>
 
@@ -35,6 +36,8 @@
 #include "clientcameravideowidget.h"
 #include "remoteclientvideowidget.h"
 #include "tileviewwidget.h"
+
+#include "video/conferencevideowindowsidebar.h"
 
 #if defined(OCS_INCLUDE_AUDIO)
 #include <QAudioDeviceInfo>
@@ -111,6 +114,7 @@ ConferenceVideoWindow::ConferenceVideoWindow(const Options& opts, const QSharedP
 	_opts(opts),
 	_networkClient(nc),
 	_camera(),
+	_sidebar(nullptr),
 	_view(nullptr)
 {
 	if (!gFirstInstance)
@@ -123,11 +127,20 @@ ConferenceVideoWindow::ConferenceVideoWindow(const Options& opts, const QSharedP
 	connect(_networkClient.data(), &NetworkClient::clientDisconnected, this, &ConferenceVideoWindow::onClientDisconnected);
 	connect(_networkClient.data(), &NetworkClient::newVideoFrame, this, &ConferenceVideoWindow::onNewVideoFrame);
 
+	// Central container widget
+	auto mainSplitter = new QSplitter();
+	mainSplitter->setChildrenCollapsible(false);
+	setCentralWidget(mainSplitter);
+
+	// Sidebar with actions.
+	_sidebar = new ConferenceVideoWindowSidebar(this);
+	mainSplitter->addWidget(_sidebar);
+
 	// Central view widget.
 	auto viewWidget = new TileViewWidget(this);
 	viewWidget->setClientListModel(_networkClient->clientModel());
 	_view = viewWidget;
-	setCentralWidget(viewWidget);
+	mainSplitter->addWidget(viewWidget);
 
 	// Create QCamera by device ID.
 	if (!_opts.cameraDeviceId.isEmpty())
@@ -224,7 +237,7 @@ ConferenceVideoWindow::~ConferenceVideoWindow()
 #endif
 }
 
-QSharedPointer<NetworkClient> ConferenceVideoWindow::networkClient()
+QSharedPointer<NetworkClient> ConferenceVideoWindow::networkClient() const
 {
 	return _networkClient;
 }

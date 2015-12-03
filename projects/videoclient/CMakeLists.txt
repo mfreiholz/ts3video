@@ -24,6 +24,7 @@ set(headers
 
 set(qheaders
 	src/video/conferencevideowindow.h
+	src/video/conferencevideowindowsidebar.h
 	src/video/cameraframegrabber.h
 	src/video/clientcameravideowidget.h
 	src/video/remoteclientvideowidget.h
@@ -61,6 +62,7 @@ set(qheaders
 set(sources
 	src/main.cpp
 	src/video/conferencevideowindow.cpp
+	src/video/conferencevideowindowsidebar.cpp
 	src/video/cameraframegrabber.cpp
 	src/video/clientcameravideowidget.cpp
 	src/video/remoteclientvideowidget.cpp

@@ -22,6 +22,7 @@
 class QWidget;
 class QProgressDialog;
 class QCamera;
+class ConferenceVideoWindowSidebar;
 class ViewBase;
 class RemoteClientVideoWidget;
 
@@ -64,7 +65,7 @@ public:
 public:
 	ConferenceVideoWindow(const Options& opts, const QSharedPointer<NetworkClient>& nc, QWidget* parent, Qt::WindowFlags flags);
 	virtual ~ConferenceVideoWindow();
-	QSharedPointer<NetworkClient> networkClient();
+	QSharedPointer<NetworkClient> networkClient() const;
 
 #if defined(OCS_INCLUDE_AUDIO)
 	QSharedPointer<QAudioInput> audioInput();
@@ -98,6 +99,7 @@ private:
 #endif
 
 	// GUI stuff.
+	ConferenceVideoWindowSidebar* _sidebar;
 	ViewBase* _view;                                     ///< Central view to display all video streams.
 };
 
