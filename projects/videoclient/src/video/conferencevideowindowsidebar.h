@@ -3,6 +3,8 @@
 
 #include <QtWidgets/QFrame>
 
+#include <QtMultimedia/QCamera>
+
 class ConferenceVideoWindow;
 class QPushButton;
 class QLabel;
@@ -14,6 +16,15 @@ class ConferenceVideoWindowSidebar : public QFrame
 public:
 	ConferenceVideoWindowSidebar(ConferenceVideoWindow* parent);
 
+public slots:
+	void setVideoEnabled(bool b);
+
+protected:
+	void setupCamera();
+
+protected slots:
+	void onCameraStatusChanged(QCamera::Status s);
+
 private:
 	ConferenceVideoWindow* _window;
 
@@ -22,11 +33,13 @@ private:
 #if defined(OCS_INCLUDE_AUDIO)
 	QPushButton* _enableAudioInputToggleButton;
 #endif
-	QPushButton* _zoomInButton;
-	QPushButton* _zoomOutButton;
 	QPushButton* _userListButton;
+	
+	// Visibility control.
 	QPushButton* _hideLeftPanelButton;
 	QPushButton* _showLeftPanelButton;
+	bool _panelVisible;
+
 	QPushButton* _adminAuthButton;
 	QPushButton* _aboutButton;
 

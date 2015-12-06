@@ -13,20 +13,25 @@
 #include "videolib/src/networkusageentity.h"
 
 #include "video/conferencevideowindow.h"
+#include "video/userlistwidget.h"
 
+#include "adminauthwidget.h"
 #include "aboutwidget.h"
+#include "hintoverlaywidget.h"
 
 #include "networkclient/networkclient.h"
+#include "networkclient/clientlistmodel.h"
 
 // Static Helpers /////////////////////////////////////////////////////
 
-static QSize  __sideBarIconSize(52, 52);
+static QSize __sideBarIconSize(52, 52);
 
 ///////////////////////////////////////////////////////////////////////
 
 ConferenceVideoWindowSidebar::ConferenceVideoWindowSidebar(ConferenceVideoWindow* parent) :
 	QFrame(parent),
-	_window(parent)
+	_window(parent),
+	_panelVisible(true)
 {
 	auto nc = _window->networkClient();
 
@@ -35,76 +40,124 @@ ConferenceVideoWindowSidebar::ConferenceVideoWindowSidebar(ConferenceVideoWindow
 	mainLayout->setSpacing(0);
 	setLayout(mainLayout);
 
-	_enableVideoToggleButton = new QPushButton();
-	_enableVideoToggleButton->setIcon(QIcon(":/ic_videocam_grey600_48dp.png"));
-	_enableVideoToggleButton->setIconSize(__sideBarIconSize);
-	_enableVideoToggleButton->setToolTip(tr("Start/stop video."));
-	_enableVideoToggleButton->setFlat(true);
-	_enableVideoToggleButton->setCheckable(true);
-	_enableVideoToggleButton->setVisible(false);
-	//QObject::connect(_enableVideoToggleButton, &QPushButton::toggled, this, &TileViewWidget::setVideoEnabled);
-	mainLayout->addWidget(_enableVideoToggleButton);
+	// Video control
+	if (true)
+	{
+		_enableVideoToggleButton = new QPushButton();
+		_enableVideoToggleButton->setIcon(QIcon(":/ic_videocam_grey600_48dp.png"));
+		_enableVideoToggleButton->setIconSize(__sideBarIconSize * logicalDpiX());
+		_enableVideoToggleButton->setToolTip(tr("Start/stop video."));
+		_enableVideoToggleButton->setFlat(true);
+		_enableVideoToggleButton->setCheckable(true);
+		_enableVideoToggleButton->setVisible(!_window->camera().isNull());
+		mainLayout->addWidget(_enableVideoToggleButton);
+		
+		QObject::connect(_enableVideoToggleButton, &QPushButton::toggled, this, &ConferenceVideoWindowSidebar::setVideoEnabled);
+		QObject::connect(_window, &ConferenceVideoWindow::cameraChanged, [this]()
+		{
+			_enableVideoToggleButton->setVisible(!_window->camera().isNull());
+		});
+	}
 
 #if defined(OCS_INCLUDE_AUDIO)
-	_enableAudioInputToggleButton = new QPushButton();
-	_enableAudioInputToggleButton->setIcon(QIcon(":/ic_mic_grey600_48dp.png"));
-	_enableAudioInputToggleButton->setIconSize(__sideBarIconSize);
-	_enableAudioInputToggleButton->setToolTip(tr("Start/stop microphone."));
-	_enableAudioInputToggleButton->setFlat(true);
-	_enableAudioInputToggleButton->setCheckable(true);
-	//QObject::connect(_enableAudioInputToggleButton, &QPushButton::toggled, this, &TileViewWidget::setAudioInputEnabled);
-	mainLayout->addWidget(_enableAudioInputToggleButton);
+	// Audio control
+	if (true)
+	{
+		_enableAudioInputToggleButton = new QPushButton();
+		_enableAudioInputToggleButton->setIcon(QIcon(":/ic_mic_grey600_48dp.png"));
+		_enableAudioInputToggleButton->setIconSize(__sideBarIconSize);
+		_enableAudioInputToggleButton->setToolTip(tr("Start/stop microphone."));
+		_enableAudioInputToggleButton->setFlat(true);
+		_enableAudioInputToggleButton->setCheckable(true);
+		//QObject::connect(_enableAudioInputToggleButton, &QPushButton::toggled, this, &TileViewWidget::setAudioInputEnabled);
+		mainLayout->addWidget(_enableAudioInputToggleButton);
+	}
 #endif
 
-	_zoomInButton = new QPushButton();
-	_zoomInButton->setIcon(QIcon(":/ic_add_circle_outline_grey600_48dp.png"));
-	_zoomInButton->setIconSize(__sideBarIconSize);
-	_zoomInButton->setFlat(true);
-	_zoomInButton->setToolTip(tr("Zoom-in video (CTRL+Mousewheel-Up)"));
-	mainLayout->addWidget(_zoomInButton);
+	// User list control
+	if (true)
+	{
+		_userListButton = new QPushButton();
+		_userListButton->setIcon(QIcon(":/ic_supervisor_account_grey600_48dp.png"));
+		_userListButton->setIconSize(__sideBarIconSize);
+		_userListButton->setFlat(true);
+		_userListButton->setToolTip(tr("Participants"));
+		mainLayout->addWidget(_userListButton);
 
-	_zoomOutButton = new QPushButton();
-	_zoomOutButton->setIcon(QIcon(":/ic_remove_circle_outline_grey600_48dp.png"));
-	_zoomOutButton->setIconSize(__sideBarIconSize);
-	_zoomOutButton->setFlat(true);
-	_zoomOutButton->setToolTip(tr("Zoom-out video (CTRL+Mousewheel-Down)"));
-	mainLayout->addWidget(_zoomOutButton);
+		// User count label over user list toggle button.
+		auto userCountLabel = new QLabel(_userListButton);
+		userCountLabel->setObjectName("userCount");
+		userCountLabel->setText(QString::number(nc->clientModel()->rowCount()));
+		_userListButton->stackUnder(userCountLabel);
 
-	_userListButton = new QPushButton();
-	_userListButton->setIcon(QIcon(":/ic_supervisor_account_grey600_48dp.png"));
-	_userListButton->setIconSize(__sideBarIconSize);
-	_userListButton->setFlat(true);
-	_userListButton->setToolTip(tr("User list"));
-	_userListButton->setCheckable(true);
-	mainLayout->addWidget(_userListButton);
+		QObject::connect(_userListButton, &QPushButton::clicked, [this]()
+		{
+			auto w = new UserListWidget(_window, _window);
+			w->setAttribute(Qt::WA_DeleteOnClose, true);
+			w->show();
+		});
+	}
 
 	mainLayout->addStretch(1);
 
-	_hideLeftPanelButton = new QPushButton();
-	_hideLeftPanelButton->setIcon(QIcon(":/ic_chevron_left_grey600_48dp.png"));
-	_hideLeftPanelButton->setIconSize(__sideBarIconSize / 2);
-	_hideLeftPanelButton->setToolTip(tr("Hide action bar"));
-	_hideLeftPanelButton->setFlat(true);
-	mainLayout->addWidget(_hideLeftPanelButton);
+	// Show/hide sidebar control
+	if (true)
+	{
+		_hideLeftPanelButton = new QPushButton();
+		_hideLeftPanelButton->setIcon(QIcon(":/ic_chevron_left_grey600_48dp.png"));
+		_hideLeftPanelButton->setIconSize(__sideBarIconSize / 2);
+		_hideLeftPanelButton->setToolTip(tr("Hide action bar"));
+		_hideLeftPanelButton->setFlat(true);
+		_hideLeftPanelButton->setVisible(true);
+		mainLayout->addWidget(_hideLeftPanelButton);
 
-	_showLeftPanelButton = new QPushButton(parentWidget());
-	_showLeftPanelButton->setObjectName("showLeftPanelButton");
-	_showLeftPanelButton->setIcon(QIcon(":/ic_chevron_right_grey600_48dp.png"));
-	_showLeftPanelButton->setIconSize(__sideBarIconSize / 2);
-	_showLeftPanelButton->setToolTip(tr("Show action bar"));
-	_showLeftPanelButton->setFlat(true);
-	_showLeftPanelButton->setVisible(!isVisible());
-	_showLeftPanelButton->resize(_showLeftPanelButton->iconSize());
-	_showLeftPanelButton->move(QPoint(0, 0));
+		_showLeftPanelButton = new QPushButton(parentWidget());
+		_showLeftPanelButton->setObjectName("showLeftPanelButton");
+		_showLeftPanelButton->setIcon(QIcon(":/ic_chevron_right_grey600_48dp.png"));
+		_showLeftPanelButton->setIconSize(__sideBarIconSize / 2);
+		_showLeftPanelButton->setToolTip(tr("Show action bar"));
+		_showLeftPanelButton->setFlat(true);
+		_showLeftPanelButton->setVisible(!_panelVisible);
+		_showLeftPanelButton->resize(_showLeftPanelButton->iconSize());
+		_showLeftPanelButton->move(QPoint(0, 0));
 
-	_adminAuthButton = new QPushButton();
-	_adminAuthButton->setIcon(QIcon(":/ic_lock_grey600_48dp.png"));
-	_adminAuthButton->setIconSize(__sideBarIconSize / 2);
-	_adminAuthButton->setToolTip(tr("Login as admin"));
-	_adminAuthButton->setFlat(true);
-	mainLayout->addWidget(_adminAuthButton);
+		QObject::connect(_hideLeftPanelButton, &QPushButton::clicked, [this]()
+		{
+			this->setVisible(false);
+			_showLeftPanelButton->setVisible(true);
+			//d->tilesLayout->setContentsMargins(d->showLeftPanelButton->width() - 8, 0, 0, 0);
+			_panelVisible = false;
+		});
+		QObject::connect(_showLeftPanelButton, &QPushButton::clicked, [this]()
+		{
+			this->setVisible(true);
+			_showLeftPanelButton->setVisible(false);
+			//d->tilesLayout->setContentsMargins(0, 0, 0, 0);
+			_panelVisible = true;
+		});
+	}
 
-	// Download and upload indicators.
+	// Admin login control
+	if (true)
+	{
+		_adminAuthButton = new QPushButton();
+		_adminAuthButton->setIcon(QIcon(":/ic_lock_grey600_48dp.png"));
+		_adminAuthButton->setIconSize(__sideBarIconSize / 2);
+		_adminAuthButton->setToolTip(tr("Login as admin"));
+		_adminAuthButton->setFlat(true);
+		mainLayout->addWidget(_adminAuthButton);
+
+		QObject::connect(_adminAuthButton, &QPushButton::clicked, [this, nc]()
+		{
+			auto w = new AdminAuthWidget(nc, this);
+			w->setModal(true);
+			w->exec();
+			if (nc->isAdmin())
+				_adminAuthButton->setVisible(false);
+		});
+	}
+
+	// Network usage statistics
 	if (true)
 	{
 		auto bandwidthContainer = new QWidget();
@@ -146,4 +199,90 @@ ConferenceVideoWindowSidebar::ConferenceVideoWindowSidebar(ConferenceVideoWindow
 		about->setWindowFlags(Qt::Dialog);
 		about->show();
 	});
+}
+
+void ConferenceVideoWindowSidebar::setVideoEnabled(bool b)
+{
+	auto nc = _window->networkClient();
+	auto cam = _window->camera();
+	if (cam)
+	{
+		if (b)
+		{
+			if (cam->state() != QCamera::ActiveState)
+			{
+				cam->start();
+			}
+			if (nc)
+			{
+				auto reply = nc->enableVideoStream();
+				QCORREPLY_AUTODELETE(reply);
+			}
+		}
+		else
+		{
+			if (cam->state() == QCamera::ActiveState)
+			{
+				cam->stop();
+			}
+			if (nc)
+			{
+				auto reply = nc->disableVideoStream();
+				QCORREPLY_AUTODELETE(reply);
+			}
+		}
+	}
+	_enableVideoToggleButton->setChecked(b);
+}
+
+void ConferenceVideoWindowSidebar::setupCamera()
+{
+	// Reset old references
+	auto cam = _window->camera();
+	if (cam)
+	{
+		cam->disconnect(this);
+	}
+
+	// Setup new camera.
+	cam = _window->camera();
+	if (cam)
+	{
+		QObject::connect(cam.data(), &QCamera::statusChanged, this, &ConferenceVideoWindowSidebar::onCameraStatusChanged);
+	}
+}
+
+void ConferenceVideoWindowSidebar::onCameraStatusChanged(QCamera::Status s)
+{
+	switch (s)
+	{
+	case QCamera::ActiveStatus:
+		_enableVideoToggleButton->setEnabled(true);
+		break;
+	case QCamera::StartingStatus:
+		_enableVideoToggleButton->setEnabled(false);
+		break;
+	case QCamera::StoppingStatus:
+		_enableVideoToggleButton->setEnabled(false);
+		break;
+	case QCamera::StandbyStatus:
+		_enableVideoToggleButton->setEnabled(true);
+		break;
+	case QCamera::LoadedStatus:
+		_enableVideoToggleButton->setEnabled(true);
+		//d->cameraWidget->_cameraWidget->setFrame(QImage());
+		break;
+	case QCamera::LoadingStatus:
+		_enableVideoToggleButton->setEnabled(false);
+		break;
+	case QCamera::UnloadingStatus:
+		_enableVideoToggleButton->setEnabled(false);
+		break;
+	case QCamera::UnloadedStatus:
+		_enableVideoToggleButton->setEnabled(true);
+		break;
+	case QCamera::UnavailableStatus:
+		_enableVideoToggleButton->setEnabled(false);
+		break;
+	}
 }

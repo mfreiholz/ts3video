@@ -186,11 +186,7 @@ ConferenceVideoWindow::ConferenceVideoWindow(const Options& opts, const QSharedP
 	// Auto turn ON camera.
 	if (_camera && _opts.cameraAutoEnable)
 	{
-		TileViewWidget* tvw = nullptr;
-		if ((tvw = dynamic_cast<TileViewWidget*>(_view)) != nullptr)
-		{
-			tvw->setVideoEnabled(true);
-		}
+		_sidebar->setVideoEnabled(true);
 	}
 
 #if defined(OCS_INCLUDE_AUDIO)
@@ -240,6 +236,11 @@ ConferenceVideoWindow::~ConferenceVideoWindow()
 QSharedPointer<NetworkClient> ConferenceVideoWindow::networkClient() const
 {
 	return _networkClient;
+}
+
+QSharedPointer<QCamera> ConferenceVideoWindow::camera() const
+{
+	return _camera;
 }
 
 #if defined(OCS_INCLUDE_AUDIO)

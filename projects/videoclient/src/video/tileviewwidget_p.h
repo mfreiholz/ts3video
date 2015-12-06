@@ -29,8 +29,6 @@ public:
 		owner(o),
 		tilesAspectRatio(4, 3),
 		tilesCurrentSize(tilesAspectRatio),
-		leftPanelVisible(true),
-		rightPanelVisible(false),
 		tilesLayout(nullptr),
 		cameraWidget(nullptr),
 		zoomInButton(nullptr),
@@ -43,27 +41,11 @@ public:
 	QSize tilesAspectRatio;
 	QSize tilesCurrentSize;
 
-	bool leftPanelVisible; ///< Used to store state in settings.
-	bool rightPanelVisible; ///< Used to store state in settings.
-
 	FlowLayout* tilesLayout;
 	FlowLayout* noVideoTilesLayout;
-	TileViewUserListWidget* userListWidget;
 	TileViewCameraWidget* cameraWidget;
-	QWidget* leftPanel;
-	QWidget* rightPanel;
 	QPushButton* zoomInButton;
 	QPushButton* zoomOutButton;
-	QPushButton* userListButton;
-	QPushButton* enableVideoToggleButton;
-#if defined(OCS_INCLUDE_AUDIO)
-	QPushButton* enableAudioInputToggleButton;
-#endif
-	QPushButton* hideLeftPanelButton;
-	QPushButton* showLeftPanelButton;
-	QLabel* userCountLabel;
-	QLabel* bandwidthRead;
-	QLabel* bandwidthWrite;
 
 	QSharedPointer<QCamera> camera;
 	QHash<int, TileViewTileWidget*> tilesMap; ///< Maps client's ID to it's widget.
@@ -77,12 +59,13 @@ class TileViewCameraWidget : public QFrame
 	friend class TileViewWidget;
 
 public:
-	TileViewCameraWidget(QWidget* parent = nullptr);
+	TileViewCameraWidget(TileViewWidget* tileView, QWidget* parent = nullptr);
 	~TileViewCameraWidget();
 
 	void setCamera(const QSharedPointer<QCamera>& c);
 
 private:
+	TileViewWidget* _tileView;
 	QSharedPointer<QCamera> _camera;
 	class QBoxLayout* _mainLayout;
 	ClientCameraVideoWidget* _cameraWidget;
@@ -100,24 +83,6 @@ public:
 
 private:
 	RemoteClientVideoWidget* _videoWidget;
-};
-
-///////////////////////////////////////////////////////////////////////
-
-class TileViewUserListWidget : public QFrame
-{
-	Q_OBJECT
-	friend class TileViewWidget;
-
-public:
-	TileViewUserListWidget(QWidget* parent = nullptr);
-
-private slots:
-	void onFilterTextChanged(const QString& text);
-	void onCustomContextMenuRequested(const QPoint& point);
-
-private:
-	class QListView* _listView;
 };
 
 #endif

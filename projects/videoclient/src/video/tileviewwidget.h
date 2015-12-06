@@ -7,6 +7,8 @@
 
 #include "viewbase.h"
 
+class ConferenceVideoWindow;
+
 class TileViewWidgetPrivate;
 class TileViewWidget : public QWidget, public ViewBase
 {
@@ -14,10 +16,10 @@ class TileViewWidget : public QWidget, public ViewBase
 	QScopedPointer<TileViewWidgetPrivate> d;
 
 public:
-	TileViewWidget(QWidget* parent = 0, Qt::WindowFlags f = 0);
+	TileViewWidget(ConferenceVideoWindow* window, QWidget* parent = 0, Qt::WindowFlags f = 0);
 	virtual ~TileViewWidget();
+	ConferenceVideoWindow* window() const { return _window; }
 
-	virtual void setClientListModel(ClientListModel* model);
 	virtual void setCamera(const QSharedPointer<QCamera>& c);
 	virtual void addClient(const ClientEntity& client, const ChannelEntity& channel);
 	virtual void removeClient(const ClientEntity& client, const ChannelEntity& channel);
@@ -25,7 +27,6 @@ public:
 
 public slots:
 	void setTileSize(const QSize& size);
-	void setVideoEnabled(bool b);
 
 #if defined(OCS_INCLUDE_AUDIO)
 	void setAudioInputEnabled(bool b);
@@ -40,6 +41,9 @@ private slots:
 	void onClientEnabledVideo(const ClientEntity& c);
 	void onClientDisabledVideo(const ClientEntity& c);
 	void onCameraStatusChanged(QCamera::Status s);
+
+private:
+	ConferenceVideoWindow* _window;
 };
 
 #endif

@@ -65,7 +65,10 @@ public:
 public:
 	ConferenceVideoWindow(const Options& opts, const QSharedPointer<NetworkClient>& nc, QWidget* parent, Qt::WindowFlags flags);
 	virtual ~ConferenceVideoWindow();
+
 	QSharedPointer<NetworkClient> networkClient() const;
+	
+	QSharedPointer<QCamera> camera() const;
 
 #if defined(OCS_INCLUDE_AUDIO)
 	QSharedPointer<QAudioInput> audioInput();
@@ -83,6 +86,9 @@ protected:
 	virtual void closeEvent(QCloseEvent* e);
 	void showResponseError(int status, const QString& errorMessage, const QString& details = QString());
 	void showError(const QString& shortText, const QString& longText = QString());
+
+signals:
+	void cameraChanged();
 
 private:
 	ConferenceVideoWindow::Options _opts;                ///< Basic options for video conferencing.

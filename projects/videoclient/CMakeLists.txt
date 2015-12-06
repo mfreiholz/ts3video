@@ -25,6 +25,7 @@ set(headers
 set(qheaders
 	src/video/conferencevideowindow.h
 	src/video/conferencevideowindowsidebar.h
+	src/video/userlistwidget.h
 	src/video/cameraframegrabber.h
 	src/video/clientcameravideowidget.h
 	src/video/remoteclientvideowidget.h
@@ -39,7 +40,6 @@ set(qheaders
 	src/aboutwidget.h
 	src/movablewidgetcontainer.h
 	src/hintoverlaywidget.h
-	src/hintoverlaywidget_p.h
 	src/proxysettingswidget.h
 	src/networkclient/networkclient.h
 	src/networkclient/networkclient_p.h
@@ -63,6 +63,7 @@ set(sources
 	src/main.cpp
 	src/video/conferencevideowindow.cpp
 	src/video/conferencevideowindowsidebar.cpp
+	src/video/userlistwidget.cpp
 	src/video/cameraframegrabber.cpp
 	src/video/clientcameravideowidget.cpp
 	src/video/remoteclientvideowidget.cpp
