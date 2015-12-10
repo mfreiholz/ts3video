@@ -21,6 +21,7 @@
 
 class QWidget;
 class QProgressDialog;
+class QStatusBar;
 class QCamera;
 class ConferenceVideoWindowSidebar;
 class ViewBase;
@@ -107,6 +108,7 @@ private:
 	// GUI stuff.
 	ConferenceVideoWindowSidebar* _sidebar;
 	ViewBase* _view;                                     ///< Central view to display all video streams.
+	QStatusBar* _statusbar;
 };
 
 #endif

@@ -11,6 +11,11 @@ QMainWindow QStatusBar {
   background: rgb(18, 19, 20);
 }
 
+QMainWindow QStatusBar QLabel#bandwidthRead,
+QMainWindow QStatusBar QLabel#bandwidthWrite {
+	color: rgb(200, 200, 200);
+}
+
 QFrame#captionFrame {
 }
 

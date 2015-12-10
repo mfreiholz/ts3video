@@ -45,7 +45,7 @@ ConferenceVideoWindowSidebar::ConferenceVideoWindowSidebar(ConferenceVideoWindow
 	{
 		_enableVideoToggleButton = new QPushButton();
 		_enableVideoToggleButton->setIcon(QIcon(":/ic_videocam_grey600_48dp.png"));
-		_enableVideoToggleButton->setIconSize(__sideBarIconSize * logicalDpiX());
+		_enableVideoToggleButton->setIconSize(__sideBarIconSize);
 		_enableVideoToggleButton->setToolTip(tr("Start/stop video."));
 		_enableVideoToggleButton->setFlat(true);
 		_enableVideoToggleButton->setCheckable(true);

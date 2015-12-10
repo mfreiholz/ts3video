@@ -66,21 +66,21 @@ TileViewWidget::TileViewWidget(ConferenceVideoWindow* window, QWidget* parent, Q
 		auto topButtonsLayout = new QBoxLayout(QBoxLayout::LeftToRight);
 		scrollAreaContentLayout->addLayout(topButtonsLayout);
 
-		topButtonsLayout->addStretch(1);
-
 		d->zoomInButton = new QPushButton();
 		d->zoomInButton->setIcon(QIcon(":/ic_add_circle_outline_grey600_48dp.png"));
 		d->zoomInButton->setIconSize(__sideBarIconSize / 2);
 		d->zoomInButton->setFlat(true);
-		d->zoomInButton->setToolTip(tr("Zoom-in video (CTRL+Mousewheel-Up)"));
+		d->zoomInButton->setToolTip(tr("Increase video size (CTRL+Mousewheel-Up)"));
 		topButtonsLayout->addWidget(d->zoomInButton);
 
 		d->zoomOutButton = new QPushButton();
 		d->zoomOutButton->setIcon(QIcon(":/ic_remove_circle_outline_grey600_48dp.png"));
 		d->zoomOutButton->setIconSize(__sideBarIconSize / 2);
 		d->zoomOutButton->setFlat(true);
-		d->zoomOutButton->setToolTip(tr("Zoom-out video (CTRL+Mousewheel-Down)"));
+		d->zoomOutButton->setToolTip(tr("Decrease video size (CTRL+Mousewheel-Down)"));
 		topButtonsLayout->addWidget(d->zoomOutButton);
+
+		topButtonsLayout->addStretch(1);
 	}
 
 	// Video tiles container.

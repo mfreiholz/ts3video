@@ -14,7 +14,9 @@
 #include <QFutureWatcher>
 #include <QWeakPointer>
 #include <QHostAddress>
-#include <QSplitter>
+#include <QBoxLayout>
+#include <QStatusBar>
+#include <QLabel>
 
 #include <QtMultimedia/QCamera>
 
@@ -115,10 +117,13 @@ ConferenceVideoWindow::ConferenceVideoWindow(const Options& opts, const QSharedP
 	_networkClient(nc),
 	_camera(),
 	_sidebar(nullptr),
-	_view(nullptr)
+	_view(nullptr),
+	_statusbar(nullptr)//(new QStatusBar())
 {
 	if (!gFirstInstance)
 		gFirstInstance = this;
+
+	setStatusBar(_statusbar);
 
 	connect(_networkClient.data(), &NetworkClient::error, this, &ConferenceVideoWindow::onError);
 	connect(_networkClient.data(), &NetworkClient::serverError, this, &ConferenceVideoWindow::onServerError);
@@ -127,26 +132,10 @@ ConferenceVideoWindow::ConferenceVideoWindow(const Options& opts, const QSharedP
 	connect(_networkClient.data(), &NetworkClient::clientDisconnected, this, &ConferenceVideoWindow::onClientDisconnected);
 	connect(_networkClient.data(), &NetworkClient::newVideoFrame, this, &ConferenceVideoWindow::onNewVideoFrame);
 
-	// Central container widget
-	auto mainSplitter = new QSplitter();
-	mainSplitter->setChildrenCollapsible(false);
-	setCentralWidget(mainSplitter);
-
-	// Sidebar with actions.
-	_sidebar = new ConferenceVideoWindowSidebar(this);
-	mainSplitter->addWidget(_sidebar);
-
-	// Central view widget.
-	auto viewWidget = new TileViewWidget(this);
-	viewWidget->setClientListModel(_networkClient->clientModel());
-	_view = viewWidget;
-	mainSplitter->addWidget(viewWidget);
-
 	// Create QCamera by device ID.
 	if (!_opts.cameraDeviceId.isEmpty())
 	{
 		_camera = createCameraFromOptions(_opts);
-		viewWidget->setCamera(_camera);
 	}
 
 #if defined(OCS_INCLUDE_AUDIO)
@@ -201,10 +190,63 @@ ConferenceVideoWindow::ConferenceVideoWindow(const Options& opts, const QSharedP
 	}
 #endif
 
-	QWidgetUtil::resizeWidgetPerCent(this, 75.0, 75.0);
+	// Setup GUI.
 
+	// Central container widget
+	auto w = new QWidget();
+	auto l = new QBoxLayout(QBoxLayout::LeftToRight);
+	l->setContentsMargins(0, 0, 0, 0);
+	l->setSpacing(0);
+	w->setLayout(l);
+	setCentralWidget(w);
+
+	// Sidebar with actions.
+	_sidebar = new ConferenceVideoWindowSidebar(this);
+	l->addWidget(_sidebar, 0);
+
+	// Central view widget.
+	auto viewWidget = new TileViewWidget(this);
+	viewWidget->setClientListModel(_networkClient->clientModel());
+	viewWidget->setCamera(_camera);
+	l->addWidget(viewWidget, 1);
+
+	// Network usage statistics
+	if (_statusbar)
+	{
+		auto bandwidthContainer = new QWidget();
+		auto bandwidthContainerLayout = new QBoxLayout(QBoxLayout::LeftToRight);
+		bandwidthContainerLayout->setContentsMargins(3, 3, 3, 3);
+		bandwidthContainer->setLayout(bandwidthContainerLayout);
+
+		auto bandwidthRead = new QLabel("D: 0.0 KB/s");
+		bandwidthRead->setObjectName("bandwidthRead");
+		bandwidthContainerLayout->addWidget(bandwidthRead);
+
+		auto bandwidthWrite = new QLabel("U: 0.0 KB/s");
+		bandwidthWrite->setObjectName("bandwidthWrite");
+		bandwidthContainerLayout->addWidget(bandwidthWrite);
+
+		_statusbar->addWidget(bandwidthContainer, 1);
+
+		QObject::connect(nc.data(), &NetworkClient::networkUsageUpdated, [this, bandwidthRead, bandwidthWrite](const NetworkUsageEntity & networkUsage)
+		{
+			bandwidthRead->setText(QString("D: %1").arg(ELWS::humanReadableBandwidth(networkUsage.bandwidthRead)));
+			bandwidthWrite->setText(QString("U: %1").arg(ELWS::humanReadableBandwidth(networkUsage.bandwidthWrite)));
+			if (bandwidthRead->parentWidget())
+			{
+				bandwidthRead->parentWidget()->setToolTip(tr("Received: %1\nSent: %2")
+					.arg(ELWS::humanReadableSize(networkUsage.bytesRead))
+					.arg(ELWS::humanReadableSize(networkUsage.bytesWritten)));
+			}
+		});
+	}
+
+
+	// Geometry
+	QWidgetUtil::resizeWidgetPerCent(this, 75.0, 75.0);
 	QSettings settings;
 	restoreGeometry(settings.value("UI/ClientApp-Geometry").toByteArray());
+	_view = viewWidget;
 }
 
 ConferenceVideoWindow::~ConferenceVideoWindow()
