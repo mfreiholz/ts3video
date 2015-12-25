@@ -34,6 +34,7 @@ ConferenceVideoWindowSidebar::ConferenceVideoWindowSidebar(ConferenceVideoWindow
 	_panelVisible(true)
 {
 	auto nc = _window->networkClient();
+	auto cam = _window->camera();
 
 	auto mainLayout = new QBoxLayout(QBoxLayout::TopToBottom);
 	mainLayout->setContentsMargins(0, 0, 0, 0);
@@ -51,7 +52,7 @@ ConferenceVideoWindowSidebar::ConferenceVideoWindowSidebar(ConferenceVideoWindow
 		_enableVideoToggleButton->setCheckable(true);
 		_enableVideoToggleButton->setVisible(!_window->camera().isNull());
 		mainLayout->addWidget(_enableVideoToggleButton);
-		
+
 		QObject::connect(_enableVideoToggleButton, &QPushButton::toggled, this, &ConferenceVideoWindowSidebar::setVideoEnabled);
 		QObject::connect(_window, &ConferenceVideoWindow::cameraChanged, [this]()
 		{

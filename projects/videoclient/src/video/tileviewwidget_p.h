@@ -60,13 +60,12 @@ class TileViewCameraWidget : public QFrame
 
 public:
 	TileViewCameraWidget(TileViewWidget* tileView, QWidget* parent = nullptr);
-	~TileViewCameraWidget();
 
-	void setCamera(const QSharedPointer<QCamera>& c);
+private slots:
+	void onCameraChanged();
 
 private:
 	TileViewWidget* _tileView;
-	QSharedPointer<QCamera> _camera;
 	class QBoxLayout* _mainLayout;
 	ClientCameraVideoWidget* _cameraWidget;
 };

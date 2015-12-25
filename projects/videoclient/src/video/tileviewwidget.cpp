@@ -92,16 +92,20 @@ TileViewWidget::TileViewWidget(ConferenceVideoWindow* window, QWidget* parent, Q
 	d->tilesLayout = tilesContainerLayout;
 
 	// Camera.
-	d->cameraWidget = new TileViewCameraWidget(this);
+	d->cameraWidget = new TileViewCameraWidget(this, this);
 	d->cameraWidget->setFixedSize(d->tilesCurrentSize);
 	d->cameraWidget->setVisible(false);
 	d->tilesLayout->addWidget(d->cameraWidget);
 
-	// Events
+	// Window events
+	QObject::connect(_window, &ConferenceVideoWindow::cameraChanged, this, &TileViewWidget::onCameraChanged);
+
+	// Network events
 	auto nc = _window->networkClient();
 	QObject::connect(nc.data(), &NetworkClient::clientEnabledVideo, this, &TileViewWidget::onClientEnabledVideo);
 	QObject::connect(nc.data(), &NetworkClient::clientDisabledVideo, this, &TileViewWidget::onClientDisabledVideo);
 
+	// Self UI events
 	QObject::connect(d->zoomInButton, &QPushButton::clicked, [this]()
 	{
 		auto newSize = d->tilesCurrentSize;
@@ -125,17 +129,11 @@ TileViewWidget::TileViewWidget(ConferenceVideoWindow* window, QWidget* parent, Q
 
 TileViewWidget::~TileViewWidget()
 {
-	if (d->camera)
-		d->camera->disconnect(this);
-}
-
-void TileViewWidget::setCamera(const QSharedPointer<QCamera>& c)
-{
-	d->camera = c;
-	d->cameraWidget->setCamera(c);
-	d->cameraWidget->setVisible(true);
-	//d->enableVideoToggleButton->setVisible(true);
-	QObject::connect(c.data(), &QCamera::statusChanged, this, &TileViewWidget::onCameraStatusChanged);
+	auto cam = _window->camera();
+	if (cam)
+	{
+		cam->disconnect(this);
+	}
 }
 
 void TileViewWidget::addClient(const ClientEntity& client, const ChannelEntity& channel)
@@ -290,6 +288,20 @@ void TileViewWidget::onClientDisabledVideo(const ClientEntity& c)
 	}
 }
 
+void TileViewWidget::onCameraChanged()
+{
+	auto cam = _window->camera();
+	if (cam.isNull())
+	{
+		d->cameraWidget->setVisible(false);
+	}
+	else
+	{
+		d->cameraWidget->setVisible(true);
+		QObject::connect(cam.data(), &QCamera::statusChanged, this, &TileViewWidget::onCameraStatusChanged);
+	}
+}
+
 void TileViewWidget::onCameraStatusChanged(QCamera::Status s)
 {
 	switch (s)
@@ -316,17 +328,27 @@ TileViewCameraWidget::TileViewCameraWidget(TileViewWidget* tileView, QWidget* pa
 	_mainLayout->setContentsMargins(0, 0, 0, 0);
 	_mainLayout->setSpacing(0);
 	setLayout(_mainLayout);
+
+	// Events from ConferenceVideoWindow
+	auto win = _tileView->window();
+	QObject::connect(win, &ConferenceVideoWindow::cameraChanged, this, &TileViewCameraWidget::onCameraChanged);
 }
 
-TileViewCameraWidget::~TileViewCameraWidget()
+void TileViewCameraWidget::onCameraChanged()
 {
-}
+	if (_cameraWidget)
+	{
+		delete _cameraWidget;
+		_cameraWidget = nullptr;
+	}
 
-void TileViewCameraWidget::setCamera(const QSharedPointer<QCamera>& c)
-{
-	_camera = c;
-	_cameraWidget = new ClientCameraVideoWidget(_tileView->window()->networkClient(), _camera, this);
-	_mainLayout->addWidget(_cameraWidget, 1);
+	auto win = _tileView->window();
+	auto cam = win->camera();
+	if (!cam.isNull())
+	{
+		_cameraWidget = new ClientCameraVideoWidget(win->networkClient(), cam, this);
+		_mainLayout->addWidget(_cameraWidget, 1);
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////

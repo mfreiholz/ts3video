@@ -19,7 +19,6 @@ public:
 	ViewBase() {}
 	virtual ~ViewBase() {};
 	virtual void setClientListModel(ClientListModel* model) {}
-	virtual void setCamera(const QSharedPointer<QCamera>& c) = 0;
 	virtual void addClient(const ClientEntity& client, const ChannelEntity& channel) = 0;
 	virtual void removeClient(const ClientEntity& client, const ChannelEntity& channel) = 0;
 	virtual void updateClientVideo(YuvFrameRefPtr frame, int senderId) = 0;

@@ -24,8 +24,8 @@ class QProgressDialog;
 class QStatusBar;
 class QCamera;
 class ConferenceVideoWindowSidebar;
-class ViewBase;
 class RemoteClientVideoWidget;
+class TileViewWidget;
 
 class ConferenceVideoWindow : public QMainWindow
 {
@@ -50,25 +50,12 @@ public:
 #endif
 	};
 
-	/*!
-		This is very, very dirty.
-		I'm currently using this approach, because i don't want to pass
-		the object into every small object/dialog which might need it.
-
-		This method does not actually create the object.
-		As soon as the normal constructor gets called it will return the
-		created instance. As i said... very dirty.
-
-		\todo As long as we use this way, we can't not have multiple instances.
-	*/
-	static ConferenceVideoWindow* instance();
-
 public:
 	ConferenceVideoWindow(const Options& opts, const QSharedPointer<NetworkClient>& nc, QWidget* parent, Qt::WindowFlags flags);
 	virtual ~ConferenceVideoWindow();
 
+	const ConferenceVideoWindow::Options& options() const;
 	QSharedPointer<NetworkClient> networkClient() const;
-	
 	QSharedPointer<QCamera> camera() const;
 
 #if defined(OCS_INCLUDE_AUDIO)
@@ -106,8 +93,8 @@ private:
 #endif
 
 	// GUI stuff.
-	ConferenceVideoWindowSidebar* _sidebar;
-	ViewBase* _view;                                     ///< Central view to display all video streams.
+	ConferenceVideoWindowSidebar* _sidebar;              ///< Sidebar with controls.
+	TileViewWidget* _view;                               ///< Central view to display all video streams.
 	QStatusBar* _statusbar;
 };
 

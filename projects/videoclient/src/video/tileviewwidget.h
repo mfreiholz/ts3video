@@ -18,9 +18,11 @@ class TileViewWidget : public QWidget, public ViewBase
 public:
 	TileViewWidget(ConferenceVideoWindow* window, QWidget* parent = 0, Qt::WindowFlags f = 0);
 	virtual ~TileViewWidget();
-	ConferenceVideoWindow* window() const { return _window; }
+	ConferenceVideoWindow* window() const
+	{
+		return _window;
+	}
 
-	virtual void setCamera(const QSharedPointer<QCamera>& c);
 	virtual void addClient(const ClientEntity& client, const ChannelEntity& channel);
 	virtual void removeClient(const ClientEntity& client, const ChannelEntity& channel);
 	virtual void updateClientVideo(YuvFrameRefPtr frame, int senderId);
@@ -40,6 +42,7 @@ protected:
 private slots:
 	void onClientEnabledVideo(const ClientEntity& c);
 	void onClientDisabledVideo(const ClientEntity& c);
+	void onCameraChanged();
 	void onCameraStatusChanged(QCamera::Status s);
 
 private:
