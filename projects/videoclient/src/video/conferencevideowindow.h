@@ -63,6 +63,10 @@ public:
 #endif
 
 private slots:
+	// Gui callbacks
+	void onActionVideoSettingsTriggered();
+
+	// Network callbacks
 	void onError(QAbstractSocket::SocketError socketError);
 	void onServerError(int code, const QString& message);
 	void onClientJoinedChannel(const ClientEntity& client, const ChannelEntity& channel);

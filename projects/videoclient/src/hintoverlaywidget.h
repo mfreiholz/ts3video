@@ -15,7 +15,7 @@ public:
 	virtual ~HintOverlayWidget();
 
 	static QPointer<HintOverlayWidget> HINT;
-	static void showHint(QWidget* content, QWidget* target);
+	static QWidget* showHint(QWidget* content, QWidget* target);
 	static void hideHint();
 
 protected:

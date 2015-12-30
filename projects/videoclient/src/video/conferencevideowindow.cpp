@@ -1,5 +1,6 @@
 #include "conferencevideowindow.h"
 
+#include <QScopedPointer>
 #include <QSettings>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -17,6 +18,7 @@
 #include <QBoxLayout>
 #include <QStatusBar>
 #include <QLabel>
+#include <QMenuBar>
 
 #include <QtMultimedia/QCamera>
 
@@ -40,6 +42,7 @@
 #include "tileviewwidget.h"
 
 #include "video/conferencevideowindowsidebar.h"
+#include "video/videosettingswidget.h"
 
 #if defined(OCS_INCLUDE_AUDIO)
 #include <QAudioDeviceInfo>
@@ -113,6 +116,15 @@ ConferenceVideoWindow::ConferenceVideoWindow(const Options& opts, const QSharedP
 {
 	// GUI STUFF
 
+	// Menu
+	auto menuBar = new QMenuBar(this);
+	setMenuBar(menuBar);
+
+	auto menu = menuBar->addMenu(QIcon(), tr("Settings"));
+	auto videoSettingsAction = menu->addAction(QIcon(), tr("Video..."));
+	QObject::connect(videoSettingsAction, &QAction::triggered, this, &ConferenceVideoWindow::onActionVideoSettingsTriggered);
+
+	// Status bar
 	setStatusBar(_statusbar);
 
 	// Central container widget
@@ -281,6 +293,13 @@ QSharedPointer<QAudioInput> ConferenceVideoWindow::audioInput()
 	return _audioInput;
 }
 #endif
+
+void ConferenceVideoWindow::onActionVideoSettingsTriggered()
+{
+	QScopedPointer<VideoSettingsDialog> dialog(new VideoSettingsDialog(this));
+	dialog->setModal(true);
+	dialog->exec();
+}
 
 void ConferenceVideoWindow::onError(QAbstractSocket::SocketError socketError)
 {

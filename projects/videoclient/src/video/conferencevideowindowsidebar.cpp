@@ -44,8 +44,11 @@ ConferenceVideoWindowSidebar::ConferenceVideoWindowSidebar(ConferenceVideoWindow
 	// Video control
 	if (true)
 	{
+		QIcon ico(":/ic_videocam_grey600_48dp.png");
+		ico.addPixmap(QPixmap(":/ic_videocam_red600_48dp"), QIcon::Normal, QIcon::On);
+
 		_enableVideoToggleButton = new QPushButton();
-		_enableVideoToggleButton->setIcon(QIcon(":/ic_videocam_grey600_48dp.png"));
+		_enableVideoToggleButton->setIcon(ico);
 		_enableVideoToggleButton->setIconSize(__sideBarIconSize);
 		_enableVideoToggleButton->setToolTip(tr("Start/stop video."));
 		_enableVideoToggleButton->setFlat(true);
@@ -93,9 +96,9 @@ ConferenceVideoWindowSidebar::ConferenceVideoWindowSidebar(ConferenceVideoWindow
 
 		QObject::connect(_userListButton, &QPushButton::clicked, [this]()
 		{
-			auto w = new UserListWidget(_window, _window);
-			w->setAttribute(Qt::WA_DeleteOnClose, true);
-			w->show();
+			auto w = new UserListWidget(_window, nullptr);
+			auto hint = HintOverlayWidget::showHint(w, _userListButton);
+			hint->resize(200, 350);
 		});
 	}
 

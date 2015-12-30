@@ -4,9 +4,13 @@
 
 #include <QtCore/QEvent>
 
+#include <QtGui/QGuiApplication>
 #include <QtGui/QMouseEvent>
+#include <QtGui/QPaintEvent>
+#include <QtGui/QPainter>
 
 #include <QtWidgets/QBoxLayout>
+#include <QtWidgets/QGraphicsDropShadowEffect>
 
 QPointer<HintOverlayWidget> HintOverlayWidget::HINT;
 
@@ -15,7 +19,7 @@ HintOverlayWidget::HintOverlayWidget(QWidget* content, QWidget* target, QWidget*
 	_content(content),
 	_target(target)
 {
-	//setWindowFlags(windowFlags() | Qt::ToolTip);
+	setWindowFlags(windowFlags() | Qt::Tool);
 	setWindowFlags(windowFlags() | Qt::FramelessWindowHint);
 
 	auto l = new QBoxLayout(QBoxLayout::TopToBottom);
@@ -25,50 +29,54 @@ HintOverlayWidget::HintOverlayWidget(QWidget* content, QWidget* target, QWidget*
 
 	l->addWidget(content);
 
-	_content->setMouseTracking(true);
-	_content->installEventFilter(this);
-
-	_target->setMouseTracking(true);
-	_target->installEventFilter(this);
+	qApp->installEventFilter(this);
 }
 
 HintOverlayWidget::~HintOverlayWidget()
 {
+	qApp->removeEventFilter(this);
 }
 
-void HintOverlayWidget::showHint(QWidget* content, QWidget* target)
+QWidget* HintOverlayWidget::showHint(QWidget* content, QWidget* target)
 {
 	if (HINT)
+	{
 		hideHint();
+	}
 
 	HINT = new HintOverlayWidget(content, target, nullptr);
 
 	auto pos = target->mapToGlobal(target->rect().topRight());
-	HINT->resize(200, 500);
 	HINT->move(pos);
 	HINT->show();
+	return HINT;
 }
 
 void HintOverlayWidget::hideHint()
 {
 	if (!HINT)
+	{
 		return;
+	}
 	HINT->deleteLater();
 	HINT.clear();
 }
 
 bool HintOverlayWidget::eventFilter(QObject* obj, QEvent* e)
 {
-	if (obj == _target)
+	switch (e->type())
 	{
-		switch (e->type())
-		{
 		case QEvent::MouseMove:
 		{
-			QMouseEvent* ev = static_cast<QMouseEvent*>(e);
-			qDebug() << ev->globalPos();
-		}
+			auto ev = static_cast<QMouseEvent*>(e);
+			auto gpos = ev->globalPos();
+			qDebug() << gpos;
+			if (!_target->rect().contains(_target->mapFromGlobal(gpos)) && !_content->rect().contains(_content->mapFromGlobal(gpos)))
+			{
+				hideHint();
+			}
+			break;
 		}
 	}
-	return true;
+	return QFrame::eventFilter(obj, e);
 }

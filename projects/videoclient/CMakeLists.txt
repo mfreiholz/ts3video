@@ -33,6 +33,7 @@ set(qheaders
 	src/video/tileviewwidget_p.h
 	src/video/videowidget.h
 	src/video/videowidget_p.h
+	src/video/videosettingswidget.h
 	src/startup/startupwidget.h
 	src/startup/devstartuplogic.h
 	src/adminauthwidget.h
@@ -70,6 +71,7 @@ set(sources
 	src/video/viewbase.cpp
 	src/video/tileviewwidget.cpp
 	src/video/videowidget.cpp
+	src/video/videosettingswidget.cpp
 	src/startup/startuplogic.cpp
 	src/startup/startupwidget.cpp
 	src/startup/devstartuplogic.cpp
@@ -101,6 +103,7 @@ set(qforms
 	src/proxysettingswidget.ui
 	src/ts3video/ts3videostartuplogic.ui
 	src/ts3video/ts3videoupdatedialog.ui
+	src/video/videosettingswidget.ui
 )
 
 set(qresources
