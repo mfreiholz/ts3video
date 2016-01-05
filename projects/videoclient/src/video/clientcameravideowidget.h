@@ -10,13 +10,14 @@ class QImage;
 class QCameraInfo;
 class NetworkClient;
 class VideoWidget;
+class ConferenceVideoWindow;
 
 class ClientCameraVideoWidget : public QWidget
 {
 	Q_OBJECT
 
 public:
-	ClientCameraVideoWidget(const QSharedPointer<NetworkClient>& nc, const QSharedPointer<QCamera>& camera, QWidget* parent);
+	ClientCameraVideoWidget(ConferenceVideoWindow* window, QWidget* parent);
 	virtual ~ClientCameraVideoWidget();
 	QSharedPointer<NetworkClient> networkClient() const;
 	QSharedPointer<QCamera> camera() const;
@@ -28,7 +29,8 @@ private slots:
 	void onNewQImage(const QImage& image);
 
 private:
-	QSharedPointer<NetworkClient> _ts3vc;
+	ConferenceVideoWindow* _window;
+	QSharedPointer<NetworkClient> _nc;
 	QSharedPointer<QCamera> _camera;
 	QScopedPointer<CameraFrameGrabber> _grabber;
 	VideoWidget* _videoWidget;

@@ -3,6 +3,8 @@
 
 #include <QtWidgets/QDialog>
 
+#include "video/conferencevideowindow.h"
+
 #include "ui_videosettingswidget.h"
 
 class VideoSettingsDialog : public QDialog
@@ -11,9 +13,12 @@ class VideoSettingsDialog : public QDialog
 
 public:
 	VideoSettingsDialog(QWidget* parent);
+	void preselect(const ConferenceVideoWindow::Options& opts);
+	const ConferenceVideoWindow::Options& values();
 
 private:
 	Ui::VideoSettingsWidgetForm _ui;
+	ConferenceVideoWindow::Options _opts;
 };
 
 #endif

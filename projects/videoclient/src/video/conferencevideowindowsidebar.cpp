@@ -31,10 +31,10 @@ static QSize __sideBarIconSize(52, 52);
 ConferenceVideoWindowSidebar::ConferenceVideoWindowSidebar(ConferenceVideoWindow* parent) :
 	QFrame(parent),
 	_window(parent),
+	_camera(_window->camera()),
 	_panelVisible(true)
 {
 	auto nc = _window->networkClient();
-	auto cam = _window->camera();
 
 	auto mainLayout = new QBoxLayout(QBoxLayout::TopToBottom);
 	mainLayout->setContentsMargins(0, 0, 0, 0);
@@ -53,14 +53,11 @@ ConferenceVideoWindowSidebar::ConferenceVideoWindowSidebar(ConferenceVideoWindow
 		_enableVideoToggleButton->setToolTip(tr("Start/stop video."));
 		_enableVideoToggleButton->setFlat(true);
 		_enableVideoToggleButton->setCheckable(true);
-		_enableVideoToggleButton->setVisible(!_window->camera().isNull());
+		_enableVideoToggleButton->setVisible(_camera.isNull());
 		mainLayout->addWidget(_enableVideoToggleButton);
 
 		QObject::connect(_enableVideoToggleButton, &QPushButton::toggled, this, &ConferenceVideoWindowSidebar::setVideoEnabled);
-		QObject::connect(_window, &ConferenceVideoWindow::cameraChanged, [this]()
-		{
-			_enableVideoToggleButton->setVisible(!_window->camera().isNull());
-		});
+		QObject::connect(_window, &ConferenceVideoWindow::cameraChanged, this, &ConferenceVideoWindowSidebar::onCameraChanged);
 	}
 
 #if defined(OCS_INCLUDE_AUDIO)
@@ -208,7 +205,7 @@ ConferenceVideoWindowSidebar::ConferenceVideoWindowSidebar(ConferenceVideoWindow
 void ConferenceVideoWindowSidebar::setVideoEnabled(bool b)
 {
 	auto nc = _window->networkClient();
-	auto cam = _window->camera();
+	auto cam = _camera;
 	if (cam)
 	{
 		if (b)
@@ -239,21 +236,22 @@ void ConferenceVideoWindowSidebar::setVideoEnabled(bool b)
 	_enableVideoToggleButton->setChecked(b);
 }
 
-void ConferenceVideoWindowSidebar::setupCamera()
+void ConferenceVideoWindowSidebar::onCameraChanged()
 {
-	// Reset old references
-	auto cam = _window->camera();
-	if (cam)
+	// Reset old camera stuff
+	if (_camera)
 	{
-		cam->disconnect(this);
+		_camera->disconnect(this);
+		_camera.clear();
 	}
 
-	// Setup new camera.
-	cam = _window->camera();
-	if (cam)
+	// Setup new camera
+	_camera = _window->camera();
+	if (_camera)
 	{
-		QObject::connect(cam.data(), &QCamera::statusChanged, this, &ConferenceVideoWindowSidebar::onCameraStatusChanged);
+		QObject::connect(_camera.data(), &QCamera::statusChanged, this, &ConferenceVideoWindowSidebar::onCameraStatusChanged);
 	}
+	_enableVideoToggleButton->setVisible(!_camera.isNull());
 }
 
 void ConferenceVideoWindowSidebar::onCameraStatusChanged(QCamera::Status s)
@@ -274,7 +272,6 @@ void ConferenceVideoWindowSidebar::onCameraStatusChanged(QCamera::Status s)
 		break;
 	case QCamera::LoadedStatus:
 		_enableVideoToggleButton->setEnabled(true);
-		//d->cameraWidget->_cameraWidget->setFrame(QImage());
 		break;
 	case QCamera::LoadingStatus:
 		_enableVideoToggleButton->setEnabled(false);
@@ -284,9 +281,11 @@ void ConferenceVideoWindowSidebar::onCameraStatusChanged(QCamera::Status s)
 		break;
 	case QCamera::UnloadedStatus:
 		_enableVideoToggleButton->setEnabled(true);
+		_enableVideoToggleButton->setChecked(false);
 		break;
 	case QCamera::UnavailableStatus:
 		_enableVideoToggleButton->setEnabled(false);
+		_enableVideoToggleButton->setChecked(false);
 		break;
 	}
 }

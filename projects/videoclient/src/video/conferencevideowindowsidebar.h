@@ -1,6 +1,8 @@
 #ifndef CONFERENCEVIDEOWINDOWSIDBAR_H
 #define CONFERENCEVIDEOWINDOWSIDBAR_H
 
+#include <QtCore/QSharedPointer>
+
 #include <QtWidgets/QFrame>
 
 #include <QtMultimedia/QCamera>
@@ -19,14 +21,13 @@ public:
 public slots:
 	void setVideoEnabled(bool b);
 
-protected:
-	void setupCamera();
-
 protected slots:
+	void onCameraChanged();
 	void onCameraStatusChanged(QCamera::Status s);
 
 private:
 	ConferenceVideoWindow* _window;
+	QSharedPointer<QCamera> _camera;
 
 	// Controlling buttons
 	QPushButton* _enableVideoToggleButton;

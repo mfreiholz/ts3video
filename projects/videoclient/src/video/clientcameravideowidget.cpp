@@ -11,21 +11,23 @@
 #include "elws.h"
 
 #include "networkclient/networkclient.h"
+#include "video/conferencevideowindow.h"
 #include "videowidget.h"
 
 HUMBLE_LOGGER(HL, "client.camera");
 
 ///////////////////////////////////////////////////////////////////////
 
-ClientCameraVideoWidget::ClientCameraVideoWidget(const QSharedPointer<NetworkClient>& ts3vc, const QSharedPointer<QCamera>& camera, QWidget* parent) :
+ClientCameraVideoWidget::ClientCameraVideoWidget(ConferenceVideoWindow* window, QWidget* parent) :
 	QWidget(parent),
-	_ts3vc(ts3vc),
-	_camera(camera),
+	_window(window),
+	_nc(window->networkClient()),
+	_camera(window->camera()),
 	_videoWidget(nullptr)
 {
 	// Load camera and forward frames to grabber.
-	_grabber.reset(new CameraFrameGrabber(this));
-	camera->setViewfinder(_grabber.data());
+	_grabber.reset(new CameraFrameGrabber(_window->options().cameraResolution, this));
+	_camera->setViewfinder(_grabber.data());
 
 	// GUI
 	auto mainLayout = new QBoxLayout(QBoxLayout::TopToBottom);
@@ -41,12 +43,12 @@ ClientCameraVideoWidget::ClientCameraVideoWidget(const QSharedPointer<NetworkCli
 	QObject::connect(_grabber.data(), &CameraFrameGrabber::newQImage, this, &ClientCameraVideoWidget::onNewQImage);
 
 	// Camera events.
-	QObject::connect(camera.data(), static_cast<void(QCamera::*)(QCamera::Error)>(&QCamera::error), [this, camera](QCamera::Error error)
+	QObject::connect(_camera.data(), static_cast<void(QCamera::*)(QCamera::Error)>(&QCamera::error), [this](QCamera::Error error)
 	{
-		HL_ERROR(HL, QString("Camera error (error=%1; message=%2)").arg(error).arg(camera->errorString()).toStdString());
-		QMessageBox::critical(this, QString(), tr("There is a problem with the camera:\n\nCode: %1\nMessage: %2\n\nA restart of the application might fix this problem.").arg(error).arg(camera->errorString()));
+		HL_ERROR(HL, QString("Camera error (error=%1; message=%2)").arg(error).arg(_camera->errorString()).toStdString());
+		QMessageBox::critical(this, QString(), tr("There is a problem with the camera:\n\nCode: %1\nMessage: %2\n\nA restart of the application might fix this problem.").arg(error).arg(_camera->errorString()));
 	});
-	QObject::connect(camera.data(), &QCamera::lockFailed, [this]()
+	QObject::connect(_camera.data(), &QCamera::lockFailed, [this]()
 	{
 		HL_ERROR(HL, QString("Camera lock failed").toStdString());
 		QMessageBox::critical(this, QString(), tr("Can not lock camera. It's seems to be in use by another process."));
@@ -55,6 +57,10 @@ ClientCameraVideoWidget::ClientCameraVideoWidget(const QSharedPointer<NetworkCli
 
 ClientCameraVideoWidget::~ClientCameraVideoWidget()
 {
+	if (_camera)
+	{
+		_camera->setViewfinder((QAbstractVideoSurface*)nullptr);
+	}
 	if (_grabber)
 	{
 		_grabber->disconnect(this);
@@ -63,7 +69,7 @@ ClientCameraVideoWidget::~ClientCameraVideoWidget()
 
 QSharedPointer<NetworkClient> ClientCameraVideoWidget::networkClient() const
 {
-	return _ts3vc;
+	return _nc;
 }
 
 QSharedPointer<QCamera> ClientCameraVideoWidget::camera() const
@@ -79,8 +85,8 @@ void ClientCameraVideoWidget::setFrame(const QImage& f)
 void ClientCameraVideoWidget::onNewQImage(const QImage& image)
 {
 	_videoWidget->setFrame(image);
-	if (_ts3vc->isReadyForStreaming())
+	if (_nc->isReadyForStreaming())
 	{
-		_ts3vc->sendVideoFrame(image);
+		_nc->sendVideoFrame(image);
 	}
 }

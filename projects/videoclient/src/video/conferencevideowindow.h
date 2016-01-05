@@ -38,6 +38,8 @@ public:
 		// The camera's device ID to stream video.
 		QString cameraDeviceId = QString();
 		bool cameraAutoEnable = false;
+		QSize cameraResolution = QSize(640, 480);
+		int cameraBitrate = 100;
 
 #if defined(OCS_INCLUDE_AUDIO)
 		// The microphones device ID (audio-in).
@@ -55,6 +57,9 @@ public:
 	virtual ~ConferenceVideoWindow();
 
 	const ConferenceVideoWindow::Options& options() const;
+	void loadOptionsFromConfig(Options& opts) const;
+	void saveOptionsToConfig(const Options& opts) const;
+
 	QSharedPointer<NetworkClient> networkClient() const;
 	QSharedPointer<QCamera> camera() const;
 
@@ -75,6 +80,7 @@ private slots:
 	void onNewVideoFrame(YuvFrameRefPtr frame, int senderId);
 
 protected:
+	void applyVideoInputOptions(const Options& opts);
 	virtual void closeEvent(QCloseEvent* e);
 	void showResponseError(int status, const QString& errorMessage, const QString& details = QString());
 	void showError(const QString& shortText, const QString& longText = QString());

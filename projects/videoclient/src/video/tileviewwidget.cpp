@@ -91,7 +91,7 @@ TileViewWidget::TileViewWidget(ConferenceVideoWindow* window, QWidget* parent, Q
 	scrollAreaContentLayout->addWidget(tilesContainer, 1);
 	d->tilesLayout = tilesContainerLayout;
 
-	// Camera.
+	// Camera
 	d->cameraWidget = new TileViewCameraWidget(this, this);
 	d->cameraWidget->setFixedSize(d->tilesCurrentSize);
 	d->cameraWidget->setVisible(false);
@@ -307,6 +307,8 @@ void TileViewWidget::onCameraStatusChanged(QCamera::Status s)
 	switch (s)
 	{
 	case QCamera::LoadedStatus:
+	case QCamera::UnloadedStatus:
+	case QCamera::StandbyStatus:
 		d->cameraWidget->_cameraWidget->setFrame(QImage());
 		break;
 	}
@@ -346,7 +348,7 @@ void TileViewCameraWidget::onCameraChanged()
 	auto cam = win->camera();
 	if (!cam.isNull())
 	{
-		_cameraWidget = new ClientCameraVideoWidget(win->networkClient(), cam, this);
+		_cameraWidget = new ClientCameraVideoWidget(win, this);
 		_mainLayout->addWidget(_cameraWidget, 1);
 	}
 }

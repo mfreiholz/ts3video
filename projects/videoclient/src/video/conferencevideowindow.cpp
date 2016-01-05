@@ -191,11 +191,7 @@ ConferenceVideoWindow::ConferenceVideoWindow(const Options& opts, const QSharedP
 	connect(_networkClient.data(), &NetworkClient::newVideoFrame, this, &ConferenceVideoWindow::onNewVideoFrame);
 
 	// Create QCamera by device ID.
-	if (!_opts.cameraDeviceId.isEmpty())
-	{
-		_camera = createCameraFromOptions(_opts);
-		emit cameraChanged();
-	}
+	applyVideoInputOptions(_opts);
 
 #if defined(OCS_INCLUDE_AUDIO)
 	// Create QAudioInput (microphone).
@@ -277,6 +273,24 @@ const ConferenceVideoWindow::Options& ConferenceVideoWindow::options() const
 	return _opts;
 }
 
+void ConferenceVideoWindow::loadOptionsFromConfig(Options& opts) const
+{
+	QSettings s;
+	opts.cameraDeviceId = s.value("Video/InputDeviceId", opts.cameraDeviceId).toString();
+	opts.cameraAutoEnable = s.value("Video/InputDeviceAutoEnable", opts.cameraAutoEnable).toBool();
+	opts.cameraResolution = s.value("Video/InputDeviceResolution", opts.cameraResolution).toSize();
+	opts.cameraBitrate = s.value("Video/InputDeviceBitrate", opts.cameraBitrate).toInt();
+}
+
+void ConferenceVideoWindow::saveOptionsToConfig(const Options& opts) const
+{
+	QSettings s;
+	s.setValue("Video/InputDeviceId", opts.cameraDeviceId);
+	s.setValue("Video/InputDeviceAutoEnable", opts.cameraAutoEnable);
+	s.setValue("Video/InputDeviceResolution", opts.cameraResolution);
+	s.setValue("Video/InputDeviceBitrate", opts.cameraBitrate);
+}
+
 QSharedPointer<NetworkClient> ConferenceVideoWindow::networkClient() const
 {
 	return _networkClient;
@@ -298,7 +312,13 @@ void ConferenceVideoWindow::onActionVideoSettingsTriggered()
 {
 	QScopedPointer<VideoSettingsDialog> dialog(new VideoSettingsDialog(this));
 	dialog->setModal(true);
-	dialog->exec();
+	dialog->preselect(_opts);
+	if (dialog->exec() != QDialog::Accepted)
+	{
+		return;
+	}
+	_opts = dialog->values();
+	applyVideoInputOptions(_opts);
 }
 
 void ConferenceVideoWindow::onError(QAbstractSocket::SocketError socketError)
@@ -337,6 +357,19 @@ void ConferenceVideoWindow::onClientDisconnected(const ClientEntity& client)
 void ConferenceVideoWindow::onNewVideoFrame(YuvFrameRefPtr frame, int senderId)
 {
 	_view->updateClientVideo(frame, senderId);
+}
+
+void ConferenceVideoWindow::applyVideoInputOptions(const Options& opts)
+{
+	// Device
+	if (_camera)
+	{
+		_camera->stop();
+		_camera->unload();
+		_camera.clear();
+	}
+	_camera = createCameraFromOptions(opts);
+	emit cameraChanged();
 }
 
 void ConferenceVideoWindow::closeEvent(QCloseEvent* e)

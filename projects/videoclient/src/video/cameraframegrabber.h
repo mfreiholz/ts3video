@@ -10,22 +10,22 @@
 
 class CameraFrameGrabber : public QAbstractVideoSurface
 {
-  Q_OBJECT
+	Q_OBJECT
 
 public:
-  CameraFrameGrabber(QObject *parent);
-  QList<QVideoFrame::PixelFormat> supportedPixelFormats(QAbstractVideoBuffer::HandleType handleType) const;
-  bool present(const QVideoFrame &frame);
+	CameraFrameGrabber(const QSize& resolution, QObject* parent);
+	QList<QVideoFrame::PixelFormat> supportedPixelFormats(QAbstractVideoBuffer::HandleType handleType) const;
+	bool present(const QVideoFrame& frame);
 
 signals:
-  void newQImage(const QImage &image);
+	void newQImage(const QImage& image);
 
 private:
-  bool _firstFrame;
-  QSize _targetSize;
+	bool _firstFrame;
+	QSize _targetSize;
 
-  QRect _imageRect;
-  QPoint _imageOffset;
+	QRect _imageRect;
+	QPoint _imageOffset;
 };
 
 #endif
