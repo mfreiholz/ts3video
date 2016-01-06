@@ -9,21 +9,21 @@
 class VideoDecodingThreadPrivate;
 class VideoDecodingThread : public QThread
 {
-  Q_OBJECT
-  friend class VideoDecodingThreadPrivate;
-  QScopedPointer<VideoDecodingThreadPrivate> d;
+	Q_OBJECT
+	friend class VideoDecodingThreadPrivate;
+	QScopedPointer<VideoDecodingThreadPrivate> d;
 
 public:
-  VideoDecodingThread(QObject *parent);
-  ~VideoDecodingThread();
-  void stop();
-  void enqueue(VP8Frame *frame, int senderId);
+	VideoDecodingThread(QObject* parent);
+	~VideoDecodingThread();
+	void stop();
+	void enqueue(VP8Frame* frame, int senderId);
 
 protected:
-  void run();
+	void run();
 
 signals:
-  void decoded(YuvFrameRefPtr frame, int senderId);
+	void decoded(YuvFrameRefPtr frame, int senderId);
 };
 
 #endif

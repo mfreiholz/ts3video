@@ -18,7 +18,7 @@ class ViewBase
 public:
 	ViewBase() {}
 	virtual ~ViewBase() {};
-	virtual void setClientListModel(ClientListModel* model) {}
+	//virtual void setClientListModel(ClientListModel* model) {}
 	virtual void addClient(const ClientEntity& client, const ChannelEntity& channel) = 0;
 	virtual void removeClient(const ClientEntity& client, const ChannelEntity& channel) = 0;
 	virtual void updateClientVideo(YuvFrameRefPtr frame, int senderId) = 0;

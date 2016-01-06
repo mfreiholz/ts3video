@@ -71,10 +71,9 @@ void VideoEncodingThread::enqueueRecovery()
 
 void VideoEncodingThread::run()
 {
-	const int fps = 20;
+	const int fps = 24;
 	const int fpsTimeMs = 1000 / fps;
 	const int bitRate = 100;
-	const QSize dim(IFVS_CLIENT_VIDEO_SIZE);
 
 	QHash<int, VP8Encoder*> encoders;
 	QTime fpsTimer;
@@ -83,6 +82,7 @@ void VideoEncodingThread::run()
 	d->stopFlag = 0;
 	while (d->stopFlag == 0)
 	{
+		// Get next frame from queue
 		QMutexLocker l(&d->m);
 		if (d->queue.isEmpty())
 		{
@@ -95,42 +95,61 @@ void VideoEncodingThread::run()
 		if (item.first.isNull())
 			continue;
 
+
+		// FPS check
 		if (fps > 0 && fpsTimer.elapsed() < fpsTimeMs)
 			continue;
 		fpsTimer.restart();
 
-		if (true)
+
+		// Convert to YuvFrame.
+		auto yuv = YuvFrame::fromQImage(item.first);
+
+		// Get/create encoder
+		auto create = false;
+		auto encoder = encoders.value(item.second);
+		if (!encoder)
+			create = true;
+		else if (!encoder->isValidFrame(*yuv))
+			create = true;
+
+		// Re-/create encoder
+		if (create)
 		{
-			// Convert to YuvFrame.
-			auto yuv = YuvFrame::fromQImage(item.first);
-			// Encode via VPX.
-			auto encoder = encoders.value(item.second);
-			if (!encoder)
+			if (encoder)
 			{
-				HL_DEBUG(HL, QString("Create new VP8 video encoder (id=%1)").arg(item.second).toStdString());
-				encoder = new VP8Encoder();
-				if (!encoder->initialize(dim.width(), dim.height(), bitRate, fps))   ///< TODO Find a way to pass this parameters from outside (videoBegin(...), sendVideo(...), videoEnd(...)).
-				{
-					HL_ERROR(HL, QString("Can not initialize VP8 video encoder").toStdString());
-					d->stopFlag = 1;
-					continue;
-				}
-				encoders.insert(item.second, encoder);
+				encoders.remove(item.second);
+				delete encoder;
+				encoder = nullptr;
 			}
-			if (d->recoveryFlag != VP8Frame::NORMAL)
+
+			HL_DEBUG(HL, QString("Create new video encoder (id=%1)").arg(item.second).toStdString());
+			encoder = new VP8Encoder();
+			if (!encoder->initialize(yuv->width, yuv->height, bitRate, fps))
 			{
-				encoder->setRequestRecoveryFlag(VP8Frame::KEY);
-				d->recoveryFlag = VP8Frame::NORMAL;
+				HL_ERROR(HL, QString("Can not initialize VP8 video encoder").toStdString());
+				d->stopFlag = 1;
+				continue;
 			}
-			auto vp8 = encoder->encode(*yuv);
-			delete yuv;
-			// Serialize VP8Frame.
-			QByteArray data;
-			QDataStream out(&data, QIODevice::WriteOnly);
-			out << *vp8;
-			delete vp8;
-			emit encoded(data, item.second);
+			encoders.insert(item.second, encoder);
 		}
+
+		if (d->recoveryFlag != VP8Frame::NORMAL)
+		{
+			encoder->setRequestRecoveryFlag(VP8Frame::KEY);
+			d->recoveryFlag = VP8Frame::NORMAL;
+		}
+
+		// Encode frame
+		auto vp8 = encoder->encode(*yuv);
+		delete yuv;
+
+		// Serialize VP8Frame.
+		QByteArray data;
+		QDataStream out(&data, QIODevice::WriteOnly);
+		out << *vp8;
+		delete vp8;
+		emit encoded(data, item.second);
 
 		// DEV Provides plain QImage.
 		//if (true) {

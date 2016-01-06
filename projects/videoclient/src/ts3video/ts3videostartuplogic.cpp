@@ -106,7 +106,7 @@ Ts3VideoStartupLogic::Ts3VideoStartupLogic(QApplication* a) :
 	_ui.setupUi(this);
 	QObject::connect(this, &Ts3VideoStartupLogic::newProgress, this, &Ts3VideoStartupLogic::showProgress);
 
-	QWidgetUtil::resizeWidgetPerCent(this, 50.0, 50.0);
+	QWidgetUtil::resizeWidgetPerCent(this, 35.0, 35.0);
 }
 
 Ts3VideoStartupLogic::~Ts3VideoStartupLogic()

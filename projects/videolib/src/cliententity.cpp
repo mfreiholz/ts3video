@@ -3,7 +3,14 @@
 #include <QStringList>
 
 ClientEntity::ClientEntity() :
-	id(0), name(), mediaAddress(), mediaPort(0), videoEnabled(false), audioInputEnabled(false)
+	id(0),
+	name(),
+	mediaAddress(),
+	mediaPort(0),
+	videoEnabled(false),
+	videoWidth(0),
+	videoHeight(0),
+	audioInputEnabled(false)
 {
 }
 
@@ -14,6 +21,8 @@ ClientEntity::ClientEntity(const ClientEntity& other)
 	this->mediaAddress = other.mediaAddress;
 	this->mediaPort = other.mediaPort;
 	this->videoEnabled = other.videoEnabled;
+	this->videoWidth = other.videoWidth;
+	this->videoHeight = other.videoHeight;
 	this->audioInputEnabled = other.audioInputEnabled;
 }
 
@@ -24,6 +33,8 @@ ClientEntity& ClientEntity::operator = (const ClientEntity& other)
 	this->mediaAddress = other.mediaAddress;
 	this->mediaPort = other.mediaPort;
 	this->videoEnabled = other.videoEnabled;
+	this->videoWidth = other.videoWidth;
+	this->videoHeight = other.videoHeight;
 	this->audioInputEnabled = other.audioInputEnabled;
 	return *this;
 }
@@ -36,6 +47,8 @@ void ClientEntity::fromQJsonObject(const QJsonObject& obj)
 	id = obj["id"].toInt();
 	name = obj["name"].toString();
 	videoEnabled = obj["videoenabled"].toBool();
+	videoWidth = obj["videowidth"].toInt();
+	videoHeight = obj["videoheight"].toInt();
 	audioInputEnabled = obj["audioinputenabled"].toBool();
 }
 
@@ -45,6 +58,8 @@ QJsonObject ClientEntity::toQJsonObject() const
 	obj["id"] = id;
 	obj["name"] = name;
 	obj["videoenabled"] = videoEnabled;
+	obj["videowidth"] = videoWidth;
+	obj["videoheight"] = videoHeight;
 	obj["audioinputenabled"] = audioInputEnabled;
 	return obj;
 }
@@ -58,6 +73,8 @@ QString ClientEntity::toString() const
 			<< mediaAddress.toString()
 			<< QString::number(mediaPort)
 			<< QString::number(videoEnabled ? 1 : 0)
+			<< QString::number(videoWidth)
+			<< QString::number(videoHeight)
 			<< QString::number(audioInputEnabled ? 1 : 0)
 			;
 	return sl.join("#");

@@ -113,15 +113,20 @@ const VirtualServerOptions& VirtualServer::options() const
 
 void VirtualServer::updateMediaRecipients()
 {
-	bool sendBackOwnVideo = false;
+	const auto sendBackOwnVideo = true;
+
 	MediaRecipients recips;
 	auto clients = _clients.values();
 	foreach (auto client, clients)
 	{
-		if (!client || client->mediaAddress.isNull() || client->mediaPort <= 0 || !(client->videoEnabled && client->audioInputEnabled))
-		{
+		// Validate client for streaming
+		if (!client)
 			continue;
-		}
+		else if (client->mediaAddress.isNull() || client->mediaPort <= 0)
+			continue;
+		else if (!client->videoEnabled && !client->audioInputEnabled)
+			continue;
+
 		MediaSenderEntity sender;
 		sender.clientId = client->id;
 		sender.address = QHostAddress(client->mediaAddress);
@@ -138,10 +143,13 @@ void VirtualServer::updateMediaRecipients()
 		foreach (auto siblingClientId, siblingClientIds)
 		{
 			auto client2 = _clients.value(siblingClientId);
-			if (!client2 || (!sendBackOwnVideo && client2 == client) || client2->mediaAddress.isNull() || client2->mediaPort <= 0)
-			{
+			if (!client2)
 				continue;
-			}
+			else if (client2->mediaAddress.isNull() || client2->mediaPort <= 0)
+				continue;
+			else if (client2 == client && !sendBackOwnVideo)
+				continue;
+
 			MediaReceiverEntity receiver;
 			receiver.clientId = client2->id;
 			receiver.address = client2->mediaAddress;

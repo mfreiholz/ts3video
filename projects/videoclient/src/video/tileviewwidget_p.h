@@ -27,7 +27,7 @@ public:
 	TileViewWidgetPrivate(TileViewWidget* o) :
 		QObject(o),
 		owner(o),
-		tilesAspectRatio(4, 3),
+		tilesAspectRatio(16, 9),
 		tilesCurrentSize(tilesAspectRatio),
 		tilesLayout(nullptr),
 		cameraWidget(nullptr),

@@ -16,103 +16,115 @@ HUMBLE_LOGGER(HL, "networkclient.videodecodingthread");
 class VideoDecodingThreadPrivate
 {
 public:
-  VideoDecodingThreadPrivate(VideoDecodingThread *o) :
-    owner(o)
-  {}
+	VideoDecodingThreadPrivate(VideoDecodingThread* o) :
+		owner(o)
+	{}
 
 public:
-  VideoDecodingThread *owner;
-  QMutex m;
-  QWaitCondition queueCond;
-  QQueue<QPair<VP8Frame *, int> > queue;
-  QAtomicInt stopFlag;
+	VideoDecodingThread* owner;
+	QMutex m;
+	QWaitCondition queueCond;
+	QQueue<QPair<VP8Frame*, int> > queue;
+	QAtomicInt stopFlag;
 };
 
 ///////////////////////////////////////////////////////////////////////
 
-VideoDecodingThread::VideoDecodingThread(QObject *parent) :
-  QThread(parent),
-  d(new VideoDecodingThreadPrivate(this))
+VideoDecodingThread::VideoDecodingThread(QObject* parent) :
+	QThread(parent),
+	d(new VideoDecodingThreadPrivate(this))
 {
 }
 
 VideoDecodingThread::~VideoDecodingThread()
 {
-  stop();
-  wait();
-  while (!d->queue.isEmpty())
-  {
-    auto item = d->queue.dequeue();
-    delete item.first;
-  }
+	stop();
+	wait();
+	while (!d->queue.isEmpty())
+	{
+		auto item = d->queue.dequeue();
+		delete item.first;
+	}
 }
 
 void VideoDecodingThread::stop()
 {
-  d->stopFlag = 1;
-  d->queueCond.wakeAll();
+	d->stopFlag = 1;
+	d->queueCond.wakeAll();
 }
 
-void VideoDecodingThread::enqueue(VP8Frame *frame, int senderId)
+void VideoDecodingThread::enqueue(VP8Frame* frame, int senderId)
 {
-  QMutexLocker l(&d->m);
-  d->queue.enqueue(qMakePair(frame, senderId));
-  //while (_queue.size() > 5) {
-  //  auto item = _queue.dequeue();
-  //  delete item.first;
-  //}
-  d->queueCond.wakeAll();
+	QMutexLocker l(&d->m);
+	d->queue.enqueue(qMakePair(frame, senderId));
+	//while (_queue.size() > 5) {
+	//  auto item = _queue.dequeue();
+	//  delete item.first;
+	//}
+	d->queueCond.wakeAll();
 }
 
 void VideoDecodingThread::run()
 {
-  // TODO Make it possible to reset/delete a VP8Decoder.
-  //      That would be useful when a participant leaves.
-  QHash<int, VP8Decoder *> decoders;
+	// TODO Make it possible to reset/delete a VP8Decoder.
+	//      That would be useful when a participant leaves.
+	QHash<int, VP8Decoder*> decoders;
 
-  d->stopFlag = 0;
-  while (d->stopFlag == 0)
-  {
-    QMutexLocker l(&d->m);
-    if (d->queue.isEmpty())
-    {
-      d->queueCond.wait(&d->m);
-      continue;
-    }
-    auto item = d->queue.dequeue();
-    l.unlock();
+	d->stopFlag = 0;
+	while (d->stopFlag == 0)
+	{
+		// Get next frame from queue
+		QMutexLocker l(&d->m);
+		if (d->queue.isEmpty())
+		{
+			d->queueCond.wait(&d->m);
+			continue;
+		}
+		auto item = d->queue.dequeue();
+		l.unlock();
 
-    if (!item.first || item.second == 0)
-      continue;
+		if (!item.first || item.second == 0)
+			continue;
 
-    if (true)
-    {
-      // Decoder
-      auto decoder = decoders.value(item.second);
-      if (!decoder)
-      {
-        decoder = new VP8Decoder();
-        decoder->initialize();
-        decoders.insert(item.second, decoder);
-      }
+		// Get/create decoder
+		auto create = false;
+		auto decoder = decoders.value(item.second);
+		if (!decoder)
+			create = true;
+		else if (false)
+			create = true;
 
-      // Decode
-      YuvFrameRefPtr yuv(decoder->decodeFrameRaw(item.first->data));
-      emit decoded(yuv, item.second);
-    }
+		// Re-/create decoder
+		if (create)
+		{
+			if (decoder)
+			{
+				decoders.remove(item.second);
+				delete decoder;
+				decoder = nullptr;
+			}
 
-    // DEV
-    //if (true) {
-    //  QImage image;
-    //  QDataStream in(item.first->data);
-    //  in >> image;
-    //  delete item.first;
-    //  emit decoded(image, item.second);
-    //}
+			decoder = new VP8Decoder();
+			decoder->initialize();
+			decoders.insert(item.second, decoder);
+		}
 
-  }
+		// Decode
+		YuvFrameRefPtr yuv(decoder->decodeFrameRaw(item.first->data));
+		emit decoded(yuv, item.second);
 
-  // Clean up.
-  qDeleteAll(decoders);
-  decoders.clear();
+		// DEV
+		//if (true) {
+		//  QImage image;
+		//  QDataStream in(item.first->data);
+		//  in >> image;
+		//  delete item.first;
+		//  emit decoded(image, item.second);
+		//}
+
+	}
+
+	// Clean up.
+	qDeleteAll(decoders);
+	decoders.clear();
 }

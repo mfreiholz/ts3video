@@ -7,8 +7,6 @@ class QString;
 
 class AbstractStartupLogic
 {
-	QApplication* _qapp;
-
 public:
 	AbstractStartupLogic(QApplication* a);
 	virtual ~AbstractStartupLogic();
@@ -17,8 +15,12 @@ public:
 	virtual int exec();
 
 private:
+	void initApplication();
 	void initLogging();
 	void initStyleSheet();
+
+private:
+	QApplication* _qapp;
 };
 
 

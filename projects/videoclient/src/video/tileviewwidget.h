@@ -47,6 +47,7 @@ private slots:
 
 private:
 	ConferenceVideoWindow* _window;
+	QSharedPointer<QCamera> _camera;
 };
 
 #endif

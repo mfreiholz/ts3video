@@ -129,10 +129,10 @@ TileViewWidget::TileViewWidget(ConferenceVideoWindow* window, QWidget* parent, Q
 
 TileViewWidget::~TileViewWidget()
 {
-	auto cam = _window->camera();
-	if (cam)
+	if (_camera)
 	{
-		cam->disconnect(this);
+		_camera->disconnect(this);
+		_camera.clear();
 	}
 }
 
@@ -169,13 +169,13 @@ void TileViewWidget::updateClientVideo(YuvFrameRefPtr frame, int senderId)
 	auto tileWidget = d->tilesMap.value(senderId);
 	if (!tileWidget)
 	{
-		//ClientEntity ce;
-		//ce.id = senderId;
-		//ce.videoEnabled=true;
-		//addClient(ce, ChannelEntity());
-		//tileWidget = d->tilesMap.value(senderId);
-		//if (!tileWidget)
-		return;
+		ClientEntity ce;
+		ce.id = senderId;
+		ce.videoEnabled = true;
+		addClient(ce, ChannelEntity());
+		tileWidget = d->tilesMap.value(senderId);
+		if (!tileWidget)
+			return;
 	}
 	tileWidget->_videoWidget->videoWidget()->setFrame(frame);
 }
@@ -290,16 +290,21 @@ void TileViewWidget::onClientDisabledVideo(const ClientEntity& c)
 
 void TileViewWidget::onCameraChanged()
 {
-	auto cam = _window->camera();
-	if (cam.isNull())
+	// Clear old camera
+	if (_camera)
 	{
-		d->cameraWidget->setVisible(false);
+		_camera->disconnect(this);
 	}
-	else
+
+	// Setup new camera
+	_camera = _window->camera();
+	if (_camera)
 	{
-		d->cameraWidget->setVisible(true);
-		QObject::connect(cam.data(), &QCamera::statusChanged, this, &TileViewWidget::onCameraStatusChanged);
+		QObject::connect(_camera.data(), &QCamera::statusChanged, this, &TileViewWidget::onCameraStatusChanged);
 	}
+
+	// Update UI
+	d->cameraWidget->setVisible(!_camera.isNull());
 }
 
 void TileViewWidget::onCameraStatusChanged(QCamera::Status s)

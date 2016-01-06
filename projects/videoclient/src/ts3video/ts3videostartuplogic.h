@@ -29,10 +29,6 @@ public:
 class Ts3VideoStartupLogic : public QDialog, public AbstractStartupLogic
 {
 	Q_OBJECT
-	Ui::TS3VideoStartupLogicDialogForm _ui;
-	Ts3VideoStartOptions _args;
-	ConferenceJoinInfo _joinInfo;
-	QSharedPointer<NetworkClient> _nc;
 
 public:
 	Ts3VideoStartupLogic(QApplication* a);
@@ -62,6 +58,12 @@ private slots:
 signals:
 	// Internal used signal, called from worker threads to update progress status.
 	void newProgress(const QString& text);
+
+private:
+	Ui::TS3VideoStartupLogicDialogForm _ui;
+	Ts3VideoStartOptions _args;
+	ConferenceJoinInfo _joinInfo;
+	QSharedPointer<NetworkClient> _nc;
 };
 
 

@@ -21,20 +21,7 @@
 AbstractStartupLogic::AbstractStartupLogic(QApplication* a) :
 	_qapp(a)
 {
-	a->setOrganizationName("mfreiholz");
-	a->setOrganizationDomain("https://mfreiholz.de");
-	a->setApplicationName("ocs-client");
-	a->setApplicationDisplayName("Video Conference Client");
-	a->setApplicationVersion(IFVS_SOFTWARE_VERSION_QSTRING);
-
-#ifdef _WIN32
-	// Show console window?
-	if (ELWS::hasArgsValue("--console"))
-	{
-		AllocConsole();
-	}
-#endif
-
+	initApplication();
 	initLogging();
 	initStyleSheet();
 }
@@ -57,6 +44,23 @@ QString AbstractStartupLogic::configFilePath() const
 int AbstractStartupLogic::exec()
 {
 	return _qapp->exec();
+}
+
+void AbstractStartupLogic::initApplication()
+{
+	_qapp->setOrganizationName("mfreiholz");
+	_qapp->setOrganizationDomain("https://mfreiholz.de");
+	_qapp->setApplicationName("ocs-client");
+	_qapp->setApplicationDisplayName("Video Conference Client");
+	_qapp->setApplicationVersion(IFVS_SOFTWARE_VERSION_QSTRING);
+
+#ifdef _WIN32
+	// Show console window?
+	if (ELWS::hasArgsValue("--console"))
+	{
+		AllocConsole();
+	}
+#endif
 }
 
 void AbstractStartupLogic::initLogging()

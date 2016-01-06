@@ -251,6 +251,9 @@ void ConferenceVideoWindowSidebar::onCameraChanged()
 	{
 		QObject::connect(_camera.data(), &QCamera::statusChanged, this, &ConferenceVideoWindowSidebar::onCameraStatusChanged);
 	}
+
+	// Update UI
+	_enableVideoToggleButton->setEnabled(!_camera.isNull());
 	_enableVideoToggleButton->setVisible(!_camera.isNull());
 }
 

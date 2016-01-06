@@ -14,6 +14,7 @@ CameraFrameGrabber::CameraFrameGrabber(const QSize& resolution, QObject* parent)
 	_firstFrame(true),
 	_targetSize(resolution)//(IFVS_CLIENT_VIDEO_SIZE)
 {
+	setNativeResolution(_targetSize);
 }
 
 QList<QVideoFrame::PixelFormat> CameraFrameGrabber::supportedPixelFormats(QAbstractVideoBuffer::HandleType handleType) const

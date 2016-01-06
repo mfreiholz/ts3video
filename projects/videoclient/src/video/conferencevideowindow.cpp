@@ -58,7 +58,7 @@ HUMBLE_LOGGER(HL, "client.logic");
 
 static QSharedPointer<QCamera> createCameraFromOptions(const ConferenceVideoWindow::Options& opts)
 {
-	auto cameraInfo = QCameraInfo::defaultCamera();
+	QCameraInfo cameraInfo;
 	foreach (auto ci, QCameraInfo::availableCameras())
 	{
 		if (ci.deviceName() == opts.cameraDeviceId)
@@ -67,7 +67,14 @@ static QSharedPointer<QCamera> createCameraFromOptions(const ConferenceVideoWind
 			break;
 		}
 	}
-	return QSharedPointer<QCamera>(new QCamera(cameraInfo));
+	auto cam = cameraInfo.isNull() ? QSharedPointer<QCamera>() : QSharedPointer<QCamera>(new QCamera(cameraInfo));
+	if (cam)
+	{
+		auto sett = cam->viewfinderSettings();
+		sett.setResolution(opts.cameraResolution);
+		cam->setViewfinderSettings(sett);
+	}
+	return cam;
 }
 
 #if defined(OCS_INCLUDE_AUDIO)
@@ -109,7 +116,6 @@ ConferenceVideoWindow::ConferenceVideoWindow(const Options& opts, const QSharedP
 	QMainWindow(parent, flags),
 	_opts(opts),
 	_networkClient(nc),
-	_camera(),
 	_sidebar(nullptr),
 	_view(nullptr),
 	_statusbar(nullptr)//(new QStatusBar())
@@ -141,7 +147,6 @@ ConferenceVideoWindow::ConferenceVideoWindow(const Options& opts, const QSharedP
 
 	// Central view widget.
 	_view = new TileViewWidget(this, this);
-	_view->setClientListModel(_networkClient->clientModel());
 	l->addWidget(_view, 1);
 
 	// Network usage statistics inside statusbar
@@ -190,8 +195,18 @@ ConferenceVideoWindow::ConferenceVideoWindow(const Options& opts, const QSharedP
 	connect(_networkClient.data(), &NetworkClient::clientDisconnected, this, &ConferenceVideoWindow::onClientDisconnected);
 	connect(_networkClient.data(), &NetworkClient::newVideoFrame, this, &ConferenceVideoWindow::onNewVideoFrame);
 
-	// Create QCamera by device ID.
-	applyVideoInputOptions(_opts);
+	// Create initial tiles.
+	auto m = _networkClient->clientModel();
+	for (auto i = 0; i < m->rowCount(); ++i)
+	{
+		auto c = m->data(m->index(i), ClientListModel::ClientEntityRole).value<ClientEntity>();
+		onClientJoinedChannel(c, ChannelEntity());
+	}
+
+
+
+	// Apply options
+	applyOptions(_opts);
 
 #if defined(OCS_INCLUDE_AUDIO)
 	// Create QAudioInput (microphone).
@@ -219,19 +234,12 @@ ConferenceVideoWindow::ConferenceVideoWindow(const Options& opts, const QSharedP
 	}
 #endif
 
-	// Create initial tiles.
-	auto m = _networkClient->clientModel();
-	for (auto i = 0; i < m->rowCount(); ++i)
-	{
-		auto c = m->data(m->index(i), ClientListModel::ClientEntityRole).value<ClientEntity>();
-		onClientJoinedChannel(c, ChannelEntity());
-	}
 
-	// Auto turn ON camera.
-	if (_camera && _opts.cameraAutoEnable)
-	{
-		_sidebar->setVideoEnabled(true);
-	}
+	//// Auto turn ON camera.
+	//if (_camera && _opts.cameraAutoEnable)
+	//{
+	//	_sidebar->setVideoEnabled(true);
+	//}
 
 #if defined(OCS_INCLUDE_AUDIO)
 	// Auto turn ON microphone.
@@ -277,18 +285,18 @@ void ConferenceVideoWindow::loadOptionsFromConfig(Options& opts) const
 {
 	QSettings s;
 	opts.cameraDeviceId = s.value("Video/InputDeviceId", opts.cameraDeviceId).toString();
-	opts.cameraAutoEnable = s.value("Video/InputDeviceAutoEnable", opts.cameraAutoEnable).toBool();
 	opts.cameraResolution = s.value("Video/InputDeviceResolution", opts.cameraResolution).toSize();
 	opts.cameraBitrate = s.value("Video/InputDeviceBitrate", opts.cameraBitrate).toInt();
+	opts.cameraAutoEnable = s.value("Video/InputDeviceAutoEnable", opts.cameraAutoEnable).toBool();
 }
 
 void ConferenceVideoWindow::saveOptionsToConfig(const Options& opts) const
 {
 	QSettings s;
 	s.setValue("Video/InputDeviceId", opts.cameraDeviceId);
-	s.setValue("Video/InputDeviceAutoEnable", opts.cameraAutoEnable);
 	s.setValue("Video/InputDeviceResolution", opts.cameraResolution);
 	s.setValue("Video/InputDeviceBitrate", opts.cameraBitrate);
+	s.setValue("Video/InputDeviceAutoEnable", opts.cameraAutoEnable);
 }
 
 QSharedPointer<NetworkClient> ConferenceVideoWindow::networkClient() const
@@ -359,6 +367,11 @@ void ConferenceVideoWindow::onNewVideoFrame(YuvFrameRefPtr frame, int senderId)
 	_view->updateClientVideo(frame, senderId);
 }
 
+void ConferenceVideoWindow::applyOptions(const Options& opts)
+{
+	applyVideoInputOptions(opts);
+}
+
 void ConferenceVideoWindow::applyVideoInputOptions(const Options& opts)
 {
 	// Device
@@ -370,6 +383,12 @@ void ConferenceVideoWindow::applyVideoInputOptions(const Options& opts)
 	}
 	_camera = createCameraFromOptions(opts);
 	emit cameraChanged();
+
+	// Auto turn ON camera.
+	if (_camera && _opts.cameraAutoEnable)
+	{
+		_sidebar->setVideoEnabled(true);
+	}
 }
 
 void ConferenceVideoWindow::closeEvent(QCloseEvent* e)

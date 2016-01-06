@@ -16,6 +16,7 @@ public:
 	ClientEntity(const ClientEntity& other);
 	ClientEntity& operator=(const ClientEntity& other);
 	~ClientEntity();
+	
 	void fromQJsonObject(const QJsonObject& obj);
 	QJsonObject toQJsonObject() const;
 	QString toString() const;
@@ -29,6 +30,8 @@ public:
 
 	// Video settings.
 	bool videoEnabled; ///< Indicates whether the client has video enabled.
+	int videoWidth;
+	int videoHeight;
 
 	// Audio settings.
 	bool audioInputEnabled; ///< Indicates whether the client has audio input enabled (microphone).
