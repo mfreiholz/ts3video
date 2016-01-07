@@ -169,12 +169,12 @@ void TileViewWidget::updateClientVideo(YuvFrameRefPtr frame, int senderId)
 	auto tileWidget = d->tilesMap.value(senderId);
 	if (!tileWidget)
 	{
-		ClientEntity ce;
-		ce.id = senderId;
-		ce.videoEnabled = true;
-		addClient(ce, ChannelEntity());
-		tileWidget = d->tilesMap.value(senderId);
-		if (!tileWidget)
+		//ClientEntity ce;
+		//ce.id = senderId;
+		//ce.videoEnabled = true;
+		//addClient(ce, ChannelEntity());
+		//tileWidget = d->tilesMap.value(senderId);
+		//if (!tileWidget)
 			return;
 	}
 	tileWidget->_videoWidget->videoWidget()->setFrame(frame);

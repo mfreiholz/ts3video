@@ -22,6 +22,8 @@ public:
 	void setAuthenticated(bool yesno);
 
 	void sendVideoFrame(const QImage& image, int senderId);
+	void resetVideoEncodingOfClient(int senderId);
+	void resetVideoDecoderOfClient(int senderId);
 
 #if defined(OCS_INCLUDE_AUDIO)
 	void sendAudioFrame(const PcmFrameRefPtr& f, int senderId);

@@ -113,7 +113,7 @@ const VirtualServerOptions& VirtualServer::options() const
 
 void VirtualServer::updateMediaRecipients()
 {
-	const auto sendBackOwnVideo = true;
+	const auto sendBackOwnVideo = false;
 
 	MediaRecipients recips;
 	auto clients = _clients.values();

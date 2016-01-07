@@ -91,6 +91,16 @@ ConferenceVideoWindowSidebar::ConferenceVideoWindowSidebar(ConferenceVideoWindow
 		userCountLabel->setText(QString::number(nc->clientModel()->rowCount()));
 		_userListButton->stackUnder(userCountLabel);
 
+		QObject::connect(nc->clientModel(), &ClientListModel::rowsInserted, [this, userCountLabel](const QModelIndex & parent, int first, int last)
+		{
+			userCountLabel->setText(QString::number(_window->networkClient()->clientModel()->rowCount()));
+		});
+
+		QObject::connect(nc->clientModel(), &ClientListModel::rowsRemoved, [this, userCountLabel](const QModelIndex & parent, int first, int last)
+		{
+			userCountLabel->setText(QString::number(_window->networkClient()->clientModel()->rowCount()));
+		});
+
 		QObject::connect(_userListButton, &QPushButton::clicked, [this]()
 		{
 			auto w = new UserListWidget(_window, nullptr);
@@ -216,7 +226,7 @@ void ConferenceVideoWindowSidebar::setVideoEnabled(bool b)
 			}
 			if (nc)
 			{
-				auto reply = nc->enableVideoStream();
+				auto reply = nc->enableVideoStream(_window->options().cameraResolution.width(), _window->options().cameraResolution.height());
 				QCORREPLY_AUTODELETE(reply);
 			}
 		}

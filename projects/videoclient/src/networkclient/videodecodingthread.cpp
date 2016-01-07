@@ -53,6 +53,7 @@ void VideoDecodingThread::stop()
 	d->queueCond.wakeAll();
 }
 
+// Note: Enqueuing an NULL frame, will reset the internal used decoder.
 void VideoDecodingThread::enqueue(VP8Frame* frame, int senderId)
 {
 	QMutexLocker l(&d->m);
@@ -83,7 +84,7 @@ void VideoDecodingThread::run()
 		auto item = d->queue.dequeue();
 		l.unlock();
 
-		if (!item.first || item.second == 0)
+		if (/*!item.first || */item.second == 0)
 			continue;
 
 		// Get/create decoder
@@ -91,7 +92,7 @@ void VideoDecodingThread::run()
 		auto decoder = decoders.value(item.second);
 		if (!decoder)
 			create = true;
-		else if (false)
+		else if (!item.first)
 			create = true;
 
 		// Re-/create decoder
@@ -108,6 +109,8 @@ void VideoDecodingThread::run()
 			decoder->initialize();
 			decoders.insert(item.second, decoder);
 		}
+		if (!item.first)
+			continue;
 
 		// Decode
 		YuvFrameRefPtr yuv(decoder->decodeFrameRaw(item.first->data));

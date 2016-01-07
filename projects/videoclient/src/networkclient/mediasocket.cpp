@@ -163,6 +163,21 @@ void MediaSocket::sendVideoFrame(const QImage& image, int senderId)
 	d->videoEncodingThread->enqueue(image, senderId);
 }
 
+void MediaSocket::resetVideoEncodingOfClient(int senderId)
+{
+	if (!d->videoEncodingThread)
+		return;
+	d->videoEncodingThread->enqueueRecovery();
+}
+
+void MediaSocket::resetVideoDecoderOfClient(int senderId)
+{
+	if (!d->videoDecodingThread)
+		return;
+	d->videoDecodingThread->enqueue(nullptr, senderId);
+	delete d->videoFrameDatagramDecoders.take(senderId);
+}
+
 #if defined(OCS_INCLUDE_AUDIO)
 void MediaSocket::sendAudioFrame(const PcmFrameRefPtr& f, int senderId)
 {

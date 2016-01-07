@@ -270,17 +270,24 @@ QCorReply* NetworkClient::joinChannelByIdentifier(const QString& ident, const QS
 	return reply;
 }
 
-QCorReply* NetworkClient::enableVideoStream()
+QCorReply* NetworkClient::enableVideoStream(int width, int height)
 {
 	REQUEST_PRECHECK
 
 	HL_DEBUG(HL, QString("Enable video stream").toStdString());
 
 	d->clientEntity.videoEnabled = true;
+	d->clientEntity.videoWidth = width;
+	d->clientEntity.videoHeight = height;
 	d->clientModel->updateClient(d->clientEntity);
+	d->mediaSocket->resetVideoEncodingOfClient(d->clientEntity.id);
+
+	QJsonObject params;
+	params["width"] = width;
+	params["height"] = height;
 
 	QCorFrame req;
-	req.setData(JsonProtocolHelper::createJsonRequest("clientenablevideo", QJsonObject()));
+	req.setData(JsonProtocolHelper::createJsonRequest("clientenablevideo", params));
 	return d->corSocket->sendRequest(req);
 }
 
@@ -476,6 +483,7 @@ void NetworkClient::onNewIncomingRequest(QCorFrameRefPtr frame)
 	{
 		ClientEntity client;
 		client.fromQJsonObject(parameters["client"].toObject());
+		d->mediaSocket->resetVideoDecoderOfClient(client.id);
 		emit clientEnabledVideo(client);
 	}
 	else if (action == "notify.clientvideodisabled")

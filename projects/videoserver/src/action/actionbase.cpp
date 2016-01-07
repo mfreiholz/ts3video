@@ -295,6 +295,8 @@ void HeartbeatAction::run(const ActionData& req)
 void EnableVideoAction::run(const ActionData& req)
 {
 	req.session->_clientEntity->videoEnabled = true;
+	req.session->_clientEntity->videoWidth = req.params["width"].toInt();
+	req.session->_clientEntity->videoHeight = req.params["height"].toInt();
 	req.server->updateMediaRecipients();
 
 	sendDefaultOkResponse(req);
