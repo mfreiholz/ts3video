@@ -7,38 +7,10 @@
 
 HUMBLE_LOGGER(HL, "networkclient.videoencodingthread");
 
-///////////////////////////////////////////////////////////////////////
-
-#include <QMutex>
-#include <QWaitCondition>
-#include <QQueue>
-#include <QAtomicInt>
-#include <QPair>
-#include <QImage>
-
-class VideoEncodingThreadPrivate
-{
-public:
-	VideoEncodingThreadPrivate(VideoEncodingThread* o) :
-		owner(o),
-		stopFlag(0),
-		recoveryFlag(VP8Frame::NORMAL)
-	{}
-
-public:
-	VideoEncodingThread* owner;
-	QMutex m;
-	QWaitCondition queueCond;
-	QQueue<QPair<QImage, int> > queue; ///< Replace with RingQueue (Might not keep more than X frames! Otherwise we might get a memory problem.)
-	QAtomicInt stopFlag;
-	QAtomicInt recoveryFlag;
-};
-
-///////////////////////////////////////////////////////////////////////
-
 VideoEncodingThread::VideoEncodingThread(QObject* parent) :
 	QThread(parent),
-	d(new VideoEncodingThreadPrivate(this))
+	_stopFlag(0),
+	_recoveryFlag(VP8Frame::NORMAL)
 {
 }
 
@@ -48,25 +20,34 @@ VideoEncodingThread::~VideoEncodingThread()
 	wait();
 }
 
+void VideoEncodingThread::init(int width, int height, int bitrate, int fps)
+{
+	QMutexLocker l(&_m);
+	_width = width;
+	_height = height;
+	_bitrate = bitrate;
+	_fps = fps;
+}
+
 void VideoEncodingThread::stop()
 {
-	d->stopFlag = 1;
-	d->queueCond.wakeAll();
+	_stopFlag = 1;
+	_queueCond.wakeAll();
 }
 
 void VideoEncodingThread::enqueue(const QImage& image, int senderId)
 {
-	QMutexLocker l(&d->m);
-	d->queue.enqueue(qMakePair(image, senderId));
-	while (d->queue.size() > 5)
-		auto item = d->queue.dequeue();
-	d->queueCond.wakeAll();
+	QMutexLocker l(&_m);
+	_queue.enqueue(qMakePair(image, senderId));
+	while (_queue.size() > 5)
+		auto item = _queue.dequeue();
+	_queueCond.wakeAll();
 }
 
 void VideoEncodingThread::enqueueRecovery()
 {
-	d->recoveryFlag = VP8Frame::KEY;
-	d->queueCond.wakeAll();
+	_recoveryFlag = VP8Frame::KEY;
+	_queueCond.wakeAll();
 }
 
 void VideoEncodingThread::run()
@@ -79,17 +60,17 @@ void VideoEncodingThread::run()
 	QTime fpsTimer;
 	fpsTimer.start();
 
-	d->stopFlag = 0;
-	while (d->stopFlag == 0)
+	_stopFlag = 0;
+	while (_stopFlag == 0)
 	{
 		// Get next frame from queue
-		QMutexLocker l(&d->m);
-		if (d->queue.isEmpty())
+		QMutexLocker l(&_m);
+		if (_queue.isEmpty())
 		{
-			d->queueCond.wait(&d->m);
+			_queueCond.wait(&_m);
 			continue;
 		}
-		auto item = d->queue.dequeue();
+		auto item = _queue.dequeue();
 		l.unlock();
 
 		if (item.first.isNull())
@@ -128,16 +109,16 @@ void VideoEncodingThread::run()
 			if (!encoder->initialize(yuv->width, yuv->height, bitRate, fps))
 			{
 				HL_ERROR(HL, QString("Can not initialize VP8 video encoder").toStdString());
-				d->stopFlag = 1;
+				_stopFlag = 1;
 				continue;
 			}
 			encoders.insert(item.second, encoder);
 		}
 
-		if (d->recoveryFlag != VP8Frame::NORMAL)
+		if (_recoveryFlag != VP8Frame::NORMAL)
 		{
 			encoder->setRequestRecoveryFlag(VP8Frame::KEY);
-			d->recoveryFlag = VP8Frame::NORMAL;
+			_recoveryFlag = VP8Frame::NORMAL;
 		}
 
 		// Encode frame

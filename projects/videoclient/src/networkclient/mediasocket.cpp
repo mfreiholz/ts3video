@@ -27,8 +27,6 @@ QDataStream& operator>>(QDataStream& in, UDP::VideoFrameDatagram::dg_frame_id_t&
 #endif
 
 ///////////////////////////////////////////////////////////////////////
-//
-///////////////////////////////////////////////////////////////////////
 
 MediaSocket::MediaSocket(const QString& token, QObject* parent) :
 	QUdpSocket(parent),
@@ -44,16 +42,12 @@ MediaSocket::MediaSocket(const QString& token, QObject* parent) :
 	if (true)
 	{
 		// Encoding
-		static quint64 __nextVideoFrameId = 1;
 		d->videoEncodingThread->start();
-		connect(d->videoEncodingThread, &VideoEncodingThread::encoded, [this](const QByteArray & frame, int senderId)
-		{
-			sendVideoFrame(frame, __nextVideoFrameId++, senderId);
-		});
+		connect(d->videoEncodingThread, &VideoEncodingThread::encoded, this, &MediaSocket::onVideoFrameEncoded);
 
 		// Decoding
 		d->videoDecodingThread->start();
-		connect(d->videoDecodingThread, &VideoDecodingThread::decoded, this, &MediaSocket::newVideoFrame);
+		connect(d->videoDecodingThread, &VideoDecodingThread::decoded, this, &MediaSocket::onVideoFrameDecoded);
 	}
 
 #if defined(OCS_INCLUDE_AUDIO)
@@ -75,10 +69,9 @@ MediaSocket::MediaSocket(const QString& token, QObject* parent) :
 #endif
 
 	// Network usage calculation.
-	auto bandwidthTimer = new QTimer(this);
-	bandwidthTimer->setInterval(1500);
-	bandwidthTimer->start();
-	QObject::connect(bandwidthTimer, &QTimer::timeout, [this]()
+	_bandwidthTimer.setInterval(1500);
+	_bandwidthTimer.start();
+	QObject::connect(&_bandwidthTimer, &QTimer::timeout, [this]()
 	{
 		d->networkUsageHelper.recalculate();
 		emit networkUsageUpdated(d->networkUsage);
@@ -87,15 +80,14 @@ MediaSocket::MediaSocket(const QString& token, QObject* parent) :
 
 MediaSocket::~MediaSocket()
 {
+	if (_bandwidthTimer.isActive())
+		_bandwidthTimer.stop();
+
 	if (d->authenticationTimerId != -1)
-	{
 		killTimer(d->authenticationTimerId);
-	}
 
 	if (d->keepAliveTimerId != -1)
-	{
 		killTimer(d->keepAliveTimerId);
-	}
 
 	while (!d->videoFrameDatagramDecoders.isEmpty())
 	{
@@ -565,4 +557,15 @@ void MediaSocket::onReadyRead()
 
 		} // switch (type)
 	}
+}
+
+void MediaSocket::onVideoFrameEncoded(const QByteArray& frame, int senderId)
+{
+	static quint64 __nextVideoFrameId = 1;
+	sendVideoFrame(frame, __nextVideoFrameId++, senderId);
+}
+
+void MediaSocket::onVideoFrameDecoded(YuvFrameRefPtr frame, int senderId)
+{
+	emit newVideoFrame(frame, senderId);
 }

@@ -3,8 +3,11 @@
 
 #include <QScopedPointer>
 #include <QUdpSocket>
+#include <QTimer>
+
 #include "yuvframe.h"
 #include "pcmframe.h"
+
 class NetworkUsageEntity;
 
 class MediaSocketPrivate;
@@ -60,6 +63,12 @@ private slots:
 	void onSocketStateChanged(QAbstractSocket::SocketState state);
 	void onSocketError(QAbstractSocket::SocketError error);
 	void onReadyRead();
+
+	void onVideoFrameEncoded(const QByteArray& frame, int senderId);
+	void onVideoFrameDecoded(YuvFrameRefPtr frame, int senderId);
+
+private:
+	QTimer _bandwidthTimer;
 };
 
 #endif

@@ -280,6 +280,7 @@ QCorReply* NetworkClient::enableVideoStream(int width, int height)
 	d->clientEntity.videoWidth = width;
 	d->clientEntity.videoHeight = height;
 	d->clientModel->updateClient(d->clientEntity);
+
 	d->mediaSocket->resetVideoEncodingOfClient(d->clientEntity.id);
 
 	QJsonObject params;
