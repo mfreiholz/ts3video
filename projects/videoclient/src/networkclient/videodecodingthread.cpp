@@ -5,34 +5,9 @@
 
 HUMBLE_LOGGER(HL, "networkclient.videodecodingthread");
 
-///////////////////////////////////////////////////////////////////////
-
-#include <QMutex>
-#include <QWaitCondition>
-#include <QQueue>
-#include <QPair>
-#include <QAtomicInt>
-
-class VideoDecodingThreadPrivate
-{
-public:
-	VideoDecodingThreadPrivate(VideoDecodingThread* o) :
-		owner(o)
-	{}
-
-public:
-	VideoDecodingThread* owner;
-	QMutex m;
-	QWaitCondition queueCond;
-	QQueue<QPair<VP8Frame*, int> > queue;
-	QAtomicInt stopFlag;
-};
-
-///////////////////////////////////////////////////////////////////////
-
 VideoDecodingThread::VideoDecodingThread(QObject* parent) :
 	QThread(parent),
-	d(new VideoDecodingThreadPrivate(this))
+	_stopFlag(0)
 {
 }
 
@@ -40,48 +15,43 @@ VideoDecodingThread::~VideoDecodingThread()
 {
 	stop();
 	wait();
-	while (!d->queue.isEmpty())
+
+	while (!_queue.isEmpty())
 	{
-		auto item = d->queue.dequeue();
+		auto item = _queue.dequeue();
 		delete item.first;
 	}
 }
 
 void VideoDecodingThread::stop()
 {
-	d->stopFlag = 1;
-	d->queueCond.wakeAll();
+	_stopFlag = 1;
+	_queueCond.wakeAll();
 }
 
 // Note: Enqueuing an NULL frame, will reset the internal used decoder.
 void VideoDecodingThread::enqueue(VP8Frame* frame, int senderId)
 {
-	QMutexLocker l(&d->m);
-	d->queue.enqueue(qMakePair(frame, senderId));
-	//while (_queue.size() > 5) {
-	//  auto item = _queue.dequeue();
-	//  delete item.first;
-	//}
-	d->queueCond.wakeAll();
+	QMutexLocker l(&_m);
+	_queue.enqueue(qMakePair(frame, senderId));
+	_queueCond.wakeAll();
 }
 
 void VideoDecodingThread::run()
 {
-	// TODO Make it possible to reset/delete a VP8Decoder.
-	//      That would be useful when a participant leaves.
 	QHash<int, VP8Decoder*> decoders;
 
-	d->stopFlag = 0;
-	while (d->stopFlag == 0)
+	_stopFlag = 0;
+	while (_stopFlag == 0)
 	{
 		// Get next frame from queue
-		QMutexLocker l(&d->m);
-		if (d->queue.isEmpty())
+		QMutexLocker l(&_m);
+		if (_queue.isEmpty())
 		{
-			d->queueCond.wait(&d->m);
+			_queueCond.wait(&_m);
 			continue;
 		}
-		auto item = d->queue.dequeue();
+		auto item = _queue.dequeue();
 		l.unlock();
 
 		if (/*!item.first || */item.second == 0)
@@ -115,16 +85,6 @@ void VideoDecodingThread::run()
 		// Decode
 		YuvFrameRefPtr yuv(decoder->decodeFrameRaw(item.first->data));
 		emit decoded(yuv, item.second);
-
-		// DEV
-		//if (true) {
-		//  QImage image;
-		//  QDataStream in(item.first->data);
-		//  in >> image;
-		//  delete item.first;
-		//  emit decoded(image, item.second);
-		//}
-
 	}
 
 	// Clean up.

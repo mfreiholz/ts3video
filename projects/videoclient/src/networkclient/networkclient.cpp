@@ -497,13 +497,18 @@ void NetworkClient::onNewIncomingRequest(QCorFrameRefPtr frame)
 	{
 		ClientEntity client;
 		client.fromQJsonObject(parameters["client"].toObject());
+
 		d->mediaSocket->resetVideoDecoderOfClient(client.id);
+
 		emit clientEnabledVideo(client);
 	}
 	else if (action == "notify.clientvideodisabled")
 	{
 		ClientEntity client;
 		client.fromQJsonObject(parameters["client"].toObject());
+
+		d->mediaSocket->resetVideoDecoderOfClient(client.id);
+
 		emit clientDisabledVideo(client);
 	}
 	else if (action == "notify.clientjoinedchannel")
