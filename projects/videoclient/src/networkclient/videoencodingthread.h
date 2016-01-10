@@ -9,6 +9,8 @@
 #include <QAtomicInt>
 #include <QImage>
 
+#include "vp8frame.h"
+
 class QByteArray;
 class QImage;
 
@@ -23,18 +25,19 @@ public:
 	void init(int width, int height, int bitrate = 100, int fps = 24);
 	void stop();
 	void enqueue(const QImage& image, int senderId);
-	void enqueueRecovery();
+	void enqueueRecovery(VP8Frame::FrameType ft = VP8Frame::KEY);
 
 protected:
 	void run();
 
 signals:
-	void encoded(QByteArray& frame, int senderId);
+	void error(const QString& message);
+	void encoded(QByteArray frame, int senderId);
 
 private:
 	QMutex _m;
 	QWaitCondition _queueCond;
-	QQueue<QPair<QImage, int> > _queue; ///< Replace with RingQueue (Might not keep more than X frames! Otherwise we might get a memory problem.)
+	QQueue<QPair<QImage, int> > _queue;
 	QAtomicInt _stopFlag;
 	QAtomicInt _recoveryFlag;
 

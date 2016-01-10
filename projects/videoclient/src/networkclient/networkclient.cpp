@@ -63,26 +63,11 @@ void NetworkClientPrivate::onAuthFinished()
 		return;
 
 	// Parse self client info and media-authentication-token from response.
-	const auto client = params["client"].toObject();
-	const auto authtoken = params["authtoken"].toString();
-	d->clientEntity.fromQJsonObject(client);
+	d->clientEntity.fromQJsonObject(params["client"].toObject());
+	d->authToken = params["authtoken"].toString();
 
 	// Create new media socket.
-	if (d->useMediaSocket)
-	{
-		if (d->mediaSocket)
-		{
-			d->mediaSocket->close();
-			delete d->mediaSocket;
-		}
-		d->mediaSocket = new MediaSocket(authtoken, this);
-		d->mediaSocket->connectToHost(d->corSocket->socket()->peerAddress(), d->corSocket->socket()->peerPort());
-		QObject::connect(d->mediaSocket, &MediaSocket::newVideoFrame, d->owner, &NetworkClient::newVideoFrame);
-#if defined(OCS_INCLUDE_AUDIO)
-		QObject::connect(d->mediaSocket, &MediaSocket::newAudioFrame, d->owner, &NetworkClient::newAudioFrame);
-#endif
-		QObject::connect(d->mediaSocket, &MediaSocket::networkUsageUpdated, d->owner, &NetworkClient::networkUsageUpdated);
-	}
+	d->owner->initMediaSocket();
 }
 
 void NetworkClientPrivate::onJoinChannelFinished()
@@ -281,11 +266,13 @@ QCorReply* NetworkClient::enableVideoStream(int width, int height)
 	d->clientEntity.videoHeight = height;
 	d->clientModel->updateClient(d->clientEntity);
 
-	d->mediaSocket->resetVideoEncodingOfClient(d->clientEntity.id);
+	d->mediaSocket->initVideoEncoder(width, height, 100, 24);
 
 	QJsonObject params;
 	params["width"] = width;
 	params["height"] = height;
+	params["bitrate"] = 100;
+	params["fps"] = 24;
 
 	QCorFrame req;
 	req.setData(JsonProtocolHelper::createJsonRequest("clientenablevideo", params));
@@ -419,6 +406,30 @@ QCorReply* NetworkClient::kickClient(int clientId, bool ban)
 	QCorFrame req;
 	req.setData(JsonProtocolHelper::createJsonRequest("kickclient", params));
 	return d->corSocket->sendRequest(req);
+}
+
+// initMediaSocket Creates a new MediaSocket based on "auth-token".
+void NetworkClient::initMediaSocket()
+{
+	// Create new media socket.
+	if (!d->useMediaSocket)
+		return;
+
+	if (d->mediaSocket)
+	{
+		d->mediaSocket->close();
+		delete d->mediaSocket;
+	}
+
+	// Connects to server and authenticates with auth-token.
+	d->mediaSocket = new MediaSocket(d->authToken, this);
+	d->mediaSocket->connectToHost(d->corSocket->socket()->peerAddress(), d->corSocket->socket()->peerPort());
+
+	QObject::connect(d->mediaSocket, &MediaSocket::newVideoFrame, d->owner, &NetworkClient::newVideoFrame);
+#if defined(OCS_INCLUDE_AUDIO)
+	QObject::connect(d->mediaSocket, &MediaSocket::newAudioFrame, d->owner, &NetworkClient::newAudioFrame);
+#endif
+	QObject::connect(d->mediaSocket, &MediaSocket::networkUsageUpdated, d->owner, &NetworkClient::networkUsageUpdated);
 }
 
 void NetworkClient::sendHeartbeat()

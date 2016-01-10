@@ -2,7 +2,6 @@
 #include <QTime>
 #include "humblelogging/api.h"
 #include "ts3video.h"
-#include "vp8frame.h"
 #include "vp8encoder.h"
 
 HUMBLE_LOGGER(HL, "networkclient.videoencodingthread");
@@ -40,23 +39,27 @@ void VideoEncodingThread::enqueue(const QImage& image, int senderId)
 	QMutexLocker l(&_m);
 	_queue.enqueue(qMakePair(image, senderId));
 	while (_queue.size() > 5)
-		auto item = _queue.dequeue();
+		_queue.dequeue();
 	_queueCond.wakeAll();
 }
 
-void VideoEncodingThread::enqueueRecovery()
+void VideoEncodingThread::enqueueRecovery(VP8Frame::FrameType ft)
 {
-	_recoveryFlag = VP8Frame::KEY;
+	_recoveryFlag = ft;
 	_queueCond.wakeAll();
 }
 
 void VideoEncodingThread::run()
 {
-	const int fps = 24;
-	const int fpsTimeMs = 1000 / fps;
-	const int bitRate = 100;
+	QMutexLocker l(&_m);
+	const auto width = _width;
+	const auto height = _height;
+	const auto bitrate = _bitrate;
+	const auto fps = _fps;
+	const auto fpsTimeMs = 1000 / fps;
+	l.unlock();
 
-	QHash<int, VP8Encoder*> encoders;
+	QScopedPointer<VP8Encoder> encoder;
 	QTime fpsTimer;
 	fpsTimer.start();
 
@@ -64,7 +67,7 @@ void VideoEncodingThread::run()
 	while (_stopFlag == 0)
 	{
 		// Get next frame from queue
-		QMutexLocker l(&_m);
+		l.relock();
 		if (_queue.isEmpty())
 		{
 			_queueCond.wait(&_m);
@@ -78,17 +81,17 @@ void VideoEncodingThread::run()
 
 
 		// FPS check
+		// TODO Instead of using this timer, we should grab frames from camera with FPS.
 		if (fps > 0 && fpsTimer.elapsed() < fpsTimeMs)
 			continue;
 		fpsTimer.restart();
 
 
 		// Convert to YuvFrame.
-		auto yuv = YuvFrame::fromQImage(item.first);
+		const QScopedPointer<YuvFrame> yuv(YuvFrame::fromQImage(item.first));
 
 		// Get/create encoder
 		auto create = false;
-		auto encoder = encoders.value(item.second);
 		if (!encoder)
 			create = true;
 		else if (!encoder->isValidFrame(*yuv))
@@ -98,21 +101,15 @@ void VideoEncodingThread::run()
 		if (create)
 		{
 			if (encoder)
-			{
-				encoders.remove(item.second);
-				delete encoder;
-				encoder = nullptr;
-			}
+				encoder.reset();
 
-			HL_DEBUG(HL, QString("Create new video encoder (id=%1)").arg(item.second).toStdString());
-			encoder = new VP8Encoder();
-			if (!encoder->initialize(yuv->width, yuv->height, bitRate, fps))
+			encoder.reset(new VP8Encoder());
+			if (!encoder->initialize(width, height, bitrate, fps))
 			{
-				HL_ERROR(HL, QString("Can not initialize VP8 video encoder").toStdString());
 				_stopFlag = 1;
+				emit error(QString("Can not initialize video encoder"));
 				continue;
 			}
-			encoders.insert(item.second, encoder);
 		}
 
 		if (_recoveryFlag != VP8Frame::NORMAL)
@@ -122,35 +119,12 @@ void VideoEncodingThread::run()
 		}
 
 		// Encode frame
-		auto vp8 = encoder->encode(*yuv);
-		delete yuv;
+		const QScopedPointer<VP8Frame> vp8(encoder->encode(*yuv));
 
 		// Serialize VP8Frame.
 		QByteArray data;
 		QDataStream out(&data, QIODevice::WriteOnly);
 		out << *vp8;
-		delete vp8;
 		emit encoded(data, item.second);
-
-		// DEV Provides plain QImage.
-		//if (true) {
-		//  static quint64 __frameTime = 1;
-		//  VP8Frame vpframe;
-		//  vpframe.time = __frameTime++;
-		//  vpframe.type = VP8Frame::KEY;
-		//  QDataStream out(&vpframe.data, QIODevice::WriteOnly);
-		//  out << item.first;
-
-		//  QByteArray data;
-		//  QDataStream out2(&data, QIODevice::WriteOnly);
-		//  out2 << vpframe;
-
-		//  emit encoded(data, item.second);
-		//}
-
 	}
-
-	// Clean up.
-	qDeleteAll(encoders);
-	encoders.clear();
 }

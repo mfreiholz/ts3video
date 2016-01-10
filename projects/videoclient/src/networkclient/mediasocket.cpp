@@ -41,8 +41,7 @@ MediaSocket::MediaSocket(const QString& token, QObject* parent) :
 	// Video
 	if (true)
 	{
-		// Encoding
-		d->videoEncodingThread->start();
+		// Encoding (Delayed start, when the user enables his video)
 		connect(d->videoEncodingThread, &VideoEncodingThread::encoded, this, &MediaSocket::onVideoFrameEncoded);
 
 		// Decoding
@@ -155,11 +154,14 @@ void MediaSocket::sendVideoFrame(const QImage& image, int senderId)
 	d->videoEncodingThread->enqueue(image, senderId);
 }
 
-void MediaSocket::resetVideoEncodingOfClient(int senderId)
+void MediaSocket::initVideoEncoder(int width, int height, int bitrate, int fps)
 {
 	if (!d->videoEncodingThread)
 		return;
-	d->videoEncodingThread->enqueueRecovery();
+	d->videoEncodingThread->stop();
+	d->videoEncodingThread->wait();
+	d->videoEncodingThread->init(width, height, bitrate, fps);
+	d->videoEncodingThread->start();
 }
 
 void MediaSocket::resetVideoDecoderOfClient(int senderId)
@@ -559,7 +561,7 @@ void MediaSocket::onReadyRead()
 	}
 }
 
-void MediaSocket::onVideoFrameEncoded(const QByteArray& frame, int senderId)
+void MediaSocket::onVideoFrameEncoded(QByteArray frame, int senderId)
 {
 	static quint64 __nextVideoFrameId = 1;
 	sendVideoFrame(frame, __nextVideoFrameId++, senderId);

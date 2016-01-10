@@ -58,6 +58,7 @@ public:
 
 	// Data about self.
 	ClientEntity clientEntity;
+	QString authToken;
 	bool isAdmin;
 
 	// Data about others.

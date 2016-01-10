@@ -243,7 +243,7 @@ void ConferenceVideoWindowSidebar::setVideoEnabled(bool b)
 			}
 		}
 	}
-	_enableVideoToggleButton->setChecked(b);
+	//_enableVideoToggleButton->setChecked(b);
 }
 
 void ConferenceVideoWindowSidebar::onCameraChanged()

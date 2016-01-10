@@ -139,6 +139,9 @@ public:
 	*/
 	QCorReply* kickClient(int clientId, bool ban = false);
 
+protected:
+	void initMediaSocket();
+
 signals:
 	// Connection based signals.
 	void connected();

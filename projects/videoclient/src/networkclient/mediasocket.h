@@ -24,8 +24,9 @@ public:
 	bool isAuthenticated() const;
 	void setAuthenticated(bool yesno);
 
+	void initVideoEncoder(int width, int height, int bitrate, int fps);
 	void sendVideoFrame(const QImage& image, int senderId);
-	void resetVideoEncodingOfClient(int senderId);
+	
 	void resetVideoDecoderOfClient(int senderId);
 
 #if defined(OCS_INCLUDE_AUDIO)
@@ -64,7 +65,7 @@ private slots:
 	void onSocketError(QAbstractSocket::SocketError error);
 	void onReadyRead();
 
-	void onVideoFrameEncoded(const QByteArray& frame, int senderId);
+	void onVideoFrameEncoded(QByteArray frame, int senderId);
 	void onVideoFrameDecoded(YuvFrameRefPtr frame, int senderId);
 
 private:
