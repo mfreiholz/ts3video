@@ -53,12 +53,14 @@ public:
 	};
 
 public:
-	ConferenceVideoWindow(const Options& opts, const QSharedPointer<NetworkClient>& nc, QWidget* parent, Qt::WindowFlags flags);
+	ConferenceVideoWindow(const QSharedPointer<NetworkClient>& nc, QWidget* parent, Qt::WindowFlags flags);
 	virtual ~ConferenceVideoWindow();
 
 	const ConferenceVideoWindow::Options& options() const;
-	void loadOptionsFromConfig(Options& opts) const;
-	void saveOptionsToConfig(const Options& opts) const;
+	void applyOptions(const Options& opts);
+	void applyVideoInputOptions(const Options& opts);
+	static void loadOptionsFromConfig(Options& opts);
+	static void saveOptionsToConfig(const Options& opts);
 
 	QSharedPointer<NetworkClient> networkClient() const;
 	QSharedPointer<QCamera> camera() const;
@@ -70,6 +72,8 @@ public:
 private slots:
 	// Gui callbacks
 	void onActionVideoSettingsTriggered();
+	void onActionLoginAsAdminTriggered();
+	void onActionExitTriggered();
 
 	// Network callbacks
 	void onError(QAbstractSocket::SocketError socketError);
@@ -80,8 +84,6 @@ private slots:
 	void onNewVideoFrame(YuvFrameRefPtr frame, int senderId);
 
 protected:
-	void applyOptions(const Options& opts);
-	void applyVideoInputOptions(const Options& opts);
 	virtual void closeEvent(QCloseEvent* e);
 	void showResponseError(int status, const QString& errorMessage, const QString& details = QString());
 	void showError(const QString& shortText, const QString& longText = QString());

@@ -97,7 +97,7 @@ static QString generateConferenceRoomPassword(const QString& uid)
 	--mode ts3video --address 127.0.0.1 --port 9987 --channelid 1 --username "Manuel"
 */
 Ts3VideoStartupLogic::Ts3VideoStartupLogic(QApplication* a) :
-	QDialog(nullptr), AbstractStartupLogic(a)
+	QDialog(nullptr), AbstractStartupLogic(a), _window(nullptr)
 {
 	// Setup application.
 	a->setQuitOnLastWindowClosed(true);
@@ -142,7 +142,12 @@ int Ts3VideoStartupLogic::exec()
 
 	start();
 
-	return AbstractStartupLogic::exec();
+	const auto execCode = AbstractStartupLogic::exec();
+	if (_window)
+	{
+		_window->saveOptionsToConfig(_window->options());
+	}
+	return execCode;
 }
 
 void Ts3VideoStartupLogic::showProgress(const QString& text)
@@ -424,19 +429,23 @@ void Ts3VideoStartupLogic::startVideoGui()
 {
 	// Conference settings.
 	// Skip dialog with: --skip-startup-dialog
-	StartupDialog dialog(this);
-	if (!ELWS::hasArgsValue("--skip-startup-dialog"))
-	{
-		if (dialog.exec() != QDialog::Accepted)
-		{
-			quitDelayed();
-			return;
-		}
-	}
+	//StartupDialog dialog(this);
+	//if (!ELWS::hasArgsValue("--skip-startup-dialog"))
+	//{
+	//	if (dialog.exec() != QDialog::Accepted)
+	//	{
+	//		quitDelayed();
+	//		return;
+	//	}
+	//}
 
 	// Open conference video-chat UI.
-	auto w = new ConferenceVideoWindow(dialog.values(), _nc, nullptr, 0);
-	w->show();
+	ConferenceVideoWindow::Options opts;
+	ConferenceVideoWindow::loadOptionsFromConfig(opts);
+
+	_window = new ConferenceVideoWindow(_nc, nullptr, 0);
+	_window->applyOptions(opts);
+	_window->show();
 
 	// Close startup logic.
 	close();

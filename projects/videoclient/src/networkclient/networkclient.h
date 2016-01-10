@@ -83,7 +83,7 @@ public:
 	    \see auth()
 	    \return QCorReply* Ownership goes over to caller who needs to delete it with "deleteLater()".
 	*/
-	QCorReply* enableVideoStream(int width, int height);
+	QCorReply* enableVideoStream(int width, int height, int bitrate);
 	QCorReply* disableVideoStream();
 
 	/*!

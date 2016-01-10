@@ -255,7 +255,7 @@ QCorReply* NetworkClient::joinChannelByIdentifier(const QString& ident, const QS
 	return reply;
 }
 
-QCorReply* NetworkClient::enableVideoStream(int width, int height)
+QCorReply* NetworkClient::enableVideoStream(int width, int height, int bitrate)
 {
 	REQUEST_PRECHECK
 
@@ -266,12 +266,12 @@ QCorReply* NetworkClient::enableVideoStream(int width, int height)
 	d->clientEntity.videoHeight = height;
 	d->clientModel->updateClient(d->clientEntity);
 
-	d->mediaSocket->initVideoEncoder(width, height, 100, 24);
+	d->mediaSocket->initVideoEncoder(width, height, bitrate, 24);
 
 	QJsonObject params;
 	params["width"] = width;
 	params["height"] = height;
-	params["bitrate"] = 100;
+	params["bitrate"] = bitrate;
 	params["fps"] = 24;
 
 	QCorFrame req;

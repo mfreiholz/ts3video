@@ -15,7 +15,6 @@
 #include "video/conferencevideowindow.h"
 #include "video/userlistwidget.h"
 
-#include "adminauthwidget.h"
 #include "aboutwidget.h"
 #include "hintoverlaywidget.h"
 
@@ -148,26 +147,6 @@ ConferenceVideoWindowSidebar::ConferenceVideoWindowSidebar(ConferenceVideoWindow
 		});
 	}
 
-	// Admin login control
-	if (true)
-	{
-		_adminAuthButton = new QPushButton();
-		_adminAuthButton->setIcon(QIcon(":/ic_lock_grey600_48dp.png"));
-		_adminAuthButton->setIconSize(__sideBarIconSize / 2);
-		_adminAuthButton->setToolTip(tr("Login as admin"));
-		_adminAuthButton->setFlat(true);
-		mainLayout->addWidget(_adminAuthButton);
-
-		QObject::connect(_adminAuthButton, &QPushButton::clicked, [this, nc]()
-		{
-			auto w = new AdminAuthWidget(nc, this);
-			w->setModal(true);
-			w->exec();
-			if (nc->isAdmin())
-				_adminAuthButton->setVisible(false);
-		});
-	}
-
 	// Network usage statistics
 	if (true)
 	{
@@ -226,7 +205,8 @@ void ConferenceVideoWindowSidebar::setVideoEnabled(bool b)
 			}
 			if (nc)
 			{
-				auto reply = nc->enableVideoStream(_window->options().cameraResolution.width(), _window->options().cameraResolution.height());
+				const auto& opts = _window->options();
+				auto reply = nc->enableVideoStream(opts.cameraResolution.width(), opts.cameraResolution.height(), opts.cameraBitrate);
 				QCORREPLY_AUTODELETE(reply);
 			}
 		}

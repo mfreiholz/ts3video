@@ -64,6 +64,7 @@ private:
 	Ts3VideoStartOptions _args;
 	ConferenceJoinInfo _joinInfo;
 	QSharedPointer<NetworkClient> _nc;
+	ConferenceVideoWindow* _window;
 };
 
 

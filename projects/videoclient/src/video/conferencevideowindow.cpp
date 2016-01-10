@@ -40,6 +40,7 @@
 #include "clientcameravideowidget.h"
 #include "remoteclientvideowidget.h"
 #include "tileviewwidget.h"
+#include "adminauthwidget.h"
 
 #include "video/conferencevideowindowsidebar.h"
 #include "video/videosettingswidget.h"
@@ -112,9 +113,8 @@ static QSharedPointer<QAudioInput> createMicrophoneFromOptions(const ConferenceV
 
 ///////////////////////////////////////////////////////////////////////
 
-ConferenceVideoWindow::ConferenceVideoWindow(const Options& opts, const QSharedPointer<NetworkClient>& nc, QWidget* parent, Qt::WindowFlags flags) :
+ConferenceVideoWindow::ConferenceVideoWindow(const QSharedPointer<NetworkClient>& nc, QWidget* parent, Qt::WindowFlags flags) :
 	QMainWindow(parent, flags),
-	_opts(opts),
 	_networkClient(nc),
 	_sidebar(nullptr),
 	_view(nullptr),
@@ -126,9 +126,18 @@ ConferenceVideoWindow::ConferenceVideoWindow(const Options& opts, const QSharedP
 	auto menuBar = new QMenuBar(this);
 	setMenuBar(menuBar);
 
-	auto menu = menuBar->addMenu(QIcon(), tr("Settings"));
-	auto videoSettingsAction = menu->addAction(QIcon(), tr("Video..."));
+	auto menu = menuBar->addMenu(QIcon(), tr("Conference"));
+
+	auto videoSettingsAction = menu->addAction(QIcon(), tr("Video settings..."));
 	QObject::connect(videoSettingsAction, &QAction::triggered, this, &ConferenceVideoWindow::onActionVideoSettingsTriggered);
+
+	menu->addSeparator();
+	auto adminAuthAction = menu->addAction(QIcon(":/ic_lock_grey600_48dp.png"), tr("Login as admin..."));
+	QObject::connect(adminAuthAction, &QAction::triggered, this, &ConferenceVideoWindow::onActionLoginAsAdminTriggered);
+
+	menu->addSeparator();
+	auto exitAction = menu->addAction(QIcon(), tr("Exit"));
+	QObject::connect(exitAction, &QAction::triggered, this, &ConferenceVideoWindow::onActionExitTriggered);
 
 	// Status bar
 	setStatusBar(_statusbar);
@@ -203,11 +212,6 @@ ConferenceVideoWindow::ConferenceVideoWindow(const Options& opts, const QSharedP
 		onClientJoinedChannel(c, ChannelEntity());
 	}
 
-
-
-	// Apply options
-	applyOptions(_opts);
-
 #if defined(OCS_INCLUDE_AUDIO)
 	// Create QAudioInput (microphone).
 	if (!_opts.audioInputDeviceId.isEmpty())
@@ -232,16 +236,7 @@ ConferenceVideoWindow::ConferenceVideoWindow(const Options& opts, const QSharedP
 			_audioPlayer->add(f, senderId);
 		});
 	}
-#endif
 
-
-	//// Auto turn ON camera.
-	//if (_camera && _opts.cameraAutoEnable)
-	//{
-	//	_sidebar->setVideoEnabled(true);
-	//}
-
-#if defined(OCS_INCLUDE_AUDIO)
 	// Auto turn ON microphone.
 	if (_audioInput && _opts.audioInputAutoEnable)
 	{
@@ -281,7 +276,32 @@ const ConferenceVideoWindow::Options& ConferenceVideoWindow::options() const
 	return _opts;
 }
 
-void ConferenceVideoWindow::loadOptionsFromConfig(Options& opts) const
+void ConferenceVideoWindow::applyOptions(const Options& opts)
+{
+	_opts = opts;
+	applyVideoInputOptions(opts);
+}
+
+void ConferenceVideoWindow::applyVideoInputOptions(const Options& opts)
+{
+	// Device
+	if (_camera)
+	{
+		_camera->stop();
+		_camera->unload();
+		_camera.clear();
+	}
+	_camera = createCameraFromOptions(opts);
+	emit cameraChanged();
+
+	// Auto turn ON camera.
+	if (_camera && _opts.cameraAutoEnable)
+	{
+		_sidebar->setVideoEnabled(true);
+	}
+}
+
+void ConferenceVideoWindow::loadOptionsFromConfig(Options& opts)
 {
 	QSettings s;
 	opts.cameraDeviceId = s.value("Video/InputDeviceId", opts.cameraDeviceId).toString();
@@ -290,7 +310,7 @@ void ConferenceVideoWindow::loadOptionsFromConfig(Options& opts) const
 	opts.cameraAutoEnable = s.value("Video/InputDeviceAutoEnable", opts.cameraAutoEnable).toBool();
 }
 
-void ConferenceVideoWindow::saveOptionsToConfig(const Options& opts) const
+void ConferenceVideoWindow::saveOptionsToConfig(const Options& opts)
 {
 	QSettings s;
 	s.setValue("Video/InputDeviceId", opts.cameraDeviceId);
@@ -329,6 +349,21 @@ void ConferenceVideoWindow::onActionVideoSettingsTriggered()
 	applyVideoInputOptions(_opts);
 }
 
+void ConferenceVideoWindow::onActionLoginAsAdminTriggered()
+{
+	auto action = qobject_cast<QAction*>(sender());
+	AdminAuthWidget w(_networkClient, this);
+	w.setModal(true);
+	w.exec();
+	if (_networkClient->isAdmin() && action)
+		action->setEnabled(false);
+}
+
+void ConferenceVideoWindow::onActionExitTriggered()
+{
+	close();
+}
+
 void ConferenceVideoWindow::onError(QAbstractSocket::SocketError socketError)
 {
 	HL_INFO(HL, QString("Socket error (error=%1; message=%2)").arg(socketError).arg(_networkClient->socket()->errorString()).toStdString());
@@ -365,30 +400,6 @@ void ConferenceVideoWindow::onClientDisconnected(const ClientEntity& client)
 void ConferenceVideoWindow::onNewVideoFrame(YuvFrameRefPtr frame, int senderId)
 {
 	_view->updateClientVideo(frame, senderId);
-}
-
-void ConferenceVideoWindow::applyOptions(const Options& opts)
-{
-	applyVideoInputOptions(opts);
-}
-
-void ConferenceVideoWindow::applyVideoInputOptions(const Options& opts)
-{
-	// Device
-	if (_camera)
-	{
-		_camera->stop();
-		_camera->unload();
-		_camera.clear();
-	}
-	_camera = createCameraFromOptions(opts);
-	emit cameraChanged();
-
-	// Auto turn ON camera.
-	if (_camera && _opts.cameraAutoEnable)
-	{
-		_sidebar->setVideoEnabled(true);
-	}
 }
 
 void ConferenceVideoWindow::closeEvent(QCloseEvent* e)
