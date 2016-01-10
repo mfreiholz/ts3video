@@ -262,15 +262,12 @@ void TileViewWidget::showEvent(QShowEvent* e)
 {
 	QSettings settings;
 	setTileSize(settings.value("UI/TileViewWidget-TileSize", d->tilesCurrentSize).toSize());
-	//if (!settings.value("UI/TileViewWidget-LeftPanelVisible", d->leftPanelVisible).toBool())
-	//	d->hideLeftPanelButton->click();
 }
 
 void TileViewWidget::hideEvent(QHideEvent* e)
 {
 	QSettings settings;
 	settings.setValue("UI/TileViewWidget-TileSize", d->tilesCurrentSize);
-	//settings.setValue("UI/TileViewWidget-LeftPanelVisible", d->leftPanelVisible);
 }
 
 void TileViewWidget::onClientEnabledVideo(const ClientEntity& c)
@@ -280,12 +277,13 @@ void TileViewWidget::onClientEnabledVideo(const ClientEntity& c)
 
 void TileViewWidget::onClientDisabledVideo(const ClientEntity& c)
 {
-	auto w = d->tilesMap.value(c.id);
-	if (w)
-	{
-		auto yuv = YuvFrameRefPtr(YuvFrame::createBlackImage(10, 10));
-		w->_videoWidget->videoWidget()->setFrame(yuv->toQImage());
-	}
+	//auto w = d->tilesMap.value(c.id);
+	//if (w)
+	//{
+	//	auto yuv = YuvFrameRefPtr(YuvFrame::createBlackImage(10, 10));
+	//	w->_videoWidget->videoWidget()->setFrame(yuv->toQImage());
+	//}
+	removeClient(c, ChannelEntity());
 }
 
 void TileViewWidget::onCameraChanged()
@@ -311,9 +309,11 @@ void TileViewWidget::onCameraStatusChanged(QCamera::Status s)
 {
 	switch (s)
 	{
-	case QCamera::LoadedStatus:
-	case QCamera::UnloadedStatus:
-	case QCamera::StandbyStatus:
+	case QCamera::ActiveStatus:
+		d->cameraWidget->setVisible(true);
+		break;
+	default:
+		d->cameraWidget->setVisible(false);
 		d->cameraWidget->_cameraWidget->setFrame(QImage());
 		break;
 	}
