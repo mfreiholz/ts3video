@@ -48,14 +48,14 @@ TileViewWidget::TileViewWidget(ConferenceVideoWindow* window, QWidget* parent, Q
 	setLayout(mainLayout);
 
 	// Central scroll area
-	auto scrollArea = new QScrollArea();
+	auto scrollArea = new QScrollArea(this);
 	scrollArea->setFrameStyle(QFrame::NoFrame);
 	scrollArea->setWidgetResizable(true);
 	scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 	scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 	mainLayout->addWidget(scrollArea, 1);
 
-	auto scrollAreaContent = new QWidget();
+	auto scrollAreaContent = new QWidget(this);
 	auto scrollAreaContentLayout = new QBoxLayout(QBoxLayout::TopToBottom);
 	scrollAreaContent->setLayout(scrollAreaContentLayout);
 	scrollArea->setWidget(scrollAreaContent);
@@ -84,7 +84,7 @@ TileViewWidget::TileViewWidget(ConferenceVideoWindow* window, QWidget* parent, Q
 	}
 
 	// Video tiles container.
-	auto tilesContainer = new MovableWidgetContainer(nullptr, 0);
+	auto tilesContainer = new MovableWidgetContainer(this, 0);
 	auto tilesContainerLayout = static_cast<FlowLayout*>(tilesContainer->layout());
 	tilesContainerLayout->setContentsMargins(0, 0, 0, 0);
 	tilesContainer->setLayout(tilesContainerLayout);
@@ -302,7 +302,7 @@ void TileViewWidget::onCameraChanged()
 	}
 
 	// Update UI
-	d->cameraWidget->setVisible(!_camera.isNull());
+	//d->cameraWidget->setVisible(!_camera.isNull());
 }
 
 void TileViewWidget::onCameraStatusChanged(QCamera::Status s)

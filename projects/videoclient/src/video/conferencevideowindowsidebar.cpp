@@ -111,7 +111,7 @@ ConferenceVideoWindowSidebar::ConferenceVideoWindowSidebar(ConferenceVideoWindow
 	mainLayout->addStretch(1);
 
 	// Show/hide sidebar control
-	if (true)
+	if (false)
 	{
 		_hideLeftPanelButton = new QPushButton();
 		_hideLeftPanelButton->setIcon(QIcon(":/ic_chevron_left_grey600_48dp.png"));
