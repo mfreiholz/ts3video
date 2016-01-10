@@ -164,6 +164,15 @@ void MediaSocket::initVideoEncoder(int width, int height, int bitrate, int fps)
 	d->videoEncodingThread->start();
 }
 
+void MediaSocket::resetVideoEncoder()
+{
+	if (d->videoEncodingThread)
+	{
+		d->videoEncodingThread->stop();
+		d->videoEncodingThread->wait();
+	}
+}
+
 void MediaSocket::resetVideoDecoderOfClient(int senderId)
 {
 	if (!d->videoDecodingThread)

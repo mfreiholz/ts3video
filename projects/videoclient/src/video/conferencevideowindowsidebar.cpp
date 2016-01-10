@@ -56,7 +56,7 @@ ConferenceVideoWindowSidebar::ConferenceVideoWindowSidebar(ConferenceVideoWindow
 		_enableVideoToggleButton->setVisible(_camera.isNull());
 		mainLayout->addWidget(_enableVideoToggleButton);
 
-		QObject::connect(_enableVideoToggleButton, &QPushButton::toggled, this, &ConferenceVideoWindowSidebar::setVideoEnabled);
+		QObject::connect(_enableVideoToggleButton, &QPushButton::clicked, this, &ConferenceVideoWindowSidebar::setVideoEnabled);
 		QObject::connect(_window, &ConferenceVideoWindow::cameraChanged, this, &ConferenceVideoWindowSidebar::onCameraChanged);
 	}
 
@@ -243,7 +243,7 @@ void ConferenceVideoWindowSidebar::setVideoEnabled(bool b)
 			}
 		}
 	}
-	//_enableVideoToggleButton->setChecked(b);
+	_enableVideoToggleButton->setChecked(b);
 }
 
 void ConferenceVideoWindowSidebar::onCameraChanged()

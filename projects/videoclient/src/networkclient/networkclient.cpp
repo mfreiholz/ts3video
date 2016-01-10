@@ -288,6 +288,8 @@ QCorReply* NetworkClient::disableVideoStream()
 	d->clientEntity.videoEnabled = false;
 	d->clientModel->updateClient(d->clientEntity);
 
+	d->mediaSocket->resetVideoEncoder();
+
 	QCorFrame req;
 	req.setData(JsonProtocolHelper::createJsonRequest("clientdisablevideo", QJsonObject()));
 	return d->corSocket->sendRequest(req);

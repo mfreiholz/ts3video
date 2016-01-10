@@ -25,6 +25,7 @@ public:
 	void setAuthenticated(bool yesno);
 
 	void initVideoEncoder(int width, int height, int bitrate, int fps);
+	void resetVideoEncoder();
 	void sendVideoFrame(const QImage& image, int senderId);
 	
 	void resetVideoDecoderOfClient(int senderId);
