@@ -21,6 +21,8 @@
 #include "networkclient/networkclient.h"
 #include "networkclient/clientlistmodel.h"
 
+#include "util/qwidgetutil.h"
+
 // Static Helpers /////////////////////////////////////////////////////
 
 static QSize __sideBarIconSize(52, 52);
@@ -188,6 +190,8 @@ ConferenceVideoWindowSidebar::ConferenceVideoWindowSidebar(ConferenceVideoWindow
 		auto about = new AboutWidget(this);
 		about->setWindowFlags(Qt::Dialog);
 		about->show();
+		QWidgetUtil::resizeWidgetPerCent(about, 35, 40);
+		QWidgetUtil::centerWidget(about);
 	});
 }
 
