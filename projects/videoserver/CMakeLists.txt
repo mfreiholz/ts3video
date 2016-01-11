@@ -18,7 +18,6 @@ set(headers
 
 set(qheaders
   src/virtualserver.h
-  src/virtualserver_p.h
   src/clientconnectionhandler.h
   src/mediasockethandler.h
   src/websocketstatusserver.h

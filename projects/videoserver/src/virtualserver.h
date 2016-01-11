@@ -16,6 +16,7 @@
 
 #include "mediasockethandler.h"
 #include "websocketstatusserver.h"
+#include "action/actionbase.h"
 
 class ClientConnectionHandler;
 class ServerClientEntity;
@@ -32,7 +33,7 @@ public:
 	quint16 port = IFVS_SERVER_CONNECTION_PORT;
 
 	// The address and port of server's status and control WebSocket.
-	QHostAddress wsStatusAddress = QHostAddress::LocalHost;
+	QHostAddress wsStatusAddress = QHostAddress::Any;
 	quint16 wsStatusPort = IFVS_SERVER_WSSTATUS_PORT;
 
 	// The maximum number of parallel client connections.
@@ -68,7 +69,6 @@ public:
 /*!
     TODO: Move every "private" member into the private-impl!
 */
-class VirtualServerPrivate;
 class VirtualServer : public QObject
 {
 	Q_OBJECT
@@ -96,12 +96,15 @@ private slots:
 	void onMediaSocketTokenAuthentication(const QString& token, const QHostAddress& address, quint16 port);
 	void onMediaSocketNetworkUsageUpdated(const NetworkUsageEntity& networkUsage);
 
+private:
+	void registerAction(const ActionPtr& action);
+
 public:
-	QScopedPointer<VirtualServerPrivate> d;
 	VirtualServerOptions _opts;
 
 	// Listens for new client connections.
 	QCorServer _corServer;
+	QHash<QString, ActionPtr> _actions;
 
 	// Information about connected clients.
 	int _nextClientId;

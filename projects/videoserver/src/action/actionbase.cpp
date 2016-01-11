@@ -22,7 +22,7 @@
 #include "elws.h"
 #include "jsonprotocolhelper.h"
 
-#include "../virtualserver_p.h"
+#include "../virtualserver.h"
 #include "../clientconnectionhandler.h"
 #include "../servercliententity.h"
 #include "../serverchannelentity.h"

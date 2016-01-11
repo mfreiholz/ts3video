@@ -18,7 +18,6 @@
 #include "jsonprotocolhelper.h"
 
 #include "virtualserver.h"
-#include "virtualserver_p.h"
 #include "servercliententity.h"
 #include "serverchannelentity.h"
 
@@ -136,8 +135,7 @@ void ClientConnectionHandler::onNewIncomingRequest(QCorFrameRefPtr frame)
 	}
 
 	// Find matching action handler.
-	auto& serverData = _server->d;
-	auto actionHandler = serverData->actions.value(action);
+	auto actionHandler = _server->_actions.value(action);
 	if (!actionHandler)
 	{
 		HL_WARN(HL, QString("Retrieved request with unknown action (action=%1)").arg(action).toStdString());

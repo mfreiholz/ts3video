@@ -1,4 +1,4 @@
-#include "virtualserver_p.h"
+#include "virtualserver.h"
 
 #include <QCoreApplication>
 #include <QDir>
@@ -19,7 +19,6 @@ HUMBLE_LOGGER(HL, "server");
 
 VirtualServer::VirtualServer(const VirtualServerOptions& opts, QObject* parent) :
 	QObject(parent),
-	d(new VirtualServerPrivate(this)),
 	_opts(opts),
 	_corServer(this),
 	_connections(),
@@ -33,34 +32,34 @@ VirtualServer::VirtualServer(const VirtualServerOptions& opts, QObject* parent) 
 	_wsStatusServer(nullptr)
 {
 	// Basic actions.
-	d->registerAction(ActionPtr(new AuthenticationAction()));
+	registerAction(ActionPtr(new AuthenticationAction()));
 
 	// Authenticated actions (RequiresAuthentication).
 	if (true)
 	{
-		d->registerAction(ActionPtr(new GoodbyeAction()));
-		d->registerAction(ActionPtr(new HeartbeatAction()));
+		registerAction(ActionPtr(new GoodbyeAction()));
+		registerAction(ActionPtr(new HeartbeatAction()));
 
 		// Channels, Conferences
-		d->registerAction(ActionPtr(new JoinChannelAction()));
-		d->registerAction(ActionPtr(new JoinChannel2Action()));
+		registerAction(ActionPtr(new JoinChannelAction()));
+		registerAction(ActionPtr(new JoinChannel2Action()));
 
 		// Video
-		d->registerAction(ActionPtr(new EnableVideoAction()));
-		d->registerAction(ActionPtr(new DisableVideoAction()));
-		d->registerAction(ActionPtr(new EnableRemoteVideoAction()));
-		d->registerAction(ActionPtr(new DisableRemoteVideoAction()));
+		registerAction(ActionPtr(new EnableVideoAction()));
+		registerAction(ActionPtr(new DisableVideoAction()));
+		registerAction(ActionPtr(new EnableRemoteVideoAction()));
+		registerAction(ActionPtr(new DisableRemoteVideoAction()));
 
 		// Audio
-		d->registerAction(ActionPtr(new EnableAudioInputAction()));
-		d->registerAction(ActionPtr(new DisableAudioInputAction()));
+		registerAction(ActionPtr(new EnableAudioInputAction()));
+		registerAction(ActionPtr(new DisableAudioInputAction()));
 	}
 
 	// Admin actions (RequiresAdminPrivileges)
 	if (true)
 	{
-		d->registerAction(ActionPtr(new AdminAuthAction()));
-		d->registerAction(ActionPtr(new KickClientAction()));
+		registerAction(ActionPtr(new AdminAuthAction()));
+		registerAction(ActionPtr(new KickClientAction()));
 	}
 }
 
@@ -288,4 +287,13 @@ void VirtualServer::onMediaSocketTokenAuthentication(const QString& token, const
 void VirtualServer::onMediaSocketNetworkUsageUpdated(const NetworkUsageEntity& networkUsage)
 {
 	_networkUsageMediaSocket = networkUsage;
+}
+
+void VirtualServer::registerAction(const ActionPtr& action)
+{
+	if (_actions.contains(action->name()))
+	{
+		return;
+	}
+	_actions.insert(action->name(), action);
 }
