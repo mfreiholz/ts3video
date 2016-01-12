@@ -6,6 +6,7 @@
 #include <QSettings>
 #include <QFile>
 #include <QDir>
+#include <QRegExp>
 
 #include "humblelogging/api.h"
 #include "humblesrvproc/api.h"
@@ -16,6 +17,55 @@
 #include "virtualserver.h"
 
 HUMBLE_LOGGER(HL, "server");
+
+// Plain RX: ts3cid\(([a-z0-9\-\.\_]+)\:([0-9]+):([0-9]+)\)
+static QList<int> parseChannelIds(const QString& str)
+{
+	QList<int> ids;
+	QStringList sl = str.split(",", QString::SkipEmptyParts);
+	for (int i = 0; i < sl.size(); i++)
+	{
+		auto s = sl[i].trimmed();
+
+		// Check for integer based conference-id.
+		bool ok = false;
+		int id = s.toInt(&ok);
+		if (ok)
+		{
+			ids.append(id);
+			continue;
+		}
+
+		// Check for TS3-Channel-ID based conference-id.
+		QRegExp rx("ts3cid\\(([a-z0-9\\-\\.\\_]+)\\:([0-9]+):([0-9]+)\\)");
+		rx.setCaseSensitivity(Qt::CaseInsensitive);
+		if (rx.indexIn(s, 0) != -1)
+		{
+			auto address = rx.cap(1);
+			auto port = rx.cap(2);
+			auto cid = rx.cap(3);
+			QString identifier;
+			identifier.append(address);
+			identifier.append("#");
+			identifier.append(port);
+			identifier.append("#");
+			identifier.append(cid);
+			identifier.append("#");
+			const auto id = qHash(identifier);
+			ids.append(id);
+			continue;
+		}
+
+		// Generate conference-id from plain string.
+		if (!s.isEmpty())
+		{
+			const auto id = qHash(s);
+			ids.append(id);
+			continue;
+		}
+	}
+	return ids;
+}
 
 /*!
 	\return 0 = OK;
@@ -29,7 +79,7 @@ static int updateOptionsByArgs(VirtualServerOptions& opts)
 	opts.connectionLimit = ELWS::getArgsValue("--connection-limit", opts.connectionLimit).toInt();
 	opts.bandwidthReadLimit = ELWS::getArgsValue("--bandwidth-read-limit", opts.bandwidthReadLimit).toULongLong();
 	opts.bandwidthWriteLimit = ELWS::getArgsValue("--bandwidth-write-limit", opts.bandwidthWriteLimit).toULongLong();
-	opts.validChannels.clear();
+	opts.validConferenceIds.clear();
 	opts.password = ELWS::getArgsValue("--password", opts.password).toString();
 	opts.adminPassword = ELWS::getArgsValue("--admin-password", opts.adminPassword).toString();
 	return 0;
@@ -59,7 +109,7 @@ static int updateOptionsByConfig(VirtualServerOptions& opts, const QString& file
 	opts.connectionLimit = conf.value("connectionlimit", opts.connectionLimit).toInt();
 	opts.bandwidthReadLimit = conf.value("bandwidthreadlimit", opts.bandwidthReadLimit).toULongLong();
 	opts.bandwidthWriteLimit = conf.value("bandwidthwritelimit", opts.bandwidthWriteLimit).toULongLong();
-	opts.validChannels = opts.validChannels;
+	opts.validConferenceIds = parseChannelIds(conf.value("validconferenceids").toStringList().join(","));
 	opts.password = conf.value("password", opts.password).toString();
 	opts.adminPassword = conf.value("adminpassword", opts.adminPassword).toString();
 	conf.endGroup();

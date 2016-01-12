@@ -400,7 +400,7 @@ void JoinChannelAction::run(const ActionData& req)
 	const auto password = req.params["password"].toString();
 
 	// Validate parameters.
-	if (channelId == 0 || (!req.server->options().validChannels.isEmpty() && !req.server->options().validChannels.contains(channelId)))
+	if (channelId == 0 || (!req.server->options().validConferenceIds.isEmpty() && !req.server->options().validConferenceIds.contains(channelId)))
 	{
 		sendDefaultErrorResponse(req, IFVS_STATUS_INVALID_PARAMETERS, QString("Invalid channel id (channelid=%1)").arg(channelId));
 		return;
