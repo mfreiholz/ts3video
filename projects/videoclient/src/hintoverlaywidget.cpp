@@ -1,7 +1,5 @@
 #include "hintoverlaywidget.h"
 
-#include <QDebug>
-
 #include <QtCore/QEvent>
 
 #include <QtGui/QGuiApplication>
@@ -70,7 +68,6 @@ bool HintOverlayWidget::eventFilter(QObject* obj, QEvent* e)
 		{
 			auto ev = static_cast<QMouseEvent*>(e);
 			auto gpos = ev->globalPos();
-			qDebug() << gpos;
 			if (!_target->rect().contains(_target->mapFromGlobal(gpos)) && !_content->rect().contains(_content->mapFromGlobal(gpos)))
 			{
 				hideHint();
