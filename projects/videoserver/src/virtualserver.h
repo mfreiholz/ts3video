@@ -9,6 +9,7 @@
 #include <QSet>
 #include <QScopedPointer>
 #include <QHostAddress>
+#include <QSize>
 
 #include "qcorserver.h"
 
@@ -54,6 +55,10 @@ public:
 
 	// Administrator password.
 	QString adminPassword;
+
+	// Maximum supported resolution and quality.
+	QSize maximumResolution = QSize(1920, 1080);
+	int maximumBitrate = 1024;
 
 	// TeamSpeak 3 Server Bridge.
 	bool ts3Enabled = false;

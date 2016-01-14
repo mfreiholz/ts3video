@@ -82,6 +82,8 @@ static int updateOptionsByArgs(VirtualServerOptions& opts)
 	opts.validConferenceIds.clear();
 	opts.password = ELWS::getArgsValue("--password", opts.password).toString();
 	opts.adminPassword = ELWS::getArgsValue("--admin-password", opts.adminPassword).toString();
+	opts.maximumResolution = ELWS::getArgsValue("--maximum-resolution", opts.maximumResolution).toSize();
+	opts.maximumBitrate = ELWS::getArgsValue("--maximum-bitrate", opts.maximumBitrate).toInt();
 	return 0;
 }
 
@@ -112,6 +114,11 @@ static int updateOptionsByConfig(VirtualServerOptions& opts, const QString& file
 	opts.validConferenceIds = parseChannelIds(conf.value("validconferenceids").toStringList().join(","));
 	opts.password = conf.value("password", opts.password).toString();
 	opts.adminPassword = conf.value("adminpassword", opts.adminPassword).toString();
+
+	auto sl = conf.value("maxresolution", QString("%1x%2").arg(opts.maximumResolution.width()).arg(opts.maximumResolution.height())).toString().split("x", QString::SkipEmptyParts);
+	if (sl.size() == 2)
+		opts.maximumResolution = QSize(sl[0].toInt(), sl[1].toInt());
+	opts.maximumBitrate = conf.value("maxbitrate", opts.maximumBitrate).toInt();
 	conf.endGroup();
 
 	conf.beginGroup("teamspeak3-bridge");
