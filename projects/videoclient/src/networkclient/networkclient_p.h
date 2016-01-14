@@ -17,6 +17,7 @@
 #include "channelentity.h"
 #include "networkusageentity.h"
 #include "jsonprotocolhelper.h"
+#include "virtualserverconfigentity.h"
 
 #include "vp8frame.h"
 #include "yuvframe.h"
@@ -60,6 +61,7 @@ public:
 	ClientEntity clientEntity;
 	QString authToken;
 	bool isAdmin;
+	VirtualServerConfigEntity serverConfig;
 
 	// Data about others.
 	std::unique_ptr<ClientListModel> clientModel;

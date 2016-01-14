@@ -17,6 +17,7 @@
 class QHostAddress;
 class ClientEntity;
 class ChannelEntity;
+class VirtualServerConfigEntity;
 class NetworkUsageEntity;
 class ClientListModel;
 
@@ -36,6 +37,7 @@ public:
 	void setMediaEnabled(bool yesno); ///< TODO Remove me... DEV only.
 	const QAbstractSocket* socket() const;
 	const ClientEntity& clientEntity() const;
+	const VirtualServerConfigEntity& serverConfig() const;
 	bool isReadyForStreaming() const;
 	bool isAdmin() const;
 	bool isSelf(const ClientEntity& ci) const;

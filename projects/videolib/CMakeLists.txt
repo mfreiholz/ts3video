@@ -12,6 +12,7 @@ set(headers
   src/ts3video.h
   src/cliententity.h
   src/channelentity.h
+  src/virtualserverconfigentity.h
   src/jsonprotocolhelper.h
   src/elws.h
   src/yuvframe.h
@@ -29,6 +30,7 @@ set(qheaders
 set(sources
   src/cliententity.cpp
   src/channelentity.cpp
+  src/virtualserverconfigentity.cpp
   src/jsonprotocolhelper.cpp
   src/elws.cpp
   src/pcmframe.cpp

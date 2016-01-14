@@ -21,6 +21,7 @@
 #include "ts3video.h"
 #include "elws.h"
 #include "jsonprotocolhelper.h"
+#include "videolib/src/virtualserverconfigentity.h"
 
 #include "../virtualserver.h"
 #include "../clientconnectionhandler.h"
@@ -256,17 +257,25 @@ void AuthenticationAction::run(const ActionData& req)
 		if (!req.session)
 			return;
 
-		// Update self ClientEntity and generate auth-token for media socket.
+		// Update self ClientEntity
 		req.session->_clientEntity->name = username;
 		req.session->_clientEntity->authenticated = true;
 
+		// Generate auth-token for media socket
 		const auto token = QString("%1-%2").arg(req.session->_clientEntity->id).arg(QDateTime::currentDateTimeUtc().toString());
 		req.server->_tokens.insert(token, req.session->_clientEntity->id);
+
+		// Send server options/restrictions to client
+		VirtualServerConfigEntity vsconf;
+		vsconf.maxVideoResolutionWidth = req.server->options().maximumResolution.width();
+		vsconf.maxVideoResolutionHeight = req.server->options().maximumResolution.height();
+		vsconf.maxVideoBandwidth = req.server->options().maximumBitrate;
 
 		// Respond.
 		QJsonObject params;
 		params["client"] = req.session->_clientEntity->toQJsonObject();
 		params["authtoken"] = token;
+		params["virtualserverconfig"] = vsconf.toQJsonObject();
 		sendDefaultOkResponse(req, params);
 	});
 

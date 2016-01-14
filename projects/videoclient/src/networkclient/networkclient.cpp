@@ -45,7 +45,9 @@ void NetworkClientPrivate::reset()
 	heartbeatTimer.stop();
 	goodbye = false;
 	clientEntity = ClientEntity();
+	authToken.clear();
 	isAdmin = false;
+	serverConfig = VirtualServerConfigEntity();
 	useMediaSocket = true;
 }
 
@@ -65,6 +67,7 @@ void NetworkClientPrivate::onAuthFinished()
 	// Parse self client info and media-authentication-token from response.
 	d->clientEntity.fromQJsonObject(params["client"].toObject());
 	d->authToken = params["authtoken"].toString();
+	d->serverConfig.fromQJsonObject(params["virtualserverconfig"].toObject());
 
 	// Create new media socket.
 	d->owner->initMediaSocket();
@@ -142,6 +145,11 @@ const QAbstractSocket* NetworkClient::socket() const
 const ClientEntity& NetworkClient::clientEntity() const
 {
 	return d->clientEntity;
+}
+
+const VirtualServerConfigEntity& NetworkClient::serverConfig() const
+{
+	return d->serverConfig;
 }
 
 bool NetworkClient::isReadyForStreaming() const
