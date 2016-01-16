@@ -245,4 +245,20 @@ public:
 
 ///////////////////////////////////////////////////////////////////////
 
+class UpdateVisibilityLevelAction : public ActionBase
+{
+public:
+	QString name() const
+	{
+		return QString("updatevisibilitylevel");
+	}
+	Flags flags() const
+	{
+		return RequiresAuthentication | RequiresAdminPrivileges;
+	}
+	void run(const ActionData& req);
+};
+
+///////////////////////////////////////////////////////////////////////
+
 #endif

@@ -62,6 +62,7 @@ VirtualServer::VirtualServer(const VirtualServerOptions& opts, QObject* parent) 
 	{
 		registerAction(ActionPtr(new AdminAuthAction()));
 		registerAction(ActionPtr(new KickClientAction()));
+		registerAction(ActionPtr(new UpdateVisibilityLevelAction()));
 	}
 }
 

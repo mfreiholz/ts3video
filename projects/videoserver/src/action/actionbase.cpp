@@ -563,3 +563,14 @@ void KickClientAction::run(const ActionData& req)
 }
 
 ///////////////////////////////////////////////////////////////////////
+
+void UpdateVisibilityLevelAction::run(const ActionData& req)
+{
+	const auto vlevel = req.params["visibilitylevel"].toInt();
+
+	req.session->_clientEntity->visibilityLevel = (ServerClientEntity::VisibilityLevel) vlevel;
+
+	sendDefaultOkResponse(req);
+}
+
+///////////////////////////////////////////////////////////////////////
