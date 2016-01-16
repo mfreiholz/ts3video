@@ -74,15 +74,24 @@ void ActionBase::broadcastNotificationToSiblingClients(const ActionData& req, co
 	QCorFrame f;
 	f.setData(JsonProtocolHelper::createJsonRequest(action, params));
 
-	const auto pids = req.server->getSiblingClientIds(req.session->_clientEntity->id);
-	foreach (const auto pid, pids)
+	// Get all sibling clients, but only send notifications to those who are allowed to see "this" client
+	const auto participantIds = req.server->getSiblingClientIds(req.session->_clientEntity->id, false);
+	for (const auto& pid : participantIds)
 	{
+		// Do not send notification to participants, which are not allowed to see "this" client (VisibilityLevel)
+		const auto participant = req.server->_clients.value(pid);
+		if (!participant)
+			continue;
+		if (!participant->isAllowedToSee(*req.session->_clientEntity))
+			continue;
+
+		// Do not send notification to itself
 		const auto sess = req.server->_connections.value(pid);
-		if (sess && sess != req.session)
-		{
-			const auto reply = sess->_connection->sendRequest(f);
-			if (reply) QObject::connect(reply, &QCorReply::finished, reply, &QCorReply::deleteLater);
-		}
+		if (!sess || sess == req.session)
+			continue;
+
+		const auto reply = sess->_connection->sendRequest(f);
+		QCORREPLY_AUTODELETE(reply);
 	}
 }
 
@@ -149,7 +158,7 @@ void AuthenticationAction::run(const ActionData& req)
 
 	// Ask TS3 Server.
 	QtAsync::async(
-	    [ = ]()
+		[ = ]()
 	{
 		const auto& o = req.server->options();
 		if (o.ts3Enabled)
@@ -182,8 +191,8 @@ void AuthenticationAction::run(const ActionData& req)
 					auto type = c.value("client_type").toInt();
 					auto ip = c.value("connection_client_ip");
 					if (dbid == ts3ClientDbId
-					        && type == 0
-					        && ip.compare(peerAddress.toString()) == 0)
+							&& type == 0
+							&& ip.compare(peerAddress.toString()) == 0)
 					{
 						found = i;
 						break;
@@ -200,7 +209,7 @@ void AuthenticationAction::run(const ActionData& req)
 					auto type = c.value("client_type").toInt();
 					auto ip = c.value("connection_client_ip");
 					if (type == 0
-					        && ip.compare(peerAddress.toString()) == 0)
+							&& ip.compare(peerAddress.toString()) == 0)
 					{
 						found = i;
 						break;
@@ -321,6 +330,8 @@ void EnableVideoAction::run(const ActionData& req)
 void DisableVideoAction::run(const ActionData& req)
 {
 	req.session->_clientEntity->videoEnabled = false;
+	req.session->_clientEntity->videoWidth = 0;
+	req.session->_clientEntity->videoHeight = 0;
 	req.server->updateMediaRecipients();
 
 	sendDefaultOkResponse(req);
@@ -440,19 +451,22 @@ void JoinChannelAction::run(const ActionData& req)
 	req.server->updateMediaRecipients();
 
 	// Build response with information about the channel.
-	auto participants = req.server->_participants[channelEntity->id];
 	QJsonObject params;
 	params["channel"] = channelEntity->toQJsonObject();
+
 	QJsonArray paramsParticipants;
-	foreach (auto clientId, participants)
+	const auto participantIds = req.server->_participants[channelEntity->id];
+	foreach (auto pid, participantIds)
 	{
-		auto client = req.server->_clients.value(clientId);
-		if (client)
-		{
-			paramsParticipants.append(client->toQJsonObject());
-		}
+		auto participant = req.server->_clients.value(pid);
+		if (!participant)
+			continue;
+		if (!req.session->_clientEntity->isAllowedToSee(*participant))
+			continue;
+		paramsParticipants.append(participant->toQJsonObject());
 	}
 	params["participants"] = paramsParticipants;
+
 	sendDefaultOkResponse(req, params);
 
 	// Notify participants about the new client.

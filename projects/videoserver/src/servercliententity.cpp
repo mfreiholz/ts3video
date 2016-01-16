@@ -1,7 +1,12 @@
 #include "servercliententity.h"
 
 ServerClientEntity::ServerClientEntity() :
-	ClientEntity(), authenticated(false), admin(false)
+	ClientEntity(),
+	authenticated(false),
+	admin(false),
+	remoteVideoExcludes(),
+	visibilityLevel(VL_Default),
+	visibilityLevelAllowed(VL_Default)
 {
 }
 
@@ -11,6 +16,8 @@ ServerClientEntity::ServerClientEntity(const ServerClientEntity& other) :
 	this->authenticated = other.authenticated;
 	this->admin = other.admin;
 	this->remoteVideoExcludes = other.remoteVideoExcludes;
+	this->visibilityLevel = other.visibilityLevel;
+	this->visibilityLevelAllowed = other.visibilityLevelAllowed;
 }
 
 ServerClientEntity& ServerClientEntity::operator=(const ServerClientEntity& other)
@@ -19,5 +26,12 @@ ServerClientEntity& ServerClientEntity::operator=(const ServerClientEntity& othe
 	this->authenticated = other.authenticated;
 	this->admin = other.admin;
 	this->remoteVideoExcludes = other.remoteVideoExcludes;
+	this->visibilityLevel = other.visibilityLevel;
+	this->visibilityLevelAllowed = other.visibilityLevelAllowed;
 	return *this;
+}
+
+bool ServerClientEntity::isAllowedToSee(const ServerClientEntity& sce) const
+{
+	return (visibilityLevelAllowed >= sce.visibilityLevel);
 }

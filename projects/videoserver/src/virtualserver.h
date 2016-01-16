@@ -41,7 +41,7 @@ public:
 	ServerChannelEntity* addClientToChannel(int clientId, int channelId);
 	void removeClientFromChannel(int clientId, int channelId);
 	void removeClientFromChannels(int clientId);
-	QList<int> getSiblingClientIds(int clientId) const;
+	QList<int> getSiblingClientIds(int clientId, bool filterByVisibilityLevel) const;
 
 	// Ban / unban clients.
 	void ban(const QHostAddress& address);

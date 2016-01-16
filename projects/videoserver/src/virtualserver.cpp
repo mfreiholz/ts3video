@@ -140,7 +140,7 @@ void VirtualServer::updateMediaRecipients()
 		r.port = client->mediaPort;
 		recips.clientid2receiver.insert(r.clientId, r);
 
-		auto siblingClientIds = getSiblingClientIds(client->id);
+		auto siblingClientIds = getSiblingClientIds(client->id, true);
 		foreach (auto siblingClientId, siblingClientIds)
 		{
 			auto client2 = _clients.value(siblingClientId);
@@ -203,14 +203,20 @@ void VirtualServer::removeClientFromChannels(int clientId)
 	}
 }
 
-QList<int> VirtualServer::getSiblingClientIds(int clientId) const
+QList<int> VirtualServer::getSiblingClientIds(int clientId, bool filterByVisibilityLevel) const
 {
 	QSet<int> clientIds;
-	// From channels (participants).
 	foreach (auto channelId, _client2channels.value(clientId).toList())
 	{
 		foreach (auto participantId, _participants.value(channelId))
 		{
+			if (filterByVisibilityLevel)
+			{
+				auto c1 = _clients.value(clientId);
+				auto c2 = _clients.value(participantId);
+				if (!c1 || !c2 || !c1->isAllowedToSee(*c2))
+					continue;
+			}
 			clientIds.insert(participantId);
 		}
 	}
