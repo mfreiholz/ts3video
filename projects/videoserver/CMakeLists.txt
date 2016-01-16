@@ -13,6 +13,7 @@ find_package(Qt5Concurrent REQUIRED)
 set(headers
   src/servercliententity.h
   src/serverchannelentity.h
+  src/virtualserveroptions.h
   src/action/actionbase.h
 )
 
@@ -25,6 +26,7 @@ set(qheaders
 
 set(sources
   src/main.cpp
+  src/virtualserveroptions.cpp
   src/virtualserver.cpp
   src/clientconnectionhandler.cpp
   src/mediasockethandler.cpp

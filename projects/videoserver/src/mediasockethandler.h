@@ -1,10 +1,16 @@
 #ifndef MEDIASOCKETHANDLER_H
 #define MEDIASOCKETHANDLER_H
 
+#include <memory>
+
 #include <QObject>
 #include <QUdpSocket>
 #include <QVector>
 #include <QTime>
+#include <QString>
+#include <QCache>
+
+#include "medlib/include/medprotocol.h"
 
 #include "networkusageentity.h"
 
@@ -48,6 +54,27 @@ public:
 	QHash<int, MediaReceiverEntity> clientid2receiver; ///< Maps a receiver's client-id to itself.
 };
 
+/*!
+*/
+class VideoCacheItem
+{
+public:
+	static inline QString createKeyFor(const UDP::VideoFrameDatagram& vfd)
+	{
+		QString s;
+		s.append(QString::number(vfd.sender));
+		s.append(":");
+		s.append(QString::number(vfd.frameId));
+		s.append(":");
+		s.append(QString::number(vfd.index));
+		return s;
+	}
+
+public:
+	QByteArray data; ///< Plain data of datagram
+	std::unique_ptr<UDP::VideoFrameDatagram> datagram; ///< Parsed information from "data"
+};
+
 /*! Receives video-streams and forwards them to all clients in the same channel.
 */
 class MediaSocketHandler : public QObject
@@ -78,6 +105,9 @@ private:
 	quint16 _port;
 	QUdpSocket _socket;
 	MediaRecipients _recipients;
+
+	// Caches
+	QCache<QString, VideoCacheItem> _videoCache;
 
 	// Network usage.
 	NetworkUsageEntity _networkUsage;

@@ -6,8 +6,6 @@
 
 #include "humblelogging/api.h"
 
-#include "medprotocol.h"
-
 #include "virtualserver.h"
 
 HUMBLE_LOGGER(HL, "server.mediasocket");
@@ -19,6 +17,7 @@ MediaSocketHandler::MediaSocketHandler(const QHostAddress& address, quint16 port
 	_address(address),
 	_port(port),
 	_socket(this),
+	_videoCache(10485760), // 10 MB
 	_networkUsage(),
 	_networkUsageHelper(_networkUsage)
 {
@@ -81,6 +80,7 @@ void MediaSocketHandler::onReadyRead()
 		// Check magic.
 		QDataStream in(data);
 		in.setByteOrder(QDataStream::BigEndian);
+
 		UDP::Datagram dg;
 		in >> dg.magic;
 		if (dg.magic != UDP::Datagram::MAGIC)
@@ -93,7 +93,6 @@ void MediaSocketHandler::onReadyRead()
 		in >> dg.type;
 		switch (dg.type)
 		{
-
 		// Authentication
 		case UDP::AuthDatagram::TYPE:
 		{
@@ -114,9 +113,29 @@ void MediaSocketHandler::onReadyRead()
 		// Video data.
 		case UDP::VideoFrameDatagram::TYPE:
 		{
+			if (_videoCache.maxCost() > 0)
+			{
+				// Parse datagram
+				auto vfd = std::make_unique<UDP::VideoFrameDatagram>();
+				in >> vfd->flags;
+				in >> vfd->sender;
+				in >> vfd->frameId;
+				in >> vfd->index;
+				in >> vfd->count;
+				in >> vfd->size;
+
+				// Cache frame
+				// No longer access "vfd" after move to cacheItem!
+				auto cacheItem = new VideoCacheItem();
+				cacheItem->data = data;
+				cacheItem->datagram = std::move(vfd);
+				_videoCache.insert(VideoCacheItem::createKeyFor(*cacheItem->datagram.get()), cacheItem, data.size() + sizeof(*cacheItem->datagram.get()));
+			}
+
+			// Broadcast
 			const auto senderId = MediaSenderEntity::createID(senderAddress, senderPort);
 			const auto& senderEntity = _recipients.id2sender[senderId];
-			for (auto i = 0; i < senderEntity.receivers.size(); ++i)
+			for (auto i = 0, end = senderEntity.receivers.size(); i < end; ++i)
 			{
 				const auto& receiverEntity = senderEntity.receivers[i];
 				_socket.writeDatagram(data, receiverEntity.address, receiverEntity.port);
@@ -160,6 +179,7 @@ void MediaSocketHandler::onReadyRead()
 			}
 			break;
 		}
+
 		}
 
 	} // while (datagrams)

@@ -8,6 +8,8 @@
 
 #include "qcorconnection.h"
 
+#include "mediasockethandler.h"
+#include "websocketstatusserver.h"
 #include "servercliententity.h"
 #include "serverchannelentity.h"
 
