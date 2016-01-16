@@ -85,8 +85,5 @@ void ClientCameraVideoWidget::setFrame(const QImage& f)
 void ClientCameraVideoWidget::onNewQImage(const QImage& image)
 {
 	_videoWidget->setFrame(image);
-	if (_nc->isReadyForStreaming())
-	{
-		_nc->sendVideoFrame(image);
-	}
+	_nc->sendVideoFrame(image);
 }

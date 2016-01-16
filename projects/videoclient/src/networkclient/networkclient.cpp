@@ -154,7 +154,9 @@ const VirtualServerConfigEntity& NetworkClient::serverConfig() const
 
 bool NetworkClient::isReadyForStreaming() const
 {
-	if (!d->mediaSocket || d->mediaSocket->state() != QAbstractSocket::ConnectedState)
+	if (!d->mediaSocket)
+		return false;
+	if (d->mediaSocket->state() != QAbstractSocket::ConnectedState)
 		return false;
 	if (!d->mediaSocket->isAuthenticated())
 		return false;
@@ -333,7 +335,11 @@ QCorReply* NetworkClient::disableRemoteVideoStream(int clientId)
 
 void NetworkClient::sendVideoFrame(const QImage& image)
 {
-	if (!d->mediaSocket || !d->clientEntity.videoEnabled)
+	if (!isReadyForStreaming())
+		return;
+	if (!d->clientEntity.videoEnabled)
+		return;
+	if (d->clientModel->rowCount() <= 1)
 		return;
 	d->mediaSocket->sendVideoFrame(image, d->clientEntity.id);
 }
