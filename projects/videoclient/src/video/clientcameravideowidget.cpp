@@ -35,7 +35,10 @@ ClientCameraVideoWidget::ClientCameraVideoWidget(ConferenceVideoWindow* window, 
 	setLayout(mainLayout);
 
 	// Create widget to render video frames.
-	_videoWidget = new VideoWidget(VideoWidget::OpenGL_ImageWidget);
+	if (_window->options().uiVideoHardwareAccelerationEnabled)
+		_videoWidget = new VideoWidget(VideoWidget::OpenGL_ImageWidget);
+	else
+		_videoWidget = new VideoWidget(VideoWidget::CPU);
 	mainLayout->addWidget(_videoWidget, 1);
 
 	// EVENTS

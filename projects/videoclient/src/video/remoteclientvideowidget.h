@@ -9,17 +9,17 @@
 
 class RemoteClientVideoWidget : public QFrame
 {
-  Q_OBJECT
+	Q_OBJECT
 
 public:
-  RemoteClientVideoWidget(QWidget *parent);
-  ~RemoteClientVideoWidget();
-  void setClient(const ClientEntity &client);
-  VideoWidget* videoWidget() const;
+	RemoteClientVideoWidget(bool hardwareAcceleration, QWidget* parent);
+	~RemoteClientVideoWidget();
+	void setClient(const ClientEntity& client);
+	VideoWidget* videoWidget() const;
 
 private:
-  ClientEntity _client;
-  VideoWidget *_videoWidget;
+	ClientEntity _client;
+	VideoWidget* _videoWidget;
 };
 
 #endif

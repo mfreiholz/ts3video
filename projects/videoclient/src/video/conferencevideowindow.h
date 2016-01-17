@@ -35,7 +35,7 @@ public:
 	class Options
 	{
 	public:
-		// The camera's device ID to stream video.
+		// Video-input (camera) settings
 		QString cameraDeviceId = QString();
 		QSize cameraResolution = QSize(640, 480);
 		int cameraBitrate = 100;
@@ -50,6 +50,9 @@ public:
 		QString audioOutputDeviceId = QString();
 		bool audioOutputAutoEnable = false;
 #endif
+
+		// UI settings
+		bool uiVideoHardwareAccelerationEnabled = true;
 	};
 
 public:
@@ -68,6 +71,9 @@ public:
 #if defined(OCS_INCLUDE_AUDIO)
 	QSharedPointer<QAudioInput> audioInput();
 #endif
+
+	static void addDropShadowEffect(QWidget* widget);
+	static RemoteClientVideoWidget* createRemoteVideoWidget(const ConferenceVideoWindow::Options& opts, const ClientEntity& client, QWidget* parent = nullptr);
 
 private slots:
 	// Gui callbacks

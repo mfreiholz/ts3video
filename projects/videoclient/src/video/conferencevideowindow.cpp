@@ -19,6 +19,7 @@
 #include <QStatusBar>
 #include <QLabel>
 #include <QMenuBar>
+#include <QGraphicsDropShadowEffect>
 
 #include <QtMultimedia/QCamera>
 
@@ -110,6 +111,27 @@ static QSharedPointer<QAudioInput> createMicrophoneFromOptions(const ConferenceV
 	return QSharedPointer<QAudioInput>(new QAudioInput(info, format));
 }
 #endif
+
+///////////////////////////////////////////////////////////////////////
+
+void ConferenceVideoWindow::addDropShadowEffect(QWidget* widget)
+{
+	auto dropShadow = new QGraphicsDropShadowEffect(widget);
+	dropShadow->setOffset(0, 0);
+	dropShadow->setBlurRadius(5);
+	dropShadow->setColor(QColor(Qt::black));
+	widget->setGraphicsEffect(dropShadow);
+}
+
+RemoteClientVideoWidget* ConferenceVideoWindow::createRemoteVideoWidget(const ConferenceVideoWindow::Options& opts, const ClientEntity& client, QWidget* parent)
+{
+	auto w = new RemoteClientVideoWidget(opts.uiVideoHardwareAccelerationEnabled, parent);
+	if (client.id > 0)
+	{
+		w->setClient(client);
+	}
+	return w;
+}
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -308,6 +330,7 @@ void ConferenceVideoWindow::loadOptionsFromConfig(Options& opts)
 	opts.cameraResolution = s.value("Video/InputDeviceResolution", opts.cameraResolution).toSize();
 	opts.cameraBitrate = s.value("Video/InputDeviceBitrate", opts.cameraBitrate).toInt();
 	opts.cameraAutoEnable = s.value("Video/InputDeviceAutoEnable", opts.cameraAutoEnable).toBool();
+	opts.uiVideoHardwareAccelerationEnabled = s.value("UI/VideoHardwareAccelerationEnabled", opts.uiVideoHardwareAccelerationEnabled).toBool();
 }
 
 void ConferenceVideoWindow::saveOptionsToConfig(const Options& opts)
@@ -317,6 +340,7 @@ void ConferenceVideoWindow::saveOptionsToConfig(const Options& opts)
 	s.setValue("Video/InputDeviceResolution", opts.cameraResolution);
 	s.setValue("Video/InputDeviceBitrate", opts.cameraBitrate);
 	s.setValue("Video/InputDeviceAutoEnable", opts.cameraAutoEnable);
+	s.setValue("UI/VideoHardwareAccelerationEnabled", opts.uiVideoHardwareAccelerationEnabled);
 }
 
 QSharedPointer<NetworkClient> ConferenceVideoWindow::networkClient() const

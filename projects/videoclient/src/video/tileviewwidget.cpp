@@ -140,7 +140,7 @@ void TileViewWidget::addClient(const ClientEntity& client, const ChannelEntity& 
 {
 	if (client.videoEnabled && !d->tilesMap.contains(client.id))
 	{
-		auto tileWidget = new TileViewTileWidget(client, this);
+		auto tileWidget = new TileViewTileWidget(this, client, this);
 		tileWidget->setFixedSize(d->tilesCurrentSize);
 		d->tilesLayout->addWidget(tileWidget);
 		d->tilesMap.insert(client.id, tileWidget);
@@ -329,7 +329,7 @@ TileViewCameraWidget::TileViewCameraWidget(TileViewWidget* tileView, QWidget* pa
 	_mainLayout(nullptr),
 	_cameraWidget(nullptr)
 {
-	ViewBase::addDropShadowEffect(this);
+	ConferenceVideoWindow::addDropShadowEffect(this);
 
 	_mainLayout = new QBoxLayout(QBoxLayout::TopToBottom);
 	_mainLayout->setContentsMargins(0, 0, 0, 0);
@@ -362,17 +362,18 @@ void TileViewCameraWidget::onCameraChanged()
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
 
-TileViewTileWidget::TileViewTileWidget(const ClientEntity& client, QWidget* parent) :
-	QFrame(parent)
+TileViewTileWidget::TileViewTileWidget(TileViewWidget* tileView, const ClientEntity& client, QWidget* parent) :
+	QFrame(parent),
+	_tileView(tileView)
 {
-	ViewBase::addDropShadowEffect(this);
+	ConferenceVideoWindow::addDropShadowEffect(this);
 
 	auto mainLayout = new QBoxLayout(QBoxLayout::TopToBottom);
 	mainLayout->setContentsMargins(0, 0, 0, 0);
 	mainLayout->setSpacing(0);
 	setLayout(mainLayout);
 
-	_videoWidget = ViewBase::createRemoteVideoWidget(client, this);
+	_videoWidget = ConferenceVideoWindow::createRemoteVideoWidget(_tileView->window()->options(), client, this);
 	_videoWidget->setToolTip(client.name);
 	mainLayout->addWidget(_videoWidget);
 }

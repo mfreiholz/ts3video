@@ -12,7 +12,6 @@ class QPushButton;
 class QLabel;
 class QCamera;
 class FlowLayout;
-class RemoteClientVideoWidget;
 class TileViewTileWidget;
 class TileViewCameraWidget;
 class TileViewUserListWidget;
@@ -67,7 +66,7 @@ private slots:
 private:
 	TileViewWidget* _tileView;
 	class QBoxLayout* _mainLayout;
-	ClientCameraVideoWidget* _cameraWidget;
+	class ClientCameraVideoWidget* _cameraWidget;
 };
 
 ///////////////////////////////////////////////////////////////////////
@@ -78,10 +77,11 @@ class TileViewTileWidget : public QFrame
 	friend class TileViewWidget;
 
 public:
-	TileViewTileWidget(const ClientEntity& client, QWidget* parent = nullptr);
+	TileViewTileWidget(TileViewWidget* tileView, const ClientEntity& client, QWidget* parent = nullptr);
 
 private:
-	RemoteClientVideoWidget* _videoWidget;
+	TileViewWidget* _tileView;
+	class RemoteClientVideoWidget* _videoWidget;
 };
 
 #endif
