@@ -362,7 +362,7 @@ QSharedPointer<QAudioInput> ConferenceVideoWindow::audioInput()
 
 void ConferenceVideoWindow::onActionVideoSettingsTriggered()
 {
-	QScopedPointer<VideoSettingsDialog> dialog(new VideoSettingsDialog(this));
+	QScopedPointer<VideoSettingsDialog> dialog(new VideoSettingsDialog(this, this));
 	dialog->setModal(true);
 	dialog->preselect(_opts);
 	if (dialog->exec() != QDialog::Accepted)

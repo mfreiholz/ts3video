@@ -4,8 +4,61 @@
 
 #include "qtasync.h"
 
-VideoSettingsDialog::VideoSettingsDialog(QWidget* parent) :
-	QDialog(parent)
+#include "videolib/src/virtualserverconfigentity.h"
+
+///////////////////////////////////////////////////////////////////////
+
+#include <QAbstractListModel>
+class ResolutionListModel : public QAbstractListModel
+{
+public:
+	ResolutionListModel(ConferenceVideoWindow* window, const QCameraInfo& cameraInfo, QObject* parent) : QAbstractListModel(parent), _window(window)
+	{
+		const auto& serverConfig = window->networkClient()->serverConfig();
+		QCamera cam(cameraInfo);
+		cam.load();
+		_resolutions = cam.supportedViewfinderResolutions();
+	}
+
+	virtual int rowCount(const QModelIndex& parent = QModelIndex()) const
+	{
+		return _resolutions.size();
+	}
+
+	virtual Qt::ItemFlags flags(const QModelIndex& index) const
+	{
+		const auto& serverConfig = _window->networkClient()->serverConfig();
+		const auto& size = _resolutions[index.row()];
+		if (size.width() > serverConfig.maxVideoResolutionWidth || size.height() > serverConfig.maxVideoResolutionHeight)
+			return QAbstractListModel::flags(index) ^ Qt::ItemIsEnabled;
+		return QAbstractListModel::flags(index);
+	}
+
+	virtual QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const
+	{
+		if (index.row() >= _resolutions.size())
+			return QVariant();
+
+		const auto& size = _resolutions[index.row()];
+		switch (role)
+		{
+			case Qt::DisplayRole:
+				return QString("%1x%2").arg(size.width()).arg(size.height());
+		}
+
+		return QVariant();
+	}
+
+private:
+	ConferenceVideoWindow* _window;
+	QList<QSize> _resolutions;
+};
+
+///////////////////////////////////////////////////////////////////////
+
+VideoSettingsDialog::VideoSettingsDialog(ConferenceVideoWindow* window, QWidget* parent) :
+	QDialog(parent),
+	_window(window)
 {
 	_ui.setupUi(this);
 
@@ -103,6 +156,8 @@ const ConferenceVideoWindow::Options& VideoSettingsDialog::values()
 
 void VideoSettingsDialog::onCurrentDeviceIndexChanged(int index)
 {
+	const auto& serverConfig = _window->networkClient()->serverConfig();
+
 	const auto deviceId = _ui.devices->currentData().toString();
 	_ui.resolutions->setEnabled(!deviceId.isEmpty());
 	_ui.quality->setEnabled(!deviceId.isEmpty());
@@ -123,13 +178,19 @@ void VideoSettingsDialog::onCurrentDeviceIndexChanged(int index)
 				break;
 			}
 		}
+		delete _ui.resolutions->model();
+		_ui.resolutions->setModel(new ResolutionListModel(_window, cameraInfo, this));
 
-		QCamera cam(cameraInfo);
-		cam.load();
-		auto dims = cam.supportedViewfinderResolutions();
-		for (auto i = 0; i < dims.size(); ++i)
-		{
-			_ui.resolutions->addItem(QIcon(), QString("%1x%2").arg(dims[i].width()).arg(dims[i].height()), dims[i]);
-		}
+		//QCamera cam(cameraInfo);
+		//cam.load();
+		//auto dims = cam.supportedViewfinderResolutions();
+		//for (auto i = 0; i < dims.size(); ++i)
+		//{
+		//	const auto& size = dims[i];
+		//	if (size.width() > serverConfig.maxVideoResolutionWidth || size.height() > serverConfig.maxVideoResolutionHeight)
+		//	{
+		//		_ui.resolutions->addItem(QIcon(), QString("%1x%2").arg(dims[i].width()).arg(dims[i].height()), dims[i]);
+		//	}
+		//}
 	}
 }
