@@ -15,6 +15,7 @@
 
 #include "videolib/src/ts3video.h"
 #include "videolib/src/networkusageentity.h"
+#include "videolib/src/virtualserverconfigentity.h"
 
 #include "action/actionbase.h"
 #include "virtualserveroptions.h"
@@ -57,7 +58,8 @@ private:
 	void registerAction(const ActionPtr& action);
 
 public:
-	VirtualServerOptions _opts;
+	VirtualServerOptions _opts; ///< Complete configuration for this VirtualServer instance.
+	VirtualServerConfigEntity _config; ///< Config part from VirtualServerOptions, which is send to clients.
 
 	// Listens for new client connections.
 	QCorServer _corServer;

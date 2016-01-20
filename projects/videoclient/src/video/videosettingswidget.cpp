@@ -29,7 +29,7 @@ public:
 	{
 		const auto& serverConfig = _window->networkClient()->serverConfig();
 		const auto& size = _resolutions[index.row()];
-		if (size.width() > serverConfig.maxVideoResolutionWidth || size.height() > serverConfig.maxVideoResolutionHeight)
+		if (!serverConfig.isResolutionSupported(size))
 			return QAbstractListModel::flags(index) ^ Qt::ItemIsEnabled;
 		return QAbstractListModel::flags(index);
 	}
@@ -39,13 +39,24 @@ public:
 		if (index.row() >= _resolutions.size())
 			return QVariant();
 
+		const auto& serverConfig = _window->networkClient()->serverConfig();
 		const auto& size = _resolutions[index.row()];
+
 		switch (role)
 		{
-			case Qt::DisplayRole:
+		case Qt::DisplayRole:
+		{
+			if (!serverConfig.isResolutionSupported(size))
+				return QString("%1x%2 (Not supported by server)").arg(size.width()).arg(size.height());
+			else
 				return QString("%1x%2").arg(size.width()).arg(size.height());
+			break;
 		}
-
+		case Qt::UserRole:
+		{
+			return size;
+		}
+		}
 		return QVariant();
 	}
 
@@ -69,35 +80,6 @@ VideoSettingsDialog::VideoSettingsDialog(ConferenceVideoWindow* window, QWidget*
 		_ui.devices->addItem(QIcon(), infos[i].description(), infos[i].deviceName());
 	}
 	_ui.devices->addItem(QIcon(), tr("No camera (Viewer mode)"), QVariant(QString()));
-
-	// Resolutions
-	//QList<QSize> dims;
-
-	// 4:3
-	//dims.append(QSize(640, 480));
-	//dims.append(QSize(800, 600));
-	//dims.append(QSize(1024, 768));
-	//dims.append(QSize(1280, 960));
-	//dims.append(QSize(1600, 1200));
-
-	// 16:9
-	//dims.append(QSize(640, 360));
-	//dims.append(QSize(852, 480));
-	//dims.append(QSize(1280, 720));
-	//dims.append(QSize(1365, 768));
-	//dims.append(QSize(1600, 900));
-	//dims.append(QSize(1920, 1080));
-
-	// 16:10
-	//dims.append(QSize(1440, 900));
-	//dims.append(QSize(1680, 1050));
-	//dims.append(QSize(1920, 1200));
-	//dims.append(QSize(2560, 1600));
-
-	//for (auto i = 0; i < dims.size(); ++i)
-	//{
-	//	_ui.resolutions->addItem(QIcon(), QString("%1x%2").arg(dims[i].width()).arg(dims[i].height()), dims[i]);
-	//}
 
 	// Quality / Bandwidth / Bitrate
 	// 1 = 0,125 KByte/s
@@ -141,6 +123,9 @@ void VideoSettingsDialog::preselect(const ConferenceVideoWindow::Options& opts)
 	// Quality
 	_ui.quality->setValue(opts.cameraBitrate);
 
+	// Hardware acceleration
+	_ui.hardwareAcceleration->setChecked(opts.uiVideoHardwareAccelerationEnabled);
+
 	// Auto enable
 	_ui.autoEnable->setChecked(opts.cameraAutoEnable);
 }
@@ -150,6 +135,7 @@ const ConferenceVideoWindow::Options& VideoSettingsDialog::values()
 	_opts.cameraDeviceId = _ui.devices->currentData().toString();
 	_opts.cameraResolution = _ui.resolutions->currentData().toSize();
 	_opts.cameraBitrate = _ui.quality->value();
+	_opts.uiVideoHardwareAccelerationEnabled = _ui.hardwareAcceleration->isChecked();
 	_opts.cameraAutoEnable = _ui.autoEnable->isChecked();
 	return _opts;
 }
@@ -180,17 +166,5 @@ void VideoSettingsDialog::onCurrentDeviceIndexChanged(int index)
 		}
 		delete _ui.resolutions->model();
 		_ui.resolutions->setModel(new ResolutionListModel(_window, cameraInfo, this));
-
-		//QCamera cam(cameraInfo);
-		//cam.load();
-		//auto dims = cam.supportedViewfinderResolutions();
-		//for (auto i = 0; i < dims.size(); ++i)
-		//{
-		//	const auto& size = dims[i];
-		//	if (size.width() > serverConfig.maxVideoResolutionWidth || size.height() > serverConfig.maxVideoResolutionHeight)
-		//	{
-		//		_ui.resolutions->addItem(QIcon(), QString("%1x%2").arg(dims[i].width()).arg(dims[i].height()), dims[i]);
-		//	}
-		//}
 	}
 }

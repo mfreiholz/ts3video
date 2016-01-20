@@ -6,6 +6,7 @@
 #include <QJsonValue>
 #include <QTcpSocket>
 #include <QtConcurrent>
+#include <QSize>
 
 #include "humblelogging/api.h"
 
@@ -274,17 +275,11 @@ void AuthenticationAction::run(const ActionData& req)
 		const auto token = QString("%1-%2").arg(req.session->_clientEntity->id).arg(QDateTime::currentDateTimeUtc().toString());
 		req.server->_tokens.insert(token, req.session->_clientEntity->id);
 
-		// Send server options/restrictions to client
-		VirtualServerConfigEntity vsconf;
-		vsconf.maxVideoResolutionWidth = req.server->options().maximumResolution.width();
-		vsconf.maxVideoResolutionHeight = req.server->options().maximumResolution.height();
-		vsconf.maxVideoBandwidth = req.server->options().maximumBitrate;
-
 		// Respond.
 		QJsonObject params;
 		params["client"] = req.session->_clientEntity->toQJsonObject();
 		params["authtoken"] = token;
-		params["virtualserverconfig"] = vsconf.toQJsonObject();
+		params["virtualserverconfig"] = req.server->_config.toQJsonObject();
 		sendDefaultOkResponse(req, params);
 	});
 
@@ -312,9 +307,22 @@ void HeartbeatAction::run(const ActionData& req)
 
 void EnableVideoAction::run(const ActionData& req)
 {
+	// Validate resolution
+	const auto width = req.params["width"].toInt();
+	const auto height = req.params["height"].toInt();
+	const auto bitrate = req.params["bitrate"].toInt();
+	const QSize size(width, height);
+
+	if (!req.server->_config.isResolutionSupported(size))
+	{
+		HL_WARN(HL, QString("Client tried to enable video with unsupported video settings (width=%1; height=%2; bitrate=0)").arg(width).arg(height).arg(bitrate).toStdString());
+		sendDefaultErrorResponse(req, IFVS_STATUS_INVALID_PARAMETERS, QString("Unsupported video settings by server (%1x%2 @ %3 bps)").arg(width).arg(height).arg(bitrate));
+		return;
+	}
+
 	req.session->_clientEntity->videoEnabled = true;
-	req.session->_clientEntity->videoWidth = req.params["width"].toInt();
-	req.session->_clientEntity->videoHeight = req.params["height"].toInt();
+	req.session->_clientEntity->videoWidth = width;
+	req.session->_clientEntity->videoHeight = height;
 	req.server->updateMediaRecipients();
 
 	sendDefaultOkResponse(req);

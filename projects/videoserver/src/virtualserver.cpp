@@ -33,6 +33,10 @@ VirtualServer::VirtualServer(const VirtualServerOptions& opts, QObject* parent) 
 	_tokens(),
 	_wsStatusServer(nullptr)
 {
+	_config.maxVideoResolutionWidth = opts.maximumResolution.width();
+	_config.maxVideoResolutionHeight = opts.maximumResolution.height();
+	_config.maxVideoBitrate = opts.maximumBitrate;
+
 	// Basic actions.
 	registerAction(ActionPtr(new AuthenticationAction()));
 

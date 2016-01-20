@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>360</width>
-    <height>162</height>
+    <width>467</width>
+    <height>223</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -64,10 +64,17 @@
        </item>
       </layout>
      </item>
-     <item row="4" column="1">
+     <item row="5" column="1">
       <widget class="QCheckBox" name="autoEnable">
        <property name="text">
         <string>Start automatically</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1">
+      <widget class="QCheckBox" name="hardwareAcceleration">
+       <property name="text">
+        <string>Hardware Acceleration (Requires application restart)</string>
        </property>
       </widget>
      </item>
