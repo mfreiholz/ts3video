@@ -1,5 +1,7 @@
 #include "videosettingswidget.h"
 
+#include <QList>
+#include <QPair>
 #include <QtMultimedia/QCameraInfo>
 
 #include "qtasync.h"
@@ -67,11 +69,35 @@ private:
 
 ///////////////////////////////////////////////////////////////////////
 
+static int bitrateForResolution(const QSize& resolution, int defaultBitrate, const VirtualServerConfigEntity& serverConfig)
+{
+	QList<QPair<QSize, int> > dimBitrates;
+	dimBitrates.append(qMakePair(QSize(1980, 1080), 350));
+	dimBitrates.append(qMakePair(QSize(1280, 720), 250));
+	dimBitrates.append(qMakePair(QSize(640, 360), 100));
+	for (const auto& item : dimBitrates)
+	{
+		if (serverConfig.isResolutionSupported(item.first)
+				&& serverConfig.isBitrateSupported(item.second)
+				&& resolution.width() >= item.first.width()
+				&& resolution.height() >= item.first.height())
+		{
+			return item.second;
+			break;
+		}
+	}
+	return defaultBitrate;
+}
+
+///////////////////////////////////////////////////////////////////////
+
 VideoSettingsDialog::VideoSettingsDialog(ConferenceVideoWindow* window, QWidget* parent) :
 	QDialog(parent),
 	_window(window)
 {
 	_ui.setupUi(this);
+
+	const auto& serverConfig = _window->networkClient()->serverConfig();
 
 	// Devices
 	const auto infos = QCameraInfo::availableCameras();
@@ -84,17 +110,14 @@ VideoSettingsDialog::VideoSettingsDialog(ConferenceVideoWindow* window, QWidget*
 	// Quality / Bandwidth / Bitrate
 	// 1 = 0,125 KByte/s
 	// 1024 = 128 KByte/s
-	_ui.quality->setMinimum(50);
-	_ui.quality->setMaximum(1024);
-	_ui.quality->setValue(_ui.quality->minimum());
-
-	_ui.qualityValue->setMinimum(_ui.quality->minimum());
-	_ui.qualityValue->setMaximum(_ui.quality->maximum());
-	_ui.qualityValue->setValue(_ui.quality->value());
+	_ui.qualityValue->setReadOnly(true);
+	_ui.qualityValue->setMinimum(50);
+	_ui.qualityValue->setMaximum(serverConfig.maxVideoBitrate);
+	_ui.qualityValue->setValue(bitrateForResolution(QSize(0, 0), _ui.qualityValue->minimum(), serverConfig));
 
 	// Ui events
-	QObject::connect(_ui.quality, &QSlider::valueChanged, _ui.qualityValue, &QSpinBox::setValue);
 	QObject::connect(_ui.devices, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &VideoSettingsDialog::onCurrentDeviceIndexChanged);
+	QObject::connect(_ui.resolutions, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &VideoSettingsDialog::onCurrentResolutionIndexChanged);
 	QObject::connect(_ui.okButton, &QPushButton::clicked, this, &QDialog::accept);
 	QObject::connect(_ui.cancelButton, &QPushButton::clicked, this, &QDialog::reject);
 }
@@ -121,7 +144,7 @@ void VideoSettingsDialog::preselect(const ConferenceVideoWindow::Options& opts)
 	}
 
 	// Quality
-	_ui.quality->setValue(opts.cameraBitrate);
+	//_ui.qualityValue->setValue(opts.cameraBitrate);
 
 	// Hardware acceleration
 	_ui.hardwareAcceleration->setChecked(opts.uiVideoHardwareAccelerationEnabled);
@@ -134,7 +157,7 @@ const ConferenceVideoWindow::Options& VideoSettingsDialog::values()
 {
 	_opts.cameraDeviceId = _ui.devices->currentData().toString();
 	_opts.cameraResolution = _ui.resolutions->currentData().toSize();
-	_opts.cameraBitrate = _ui.quality->value();
+	_opts.cameraBitrate = _ui.qualityValue->value();
 	_opts.uiVideoHardwareAccelerationEnabled = _ui.hardwareAcceleration->isChecked();
 	_opts.cameraAutoEnable = _ui.autoEnable->isChecked();
 	return _opts;
@@ -146,7 +169,6 @@ void VideoSettingsDialog::onCurrentDeviceIndexChanged(int index)
 
 	const auto deviceId = _ui.devices->currentData().toString();
 	_ui.resolutions->setEnabled(!deviceId.isEmpty());
-	_ui.quality->setEnabled(!deviceId.isEmpty());
 	_ui.qualityValue->setEnabled(!deviceId.isEmpty());
 	_ui.autoEnable->setEnabled(!deviceId.isEmpty());
 
@@ -167,4 +189,13 @@ void VideoSettingsDialog::onCurrentDeviceIndexChanged(int index)
 		delete _ui.resolutions->model();
 		_ui.resolutions->setModel(new ResolutionListModel(_window, cameraInfo, this));
 	}
+}
+
+// Updates the bitrate to a predefined value, based on the choosen resolution
+void VideoSettingsDialog::onCurrentResolutionIndexChanged(int index)
+{
+	const auto& serverConfig = _window->networkClient()->serverConfig();
+	const auto resolution = _ui.resolutions->itemData(index).toSize();
+	const int bitrate = bitrateForResolution(resolution, _ui.qualityValue->minimum(), serverConfig);
+	_ui.qualityValue->setValue(bitrate);
 }

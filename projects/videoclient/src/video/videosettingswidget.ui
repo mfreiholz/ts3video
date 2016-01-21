@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>467</width>
+    <width>573</width>
     <height>223</height>
    </rect>
   </property>
@@ -36,45 +36,34 @@
      <item row="1" column="1">
       <widget class="QComboBox" name="resolutions"/>
      </item>
-     <item row="3" column="0">
+     <item row="2" column="0">
       <widget class="QLabel" name="label_3">
        <property name="text">
         <string>Quality</string>
        </property>
       </widget>
      </item>
-     <item row="3" column="1">
-      <layout class="QHBoxLayout" name="horizontalLayout_2">
-       <item>
-        <widget class="QSlider" name="quality">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QSpinBox" name="qualityValue">
-         <property name="readOnly">
-          <bool>true</bool>
-         </property>
-         <property name="buttonSymbols">
-          <enum>QAbstractSpinBox::NoButtons</enum>
-         </property>
-        </widget>
-       </item>
-      </layout>
+     <item row="2" column="1">
+      <widget class="QSpinBox" name="qualityValue">
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+       <property name="buttonSymbols">
+        <enum>QAbstractSpinBox::NoButtons</enum>
+       </property>
+      </widget>
      </item>
-     <item row="5" column="1">
-      <widget class="QCheckBox" name="autoEnable">
+     <item row="3" column="1">
+      <widget class="QCheckBox" name="hardwareAcceleration">
        <property name="text">
-        <string>Start automatically</string>
+        <string>Hardware Acceleration (Requires application restart)</string>
        </property>
       </widget>
      </item>
      <item row="4" column="1">
-      <widget class="QCheckBox" name="hardwareAcceleration">
+      <widget class="QCheckBox" name="autoEnable">
        <property name="text">
-        <string>Hardware Acceleration (Requires application restart)</string>
+        <string>Start automatically</string>
        </property>
       </widget>
      </item>

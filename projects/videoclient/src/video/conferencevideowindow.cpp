@@ -1,6 +1,5 @@
 #include "conferencevideowindow.h"
 
-#include <QScopedPointer>
 #include <QSettings>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -362,23 +361,26 @@ QSharedPointer<QAudioInput> ConferenceVideoWindow::audioInput()
 
 void ConferenceVideoWindow::onActionVideoSettingsTriggered()
 {
-	QScopedPointer<VideoSettingsDialog> dialog(new VideoSettingsDialog(this, this));
-	dialog->setModal(true);
-	dialog->preselect(_opts);
-	if (dialog->exec() != QDialog::Accepted)
+	VideoSettingsDialog dialog(this, this);
+	dialog.setModal(true);
+	dialog.preselect(_opts);
+	dialog.adjustSize();
+	if (dialog.exec() != QDialog::Accepted)
 	{
 		return;
 	}
-	_opts = dialog->values();
+	_opts = dialog.values();
 	applyVideoInputOptions(_opts);
 }
 
 void ConferenceVideoWindow::onActionLoginAsAdminTriggered()
 {
-	auto action = qobject_cast<QAction*>(sender());
 	AdminAuthWidget w(_networkClient, this);
 	w.setModal(true);
+	w.adjustSize();
 	w.exec();
+
+	auto action = qobject_cast<QAction*>(sender());
 	if (_networkClient->isAdmin() && action)
 		action->setEnabled(false);
 }

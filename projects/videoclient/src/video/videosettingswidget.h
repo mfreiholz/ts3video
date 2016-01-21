@@ -12,12 +12,13 @@ class VideoSettingsDialog : public QDialog
 	Q_OBJECT
 
 public:
-	VideoSettingsDialog(ConferenceVideoWindow *window, QWidget* parent);
+	VideoSettingsDialog(ConferenceVideoWindow* window, QWidget* parent);
 	void preselect(const ConferenceVideoWindow::Options& opts);
 	const ConferenceVideoWindow::Options& values();
 
 private slots:
 	void onCurrentDeviceIndexChanged(int index);
+	void onCurrentResolutionIndexChanged(int index);
 
 private:
 	Ui::VideoSettingsWidgetForm _ui;
