@@ -274,6 +274,7 @@ QCorReply* NetworkClient::enableVideoStream(int width, int height, int bitrate)
 	d->clientEntity.videoEnabled = true;
 	d->clientEntity.videoWidth = width;
 	d->clientEntity.videoHeight = height;
+	d->clientEntity.videoBitrate = bitrate;
 	d->clientModel->updateClient(d->clientEntity);
 
 	d->mediaSocket->initVideoEncoder(width, height, bitrate, 24);

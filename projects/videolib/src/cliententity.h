@@ -32,6 +32,7 @@ public:
 	bool videoEnabled; ///< Indicates whether the client has video enabled.
 	int videoWidth;
 	int videoHeight;
+	int videoBitrate;
 
 	// Audio settings.
 	bool audioInputEnabled; ///< Indicates whether the client has audio input enabled (microphone).

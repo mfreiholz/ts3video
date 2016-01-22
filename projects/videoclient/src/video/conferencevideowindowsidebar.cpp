@@ -9,9 +9,6 @@
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QLabel>
 
-#include "videolib/src/elws.h"
-#include "videolib/src/networkusageentity.h"
-
 #include "video/conferencevideowindow.h"
 #include "video/userlistwidget.h"
 
@@ -25,7 +22,7 @@
 
 // Static Helpers /////////////////////////////////////////////////////
 
-static QSize __sideBarIconSize(52, 52);
+//static QSize __sideBarIconSize(52, 52);
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -36,6 +33,7 @@ ConferenceVideoWindowSidebar::ConferenceVideoWindowSidebar(ConferenceVideoWindow
 	_panelVisible(true)
 {
 	auto nc = _window->networkClient();
+	const auto iconSize = fontMetrics().height() * 4;
 
 	auto mainLayout = new QBoxLayout(QBoxLayout::TopToBottom);
 	mainLayout->setContentsMargins(0, 0, 0, 0);
@@ -50,7 +48,7 @@ ConferenceVideoWindowSidebar::ConferenceVideoWindowSidebar(ConferenceVideoWindow
 
 		_enableVideoToggleButton = new QPushButton();
 		_enableVideoToggleButton->setIcon(ico);
-		_enableVideoToggleButton->setIconSize(__sideBarIconSize);
+		_enableVideoToggleButton->setIconSize(QSize(iconSize, iconSize));
 		_enableVideoToggleButton->setToolTip(tr("Start/stop video."));
 		_enableVideoToggleButton->setFlat(true);
 		_enableVideoToggleButton->setCheckable(true);
@@ -67,7 +65,7 @@ ConferenceVideoWindowSidebar::ConferenceVideoWindowSidebar(ConferenceVideoWindow
 	{
 		_enableAudioInputToggleButton = new QPushButton();
 		_enableAudioInputToggleButton->setIcon(QIcon(":/ic_mic_grey600_48dp.png"));
-		_enableAudioInputToggleButton->setIconSize(__sideBarIconSize);
+		_enableAudioInputToggleButton->setIconSize(QSize(iconSize, iconSize));
 		_enableAudioInputToggleButton->setToolTip(tr("Start/stop microphone."));
 		_enableAudioInputToggleButton->setFlat(true);
 		_enableAudioInputToggleButton->setCheckable(true);
@@ -81,7 +79,7 @@ ConferenceVideoWindowSidebar::ConferenceVideoWindowSidebar(ConferenceVideoWindow
 	{
 		_userListButton = new QPushButton();
 		_userListButton->setIcon(QIcon(":/ic_supervisor_account_grey600_48dp.png"));
-		_userListButton->setIconSize(__sideBarIconSize);
+		_userListButton->setIconSize(QSize(iconSize, iconSize));
 		_userListButton->setFlat(true);
 		_userListButton->setToolTip(tr("Participants"));
 		mainLayout->addWidget(_userListButton);
@@ -106,83 +104,52 @@ ConferenceVideoWindowSidebar::ConferenceVideoWindowSidebar(ConferenceVideoWindow
 		{
 			auto w = new UserListWidget(_window, nullptr);
 			auto hint = HintOverlayWidget::showHint(w, _userListButton);
-			hint->resize(200, 350);
+			hint->resize(this->geometry().width() * 4, this->geometry().height() / 2);
 		});
 	}
 
 	mainLayout->addStretch(1);
 
-	// Show/hide sidebar control
-	if (false)
-	{
-		_hideLeftPanelButton = new QPushButton();
-		_hideLeftPanelButton->setIcon(QIcon(":/ic_chevron_left_grey600_48dp.png"));
-		_hideLeftPanelButton->setIconSize(__sideBarIconSize / 2);
-		_hideLeftPanelButton->setToolTip(tr("Hide action bar"));
-		_hideLeftPanelButton->setFlat(true);
-		_hideLeftPanelButton->setVisible(true);
-		mainLayout->addWidget(_hideLeftPanelButton);
+	//// Show/hide sidebar control
+	//if (false)
+	//{
+	//	_hideLeftPanelButton = new QPushButton();
+	//	_hideLeftPanelButton->setIcon(QIcon(":/ic_chevron_left_grey600_48dp.png"));
+	//	_hideLeftPanelButton->setIconSize(__sideBarIconSize / 2);
+	//	_hideLeftPanelButton->setToolTip(tr("Hide action bar"));
+	//	_hideLeftPanelButton->setFlat(true);
+	//	_hideLeftPanelButton->setVisible(true);
+	//	mainLayout->addWidget(_hideLeftPanelButton);
 
-		_showLeftPanelButton = new QPushButton(parentWidget());
-		_showLeftPanelButton->setObjectName("showLeftPanelButton");
-		_showLeftPanelButton->setIcon(QIcon(":/ic_chevron_right_grey600_48dp.png"));
-		_showLeftPanelButton->setIconSize(__sideBarIconSize / 2);
-		_showLeftPanelButton->setToolTip(tr("Show action bar"));
-		_showLeftPanelButton->setFlat(true);
-		_showLeftPanelButton->setVisible(!_panelVisible);
-		_showLeftPanelButton->resize(_showLeftPanelButton->iconSize());
-		_showLeftPanelButton->move(QPoint(0, 0));
+	//	_showLeftPanelButton = new QPushButton(parentWidget());
+	//	_showLeftPanelButton->setObjectName("showLeftPanelButton");
+	//	_showLeftPanelButton->setIcon(QIcon(":/ic_chevron_right_grey600_48dp.png"));
+	//	_showLeftPanelButton->setIconSize(__sideBarIconSize / 2);
+	//	_showLeftPanelButton->setToolTip(tr("Show action bar"));
+	//	_showLeftPanelButton->setFlat(true);
+	//	_showLeftPanelButton->setVisible(!_panelVisible);
+	//	_showLeftPanelButton->resize(_showLeftPanelButton->iconSize());
+	//	_showLeftPanelButton->move(QPoint(0, 0));
 
-		QObject::connect(_hideLeftPanelButton, &QPushButton::clicked, [this]()
-		{
-			this->setVisible(false);
-			_showLeftPanelButton->setVisible(true);
-			//d->tilesLayout->setContentsMargins(d->showLeftPanelButton->width() - 8, 0, 0, 0);
-			_panelVisible = false;
-		});
-		QObject::connect(_showLeftPanelButton, &QPushButton::clicked, [this]()
-		{
-			this->setVisible(true);
-			_showLeftPanelButton->setVisible(false);
-			//d->tilesLayout->setContentsMargins(0, 0, 0, 0);
-			_panelVisible = true;
-		});
-	}
-
-	// Network usage statistics
-	if (true)
-	{
-		auto bandwidthContainer = new QWidget();
-		auto bandwidthContainerLayout = new QBoxLayout(QBoxLayout::TopToBottom);
-		bandwidthContainerLayout->setContentsMargins(3, 3, 3, 3);
-		bandwidthContainer->setLayout(bandwidthContainerLayout);
-
-		_bandwidthRead = new QLabel("D: 0.0 KB/s");
-		_bandwidthRead->setObjectName("bandwidthRead");
-		bandwidthContainerLayout->addWidget(_bandwidthRead);
-
-		_bandwidthWrite = new QLabel("U: 0.0 KB/s");
-		_bandwidthWrite->setObjectName("bandwidthWrite");
-		bandwidthContainerLayout->addWidget(_bandwidthWrite);
-
-		mainLayout->addWidget(bandwidthContainer);
-
-		QObject::connect(nc.data(), &NetworkClient::networkUsageUpdated, [this](const NetworkUsageEntity & networkUsage)
-		{
-			_bandwidthRead->setText(QString("D: %1").arg(ELWS::humanReadableBandwidth(networkUsage.bandwidthRead)));
-			_bandwidthWrite->setText(QString("U: %1").arg(ELWS::humanReadableBandwidth(networkUsage.bandwidthWrite)));
-			if (_bandwidthRead->parentWidget())
-			{
-				_bandwidthRead->parentWidget()->setToolTip(tr("Received: %1\nSent: %2")
-						.arg(ELWS::humanReadableSize(networkUsage.bytesRead))
-						.arg(ELWS::humanReadableSize(networkUsage.bytesWritten)));
-			}
-		});
-	}
+	//	QObject::connect(_hideLeftPanelButton, &QPushButton::clicked, [this]()
+	//	{
+	//		this->setVisible(false);
+	//		_showLeftPanelButton->setVisible(true);
+	//		//d->tilesLayout->setContentsMargins(d->showLeftPanelButton->width() - 8, 0, 0, 0);
+	//		_panelVisible = false;
+	//	});
+	//	QObject::connect(_showLeftPanelButton, &QPushButton::clicked, [this]()
+	//	{
+	//		this->setVisible(true);
+	//		_showLeftPanelButton->setVisible(false);
+	//		//d->tilesLayout->setContentsMargins(0, 0, 0, 0);
+	//		_panelVisible = true;
+	//	});
+	//}
 
 	_aboutButton = new QPushButton();
 	_aboutButton->setIcon(QIcon(":/ic_info_outline_grey600_48dp.png"));
-	_aboutButton->setIconSize(__sideBarIconSize);
+	_aboutButton->setIconSize(QSize(iconSize, iconSize));
 	_aboutButton->setFlat(true);
 	mainLayout->addWidget(_aboutButton);
 	QObject::connect(_aboutButton, &QPushButton::clicked, [this]()
@@ -211,6 +178,7 @@ void ConferenceVideoWindowSidebar::setVideoEnabled(bool b)
 			{
 				const auto& opts = _window->options();
 				auto reply = nc->enableVideoStream(opts.cameraResolution.width(), opts.cameraResolution.height(), opts.cameraBitrate);
+				QObject::connect(reply, &QCorReply::finished, _window, &ConferenceVideoWindow::onReplyFinsihedHandleError);
 				QCORREPLY_AUTODELETE(reply);
 			}
 		}

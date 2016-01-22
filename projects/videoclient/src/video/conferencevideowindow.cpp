@@ -139,7 +139,7 @@ ConferenceVideoWindow::ConferenceVideoWindow(const QSharedPointer<NetworkClient>
 	_networkClient(nc),
 	_sidebar(nullptr),
 	_view(nullptr),
-	_statusbar(nullptr)//(new QStatusBar())
+	_statusbar(nullptr)
 {
 	// GUI STUFF
 
@@ -180,35 +180,36 @@ ConferenceVideoWindow::ConferenceVideoWindow(const QSharedPointer<NetworkClient>
 	l->addWidget(_view, 1);
 
 	// Network usage statistics inside statusbar
-	if (_statusbar)
-	{
-		auto bandwidthContainer = new QWidget();
-		auto bandwidthContainerLayout = new QBoxLayout(QBoxLayout::LeftToRight);
-		bandwidthContainerLayout->setContentsMargins(3, 3, 3, 3);
-		bandwidthContainer->setLayout(bandwidthContainerLayout);
+	setupStatusBar();
+	//if (_statusbar)
+	//{
+	//	auto bandwidthContainer = new QWidget();
+	//	auto bandwidthContainerLayout = new QBoxLayout(QBoxLayout::LeftToRight);
+	//	bandwidthContainerLayout->setContentsMargins(3, 3, 3, 3);
+	//	bandwidthContainer->setLayout(bandwidthContainerLayout);
 
-		auto bandwidthRead = new QLabel("D: 0.0 KB/s");
-		bandwidthRead->setObjectName("bandwidthRead");
-		bandwidthContainerLayout->addWidget(bandwidthRead);
+	//	auto bandwidthRead = new QLabel("D: 0.0 KB/s");
+	//	bandwidthRead->setObjectName("bandwidthRead");
+	//	bandwidthContainerLayout->addWidget(bandwidthRead);
 
-		auto bandwidthWrite = new QLabel("U: 0.0 KB/s");
-		bandwidthWrite->setObjectName("bandwidthWrite");
-		bandwidthContainerLayout->addWidget(bandwidthWrite);
+	//	auto bandwidthWrite = new QLabel("U: 0.0 KB/s");
+	//	bandwidthWrite->setObjectName("bandwidthWrite");
+	//	bandwidthContainerLayout->addWidget(bandwidthWrite);
 
-		_statusbar->addWidget(bandwidthContainer, 1);
+	//	_statusbar->addWidget(bandwidthContainer, 1);
 
-		QObject::connect(nc.data(), &NetworkClient::networkUsageUpdated, [this, bandwidthRead, bandwidthWrite](const NetworkUsageEntity & networkUsage)
-		{
-			bandwidthRead->setText(QString("D: %1").arg(ELWS::humanReadableBandwidth(networkUsage.bandwidthRead)));
-			bandwidthWrite->setText(QString("U: %1").arg(ELWS::humanReadableBandwidth(networkUsage.bandwidthWrite)));
-			if (bandwidthRead->parentWidget())
-			{
-				bandwidthRead->parentWidget()->setToolTip(tr("Received: %1\nSent: %2")
-						.arg(ELWS::humanReadableSize(networkUsage.bytesRead))
-						.arg(ELWS::humanReadableSize(networkUsage.bytesWritten)));
-			}
-		});
-	}
+	//	QObject::connect(nc.data(), &NetworkClient::networkUsageUpdated, [this, bandwidthRead, bandwidthWrite](const NetworkUsageEntity & networkUsage)
+	//	{
+	//		bandwidthRead->setText(QString("D: %1").arg(ELWS::humanReadableBandwidth(networkUsage.bandwidthRead)));
+	//		bandwidthWrite->setText(QString("U: %1").arg(ELWS::humanReadableBandwidth(networkUsage.bandwidthWrite)));
+	//		if (bandwidthRead->parentWidget())
+	//		{
+	//			bandwidthRead->parentWidget()->setToolTip(tr("Received: %1\nSent: %2")
+	//					.arg(ELWS::humanReadableSize(networkUsage.bytesRead))
+	//					.arg(ELWS::humanReadableSize(networkUsage.bytesWritten)));
+	//		}
+	//	});
+	//}
 
 
 	// Geometry
@@ -359,6 +360,46 @@ QSharedPointer<QAudioInput> ConferenceVideoWindow::audioInput()
 }
 #endif
 
+void ConferenceVideoWindow::setupStatusBar()
+{
+	if (_statusbar)
+	{
+		delete _statusbar;
+		_statusbar = nullptr;
+	}
+
+	_statusbar = new QStatusBar(this);
+	setStatusBar(_statusbar);
+
+	// Network bandwidth status
+	if (true)
+	{
+		auto bandwidthRead = new QLabel("D: 0.0 KB/s");
+		bandwidthRead->setObjectName("bandwidthRead");
+		bandwidthRead->setMinimumWidth(bandwidthRead->fontMetrics().averageCharWidth() * 35);
+		_statusbar->addPermanentWidget(bandwidthRead);
+
+		auto bandwidthWrite = new QLabel("U: 0.0 KB/s");
+		bandwidthWrite->setObjectName("bandwidthWrite");
+		bandwidthWrite->setMinimumWidth(bandwidthWrite->fontMetrics().averageCharWidth() * 35);
+		_statusbar->addPermanentWidget(bandwidthWrite);
+
+		QObject::connect(_networkClient.data(), &NetworkClient::networkUsageUpdated, [this, bandwidthRead, bandwidthWrite](const NetworkUsageEntity & networkUsage)
+		{
+			bandwidthRead->setText(QString("D: %1")
+								   .arg(ELWS::humanReadableBandwidth(networkUsage.bandwidthRead)));
+			bandwidthWrite->setText(QString("U: %1")
+									.arg(ELWS::humanReadableBandwidth(networkUsage.bandwidthWrite)));
+
+			const auto sumText = tr("Received: %1\nSent: %2")
+								 .arg(ELWS::humanReadableSize(networkUsage.bytesRead))
+								 .arg(ELWS::humanReadableSize(networkUsage.bytesWritten));
+			bandwidthRead->setToolTip(sumText);
+			bandwidthWrite->setToolTip(sumText);
+		});
+	}
+}
+
 void ConferenceVideoWindow::onActionVideoSettingsTriggered()
 {
 	VideoSettingsDialog dialog(this, this);
@@ -366,9 +407,8 @@ void ConferenceVideoWindow::onActionVideoSettingsTriggered()
 	dialog.preselect(_opts);
 	dialog.adjustSize();
 	if (dialog.exec() != QDialog::Accepted)
-	{
 		return;
-	}
+
 	_opts = dialog.values();
 	applyVideoInputOptions(_opts);
 }
@@ -426,6 +466,29 @@ void ConferenceVideoWindow::onClientDisconnected(const ClientEntity& client)
 void ConferenceVideoWindow::onNewVideoFrame(YuvFrameRefPtr frame, int senderId)
 {
 	_view->updateClientVideo(frame, senderId);
+}
+
+void ConferenceVideoWindow::onReplyFinsihedHandleError()
+{
+	auto reply = qobject_cast<QCorReply*>(sender());
+
+	int status = 0;
+	QString error;
+	QJsonObject params;
+	if (!JsonProtocolHelper::fromJsonResponse(reply->frame()->data(), status, params, error))
+	{
+		QMessageBox::critical(this,
+							  tr("Network protocol error"),
+							  QString("Can not parse response:\n%1").arg(QString(reply->frame()->data())));
+		return;
+	}
+	else if (status != 0)
+	{
+		QMessageBox::warning(this,
+							 tr("Error from server"),
+							 QString("%1: %2").arg(status).arg(error));
+		return;
+	}
 }
 
 void ConferenceVideoWindow::closeEvent(QCloseEvent* e)

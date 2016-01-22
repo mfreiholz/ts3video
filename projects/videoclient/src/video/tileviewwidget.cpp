@@ -29,7 +29,7 @@ HUMBLE_LOGGER(HL, "gui.tileview");
 
 ///////////////////////////////////////////////////////////////////////
 
-static QSize  __sideBarIconSize(52, 52);
+//static QSize  __sideBarIconSize(52, 52);
 
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
@@ -41,6 +41,7 @@ TileViewWidget::TileViewWidget(ConferenceVideoWindow* window, QWidget* parent, Q
 	_window(window)
 {
 	d->tilesCurrentSize.scale(200, 200, Qt::KeepAspectRatio);
+	const auto iconSize = fontMetrics().height() * 2;
 
 	auto mainLayout = new QBoxLayout(QBoxLayout::LeftToRight, this);
 	mainLayout->setContentsMargins(0, 0, 0, 0);
@@ -68,14 +69,14 @@ TileViewWidget::TileViewWidget(ConferenceVideoWindow* window, QWidget* parent, Q
 
 		d->zoomInButton = new QPushButton();
 		d->zoomInButton->setIcon(QIcon(":/ic_add_circle_outline_grey600_48dp.png"));
-		d->zoomInButton->setIconSize(__sideBarIconSize / 2);
+		d->zoomInButton->setIconSize(QSize(iconSize, iconSize));
 		d->zoomInButton->setFlat(true);
 		d->zoomInButton->setToolTip(tr("Increase video size (CTRL+Mousewheel-Up)"));
 		topButtonsLayout->addWidget(d->zoomInButton);
 
 		d->zoomOutButton = new QPushButton();
 		d->zoomOutButton->setIcon(QIcon(":/ic_remove_circle_outline_grey600_48dp.png"));
-		d->zoomOutButton->setIconSize(__sideBarIconSize / 2);
+		d->zoomOutButton->setIconSize(QSize(iconSize, iconSize));
 		d->zoomOutButton->setFlat(true);
 		d->zoomOutButton->setToolTip(tr("Decrease video size (CTRL+Mousewheel-Down)"));
 		topButtonsLayout->addWidget(d->zoomOutButton);

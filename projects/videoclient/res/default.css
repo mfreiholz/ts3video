@@ -3,19 +3,6 @@
 /* Basics
 /*********************************************************************/
 
-QMainWindow {
-  background: rgb(30, 30, 30);
-}
-
-QMainWindow QStatusBar {
-  background: rgb(18, 19, 20);
-}
-
-QMainWindow QStatusBar QLabel#bandwidthRead,
-QMainWindow QStatusBar QLabel#bandwidthWrite {
-	color: rgb(200, 200, 200);
-}
-
 QFrame#captionFrame {
 }
 
@@ -24,17 +11,25 @@ QLabel#captionLabel {
 }
 
 /*********************************************************************/
-/* Startup dialog
+/* ConferenceVideoWindow + Sub Widgets
 /*********************************************************************/
 
+ConferenceVideoWindow TileViewWidget {
+  background: rgb(30, 30, 30);
+}
 
-/*********************************************************************/
-/* ConferenceVideoWidget
-/*********************************************************************/
+/*ConferenceVideoWindow QStatusBar {
+  background: rgb(18, 19, 20);
+}
+
+ConferenceVideoWindow QStatusBar QLabel#bandwidthRead,
+ConferenceVideoWindow QStatusBar QLabel#bandwidthWrite {
+	color: rgb(200, 200, 200);
+}*/
 
 ConferenceVideoWindowSidebar {
   background: rgb(18, 19, 20);
-  min-width: 90px;
+  /*min-width: 90px;*/
 }
 
 ConferenceVideoWindowSidebar QPushButton:checked {
@@ -42,6 +37,7 @@ ConferenceVideoWindowSidebar QPushButton:checked {
 }
 
 ConferenceVideoWindowSidebar #userCount {
+	background: rgb(18, 19, 20);
   border-color: rgb(63, 63, 70);
   border-style: solid;
   border-width: 1px;
@@ -51,12 +47,12 @@ ConferenceVideoWindowSidebar #userCount {
   padding: 2px;
 }
 
-ConferenceVideoWindowSidebar QLabel#bandwidthRead,
+/*ConferenceVideoWindowSidebar QLabel#bandwidthRead,
 ConferenceVideoWindowSidebar QLabel#bandwidthWrite {
   color: rgb(200, 200, 200);
   font-size: 7pt;
   qproperty-alignment: AlignCenter;
-}
+}*/
 
 /*********************************************************************/
 /* TileView
