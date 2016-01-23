@@ -41,9 +41,6 @@ private:
 	QPushButton* _showLeftPanelButton;
 	bool _panelVisible;
 
-	QPushButton* _adminAuthButton;
-	QPushButton* _aboutButton;
-
 	// Bandwidth statistics
 	QLabel* _bandwidthRead;
 	QLabel* _bandwidthWrite;

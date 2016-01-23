@@ -152,14 +152,15 @@ signals:
 
 	// Protocol based signals.
 	void serverError(int errorCode, const QString& errorMessage);
+
 	void clientEnabledVideo(const ClientEntity& client);
 	void clientDisabledVideo(const ClientEntity& client);
 	void clientJoinedChannel(const ClientEntity& client, const ChannelEntity& channel);
 	void clientLeftChannel(const ClientEntity& client, const ChannelEntity& channel);
 	void clientKicked(const ClientEntity& client);
 	void clientDisconnected(const ClientEntity& client);
-	void newVideoFrame(YuvFrameRefPtr frame, int senderId);
 
+	void newVideoFrame(YuvFrameRefPtr frame, int senderId);
 #if defined(OCS_INCLUDE_AUDIO)
 	void newAudioFrame(PcmFrameRefPtr frame, int senderId);
 #endif

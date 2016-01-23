@@ -11,18 +11,11 @@
 
 #include "video/conferencevideowindow.h"
 #include "video/userlistwidget.h"
-
-#include "aboutwidget.h"
-#include "hintoverlaywidget.h"
-
 #include "networkclient/networkclient.h"
 #include "networkclient/clientlistmodel.h"
+#include "hintoverlaywidget.h"
 
 #include "util/qwidgetutil.h"
-
-// Static Helpers /////////////////////////////////////////////////////
-
-//static QSize __sideBarIconSize(52, 52);
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -146,20 +139,6 @@ ConferenceVideoWindowSidebar::ConferenceVideoWindowSidebar(ConferenceVideoWindow
 	//		_panelVisible = true;
 	//	});
 	//}
-
-	_aboutButton = new QPushButton();
-	_aboutButton->setIcon(QIcon(":/ic_info_outline_grey600_48dp.png"));
-	_aboutButton->setIconSize(QSize(iconSize, iconSize));
-	_aboutButton->setFlat(true);
-	mainLayout->addWidget(_aboutButton);
-	QObject::connect(_aboutButton, &QPushButton::clicked, [this]()
-	{
-		auto about = new AboutWidget(this);
-		about->setWindowFlags(Qt::Dialog);
-		about->show();
-		QWidgetUtil::resizeWidgetPerCent(about, 35, 40);
-		QWidgetUtil::centerWidget(about);
-	});
 }
 
 void ConferenceVideoWindowSidebar::setVideoEnabled(bool b)

@@ -4,10 +4,9 @@
 
 ///////////////////////////////////////////////////////////////////////
 
-AboutWidget::AboutWidget(QWidget *parent, Qt::WindowFlags f) :
-  QWidget(parent, f)
+AboutWidget::AboutWidget(QWidget* parent, Qt::WindowFlags f) :
+	QDialog(parent, f)
 {
-  setAttribute(Qt::WA_DeleteOnClose);
-  ui.setupUi(this);
-  ui.versionLabel->setText(IFVS_SOFTWARE_VERSION_QSTRING);
+	ui.setupUi(this);
+	ui.versionLabel->setText(IFVS_SOFTWARE_VERSION_QSTRING);
 }

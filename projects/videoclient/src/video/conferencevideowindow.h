@@ -76,12 +76,14 @@ public:
 	static RemoteClientVideoWidget* createRemoteVideoWidget(const ConferenceVideoWindow::Options& opts, const ClientEntity& client, QWidget* parent = nullptr);
 
 private:
+	void setupMenu();
 	void setupStatusBar();
 
 private slots:
 	// Gui callbacks
 	void onActionVideoSettingsTriggered();
 	void onActionLoginAsAdminTriggered();
+	void onActionAboutTriggered();
 	void onActionExitTriggered();
 
 	// Network callbacks

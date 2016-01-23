@@ -1,19 +1,19 @@
 #ifndef ABOUTWIDGET_H
 #define ABOUTWIDGET_H
 
-#include <QWidget>
+#include <QDialog>
 
 #include "ui_aboutwidget.h"
 
-class AboutWidget : public QWidget
+class AboutWidget : public QDialog
 {
-  Q_OBJECT
+	Q_OBJECT
 
 public:
-  AboutWidget(QWidget *parent = nullptr, Qt::WindowFlags f = 0);
+	AboutWidget(QWidget* parent = nullptr, Qt::WindowFlags f = 0);
 
 private:
-  Ui::AboutWidget ui;
+	Ui::AboutWidget ui;
 };
 
 #endif

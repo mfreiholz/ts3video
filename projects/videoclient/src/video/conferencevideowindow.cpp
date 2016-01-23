@@ -41,6 +41,7 @@
 #include "remoteclientvideowidget.h"
 #include "tileviewwidget.h"
 #include "adminauthwidget.h"
+#include "aboutwidget.h"
 
 #include "video/conferencevideowindowsidebar.h"
 #include "video/videosettingswidget.h"
@@ -142,26 +143,7 @@ ConferenceVideoWindow::ConferenceVideoWindow(const QSharedPointer<NetworkClient>
 	_statusbar(nullptr)
 {
 	// GUI STUFF
-
-	// Menu
-	auto menuBar = new QMenuBar(this);
-	setMenuBar(menuBar);
-
-	auto menu = menuBar->addMenu(QIcon(), tr("Conference"));
-
-	auto videoSettingsAction = menu->addAction(QIcon(), tr("Video settings..."));
-	QObject::connect(videoSettingsAction, &QAction::triggered, this, &ConferenceVideoWindow::onActionVideoSettingsTriggered);
-
-	menu->addSeparator();
-	auto adminAuthAction = menu->addAction(QIcon(":/ic_lock_grey600_48dp.png"), tr("Login as admin..."));
-	QObject::connect(adminAuthAction, &QAction::triggered, this, &ConferenceVideoWindow::onActionLoginAsAdminTriggered);
-
-	menu->addSeparator();
-	auto exitAction = menu->addAction(QIcon(), tr("Exit"));
-	QObject::connect(exitAction, &QAction::triggered, this, &ConferenceVideoWindow::onActionExitTriggered);
-
-	// Status bar
-	setStatusBar(_statusbar);
+	setupMenu();
 
 	// Central container widget
 	auto w = new QWidget(this);
@@ -181,36 +163,6 @@ ConferenceVideoWindow::ConferenceVideoWindow(const QSharedPointer<NetworkClient>
 
 	// Network usage statistics inside statusbar
 	setupStatusBar();
-	//if (_statusbar)
-	//{
-	//	auto bandwidthContainer = new QWidget();
-	//	auto bandwidthContainerLayout = new QBoxLayout(QBoxLayout::LeftToRight);
-	//	bandwidthContainerLayout->setContentsMargins(3, 3, 3, 3);
-	//	bandwidthContainer->setLayout(bandwidthContainerLayout);
-
-	//	auto bandwidthRead = new QLabel("D: 0.0 KB/s");
-	//	bandwidthRead->setObjectName("bandwidthRead");
-	//	bandwidthContainerLayout->addWidget(bandwidthRead);
-
-	//	auto bandwidthWrite = new QLabel("U: 0.0 KB/s");
-	//	bandwidthWrite->setObjectName("bandwidthWrite");
-	//	bandwidthContainerLayout->addWidget(bandwidthWrite);
-
-	//	_statusbar->addWidget(bandwidthContainer, 1);
-
-	//	QObject::connect(nc.data(), &NetworkClient::networkUsageUpdated, [this, bandwidthRead, bandwidthWrite](const NetworkUsageEntity & networkUsage)
-	//	{
-	//		bandwidthRead->setText(QString("D: %1").arg(ELWS::humanReadableBandwidth(networkUsage.bandwidthRead)));
-	//		bandwidthWrite->setText(QString("U: %1").arg(ELWS::humanReadableBandwidth(networkUsage.bandwidthWrite)));
-	//		if (bandwidthRead->parentWidget())
-	//		{
-	//			bandwidthRead->parentWidget()->setToolTip(tr("Received: %1\nSent: %2")
-	//					.arg(ELWS::humanReadableSize(networkUsage.bytesRead))
-	//					.arg(ELWS::humanReadableSize(networkUsage.bytesWritten)));
-	//		}
-	//	});
-	//}
-
 
 	// Geometry
 	QWidgetUtil::resizeWidgetPerCent(this, 75.0, 75.0);
@@ -360,6 +312,38 @@ QSharedPointer<QAudioInput> ConferenceVideoWindow::audioInput()
 }
 #endif
 
+void ConferenceVideoWindow::setupMenu()
+{
+	auto menuBar = new QMenuBar(this);
+	setMenuBar(menuBar);
+
+	if (true)
+	{
+		auto confMenu = menuBar->addMenu(QIcon(), tr("Conference"));
+
+		auto adminAuthAction = confMenu->addAction(QIcon(":/ic_lock_grey600_48dp.png"), tr("Login as admin..."));
+		QObject::connect(adminAuthAction, &QAction::triggered, this, &ConferenceVideoWindow::onActionLoginAsAdminTriggered);
+
+		confMenu->addSeparator();
+
+		auto aboutAction = confMenu->addAction(QIcon(":/ic_info_outline_grey600_48dp.png"), tr("About"));
+		QObject::connect(aboutAction, &QAction::triggered, this, &ConferenceVideoWindow::onActionAboutTriggered);
+
+		confMenu->addSeparator();
+
+		auto exitAction = confMenu->addAction(QIcon(), tr("Exit"));
+		QObject::connect(exitAction, &QAction::triggered, this, &ConferenceVideoWindow::onActionExitTriggered);
+	}
+
+	if (true)
+	{
+		auto videoMenu = menuBar->addMenu(QIcon(), tr("Video"));
+
+		auto videoSettingsAction = videoMenu->addAction(QIcon(), tr("Video settings..."));
+		QObject::connect(videoSettingsAction, &QAction::triggered, this, &ConferenceVideoWindow::onActionVideoSettingsTriggered);
+	}
+}
+
 void ConferenceVideoWindow::setupStatusBar()
 {
 	if (_statusbar)
@@ -402,14 +386,16 @@ void ConferenceVideoWindow::setupStatusBar()
 
 void ConferenceVideoWindow::onActionVideoSettingsTriggered()
 {
-	VideoSettingsDialog dialog(this, this);
-	dialog.setModal(true);
-	dialog.preselect(_opts);
-	dialog.adjustSize();
-	if (dialog.exec() != QDialog::Accepted)
+	VideoSettingsDialog w(this, this);
+	w.setModal(true);
+	w.preselect(_opts);
+	w.adjustSize();
+	QWidgetUtil::resizeWidgetPerCent(&w, 35, 40);
+	QWidgetUtil::centerWidget(&w);
+	if (w.exec() != QDialog::Accepted)
 		return;
 
-	_opts = dialog.values();
+	_opts = w.values();
 	applyVideoInputOptions(_opts);
 }
 
@@ -423,6 +409,14 @@ void ConferenceVideoWindow::onActionLoginAsAdminTriggered()
 	auto action = qobject_cast<QAction*>(sender());
 	if (_networkClient->isAdmin() && action)
 		action->setEnabled(false);
+}
+
+void ConferenceVideoWindow::onActionAboutTriggered()
+{
+	AboutWidget w(this);
+	QWidgetUtil::resizeWidgetPerCent(&w, 35, 40);
+	QWidgetUtil::centerWidget(&w);
+	w.exec();
 }
 
 void ConferenceVideoWindow::onActionExitTriggered()
