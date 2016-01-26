@@ -39,6 +39,8 @@ public:
 	bool init();
 	const VirtualServerOptions& options() const;
 	void updateMediaRecipients();
+
+	ServerChannelEntity* createChannel(const QString& ident = QString());
 	ServerChannelEntity* addClientToChannel(int clientId, int channelId);
 	void removeClientFromChannel(int clientId, int channelId);
 	void removeClientFromChannels(int clientId);
@@ -75,6 +77,7 @@ public:
 	QHash<int, ServerChannelEntity*> _channels; ///< Maps channel-ids to their info object.
 	QHash<int, QSet<int> > _participants; ///< Maps channel-ids to client-ids.
 	QHash<int, QSet<int> > _client2channels; ///< Maps client-ids to channel-ids.
+	QHash<QString, int> _ident2channel; ///< Maps and identifier to it's matching channel-id. Optional: Only TS3VIDEO channels use this by now.
 
 	// Media streaming attributes.
 	MediaSocketHandler* _mediaSocketHandler;

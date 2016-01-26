@@ -167,10 +167,28 @@ void VirtualServer::updateMediaRecipients()
 	_mediaSocketHandler->setRecipients(recips);
 }
 
+ServerChannelEntity* VirtualServer::createChannel(const QString& ident)
+{
+	auto c = new ServerChannelEntity();
+	c->id = ++_nextChannelId;
+	c->ident = ident;
+
+	_channels.insert(c->id, c);
+	
+	if (!c->ident.isEmpty())
+		_ident2channel.insert(c->ident, c->id);
+	
+	return c;
+}
+
 ServerChannelEntity* VirtualServer::addClientToChannel(int clientId, int channelId)
 {
-	Q_ASSERT(_channels.value(channelId) != 0);
 	auto channelEntity = _channels.value(channelId);
+	if (!channelEntity)
+	{
+		HL_ERROR(HL, QString("Channel does not exist (channelId=%1)").arg(channelId).toStdString());
+		return nullptr;
+	}
 	_participants[channelEntity->id].insert(clientId);
 	_client2channels[clientId].insert(channelEntity->id);
 	return channelEntity;
@@ -181,11 +199,14 @@ void VirtualServer::removeClientFromChannel(int clientId, int channelId)
 	// Remove from channel.
 	_participants[channelId].remove(clientId);
 	_client2channels[clientId].remove(channelId);
+
 	// Delete channel and free some resources, if there are no more participants.
 	if (_participants[channelId].isEmpty())
 	{
 		_participants.remove(channelId);
-		delete _channels.take(channelId);
+		auto c = _channels.take(channelId);
+		_ident2channel.remove(c->ident);
+		delete c;
 	}
 	if (_client2channels[clientId].isEmpty())
 	{

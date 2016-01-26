@@ -10,6 +10,7 @@ public:
 	ServerChannelEntity(const ServerChannelEntity& other);
 
 public:
+	QString ident; ///< The optional IDENT-String of this channel (alias)
 	QString password; ///< Do not serialize this value.
 };
 

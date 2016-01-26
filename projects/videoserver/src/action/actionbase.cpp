@@ -413,49 +413,52 @@ void DisableAudioInputAction::run(const ActionData& req)
 
 ///////////////////////////////////////////////////////////////////////
 
+/*
+	Joins a channel with different logics.
+	1. By it's ID - The channel has to exist.
+	2. By it's IDENT-String - The channel will be created, if it doesn't already exists (required by TS3VIDEO).
+*/
 void JoinChannelAction::run(const ActionData& req)
 {
-	int channelId = 0;
-	if (req.action == "joinchannel")
-	{
-		channelId = req.params["channelid"].toInt();
-	}
-	else if (req.action == "joinchannelbyidentifier")
-	{
-		auto ident = req.params["identifier"].toString();
-		channelId = qHash(ident);
-	}
-	const auto password = req.params["password"].toString();
+	int channelId = req.params["channelid"].toInt();
+	const QString channelIdent = req.params["identifier"].toString();
+	const QString password = req.params["password"].toString();
 
-	// Validate parameters.
-	if (channelId == 0 || (!req.server->options().validConferenceIds.isEmpty() && !req.server->options().validConferenceIds.contains(channelId)))
+	// Find channel ID by IDENT-String
+	if (channelId <= 0)
+		channelId = req.server->_ident2channel.value(channelIdent);
+
+	// Validate parameters
+	if (channelId <= 0 && channelIdent.isEmpty())
 	{
-		sendDefaultErrorResponse(req, IFVS_STATUS_INVALID_PARAMETERS, QString("Invalid channel id (channelid=%1)").arg(channelId));
+		sendDefaultErrorResponse(req, IFVS_STATUS_INVALID_PARAMETERS, QString("Invalid channel identification (channelid=%1; channelident=%2)").arg(channelId).arg(channelIdent));
 		return;
 	}
 
-	// Retrieve channel information (It is not guaranteed that the channel already exists).
+	// Retrieve channel
+	// Create the channel, if a IDENT-String is given
 	auto channelEntity = req.server->_channels.value(channelId);
-
-	// Verify password.
-	if (channelEntity && !channelEntity->password.isEmpty() && channelEntity->password.compare(password) != 0)
+	if (!channelEntity && !channelIdent.isEmpty())
 	{
-		sendDefaultErrorResponse(req, IFVS_STATUS_UNAUTHORIZED, QString("Wrong channel password (channelid=%1)").arg(channelId));
-		return;
-	}
-
-	// Create channel, if it doesn't exists yet.
-	if (!channelEntity)
-	{
-		channelEntity = new ServerChannelEntity();
-		channelEntity->id = channelId;
+		channelEntity = req.server->createChannel(channelIdent);
 		channelEntity->isPasswordProtected = !password.isEmpty();
 		channelEntity->password = password;
-		req.server->_channels.insert(channelEntity->id, channelEntity);
+	}
+	if (!channelEntity)
+	{
+		sendDefaultErrorResponse(req, IFVS_STATUS_INVALID_PARAMETERS, QString("Channel not available (channelid=%1)").arg(channelId));
+		return;
+	}
+
+	// Verify password.
+	if (!req.session->_clientEntity->admin && (!channelEntity->password.isEmpty() && channelEntity->password.compare(password) != 0))
+	{
+		sendDefaultErrorResponse(req, IFVS_STATUS_UNAUTHORIZED, QString("Wrong channel password (channelid=%1)").arg(channelEntity->id));
+		return;
 	}
 
 	// Associate the client's membership to the channel.
-	req.server->addClientToChannel(req.session->_clientEntity->id, channelId);
+	req.server->addClientToChannel(req.session->_clientEntity->id, channelEntity->id);
 	req.server->updateMediaRecipients();
 
 	// Build response with information about the channel.

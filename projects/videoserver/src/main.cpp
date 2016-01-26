@@ -79,7 +79,7 @@ static int updateOptionsByArgs(VirtualServerOptions& opts)
 	opts.connectionLimit = ELWS::getArgsValue("--connection-limit", opts.connectionLimit).toInt();
 	opts.bandwidthReadLimit = ELWS::getArgsValue("--bandwidth-read-limit", opts.bandwidthReadLimit).toULongLong();
 	opts.bandwidthWriteLimit = ELWS::getArgsValue("--bandwidth-write-limit", opts.bandwidthWriteLimit).toULongLong();
-	opts.validConferenceIds.clear();
+	//opts.validConferenceIds.clear();
 	opts.password = ELWS::getArgsValue("--password", opts.password).toString();
 	opts.adminPassword = ELWS::getArgsValue("--admin-password", opts.adminPassword).toString();
 	opts.maximumResolution = ELWS::getArgsValue("--maximum-resolution", opts.maximumResolution).toSize();
@@ -111,7 +111,7 @@ static int updateOptionsByConfig(VirtualServerOptions& opts, const QString& file
 	opts.connectionLimit = conf.value("connectionlimit", opts.connectionLimit).toInt();
 	opts.bandwidthReadLimit = conf.value("bandwidthreadlimit", opts.bandwidthReadLimit).toULongLong();
 	opts.bandwidthWriteLimit = conf.value("bandwidthwritelimit", opts.bandwidthWriteLimit).toULongLong();
-	opts.validConferenceIds = parseChannelIds(conf.value("validconferenceids").toStringList().join(","));
+	//opts.validConferenceIds = parseChannelIds(conf.value("validconferenceids").toStringList().join(","));
 	opts.password = conf.value("password", opts.password).toString();
 	opts.adminPassword = conf.value("adminpassword", opts.adminPassword).toString();
 

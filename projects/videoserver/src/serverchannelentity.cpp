@@ -8,5 +8,6 @@ ServerChannelEntity::ServerChannelEntity() :
 ServerChannelEntity::ServerChannelEntity(const ServerChannelEntity& other) :
 	ChannelEntity(other)
 {
+	ident = other.ident;
 	password = other.password;
 }

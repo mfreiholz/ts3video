@@ -33,7 +33,7 @@ public:
 
 	// List of valid channel IDs users are allowed to join.
 	// Leave empty for no restrictions on channel-ids.
-	QList<int> validConferenceIds;
+	//QList<int> validConferenceIds;
 
 	// Basic server password.
 	QString password;
