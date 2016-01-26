@@ -116,7 +116,7 @@ void MediaSocketHandler::onReadyRead()
 			if (_videoCache.maxCost() > 0)
 			{
 				// Parse datagram
-				auto vfd = std::make_unique<UDP::VideoFrameDatagram>();
+				auto vfd = std::unique_ptr<UDP::VideoFrameDatagram>(new UDP::VideoFrameDatagram());
 				in >> vfd->flags;
 				in >> vfd->sender;
 				in >> vfd->frameId;
