@@ -6,6 +6,8 @@
 #include <QMetaType>
 #include <QHostAddress>
 
+#include "baselib/defines.h"
+
 /*!
     This object always needs to be fully copyable.
 */
@@ -22,7 +24,7 @@ public:
 	QString toString() const;
 
 public:
-	int id; ///< The client's ID assigned by server.
+	ocs::clientid_t id; ///< The client's ID assigned by server.
 	QString name; ///< Visible name of the client.
 
 	QHostAddress mediaAddress; ///< Do not serialize, as long as we don't support P2P streaming.

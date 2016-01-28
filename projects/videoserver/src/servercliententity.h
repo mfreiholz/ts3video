@@ -1,8 +1,11 @@
 #ifndef SERVERCLIENTENTITY_H
 #define SERVERCLIENTENTITY_H
 
-#include "cliententity.h"
 #include <QSet>
+
+#include "baselib/defines.h"
+
+#include "cliententity.h"
 
 class ServerClientEntity : public ClientEntity
 {
@@ -23,7 +26,7 @@ public:
 public:
 	bool authenticated;
 	bool admin;
-	QSet<int> remoteVideoExcludes; ///< "This" client, doesn't want to receive the video of clients in this list.
+	QSet<ocs::clientid_t> remoteVideoExcludes; ///< "This" client, doesn't want to receive the video of clients in this list.
 
 	VisibilityLevel visibilityLevel; ///< The VL of the client itself.
 	VisibilityLevel visibilityLevelAllowed; ///< The maximum VL this client is allowed to see.

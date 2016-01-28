@@ -5,6 +5,8 @@
 #include <QJsonObject>
 #include <QMetaType>
 
+#include "baselib/defines.h"
+
 class ChannelEntity
 {
 public:
@@ -16,7 +18,7 @@ public:
   QString toString() const;
 
 public:
-  int id;
+  ocs::channelid_t id;
   QString name;
   bool isPasswordProtected;
 };

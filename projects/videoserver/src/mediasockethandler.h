@@ -10,6 +10,8 @@
 #include <QString>
 #include <QCache>
 
+#include "baselib/defines.h"
+
 #include "medlib/protocol.h"
 
 #include "networkusageentity.h"
@@ -29,7 +31,7 @@ public:
 	}
 
 	QString id;
-	int clientId;
+	ocs::clientid_t clientId;
 	QHostAddress address;
 	quint16 port;
 	QVector<MediaReceiverEntity> receivers;
@@ -40,7 +42,7 @@ public:
 class MediaReceiverEntity
 {
 public:
-	int clientId;
+	ocs::clientid_t clientId;
 	QHostAddress address;
 	quint16 port;
 };
@@ -51,7 +53,7 @@ class MediaRecipients
 {
 public:
 	QHash<QString, MediaSenderEntity> id2sender; ///< Maps a sender's adress-id to itself.
-	QHash<int, MediaReceiverEntity> clientid2receiver; ///< Maps a receiver's client-id to itself.
+	QHash<ocs::clientid_t, MediaReceiverEntity> clientid2receiver; ///< Maps a receiver's client-id to itself.
 };
 
 /*!
