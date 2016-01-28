@@ -1,7 +1,7 @@
 #include <QTcpSocket>
-#include "qcorserver.h"
+#include "qcorlib/qcorserver.h"
 #include "qcorserver_p.h"
-#include "qcorconnection.h"
+#include "qcorlib/qcorconnection.h"
 
 QCorServer::QCorServer(QObject *parent) :
   QTcpServer(parent),

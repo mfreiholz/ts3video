@@ -7,20 +7,21 @@ find_package(Qt5Core REQUIRED)
 find_package(Qt5Network REQUIRED)
 
 if(CMAKE_COMPILER_IS_GNUCXX)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic")
 endif()
 
 # Sources
 set(headers
-  src/qcorframe.h
+	include/${PROJECT_NAME}/qcorframe.h
 )
 
 set(qheaders
-  src/qcorconnection.h
-  src/qcorconnection_p.h
-  src/qcorserver.h
-  src/qcorserver_p.h
-  src/qcorreply.h
+	include/${PROJECT_NAME}/qcorconnection.h
+	include/${PROJECT_NAME}/qcorserver.h
+	include/${PROJECT_NAME}/qcorreply.h
+	src/qcorconnection_p.h
+	src/qcorserver_p.h
+	
 )
 
 set(sources
@@ -53,7 +54,7 @@ include_directories(
 
 # Target
 add_library(
-  qcorlib
+  ${PROJECT_NAME}
   STATIC
   ${headers}
   ${sources}
@@ -64,7 +65,7 @@ add_library(
 )
 
 target_link_libraries(
-  qcorlib
+  ${PROJECT_NAME}
   corlib
   Qt5::Core
   Qt5::Network

@@ -3,17 +3,17 @@ project(humblesrvproc)
 
 # Sources
 set(headers
-  include/humblesrvproc/api.h
+	include/${PROJECT_NAME}/api.h
 )
 
 set(sources
-  src/main.c
+	src/main.c
 )
 
 if(WIN32)
-  list(APPEND sources src/impl_windows.c)
+	list(APPEND sources src/impl_windows.c)
 else(WIN32)
-  list(APPEND sources src/impl_linux.c)
+	list(APPEND sources src/impl_linux.c)
 endif(WIN32)
 
 # Defines
@@ -22,14 +22,14 @@ add_definitions(
 
 # Includes
 include_directories(
-  include
-  src
+	include
+	src
 )
 
 # Target
 add_library(
-  ${PROJECT_NAME}
-  STATIC
-  ${headers}
-  ${sources}
+	${PROJECT_NAME}
+	STATIC
+	${headers}
+	${sources}
 )

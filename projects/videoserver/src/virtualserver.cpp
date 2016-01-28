@@ -6,7 +6,7 @@
 
 #include "humblelogging/api.h"
 
-#include "qcorconnection.h"
+#include "qcorlib/qcorconnection.h"
 
 #include "mediasockethandler.h"
 #include "websocketstatusserver.h"

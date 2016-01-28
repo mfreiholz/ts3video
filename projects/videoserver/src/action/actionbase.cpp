@@ -10,14 +10,14 @@
 
 #include "humblelogging/api.h"
 
-#include "qcorconnection.h"
-#include "qcorreply.h"
+#include "qcorlib/qcorconnection.h"
+#include "qcorlib/qcorreply.h"
 
 #include "ts3util.h"
 #include "ts3serverquery.h"
 #include "ts3queryconsolesocket.h"
 
-#include "qtasync.h"
+#include "qtasync/qtasync.h"
 
 #include "ts3video.h"
 #include "elws.h"

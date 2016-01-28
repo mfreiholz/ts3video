@@ -1,7 +1,9 @@
 #include "timeutil.h"
 
 #ifdef _WIN32
-#define NOMINMAX
+#	if !defined(NOMINMAX)
+#		define NOMINMAX
+#	endif
 #include <Windows.h>
 #endif
 

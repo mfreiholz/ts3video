@@ -5,7 +5,7 @@
 #include <QSharedPointer>
 #include <QRunnable>
 #include <QJsonObject>
-#include "qcorframe.h"
+#include "qcorlib/qcorframe.h"
 class QCorConnection;
 class VirtualServer;
 class ClientConnectionHandler;

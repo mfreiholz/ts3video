@@ -1,4 +1,4 @@
-#include "qcorreply.h"
+#include "qcorlib/qcorreply.h"
 
 QCorReply::QCorReply(QObject *parent) :
   QObject(parent)

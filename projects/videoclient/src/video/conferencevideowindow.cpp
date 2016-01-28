@@ -24,10 +24,10 @@
 
 #include "humblelogging/api.h"
 
-#include "qtasync.h"
+#include "qtasync/qtasync.h"
 
-#include "qcorreply.h"
-#include "qcorframe.h"
+#include "qcorlib/qcorreply.h"
+#include "qcorlib/qcorframe.h"
 
 #include "elws.h"
 #include "cliententity.h"

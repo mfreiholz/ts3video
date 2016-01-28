@@ -5,10 +5,9 @@
 #include <QQueue>
 #include <QHash>
 #include <QDateTime>
-#include "qcorconnection.h"
-#include "corprotocol.h"
-#include "corparser.h"
-#include "qcorframe.h"
+#include "corlib/parser.h"
+#include "qcorlib/qcorconnection.h"
+#include "qcorlib/qcorframe.h"
 class QTcpSocket;
 class QCorConnection;
 class QCorReply;

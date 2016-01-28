@@ -7,7 +7,7 @@
 
 #include <QByteArray>
 
-#include "medprotocol.h"
+#include "medlib/protocol.h"
 
 class VP8Frame;
 

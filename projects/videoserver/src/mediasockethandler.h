@@ -10,7 +10,7 @@
 #include <QString>
 #include <QCache>
 
-#include "medlib/include/medprotocol.h"
+#include "medlib/protocol.h"
 
 #include "networkusageentity.h"
 

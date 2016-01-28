@@ -12,7 +12,7 @@ endif()
 
 # Sources
 set(headers
-	src/qtasync.h
+	include/${PROJECT_NAME}/qtasync.h
 )
 
 set(qheaders
@@ -44,7 +44,7 @@ include_directories(
 
 # Target
 add_library(
-  qtasync
+  ${PROJECT_NAME}
   STATIC
   ${headers}
   ${sources}
@@ -55,7 +55,7 @@ add_library(
 )
 
 target_link_libraries(
-  qtasync
+  ${PROJECT_NAME}
   Qt5::Core
   Qt5::Concurrent
 )

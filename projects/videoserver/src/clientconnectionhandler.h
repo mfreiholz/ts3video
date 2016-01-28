@@ -6,7 +6,7 @@
 #include <QAbstractSocket>
 #include <QTime>
 #include <QTimer>
-#include "qcorframe.h"
+#include "qcorlib/qcorframe.h"
 #include "networkusageentity.h"
 class QCorConnection;
 class VirtualServer;

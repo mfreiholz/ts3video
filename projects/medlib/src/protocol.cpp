@@ -5,9 +5,11 @@
 #define htonll(x) x
 #define ntohll(x) x
 #endif
+
 #include <math.h>
 #include <cstring>
-#include "medprotocol.h"
+
+#include "medlib/protocol.h"
 
 namespace UDP
 {

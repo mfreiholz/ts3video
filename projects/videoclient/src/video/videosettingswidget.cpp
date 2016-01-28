@@ -4,7 +4,7 @@
 #include <QPair>
 #include <QtMultimedia/QCameraInfo>
 
-#include "qtasync.h"
+#include "qtasync/qtasync.h"
 
 #include "videolib/src/virtualserverconfigentity.h"
 

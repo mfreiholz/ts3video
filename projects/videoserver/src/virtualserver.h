@@ -11,7 +11,7 @@
 #include <QHostAddress>
 #include <QSize>
 
-#include "qcorserver.h"
+#include "qcorlib/qcorserver.h"
 
 #include "videolib/src/ts3video.h"
 #include "videolib/src/networkusageentity.h"

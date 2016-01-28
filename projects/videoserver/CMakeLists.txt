@@ -11,29 +11,29 @@ find_package(Qt5Concurrent REQUIRED)
 
 # Sources
 set(headers
-  src/servercliententity.h
-  src/serverchannelentity.h
-  src/virtualserveroptions.h
-  src/action/actionbase.h
+	src/servercliententity.h
+	src/serverchannelentity.h
+	src/virtualserveroptions.h
+	src/action/actionbase.h
 )
 
 set(qheaders
-  src/virtualserver.h
-  src/clientconnectionhandler.h
-  src/mediasockethandler.h
-  src/websocketstatusserver.h
+	src/virtualserver.h
+	src/clientconnectionhandler.h
+	src/mediasockethandler.h
+	src/websocketstatusserver.h
 )
 
 set(sources
-  src/main.cpp
-  src/virtualserveroptions.cpp
-  src/virtualserver.cpp
-  src/clientconnectionhandler.cpp
-  src/mediasockethandler.cpp
-  src/websocketstatusserver.cpp
-  src/servercliententity.cpp
-  src/serverchannelentity.cpp
-  src/action/actionbase.cpp
+	src/main.cpp
+	src/virtualserveroptions.cpp
+	src/virtualserver.cpp
+	src/clientconnectionhandler.cpp
+	src/mediasockethandler.cpp
+	src/websocketstatusserver.cpp
+	src/servercliententity.cpp
+	src/serverchannelentity.cpp
+	src/action/actionbase.cpp
 )
 
 set(qresources
@@ -50,61 +50,63 @@ source_group(QtWrap FILES ${qheaders_wrap} ${qresources_wrap})
 
 # Defines
 add_definitions(
-  -DNOMINMAX
+	-DNOMINMAX
 )
 
 # Includes
 include_directories(
-  ${humblelogging_INCLUDE_DIRS}
-  ../humblesrvproc/include
-  ../qtasync/src
-  ../medlib/include
-  ../qcorlib/src
-  ../qts3serverquerylib/src
-  ../videolib/src
+	${humblelogging_INCLUDE_DIRS}
+	../humblesrvproc/include
+	../qtasync/include
+	../baselib/include
+	../medlib/include
+	../qcorlib/include
+	../qts3serverquerylib/src
+	../videolib/src
 )
 
 # Target prerequisites.
 if(WIN32)
-  #set(win32_gui_type WIN32)
+	#set(win32_gui_type WIN32)
 endif(WIN32)
 
 # Target
 add_executable(
-  ${PROJECT_NAME}
-  ${win32_gui_type}
-  ${headers}
-  ${sources}
-  ${qheaders}
-  ${qheaders_wrap}
-  ${qresources_wrap}
+	${PROJECT_NAME}
+	${win32_gui_type}
+	${headers}
+	${sources}
+	${qheaders}
+	${qheaders_wrap}
+	${qresources_wrap}
 )
 
 target_link_libraries(
-  ${PROJECT_NAME}
-  Qt5::Core
-  Qt5::Network
-  Qt5::Gui
-  Qt5::WebSockets
-  Qt5::Concurrent
-  ${humblelogging_LIBRARIES}
-  humblesrvproc
-  qtasync
-  medlib
-  qcorlib
-  qts3serverquerylib
-  videolib
+	${PROJECT_NAME}
+	Qt5::Core
+	Qt5::Network
+	Qt5::Gui
+	Qt5::WebSockets
+	Qt5::Concurrent
+	${humblelogging_LIBRARIES}
+	humblesrvproc
+	qtasync
+	baselib
+	medlib
+	qcorlib
+	qts3serverquerylib
+	videolib
 )
 
 set_target_properties(${PROJECT_NAME}
-  PROPERTIES OUTPUT_NAME "videoserver"
+	PROPERTIES OUTPUT_NAME "videoserver"
 )
 
 add_custom_command(
-  TARGET ${PROJECT_NAME}
-  POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/res/default.ini ${PROJECT_BINARY_DIR}/$<CONFIGURATION>
-  COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/res/logging.conf ${PROJECT_BINARY_DIR}/$<CONFIGURATION>
+	TARGET ${PROJECT_NAME}
+	POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/res/default.ini ${PROJECT_BINARY_DIR}/$<CONFIGURATION>
+	COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/res/logging.conf ${PROJECT_BINARY_DIR}/$<CONFIGURATION>
 )
 
 #######################################################################
@@ -112,11 +114,11 @@ add_custom_command(
 #######################################################################
 
 if(WIN32)
-  set(INST_BINARY_DIR "server/bin/win-${ARCH}")
+	set(INST_BINARY_DIR "server/bin/win-${ARCH}")
 endif(WIN32)
 
 if(CMAKE_COMPILER_IS_GNUCC)
-  set(INST_BINARY_DIR "server/bin/linux-${ARCH}")
+	set(INST_BINARY_DIR "server/bin/linux-${ARCH}")
 endif(CMAKE_COMPILER_IS_GNUCC)
 
 install(TARGETS ${PROJECT_NAME} DESTINATION ${INST_BINARY_DIR})

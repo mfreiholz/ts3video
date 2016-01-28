@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include <cstdio>
 
+#include "baselib/defines.h"
+
 // Declares whether the write/read methods of Datagrams
 // should use Little- or Big-Endian byte order.
 // If not defined, the methods will use network byte order (BE).
@@ -113,7 +115,7 @@ class VideoFrameDatagram : public Datagram
 {
 public:
 	typedef uint8_t dg_flags_t;
-	typedef uint16_t dg_sender_t;
+	typedef ocs::clientid_t dg_sender_t;
 	typedef uint64_t dg_frame_id_t;
 	typedef uint16_t dg_data_index_t;
 	typedef uint16_t dg_data_count_t;
@@ -168,13 +170,13 @@ public:
 class AudioFrameDatagram : public Datagram
 {
 public:
-	typedef uint16_t dg_sender_t;
+	typedef ocs::clientid_t dg_sender_t;
 	typedef uint64_t dg_frame_id_t;
 	typedef uint16_t dg_data_index_t;
 	typedef uint16_t dg_data_count_t;
 
 	const static dg_type_t TYPE = 0xA0;
-	const static dg_size_t MAXSIZE = Datagram::MAXSIZE - (sizeof(dg_frame_id_t) + sizeof(dg_data_index_t) + sizeof(dg_data_count_t) + sizeof(dg_size_t));
+	const static dg_size_t MAXSIZE = Datagram::MAXSIZE - (sizeof(dg_sender_t) + sizeof(dg_frame_id_t) + sizeof(dg_data_index_t) + sizeof(dg_data_count_t) + sizeof(dg_size_t));
 
 	AudioFrameDatagram() : Datagram(TYPE) {}
 	bool write(FILE* f) const;

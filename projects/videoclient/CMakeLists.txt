@@ -163,9 +163,10 @@ include_directories(
 	${vpx_INCLUDE_DIRS}
 	${opus_INCLUDE_DIRS}
 	${humblelogging_INCLUDE_DIRS}
-	../qtasync/src
+	../qtasync/include
+	../baselib/include
 	../medlib/include
-	../qcorlib/src
+	../qcorlib/include
 	../videolib/src
 	./src
 )
@@ -201,6 +202,7 @@ target_link_libraries(
 	${humblelogging_LIBRARIES}
 	qtasync
 	qcorlib
+	baselib
 	medlib
 	videolib
 )
