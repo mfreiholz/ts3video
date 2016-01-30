@@ -5,6 +5,8 @@
 #include <QUdpSocket>
 #include <QTimer>
 
+#include "baselib/defines.h"
+
 #include "yuvframe.h"
 #include "pcmframe.h"
 
@@ -26,23 +28,23 @@ public:
 
 	void initVideoEncoder(int width, int height, int bitrate, int fps);
 	void resetVideoEncoder();
-	void sendVideoFrame(const QImage& image, int senderId);
+	void sendVideoFrame(const QImage& image, ocs::clientid_t senderId);
 	
-	void resetVideoDecoderOfClient(int senderId);
+	void resetVideoDecoderOfClient(ocs::clientid_t senderId);
 
 #if defined(OCS_INCLUDE_AUDIO)
-	void sendAudioFrame(const PcmFrameRefPtr& f, int senderId);
+	void sendAudioFrame(const PcmFrameRefPtr& f, ocs::clientid_t senderId);
 #endif
 
 signals:
 	/*! Emits with every new arrived and decoded video frame.
 	*/
-	void newVideoFrame(YuvFrameRefPtr frame, int senderId);
+	void newVideoFrame(YuvFrameRefPtr frame, ocs::clientid_t senderId);
 
 #if defined(OCS_INCLUDE_AUDIO)
 	/*!	Emits with every new arrived and decoded audio frame.
 	*/
-	void newAudioFrame(PcmFrameRefPtr frame, int senderId);
+	void newAudioFrame(PcmFrameRefPtr frame, ocs::clientid_t senderId);
 #endif
 
 	/*! Emits periodically with newest calculated network-usage information.
@@ -52,11 +54,11 @@ signals:
 protected:
 	void sendKeepAliveDatagram();
 	void sendAuthTokenDatagram(const QString& token);
-	void sendVideoFrame(const QByteArray& frame, quint64 frameId, quint32 senderId);
-	void sendVideoFrameRecoveryDatagram(quint64 frameId, quint32 fromSenderId);
+	void sendVideoFrame(const QByteArray& frame, quint64 frameId, ocs::clientid_t senderId);
+	void sendVideoFrameRecoveryDatagram(quint64 frameId, ocs::clientid_t fromSenderId);
 
 #if defined(OCS_INCLUDE_AUDIO)
-	void sendAudioFrame(const QByteArray& frame, quint64 frameId, quint32 senderId);
+	void sendAudioFrame(const QByteArray& frame, quint64 frameId, ocs::clientid_t senderId);
 #endif
 
 	virtual void timerEvent(QTimerEvent* ev);
@@ -66,8 +68,8 @@ private slots:
 	void onSocketError(QAbstractSocket::SocketError error);
 	void onReadyRead();
 
-	void onVideoFrameEncoded(QByteArray frame, int senderId);
-	void onVideoFrameDecoded(YuvFrameRefPtr frame, int senderId);
+	void onVideoFrameEncoded(QByteArray frame, ocs::clientid_t senderId);
+	void onVideoFrameDecoded(YuvFrameRefPtr frame, ocs::clientid_t senderId);
 
 private:
 	QTimer _bandwidthTimer;

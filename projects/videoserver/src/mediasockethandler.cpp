@@ -17,7 +17,7 @@ MediaSocketHandler::MediaSocketHandler(const QHostAddress& address, quint16 port
 	_address(address),
 	_port(port),
 	_socket(this),
-	_videoCache(10485760), // 10 MB
+	_videoCache(0),//(10485760), // 10 MB
 	_networkUsage(),
 	_networkUsageHelper(_networkUsage)
 {

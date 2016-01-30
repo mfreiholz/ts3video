@@ -41,7 +41,7 @@ void ActionBase::sendErrorRequest(QCorConnection& con, int code, const QString& 
 	p["message"] = message;
 	r.setData(JsonProtocolHelper::createJsonRequest("error", p));
 	auto reply = con.sendRequest(r);
-	if (reply) QObject::connect(reply, &QCorReply::finished, reply, &QCorReply::deleteLater);
+	QCORREPLY_AUTODELETE(reply);
 }
 
 void ActionBase::sendOkResponse(QCorConnection& con, const QCorFrame& req, const QJsonObject& params)
@@ -354,7 +354,7 @@ void DisableVideoAction::run(const ActionData& req)
 
 void EnableRemoteVideoAction::run(const ActionData& req)
 {
-	const auto clientId = req.params["clientid"].toInt();
+	const ocs::clientid_t clientId = req.params["clientid"].toInt();
 
 	auto& set = req.session->_clientEntity->remoteVideoExcludes;
 	if (set.remove(clientId))
@@ -369,7 +369,7 @@ void EnableRemoteVideoAction::run(const ActionData& req)
 
 void DisableRemoteVideoAction::run(const ActionData& req)
 {
-	const auto clientId = req.params["clientid"].toInt();
+	const ocs::clientid_t clientId = req.params["clientid"].toInt();
 
 	auto& set = req.session->_clientEntity->remoteVideoExcludes;
 	if (!set.contains(clientId))
@@ -420,7 +420,7 @@ void DisableAudioInputAction::run(const ActionData& req)
 */
 void JoinChannelAction::run(const ActionData& req)
 {
-	int channelId = req.params["channelid"].toInt();
+	ocs::channelid_t channelId = req.params["channelid"].toInt();
 	const QString channelIdent = req.params["identifier"].toString();
 	const QString password = req.params["password"].toString();
 
@@ -491,7 +491,7 @@ void JoinChannelAction::run(const ActionData& req)
 
 void LeaveChannelAction::run(const ActionData& req)
 {
-	const auto channelId = req.params["channelid"].toInt();
+	const ocs::channelid_t channelId = req.params["channelid"].toInt();
 
 	// Find channel.
 	auto channelEntity = req.server->_channels.value(channelId);
@@ -540,7 +540,7 @@ void AdminAuthAction::run(const ActionData& req)
 
 void KickClientAction::run(const ActionData& req)
 {
-	const auto clientId = req.params["clientid"].toInt();
+	const ocs::clientid_t clientId = req.params["clientid"].toInt();
 	const auto ban = req.params["ban"].toBool();
 
 	// Find client session.
@@ -561,7 +561,7 @@ void KickClientAction::run(const ActionData& req)
 	QCorFrame f;
 	f.setData(JsonProtocolHelper::createJsonRequest("notify.kicked", params));
 	const auto reply = sess->_connection->sendRequest(f);
-	QObject::connect(reply, &QCorReply::finished, reply, &QCorReply::deleteLater);
+	QCORREPLY_AUTODELETE(reply);
 	QMetaObject::invokeMethod(sess->_connection.data(), "disconnectFromHost", Qt::QueuedConnection);
 
 	// Update ban-list.

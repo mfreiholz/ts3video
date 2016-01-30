@@ -11,6 +11,8 @@
 #include "humblelogging/api.h"
 #include "humblesrvproc/api.h"
 
+#include "baselib/defines.h"
+
 #include "ts3video.h"
 #include "elws.h"
 
@@ -19,9 +21,9 @@
 HUMBLE_LOGGER(HL, "server");
 
 // Plain RX: ts3cid\(([a-z0-9\-\.\_]+)\:([0-9]+):([0-9]+)\)
-static QList<int> parseChannelIds(const QString& str)
+static QList<ocs::channelid_t> parseChannelIds(const QString& str)
 {
-	QList<int> ids;
+	QList<ocs::channelid_t> ids;
 	QStringList sl = str.split(",", QString::SkipEmptyParts);
 	for (int i = 0; i < sl.size(); i++)
 	{

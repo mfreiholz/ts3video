@@ -205,7 +205,7 @@ ConferenceVideoWindow::ConferenceVideoWindow(const QSharedPointer<NetworkClient>
 		_audioPlayer = QSharedPointer<AudioFramePlayer>(new AudioFramePlayer());
 		_audioPlayer->setDeviceInfo(QAudioDeviceInfo::defaultOutputDevice());
 		_audioPlayer->setFormat(createAudioFormat());
-		QObject::connect(_networkClient.data(), &NetworkClient::newAudioFrame, [this](PcmFrameRefPtr f, int senderId)
+		QObject::connect(_networkClient.data(), &NetworkClient::newAudioFrame, [this](PcmFrameRefPtr f, ocs::clientid_t senderId)
 		{
 			_audioPlayer->add(f, senderId);
 		});
@@ -457,7 +457,7 @@ void ConferenceVideoWindow::onClientDisconnected(const ClientEntity& client)
 	_view->removeClient(client, ChannelEntity());
 }
 
-void ConferenceVideoWindow::onNewVideoFrame(YuvFrameRefPtr frame, int senderId)
+void ConferenceVideoWindow::onNewVideoFrame(YuvFrameRefPtr frame, ocs::clientid_t senderId)
 {
 	_view->updateClientVideo(frame, senderId);
 }

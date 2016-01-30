@@ -122,8 +122,8 @@ void VirtualServer::updateMediaRecipients()
 	const auto sendBackOwnVideo = false;
 
 	MediaRecipients recips;
-	auto clients = _clients.values();
-	foreach (auto client, clients)
+	const auto clients = _clients.values();
+	for (const auto client : clients)
 	{
 		// Validate client for streaming
 		if (!client)
@@ -146,7 +146,7 @@ void VirtualServer::updateMediaRecipients()
 		recips.clientid2receiver.insert(r.clientId, r);
 
 		auto siblingClientIds = getSiblingClientIds(client->id, true);
-		foreach (auto siblingClientId, siblingClientIds)
+		for (const auto siblingClientId : siblingClientIds)
 		{
 			auto client2 = _clients.value(siblingClientId);
 			if (!client2)
@@ -181,7 +181,7 @@ ServerChannelEntity* VirtualServer::createChannel(const QString& ident)
 	return c;
 }
 
-ServerChannelEntity* VirtualServer::addClientToChannel(int clientId, int channelId)
+ServerChannelEntity* VirtualServer::addClientToChannel(ocs::clientid_t clientId, ocs::channelid_t channelId)
 {
 	auto channelEntity = _channels.value(channelId);
 	if (!channelEntity)
@@ -194,7 +194,7 @@ ServerChannelEntity* VirtualServer::addClientToChannel(int clientId, int channel
 	return channelEntity;
 }
 
-void VirtualServer::removeClientFromChannel(int clientId, int channelId)
+void VirtualServer::removeClientFromChannel(ocs::clientid_t clientId, ocs::channelid_t channelId)
 {
 	// Remove from channel.
 	_participants[channelId].remove(clientId);
@@ -214,10 +214,10 @@ void VirtualServer::removeClientFromChannel(int clientId, int channelId)
 	}
 }
 
-void VirtualServer::removeClientFromChannels(int clientId)
+void VirtualServer::removeClientFromChannels(ocs::clientid_t clientId)
 {
 	// Find all channels of the client.
-	QList<int> channelIds;
+	QList<ocs::clientid_t> channelIds;
 	if (_client2channels.contains(clientId))
 	{
 		channelIds = _client2channels[clientId].toList();
@@ -229,9 +229,9 @@ void VirtualServer::removeClientFromChannels(int clientId)
 	}
 }
 
-QList<int> VirtualServer::getSiblingClientIds(int clientId, bool filterByVisibilityLevel) const
+QList<int> VirtualServer::getSiblingClientIds(ocs::clientid_t clientId, bool filterByVisibilityLevel) const
 {
-	QSet<int> clientIds;
+	QSet<ocs::clientid_t> clientIds;
 	foreach (auto channelId, _client2channels.value(clientId).toList())
 	{
 		foreach (auto participantId, _participants.value(channelId))

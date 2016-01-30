@@ -8,6 +8,8 @@
 #include <QHash>
 #include <QVariant>
 
+#include "baselib/defines.h"
+
 #include "videolib/src/ts3video.h"
 #include "videolib/src/yuvframe.h"
 
@@ -92,7 +94,7 @@ private slots:
 	void onClientJoinedChannel(const ClientEntity& client, const ChannelEntity& channel);
 	void onClientLeftChannel(const ClientEntity& client, const ChannelEntity& channel);
 	void onClientDisconnected(const ClientEntity& client);
-	void onNewVideoFrame(YuvFrameRefPtr frame, int senderId);
+	void onNewVideoFrame(YuvFrameRefPtr frame, ocs::clientid_t senderId);
 
 public slots:
 	// Network helper

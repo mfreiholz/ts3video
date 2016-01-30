@@ -81,7 +81,7 @@ void ClientConnectionHandler::sendMediaAuthSuccessNotify()
 	QCorFrame req;
 	req.setData(JsonProtocolHelper::createJsonRequest("notify.mediaauthsuccess", QJsonObject()));
 	auto reply = _connection->sendRequest(req);
-	if (reply) connect(reply, &QCorReply::finished, reply, &QCorReply::deleteLater);
+	QCORREPLY_AUTODELETE(reply);
 }
 
 
@@ -108,7 +108,7 @@ void ClientConnectionHandler::onStateChanged(QAbstractSocket::SocketState state)
 			if (clientConn && clientConn != this)
 			{
 				auto reply = clientConn->_connection->sendRequest(req);
-				if (reply) connect(reply, &QCorReply::finished, reply, &QCorReply::deleteLater);
+				QCORREPLY_AUTODELETE(reply);
 			}
 		}
 		// Delete itself.

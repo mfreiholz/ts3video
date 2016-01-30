@@ -56,7 +56,7 @@ MediaSocket::MediaSocket(const QString& token, QObject* parent) :
 		// Encoding
 		static quint64 __nextAudioFrameId = 1;
 		d->audioEncodingThread->start();
-		connect(d->audioEncodingThread, &AudioEncodingThread::encoded, [this](const QByteArray & f, int senderId)
+		connect(d->audioEncodingThread, &AudioEncodingThread::encoded, [this](const QByteArray & f, ocs::clientid_t senderId)
 		{
 			sendAudioFrame(f, __nextAudioFrameId++, senderId);
 		});
@@ -144,7 +144,7 @@ void MediaSocket::setAuthenticated(bool yesno)
 	}
 }
 
-void MediaSocket::sendVideoFrame(const QImage& image, int senderId)
+void MediaSocket::sendVideoFrame(const QImage& image, ocs::clientid_t senderId)
 {
 	if (!d->videoEncodingThread || !d->videoEncodingThread->isRunning())
 	{
@@ -173,7 +173,7 @@ void MediaSocket::resetVideoEncoder()
 	}
 }
 
-void MediaSocket::resetVideoDecoderOfClient(int senderId)
+void MediaSocket::resetVideoDecoderOfClient(ocs::clientid_t senderId)
 {
 	if (!d->videoDecodingThread)
 		return;
@@ -182,7 +182,7 @@ void MediaSocket::resetVideoDecoderOfClient(int senderId)
 }
 
 #if defined(OCS_INCLUDE_AUDIO)
-void MediaSocket::sendAudioFrame(const PcmFrameRefPtr& f, int senderId)
+void MediaSocket::sendAudioFrame(const PcmFrameRefPtr& f, ocs::clientid_t senderId)
 {
 	if (!d->audioEncodingThread || !d->audioEncodingThread->isRunning())
 	{
@@ -241,7 +241,7 @@ void MediaSocket::sendAuthTokenDatagram(const QString& token)
 		d->networkUsage.bytesWritten += written;
 }
 
-void MediaSocket::sendVideoFrame(const QByteArray& frame_, quint64 frameId_, quint32 senderId_)
+void MediaSocket::sendVideoFrame(const QByteArray& frame_, quint64 frameId_, ocs::clientid_t senderId_)
 {
 	HL_TRACE(HL, QString("Send video frame datagram (frame-size=%1; frame-id=%2; sender-id=%3)").arg(frame_.size()).arg(frameId_).arg(senderId_).toStdString());
 	if (frame_.isEmpty() || frameId_ == 0)
@@ -288,7 +288,7 @@ void MediaSocket::sendVideoFrame(const QByteArray& frame_, quint64 frameId_, qui
 	UDP::VideoFrameDatagram::freeData(datagrams, datagramsLength);
 }
 
-void MediaSocket::sendVideoFrameRecoveryDatagram(quint64 frameId_, quint32 fromSenderId_)
+void MediaSocket::sendVideoFrameRecoveryDatagram(quint64 frameId_, ocs::clientid_t fromSenderId_)
 {
 	HL_TRACE(HL, QString("Send video frame recovery datagram (frame-id=%1; from-sender-id=%2)").arg(frameId_).arg(fromSenderId_).toStdString());
 	if (frameId_ == 0 || fromSenderId_ == 0)
@@ -570,13 +570,13 @@ void MediaSocket::onReadyRead()
 	}
 }
 
-void MediaSocket::onVideoFrameEncoded(QByteArray frame, int senderId)
+void MediaSocket::onVideoFrameEncoded(QByteArray frame, ocs::clientid_t senderId)
 {
 	static quint64 __nextVideoFrameId = 1;
 	sendVideoFrame(frame, __nextVideoFrameId++, senderId);
 }
 
-void MediaSocket::onVideoFrameDecoded(YuvFrameRefPtr frame, int senderId)
+void MediaSocket::onVideoFrameDecoded(YuvFrameRefPtr frame, ocs::clientid_t senderId)
 {
 	emit newVideoFrame(frame, senderId);
 }

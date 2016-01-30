@@ -50,7 +50,7 @@ public:
 	unsigned long long lastFrameRequestTimestamp;
 	
 	// Decoding
-	QHash<int, VideoFrameUdpDecoder*> videoFrameDatagramDecoders;  ///< Maps client-id to it's decoder.
+	QHash<ocs::clientid_t, VideoFrameUdpDecoder*> videoFrameDatagramDecoders;  ///< Maps client-id to it's decoder.
 	VideoDecodingThread* videoDecodingThread;
 
 #if defined(OCS_INCLUDE_AUDIO)
@@ -59,7 +59,7 @@ public:
 	AudioEncodingThread* audioEncodingThread;
 
 	// Decoding
-	QHash<int, AudioUdpDecoder*> audioFrameDatagramDecoders;
+	QHash<ocs::clientid_t, AudioUdpDecoder*> audioFrameDatagramDecoders;
 	AudioDecodingThread* audioDecodingThread;
 #endif
 
