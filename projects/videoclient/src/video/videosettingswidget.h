@@ -4,6 +4,7 @@
 #include <QtWidgets/QDialog>
 
 #include "video/conferencevideowindow.h"
+#include "networkclient/networkclient.h"
 
 #include "ui_videosettingswidget.h"
 
@@ -12,7 +13,7 @@ class VideoSettingsDialog : public QDialog
 	Q_OBJECT
 
 public:
-	VideoSettingsDialog(ConferenceVideoWindow* window, QWidget* parent);
+	VideoSettingsDialog(const QSharedPointer<NetworkClient>& nc, QWidget* parent);
 	void preselect(const ConferenceVideoWindow::Options& opts);
 	const ConferenceVideoWindow::Options& values();
 
@@ -22,7 +23,7 @@ private slots:
 
 private:
 	Ui::VideoSettingsWidgetForm _ui;
-	ConferenceVideoWindow* _window;
+	QSharedPointer<NetworkClient> _nc;
 	ConferenceVideoWindow::Options _opts;
 };
 

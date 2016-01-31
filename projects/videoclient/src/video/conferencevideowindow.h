@@ -77,6 +77,9 @@ public:
 	static void addDropShadowEffect(QWidget* widget);
 	static RemoteClientVideoWidget* createRemoteVideoWidget(const ConferenceVideoWindow::Options& opts, const ClientEntity& client, QWidget* parent = nullptr);
 
+public slots:
+	void showVideoSettingsDialog();
+
 private:
 	void setupMenu();
 	void setupStatusBar();

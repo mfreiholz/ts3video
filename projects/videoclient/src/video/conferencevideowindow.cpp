@@ -312,6 +312,21 @@ QSharedPointer<QAudioInput> ConferenceVideoWindow::audioInput()
 }
 #endif
 
+void ConferenceVideoWindow::showVideoSettingsDialog()
+{
+	VideoSettingsDialog w(_networkClient, this);
+	w.setModal(true);
+	w.preselect(_opts);
+	w.adjustSize();
+	QWidgetUtil::resizeWidgetPerCent(&w, 35, 40);
+	QWidgetUtil::centerWidget(&w);
+	if (w.exec() != QDialog::Accepted)
+		return;
+
+	_opts = w.values();
+	applyVideoInputOptions(_opts);
+}
+
 void ConferenceVideoWindow::setupMenu()
 {
 	auto menuBar = new QMenuBar(this);
@@ -386,17 +401,7 @@ void ConferenceVideoWindow::setupStatusBar()
 
 void ConferenceVideoWindow::onActionVideoSettingsTriggered()
 {
-	VideoSettingsDialog w(this, this);
-	w.setModal(true);
-	w.preselect(_opts);
-	w.adjustSize();
-	QWidgetUtil::resizeWidgetPerCent(&w, 35, 40);
-	QWidgetUtil::centerWidget(&w);
-	if (w.exec() != QDialog::Accepted)
-		return;
-
-	_opts = w.values();
-	applyVideoInputOptions(_opts);
+	showVideoSettingsDialog();
 }
 
 void ConferenceVideoWindow::onActionLoginAsAdminTriggered()

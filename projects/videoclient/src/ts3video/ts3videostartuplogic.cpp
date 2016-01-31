@@ -30,6 +30,7 @@
 
 #include "startup/startupwidget.h"
 #include "video/conferencevideowindow.h"
+#include "video/videosettingswidget.h"
 #include "ts3video/ts3videoupdatedialog.h"
 #include "util/qwidgetutil.h"
 
@@ -443,6 +444,17 @@ void Ts3VideoStartupLogic::startVideoGui()
 	ConferenceVideoWindow::Options opts;
 	ConferenceVideoWindow::loadOptionsFromConfig(opts);
 
+	// Show video settings
+	VideoSettingsDialog w(_nc, this);
+	w.setModal(true);
+	w.preselect(opts);
+	w.adjustSize();
+	QWidgetUtil::resizeWidgetPerCent(&w, 35, 40);
+	QWidgetUtil::centerWidget(&w);
+	if (w.exec() == QDialog::Accepted)
+		opts = w.values();
+
+	// Open conference window
 	_window = new ConferenceVideoWindow(_nc, nullptr, 0);
 	_window->applyOptions(opts);
 	_window->show();

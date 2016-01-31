@@ -14,9 +14,11 @@
 class ResolutionListModel : public QAbstractListModel
 {
 public:
-	ResolutionListModel(ConferenceVideoWindow* window, const QCameraInfo& cameraInfo, QObject* parent) : QAbstractListModel(parent), _window(window)
+	ResolutionListModel(const QSharedPointer<NetworkClient>& nc, const QCameraInfo& cameraInfo, QObject* parent) :
+		QAbstractListModel(parent),
+		_nc(nc)
 	{
-		const auto& serverConfig = window->networkClient()->serverConfig();
+		const auto& serverConfig = _nc->serverConfig();
 		QCamera cam(cameraInfo);
 		cam.load();
 		_resolutions = cam.supportedViewfinderResolutions();
@@ -29,7 +31,7 @@ public:
 
 	virtual Qt::ItemFlags flags(const QModelIndex& index) const
 	{
-		const auto& serverConfig = _window->networkClient()->serverConfig();
+		const auto& serverConfig = _nc->serverConfig();
 		const auto& size = _resolutions[index.row()];
 		if (!serverConfig.isResolutionSupported(size))
 			return QAbstractListModel::flags(index) ^ Qt::ItemIsEnabled;
@@ -41,7 +43,7 @@ public:
 		if (index.row() >= _resolutions.size())
 			return QVariant();
 
-		const auto& serverConfig = _window->networkClient()->serverConfig();
+		const auto& serverConfig = _nc->serverConfig();
 		const auto& size = _resolutions[index.row()];
 
 		switch (role)
@@ -63,7 +65,7 @@ public:
 	}
 
 private:
-	ConferenceVideoWindow* _window;
+	QSharedPointer<NetworkClient> _nc;
 	QList<QSize> _resolutions;
 };
 
@@ -90,13 +92,13 @@ static int bitrateForResolution(const QSize& resolution, int defaultBitrate, con
 
 ///////////////////////////////////////////////////////////////////////
 
-VideoSettingsDialog::VideoSettingsDialog(ConferenceVideoWindow* window, QWidget* parent) :
+VideoSettingsDialog::VideoSettingsDialog(const QSharedPointer<NetworkClient>& nc, QWidget* parent) :
 	QDialog(parent),
-	_window(window)
+	_nc(nc)
 {
 	_ui.setupUi(this);
 
-	const auto& serverConfig = _window->networkClient()->serverConfig();
+	const auto& serverConfig = _nc->serverConfig();
 
 	// Devices
 	const auto infos = QCameraInfo::availableCameras();
@@ -164,7 +166,7 @@ const ConferenceVideoWindow::Options& VideoSettingsDialog::values()
 
 void VideoSettingsDialog::onCurrentDeviceIndexChanged(int index)
 {
-	const auto& serverConfig = _window->networkClient()->serverConfig();
+	const auto& serverConfig = _nc->serverConfig();
 
 	const auto deviceId = _ui.devices->currentData().toString();
 	_ui.resolutions->setEnabled(!deviceId.isEmpty());
@@ -186,14 +188,14 @@ void VideoSettingsDialog::onCurrentDeviceIndexChanged(int index)
 			}
 		}
 		delete _ui.resolutions->model();
-		_ui.resolutions->setModel(new ResolutionListModel(_window, cameraInfo, this));
+		_ui.resolutions->setModel(new ResolutionListModel(_nc, cameraInfo, this));
 	}
 }
 
 // Updates the bitrate to a predefined value, based on the choosen resolution
 void VideoSettingsDialog::onCurrentResolutionIndexChanged(int index)
 {
-	const auto& serverConfig = _window->networkClient()->serverConfig();
+	const auto& serverConfig = _nc->serverConfig();
 	const auto resolution = _ui.resolutions->itemData(index).toSize();
 	const int bitrate = bitrateForResolution(resolution, _ui.qualityValue->minimum(), serverConfig);
 	_ui.qualityValue->setValue(bitrate);

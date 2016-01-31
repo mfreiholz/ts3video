@@ -40,7 +40,7 @@ TileViewWidget::TileViewWidget(ConferenceVideoWindow* window, QWidget* parent, Q
 	d(new TileViewWidgetPrivate(this)),
 	_window(window)
 {
-	d->tilesCurrentSize.scale(200, 200, Qt::KeepAspectRatio);
+	d->tilesCurrentSize.scale(640, 360, Qt::KeepAspectRatio);
 	const auto iconSize = fontMetrics().height() * 2;
 
 	auto mainLayout = new QBoxLayout(QBoxLayout::LeftToRight, this);
