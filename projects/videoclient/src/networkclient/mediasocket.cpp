@@ -320,7 +320,7 @@ void MediaSocket::sendVideoFrameRecoveryDatagram(quint64 frameId_, ocs::clientid
 }
 
 #if defined(OCS_INCLUDE_AUDIO)
-void MediaSocket::sendAudioFrame(const QByteArray& f, quint64 fid, quint32 sid)
+void MediaSocket::sendAudioFrame(const QByteArray& f, quint64 fid, ocs::clientid_t sid)
 {
 	HL_TRACE(HL, QString("Send audio frame datagram (frame-size=%1; frame-id=%2; sender-id=%3)").arg(f.size()).arg(fid).arg(sid).toStdString());
 	if (f.isEmpty() || fid == 0)

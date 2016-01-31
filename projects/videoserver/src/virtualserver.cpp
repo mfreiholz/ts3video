@@ -217,7 +217,7 @@ void VirtualServer::removeClientFromChannel(ocs::clientid_t clientId, ocs::chann
 void VirtualServer::removeClientFromChannels(ocs::clientid_t clientId)
 {
 	// Find all channels of the client.
-	QList<ocs::clientid_t> channelIds;
+	QList<ocs::channelid_t> channelIds;
 	if (_client2channels.contains(clientId))
 	{
 		channelIds = _client2channels[clientId].toList();
@@ -229,7 +229,7 @@ void VirtualServer::removeClientFromChannels(ocs::clientid_t clientId)
 	}
 }
 
-QList<int> VirtualServer::getSiblingClientIds(ocs::clientid_t clientId, bool filterByVisibilityLevel) const
+QList<ocs::clientid_t> VirtualServer::getSiblingClientIds(ocs::clientid_t clientId, bool filterByVisibilityLevel) const
 {
 	QSet<ocs::clientid_t> clientIds;
 	foreach (auto channelId, _client2channels.value(clientId).toList())

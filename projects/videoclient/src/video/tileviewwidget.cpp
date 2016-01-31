@@ -165,7 +165,7 @@ void TileViewWidget::removeClient(const ClientEntity& client, const ChannelEntit
 	delete tileWidget;
 }
 
-void TileViewWidget::updateClientVideo(YuvFrameRefPtr frame, int senderId)
+void TileViewWidget::updateClientVideo(YuvFrameRefPtr frame, ocs::clientid_t senderId)
 {
 	auto tileWidget = d->tilesMap.value(senderId);
 	if (!tileWidget)

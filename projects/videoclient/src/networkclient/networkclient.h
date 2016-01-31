@@ -11,6 +11,8 @@
 #include "qcorlib/qcorreply.h"
 #include "qcorlib/qcorconnection.h"
 
+#include "baselib/defines.h"
+
 #include "yuvframe.h"
 #include "pcmframe.h"
 
@@ -76,7 +78,7 @@ public:
 	    \see auth()
 	    \return QCorReply* Ownership goes over to caller who needs to delete it with "deleteLater()".
 	*/
-	QCorReply* joinChannel(int id, const QString& password);
+	QCorReply* joinChannel(ocs::channelid_t id, const QString& password);
 	QCorReply* joinChannelByIdentifier(const QString& ident, const QString& password);
 
 	/*!
@@ -94,8 +96,8 @@ public:
 	    \see auth()
 	    \return QCorReply* Ownership goes over to caller who needs to delete it with "deleteLater()".
 	*/
-	QCorReply* enableRemoteVideoStream(int clientId);
-	QCorReply* disableRemoteVideoStream(int clientId);
+	QCorReply* enableRemoteVideoStream(ocs::clientid_t clientId);
+	QCorReply* disableRemoteVideoStream(ocs::clientid_t clientId);
 
 	/*!
 	    Sends a single frame to the server, which will then broadcast it to other clients.
@@ -139,7 +141,7 @@ public:
 	    \param ban Set to "true" to ban the client aswell.
 	    \return QCorReply* Ownership goes over to caller who needs to delete it with "deleteLater()".
 	*/
-	QCorReply* kickClient(int clientId, bool ban = false);
+	QCorReply* kickClient(ocs::clientid_t clientId, bool ban = false);
 
 protected:
 	void initMediaSocket();
@@ -160,9 +162,9 @@ signals:
 	void clientKicked(const ClientEntity& client);
 	void clientDisconnected(const ClientEntity& client);
 
-	void newVideoFrame(YuvFrameRefPtr frame, int senderId);
+	void newVideoFrame(YuvFrameRefPtr frame, ocs::clientid_t senderId);
 #if defined(OCS_INCLUDE_AUDIO)
-	void newAudioFrame(PcmFrameRefPtr frame, int senderId);
+	void newAudioFrame(PcmFrameRefPtr frame, ocs::clientid_t senderId);
 #endif
 
 	// Periodically updated information to display.

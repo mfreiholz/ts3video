@@ -150,9 +150,9 @@ class VideoFrameRecoveryDatagram : public Datagram
 {
 public:
 	const static dg_type_t TYPE = 0x03;
-	const static dg_size_t MAXSIZE = Datagram::MAXSIZE - (sizeof(VideoFrameDatagram::dg_frame_id_t) + sizeof(VideoFrameDatagram::dg_data_index_t));
+	const static dg_size_t MAXSIZE = Datagram::MAXSIZE - (sizeof(VideoFrameDatagram::dg_sender_t) + sizeof(VideoFrameDatagram::dg_frame_id_t) + sizeof(VideoFrameDatagram::dg_data_index_t));
 
-	VideoFrameRecoveryDatagram() : Datagram(TYPE), frameId(0), index(0) {}
+	VideoFrameRecoveryDatagram() : Datagram(TYPE), sender(0), frameId(0), index(0) {}
 	bool write(FILE* f) const;
 	bool read(FILE* f);
 

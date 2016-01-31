@@ -83,7 +83,6 @@ static int bitrateForResolution(const QSize& resolution, int defaultBitrate, con
 				&& resolution.height() >= item.first.height())
 		{
 			return item.second;
-			break;
 		}
 	}
 	return defaultBitrate;

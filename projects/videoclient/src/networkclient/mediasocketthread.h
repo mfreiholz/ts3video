@@ -4,7 +4,11 @@
 #include <QThread>
 #include <QScopedPointer>
 #include <QSharedPointer>
+
+#include "baselib/defines.h"
+
 #include "yuvframe.h"
+
 class QHostAddress;
 class MediaSocket;
 class NetworkUsageEntity;
@@ -26,7 +30,7 @@ protected:
   void run();
 
 signals:
-  void newVideoFrame(YuvFrameRefPtr frame, int senderId);
+  void newVideoFrame(YuvFrameRefPtr frame, ocs::clientid_t senderId);
   void networkUsageUpdated(const NetworkUsageEntity &networkUsage);
 };
 

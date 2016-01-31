@@ -3,9 +3,14 @@
 #endif
 #include <QApplication>
 #include <QScopedPointer>
+
 #include "humblelogging/api.h"
+
+#include "baselib/defines.h"
+
 #include "videolib/src/ts3video.h"
 #include "videolib/src/elws.h"
+
 #include "startup/devstartuplogic.h"
 #include "ts3video/ts3videostartuplogic.h"
 
@@ -18,6 +23,8 @@ HUMBLE_LOGGER(HL, "client");
 int main(int argc, char* argv[])
 {
 	QApplication a(argc, argv);
+	qRegisterMetaType<ocs::clientid_t>("ocs::clientid_t");
+	qRegisterMetaType<ocs::channelid_t>("ocs::channelid_t");
 
 #ifdef _WIN32
 	// Show console window?

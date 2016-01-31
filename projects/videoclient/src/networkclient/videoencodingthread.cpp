@@ -34,7 +34,7 @@ void VideoEncodingThread::stop()
 	_queueCond.wakeAll();
 }
 
-void VideoEncodingThread::enqueue(const QImage& image, int senderId)
+void VideoEncodingThread::enqueue(const QImage& image, ocs::clientid_t senderId)
 {
 	QMutexLocker l(&_m);
 	_queue.enqueue(qMakePair(image, senderId));

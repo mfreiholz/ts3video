@@ -9,6 +9,8 @@
 #include <QPair>
 #include <QAtomicInt>
 
+#include "baselib/defines.h"
+
 #include "vp8frame.h"
 #include "yuvframe.h"
 
@@ -21,18 +23,18 @@ public:
 	~VideoDecodingThread();
 
 	void stop();
-	void enqueue(VP8Frame* frame, int senderId);
+	void enqueue(VP8Frame* frame, ocs::clientid_t senderId);
 
 protected:
 	void run();
 
 signals:
-	void decoded(YuvFrameRefPtr frame, int senderId);
+	void decoded(YuvFrameRefPtr frame, ocs::clientid_t senderId);
 
 private:
 	QMutex _m;
 	QWaitCondition _queueCond;
-	QQueue<QPair<VP8Frame*, int> > _queue;
+	QQueue<QPair<VP8Frame*, ocs::clientid_t> > _queue;
 	QAtomicInt _stopFlag;
 };
 

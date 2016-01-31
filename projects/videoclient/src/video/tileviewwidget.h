@@ -5,6 +5,8 @@
 #include <QWidget>
 #include <QCamera>
 
+#include "baselib/defines.h"
+
 #include "viewbase.h"
 
 class ConferenceVideoWindow;
@@ -25,7 +27,7 @@ public:
 
 	virtual void addClient(const ClientEntity& client, const ChannelEntity& channel);
 	virtual void removeClient(const ClientEntity& client, const ChannelEntity& channel);
-	virtual void updateClientVideo(YuvFrameRefPtr frame, int senderId);
+	virtual void updateClientVideo(YuvFrameRefPtr frame, ocs::clientid_t senderId);
 
 public slots:
 	void setTileSize(const QSize& size);

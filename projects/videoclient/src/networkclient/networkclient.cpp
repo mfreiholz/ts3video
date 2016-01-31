@@ -231,7 +231,7 @@ QCorReply* NetworkClient::goodbye()
 	return d->corSocket->sendRequest(req);
 }
 
-QCorReply* NetworkClient::joinChannel(int id, const QString& password)
+QCorReply* NetworkClient::joinChannel(ocs::channelid_t id, const QString& password)
 {
 	REQUEST_PRECHECK
 
@@ -306,7 +306,7 @@ QCorReply* NetworkClient::disableVideoStream()
 	return d->corSocket->sendRequest(req);
 }
 
-QCorReply* NetworkClient::enableRemoteVideoStream(int clientId)
+QCorReply* NetworkClient::enableRemoteVideoStream(ocs::clientid_t clientId)
 {
 	REQUEST_PRECHECK
 
@@ -320,7 +320,7 @@ QCorReply* NetworkClient::enableRemoteVideoStream(int clientId)
 	return d->corSocket->sendRequest(req);
 }
 
-QCorReply* NetworkClient::disableRemoteVideoStream(int clientId)
+QCorReply* NetworkClient::disableRemoteVideoStream(ocs::clientid_t clientId)
 {
 	REQUEST_PRECHECK
 
@@ -410,7 +410,7 @@ QCorReply* NetworkClient::authAsAdmin(const QString& password)
 	return reply;
 }
 
-QCorReply* NetworkClient::kickClient(int clientId, bool ban)
+QCorReply* NetworkClient::kickClient(ocs::clientid_t clientId, bool ban)
 {
 	REQUEST_PRECHECK
 

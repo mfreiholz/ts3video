@@ -305,6 +305,9 @@ int _main(int argc, char* argv[])
 	a.setApplicationName("ocs-server");
 	a.setApplicationVersion(IFVS_SOFTWARE_VERSION_QSTRING);
 
+	qRegisterMetaType<ocs::clientid_t>("ocs::clientid_t");
+	qRegisterMetaType<ocs::channelid_t>("ocs::channelid_t");
+
 #ifdef _WIN32
 	// Mode: Daemon (Win32 Service)
 	if (ELWS::hasArgsValue("--service"))

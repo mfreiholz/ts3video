@@ -30,7 +30,7 @@ void VideoDecodingThread::stop()
 }
 
 // Note: Enqueuing an NULL frame, will reset the internal used decoder.
-void VideoDecodingThread::enqueue(VP8Frame* frame, int senderId)
+void VideoDecodingThread::enqueue(VP8Frame* frame, ocs::clientid_t senderId)
 {
 	QMutexLocker l(&_m);
 	_queue.enqueue(qMakePair(frame, senderId));
@@ -39,7 +39,7 @@ void VideoDecodingThread::enqueue(VP8Frame* frame, int senderId)
 
 void VideoDecodingThread::run()
 {
-	QHash<int, VP8Decoder*> decoders;
+	QHash<ocs::clientid_t, VP8Decoder*> decoders;
 
 	_stopFlag = 0;
 	while (_stopFlag == 0)

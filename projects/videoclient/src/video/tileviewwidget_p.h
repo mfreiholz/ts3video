@@ -47,7 +47,7 @@ public:
 	QPushButton* zoomOutButton;
 
 	QSharedPointer<QCamera> camera;
-	QHash<int, TileViewTileWidget*> tilesMap; ///< Maps client's ID to it's widget.
+	QHash<ocs::clientid_t, TileViewTileWidget*> tilesMap; ///< Maps client's ID to it's widget.
 };
 
 ///////////////////////////////////////////////////////////////////////
