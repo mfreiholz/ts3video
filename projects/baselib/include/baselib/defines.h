@@ -13,8 +13,8 @@
 OCS_NAMESPACE_BEGIN
 
 // Basic types across all libraries
-typedef uint16_t clientid_t;
-typedef int channelid_t;
+typedef int32_t clientid_t;
+typedef int32_t channelid_t;
 
 OCS_NAMESPACE_END
 
