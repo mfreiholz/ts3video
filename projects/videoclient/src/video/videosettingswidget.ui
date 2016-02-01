@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>573</width>
-    <height>223</height>
+    <width>530</width>
+    <height>276</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -55,13 +55,25 @@
      </item>
      <item row="3" column="1">
       <widget class="QCheckBox" name="hardwareAcceleration">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="text">
-        <string>Hardware Acceleration (Requires application restart)</string>
+        <string>OpenGL Hardware Acceleration (Requires application restart)</string>
        </property>
       </widget>
      </item>
      <item row="4" column="1">
       <widget class="QCheckBox" name="autoEnable">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="text">
         <string>Start automatically</string>
        </property>

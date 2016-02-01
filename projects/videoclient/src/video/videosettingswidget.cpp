@@ -7,6 +7,7 @@
 #include "qtasync/qtasync.h"
 
 #include "videolib/src/virtualserverconfigentity.h"
+#include "util/qwidgetutil.h"
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -121,6 +122,8 @@ VideoSettingsDialog::VideoSettingsDialog(const QSharedPointer<NetworkClient>& nc
 	QObject::connect(_ui.resolutions, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &VideoSettingsDialog::onCurrentResolutionIndexChanged);
 	QObject::connect(_ui.okButton, &QPushButton::clicked, this, &QDialog::accept);
 	QObject::connect(_ui.cancelButton, &QPushButton::clicked, this, &QDialog::reject);
+
+	QWidgetUtil::resizeWidgetPerCent(this, 30, 30);
 }
 
 void VideoSettingsDialog::preselect(const ConferenceVideoWindow::Options& opts)

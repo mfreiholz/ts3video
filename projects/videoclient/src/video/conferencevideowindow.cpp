@@ -317,9 +317,6 @@ void ConferenceVideoWindow::showVideoSettingsDialog()
 	VideoSettingsDialog w(_networkClient, this);
 	w.setModal(true);
 	w.preselect(_opts);
-	w.adjustSize();
-	QWidgetUtil::resizeWidgetPerCent(&w, 35, 40);
-	QWidgetUtil::centerWidget(&w);
 	if (w.exec() != QDialog::Accepted)
 		return;
 

@@ -448,9 +448,6 @@ void Ts3VideoStartupLogic::startVideoGui()
 	VideoSettingsDialog w(_nc, this);
 	w.setModal(true);
 	w.preselect(opts);
-	w.adjustSize();
-	QWidgetUtil::resizeWidgetPerCent(&w, 35, 40);
-	QWidgetUtil::centerWidget(&w);
 	if (w.exec() == QDialog::Accepted)
 		opts = w.values();
 
