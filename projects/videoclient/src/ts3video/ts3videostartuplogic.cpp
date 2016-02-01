@@ -38,8 +38,8 @@ HUMBLE_LOGGER(HL, "client");
 
 // Endpoint to check for updates.
 // e.g.: %1 = 0.2
-//const static QString versionCheckUrl = QString("http://api.mfreiholz.de/ts3video/1.0/versioncheck/%1").arg(IFVS_SOFTWARE_VERSION);
-const static QString versionCheckUrl = QString("http://127.0.0.1:8080/ts3video/1.0/versioncheck/%1").arg(IFVS_SOFTWARE_VERSION);
+const static QString versionCheckUrl = QString("http://api.mfreiholz.de/ts3video/1.0/versioncheck/%1").arg(IFVS_SOFTWARE_VERSION);
+//const static QString versionCheckUrl = QString("http://127.0.0.1:8080/ts3video/1.0/versioncheck/%1").arg(IFVS_SOFTWARE_VERSION);
 
 // Endpoint to lookup conference server.
 // e.g.: %1 = TeamSpeak address            = teamspeak.insanefactory.com
@@ -48,15 +48,15 @@ const static QString versionCheckUrl = QString("http://127.0.0.1:8080/ts3video/1
 //
 // TODO Pass these settings as an encrypted value. It shouldn't be too easy
 //      to guess the parameters and make use of them.
-//const static QString serverLookupUrl = QString("http://api.mfreiholz.de/ts3video/1.0/lookup/%1:%2:%3");
-const static QString serverLookupUrl = QString("http://127.0.0.1:8080/ts3video/1.0/lookup/%1:%2:%3");
+const static QString serverLookupUrl = QString("http://api.mfreiholz.de/ts3video/1.0/lookup/%1:%2:%3");
+//const static QString serverLookupUrl = QString("http://127.0.0.1:8080/ts3video/1.0/lookup/%1:%2:%3");
 
 // Endpoint to lookup public conference server.
 // e.g.: %1 = TeamSpeak address            = teamspeak.insanefactory.com
 //       %2 = TeamSpeak port               = 9987
 //       %3 = TeamSpeak channel id         = 34
-//const static QString serverLookupPublicUrl = QString("http://api.mfreiholz.de/ts3video/1.0/lookup-public/%1:%2:%3");
-const static QString serverLookupPublicUrl = QString("http://127.0.0.1:8080/ts3video/1.0/lookup-public/%1:%2:%3");
+const static QString serverLookupPublicUrl = QString("http://api.mfreiholz.de/ts3video/1.0/lookup-public/%1:%2:%3");
+//const static QString serverLookupPublicUrl = QString("http://127.0.0.1:8080/ts3video/1.0/lookup-public/%1:%2:%3");
 
 ///////////////////////////////////////////////////////////////////////
 
