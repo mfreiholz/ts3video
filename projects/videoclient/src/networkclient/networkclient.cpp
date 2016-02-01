@@ -154,11 +154,9 @@ const VirtualServerConfigEntity& NetworkClient::serverConfig() const
 
 bool NetworkClient::isReadyForStreaming() const
 {
-	if (!d->mediaSocket)
-		return false;
-	if (d->mediaSocket->state() != QAbstractSocket::ConnectedState)
-		return false;
-	if (!d->mediaSocket->isAuthenticated())
+	if (!d->mediaSocket
+			|| d->mediaSocket->state() != QAbstractSocket::ConnectedState
+			|| !d->mediaSocket->isAuthenticated())
 		return false;
 	return true;
 }
@@ -277,7 +275,7 @@ QCorReply* NetworkClient::enableVideoStream(int width, int height, int bitrate)
 	d->clientEntity.videoBitrate = bitrate;
 	d->clientModel->updateClient(d->clientEntity);
 
-	d->mediaSocket->initVideoEncoder(width, height, bitrate, 24);
+	d->mediaSocket->initVideoEncoder(width, height, bitrate, 16);
 
 	QJsonObject params;
 	params["width"] = width;
@@ -436,6 +434,7 @@ void NetworkClient::initMediaSocket()
 	{
 		d->mediaSocket->close();
 		delete d->mediaSocket;
+		d->mediaSocket = nullptr;
 	}
 
 	// Connects to server and authenticates with auth-token.
@@ -471,6 +470,12 @@ void NetworkClient::onStateChanged(QAbstractSocket::SocketState state)
 		emit connected();
 		break;
 	case QAbstractSocket::UnconnectedState:
+		if (d->mediaSocket)
+		{
+			d->mediaSocket->close();
+			delete d->mediaSocket;
+			d->mediaSocket = nullptr;
+		}
 		d->heartbeatTimer.stop();
 		emit disconnected();
 		break;
