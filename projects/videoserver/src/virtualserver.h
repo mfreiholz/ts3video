@@ -90,6 +90,9 @@ public:
 
 	// Network usages (COR, Media, WebSocket, ...)
 	NetworkUsageEntity _networkUsageMediaSocket;
+
+	// Statistics database
+
 };
 
 #endif

@@ -8,6 +8,7 @@ find_package(Qt5Network REQUIRED)
 find_package(Qt5Gui REQUIRED) # Due to videolib
 find_package(Qt5WebSockets REQUIRED)
 find_package(Qt5Concurrent REQUIRED)
+#find_package(Qt5Sql REQUIRED)
 
 # Sources
 set(headers
@@ -15,6 +16,7 @@ set(headers
 	src/serverchannelentity.h
 	src/virtualserveroptions.h
 	src/action/actionbase.h
+	src/statistics/logserverstatisticstask.h
 )
 
 set(qheaders
@@ -34,6 +36,7 @@ set(sources
 	src/servercliententity.cpp
 	src/serverchannelentity.cpp
 	src/action/actionbase.cpp
+	src/statistics/logserverstatisticstask.cpp
 )
 
 set(qresources
@@ -88,6 +91,7 @@ target_link_libraries(
 	Qt5::Gui
 	Qt5::WebSockets
 	Qt5::Concurrent
+#	Qt5::Sql
 	${humblelogging_LIBRARIES}
 	humblesrvproc
 	qtasync
