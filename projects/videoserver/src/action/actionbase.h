@@ -252,7 +252,23 @@ class UpdateVisibilityLevelAction : public ActionBase
 public:
 	QString name() const
 	{
-		return QString("updatevisibilitylevel");
+		return QString("UpdateVisibilityLevelAction");
+	}
+	Flags flags() const
+	{
+		return RequiresAuthentication | RequiresAdminPrivileges;
+	}
+	void run(const ActionData& req);
+};
+
+///////////////////////////////////////////////////////////////////////
+
+class RemoteVideoIncludesAddAction : public ActionBase
+{
+public:
+	QString name() const
+	{
+		return QString("RemoteVideoIncludesAddAction");
 	}
 	Flags flags() const
 	{

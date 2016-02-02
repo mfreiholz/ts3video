@@ -43,8 +43,7 @@ ClientConnectionHandler::ClientConnectionHandler(VirtualServer* server, QSharedP
 	onStateChanged(QAbstractSocket::ConnectedState);
 
 	// Authentication timer: Close connection, if it doesn't authentication within X seconds.
-	//QTimer::singleShot(60000, this, &ClientConnectionHandler::onAuthenticationTimeout);
-	QTimer::singleShot(60000, this, SLOT(onAuthenticationTimeout())); // Compatibility for 5.3
+	QTimer::singleShot(60000, this, &ClientConnectionHandler::onAuthenticationTimeout);
 
 	// Connection timer: Close connection, if there wasn't a keep-alive or other package for X seconds.
 	_connectionTimeoutTimer.start(20000);

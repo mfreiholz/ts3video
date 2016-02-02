@@ -27,6 +27,7 @@ public:
 	bool authenticated;
 	bool admin;
 	QSet<ocs::clientid_t> remoteVideoExcludes; ///< "This" client, doesn't want to receive the video of clients in this list.
+	QSet<ocs::clientid_t> remoteVideoIncludes; // "This" client wants to receive video of these clients (It doesn't matter, whether the clients are in the same conference or not!)
 
 	VisibilityLevel visibilityLevel; ///< The VL of the client itself.
 	VisibilityLevel visibilityLevelAllowed; ///< The maximum VL this client is allowed to see.
