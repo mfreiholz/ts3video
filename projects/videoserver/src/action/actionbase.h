@@ -279,4 +279,20 @@ public:
 
 ///////////////////////////////////////////////////////////////////////
 
+class RemoteVideoIncludesRemoveAction : public ActionBase
+{
+public:
+	QString name() const
+	{
+		return QString("RemoteVideoIncludesRemoveAction");
+	}
+	Flags flags() const
+	{
+		return RequiresAuthentication | RequiresAdminPrivileges;
+	}
+	void run(const ActionData& req);
+};
+
+///////////////////////////////////////////////////////////////////////
+
 #endif

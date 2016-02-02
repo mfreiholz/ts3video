@@ -585,3 +585,43 @@ void UpdateVisibilityLevelAction::run(const ActionData& req)
 }
 
 ///////////////////////////////////////////////////////////////////////
+
+void RemoteVideoIncludesAddAction::run(const ActionData& req)
+{
+	const ocs::clientid_t clientId = req.params["clientid"].toInt();
+
+	// Search other client
+	auto client = req.server->_clients.value(clientId);
+	if (!client)
+	{
+		sendDefaultErrorResponse(req, IFVS_STATUS_INVALID_PARAMETERS, QString("Unknown client (clientid=%1)"));
+		return;
+	}
+	/*if (!req.session->_clientEntity->isAllowedToSee(*client))
+	{
+		sendDefaultErrorResponse(req, IFVS_STATUS_FORBIDDEN, QString("You are not allowed to this client (clientid=%1)").arg(clientId));
+		return;
+	}*/
+
+	// Add client to list
+	req.session->_clientEntity->remoteVideoIncludes.insert(clientId);
+
+	req.server->updateMediaRecipients();
+	sendDefaultOkResponse(req);
+}
+
+///////////////////////////////////////////////////////////////////////
+
+void RemoteVideoIncludesRemoveAction::run(const ActionData& req)
+{
+	const ocs::clientid_t clientId = req.params["clientid"].toInt();
+
+	// Search other client
+	const auto removed = req.session->_clientEntity->remoteVideoIncludes.remove(clientId);
+	if (removed)
+		req.server->updateMediaRecipients();
+
+	sendDefaultOkResponse(req);
+}
+
+///////////////////////////////////////////////////////////////////////
