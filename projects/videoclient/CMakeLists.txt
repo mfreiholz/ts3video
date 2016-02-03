@@ -23,6 +23,7 @@ set(headers
 )
 
 set(qheaders
+	src/admin/adminwidget.h
 	src/video/conferencevideowindow.h
 	src/video/conferencevideowindowsidebar.h
 	src/video/userlistwidget.h
@@ -62,6 +63,7 @@ set(qheaders
 
 set(sources
 	src/main.cpp
+	src/admin/adminwidget.cpp
 	src/video/conferencevideowindow.cpp
 	src/video/conferencevideowindowsidebar.cpp
 	src/video/userlistwidget.cpp
@@ -97,6 +99,7 @@ set(sources
 )
 
 set(qforms
+	src/admin/adminwidget.ui
 	src/adminauthwidget.ui
 	src/startup/startupwidget.ui
 	src/aboutwidget.ui
