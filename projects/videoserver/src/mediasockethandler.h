@@ -20,25 +20,23 @@ class MediaSenderEntity;
 class MediaReceiverEntity;
 class MediaRecipients;
 
-/*!
-*/
+
 class MediaSenderEntity
 {
 public:
-	static inline QString createID(const QHostAddress& address, quint16 port)
+	static inline QString createIdent(const QHostAddress& address, quint16 port)
 	{
 		return address.toString() + QString(":") + QString::number(port);
 	}
 
-	QString id;
+	QString ident;
 	ocs::clientid_t clientId;
 	QHostAddress address;
 	quint16 port;
 	QVector<MediaReceiverEntity> receivers;
 };
 
-/*!
-*/
+
 class MediaReceiverEntity
 {
 public:
@@ -47,17 +45,15 @@ public:
 	quint16 port;
 };
 
-/*!
-*/
+
 class MediaRecipients
 {
 public:
-	QHash<QString, MediaSenderEntity> id2sender; ///< Maps a sender's adress-id to itself.
+	QHash<QString, MediaSenderEntity> ident2sender; ///< Maps a sender's adress-id to itself.
 	QHash<ocs::clientid_t, MediaReceiverEntity> clientid2receiver; ///< Maps a receiver's client-id to itself.
 };
 
-/*!
-*/
+
 class VideoCacheItem
 {
 public:

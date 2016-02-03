@@ -133,8 +133,8 @@ void MediaSocketHandler::onReadyRead()
 			}
 
 			// Broadcast
-			const auto senderId = MediaSenderEntity::createID(senderAddress, senderPort);
-			const auto& senderEntity = _recipients.id2sender[senderId];
+			const auto senderId = MediaSenderEntity::createIdent(senderAddress, senderPort);
+			const auto& senderEntity = _recipients.ident2sender[senderId];
 			for (auto i = 0, end = senderEntity.receivers.size(); i < end; ++i)
 			{
 				const auto& receiverEntity = senderEntity.receivers[i];
@@ -169,8 +169,8 @@ void MediaSocketHandler::onReadyRead()
 		// Audio data.
 		case UDP::AudioFrameDatagram::TYPE:
 		{
-			const auto senderId = MediaSenderEntity::createID(senderAddress, senderPort);
-			const auto& senderEntity = _recipients.id2sender[senderId];
+			const auto senderId = MediaSenderEntity::createIdent(senderAddress, senderPort);
+			const auto& senderEntity = _recipients.ident2sender[senderId];
 			for (auto i = 0; i < senderEntity.receivers.size(); ++i)
 			{
 				const auto& receiverEntity = senderEntity.receivers[i];

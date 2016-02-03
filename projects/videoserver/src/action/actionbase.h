@@ -132,30 +132,6 @@ public:
 
 ///////////////////////////////////////////////////////////////////////
 
-class EnableRemoteVideoAction : public ActionBase
-{
-public:
-	QString name() const
-	{
-		return QString("enableremotevideo");
-	}
-	void run(const ActionData& req);
-};
-
-///////////////////////////////////////////////////////////////////////
-
-class DisableRemoteVideoAction : public ActionBase
-{
-public:
-	QString name() const
-	{
-		return QString("disableremotevideo");
-	}
-	void run(const ActionData& req);
-};
-
-///////////////////////////////////////////////////////////////////////
-
 class EnableAudioInputAction : public ActionBase
 {
 public:
@@ -263,12 +239,14 @@ public:
 
 ///////////////////////////////////////////////////////////////////////
 
-class RemoteVideoIncludesAddAction : public ActionBase
+/* Sets a direct streaming relation between a sender and receiver.
+*/
+class AddDirectStreamingRelationAction : public ActionBase
 {
 public:
 	QString name() const
 	{
-		return QString("RemoteVideoIncludesAddAction");
+		return QString("AddDirectStreamingRelationAction");
 	}
 	Flags flags() const
 	{
@@ -279,12 +257,14 @@ public:
 
 ///////////////////////////////////////////////////////////////////////
 
-class RemoteVideoIncludesRemoveAction : public ActionBase
+/* Removes a direct streaming relation between a sender and receiver.
+*/
+class RemoveDirectStreamingRelationAction : public ActionBase
 {
 public:
 	QString name() const
 	{
-		return QString("RemoteVideoIncludesRemoveAction");
+		return QString("RemoveDirectStreamingRelationAction");
 	}
 	Flags flags() const
 	{

@@ -53,8 +53,6 @@ VirtualServer::VirtualServer(const VirtualServerOptions& opts, QObject* parent) 
 		// Video
 		registerAction(ActionPtr(new EnableVideoAction()));
 		registerAction(ActionPtr(new DisableVideoAction()));
-		registerAction(ActionPtr(new EnableRemoteVideoAction()));
-		registerAction(ActionPtr(new DisableRemoteVideoAction()));
 
 		// Audio
 		registerAction(ActionPtr(new EnableAudioInputAction()));
@@ -67,6 +65,8 @@ VirtualServer::VirtualServer(const VirtualServerOptions& opts, QObject* parent) 
 		registerAction(ActionPtr(new AdminAuthAction()));
 		registerAction(ActionPtr(new KickClientAction()));
 		registerAction(ActionPtr(new UpdateVisibilityLevelAction()));
+		registerAction(ActionPtr(new AddDirectStreamingRelationAction()));
+		registerAction(ActionPtr(new RemoveDirectStreamingRelationAction()));
 	}
 }
 
@@ -119,11 +119,11 @@ const VirtualServerOptions& VirtualServer::options() const
 
 void VirtualServer::updateMediaRecipients()
 {
-	const auto sendBackOwnVideo = false;
+	auto sendBackOwnVideo = false;
 
 	MediaRecipients recips;
-	const auto clients = _clients.values();
-	for (const auto client : clients)
+	auto clients = _clients.values();
+	for (auto client : clients)
 	{
 		// Validate client for streaming
 		if (!client)
@@ -133,37 +133,60 @@ void VirtualServer::updateMediaRecipients()
 		else if (!client->videoEnabled && !client->audioInputEnabled)
 			continue;
 
+		// Create Sender and Receiver entities for current client
 		MediaSenderEntity sender;
 		sender.clientId = client->id;
 		sender.address = QHostAddress(client->mediaAddress);
 		sender.port = client->mediaPort;
-		sender.id = MediaSenderEntity::createID(sender.address, sender.port);
+		sender.ident = MediaSenderEntity::createIdent(sender.address, sender.port);
 
-		MediaReceiverEntity r;
-		r.clientId = client->id;
-		r.address = client->mediaAddress;
-		r.port = client->mediaPort;
-		recips.clientid2receiver.insert(r.clientId, r);
+		MediaReceiverEntity receiver;
+		receiver.clientId = client->id;
+		receiver.address = client->mediaAddress;
+		receiver.port = client->mediaPort;
+		recips.clientid2receiver.insert(receiver.clientId, receiver);
 
+		// Fill Sender's receivers list by conference participants
 		auto siblingClientIds = getSiblingClientIds(client->id, true);
-		for (const auto siblingClientId : siblingClientIds)
+		for (const auto clientId : siblingClientIds)
 		{
-			auto client2 = _clients.value(siblingClientId);
-			if (!client2)
+			auto c = _clients.value(clientId);
+			if (!c)
 				continue;
-			else if (client2->mediaAddress.isNull() || client2->mediaPort <= 0)
+			else if (c->mediaAddress.isNull() || c->mediaPort <= 0)
 				continue;
-			else if (client2 == client && !sendBackOwnVideo)
+			else if (c == client && !sendBackOwnVideo)
 				continue;
 
-			MediaReceiverEntity receiver;
-			receiver.clientId = client2->id;
-			receiver.address = client2->mediaAddress;
-			receiver.port = client2->mediaPort;
-			sender.receivers.append(receiver);
+			MediaReceiverEntity r;
+			r.clientId = c->id;
+			r.address = c->mediaAddress;
+			r.port = c->mediaPort;
+			sender.receivers.append(r);
 		}
-		recips.id2sender.insert(sender.id, sender);
+		recips.ident2sender.insert(sender.ident, sender);
+
+		// Fill Sender's receivers list by direct mappings
+		auto directReceivers = _sender2receiver.value(sender.clientId);
+		for (const auto clientId : directReceivers)
+		{
+			auto c = _clients.value(clientId);
+			if (!c)
+				continue;
+			else if (c->mediaAddress.isNull() || c->mediaPort <= 0)
+				continue;
+			else if (c == client)
+				continue;
+
+			MediaReceiverEntity r;
+			r.clientId = c->id;
+			r.address = c->mediaAddress;
+			r.port = c->mediaPort;
+			sender.receivers.append(r);
+		}
 	}
+
+	// Done. Mapping for media socket has been created, pass it now.
 	_mediaSocketHandler->setRecipients(recips);
 }
 

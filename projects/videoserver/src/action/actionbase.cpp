@@ -352,37 +352,6 @@ void DisableVideoAction::run(const ActionData& req)
 
 ///////////////////////////////////////////////////////////////////////
 
-void EnableRemoteVideoAction::run(const ActionData& req)
-{
-	const ocs::clientid_t clientId = req.params["clientid"].toInt();
-
-	auto& set = req.session->_clientEntity->remoteVideoExcludes;
-	if (set.remove(clientId))
-	{
-		req.server->updateMediaRecipients();
-	}
-
-	sendDefaultOkResponse(req);
-}
-
-///////////////////////////////////////////////////////////////////////
-
-void DisableRemoteVideoAction::run(const ActionData& req)
-{
-	const ocs::clientid_t clientId = req.params["clientid"].toInt();
-
-	auto& set = req.session->_clientEntity->remoteVideoExcludes;
-	if (!set.contains(clientId))
-	{
-		set.insert(clientId);
-		req.server->updateMediaRecipients();
-	}
-
-	sendDefaultOkResponse(req);
-}
-
-///////////////////////////////////////////////////////////////////////
-
 void EnableAudioInputAction::run(const ActionData& req)
 {
 	req.session->_clientEntity->audioInputEnabled = true;
@@ -586,25 +555,27 @@ void UpdateVisibilityLevelAction::run(const ActionData& req)
 
 ///////////////////////////////////////////////////////////////////////
 
-void RemoteVideoIncludesAddAction::run(const ActionData& req)
+void AddDirectStreamingRelationAction::run(const ActionData& req)
 {
-	const ocs::clientid_t clientId = req.params["clientid"].toInt();
+	ocs::clientid_t senderId = req.params["senderid"].toInt();
+	ocs::clientid_t receiverId = req.params["receiverid"].toInt();
 
-	// Search other client
-	auto client = req.server->_clients.value(clientId);
-	if (!client)
+	// Validate parameters
+	auto sender = req.server->_clients.value(senderId);
+	if (!sender)
 	{
-		sendDefaultErrorResponse(req, IFVS_STATUS_INVALID_PARAMETERS, QString("Unknown client (clientid=%1)"));
+		sendDefaultErrorResponse(req, IFVS_STATUS_INVALID_PARAMETERS, QString("Unknown client (clientid=%1)").arg(senderId));
 		return;
 	}
-	/*if (!req.session->_clientEntity->isAllowedToSee(*client))
+	auto receiver = req.server->_clients.value(receiverId);
+	if (!receiver)
 	{
-		sendDefaultErrorResponse(req, IFVS_STATUS_FORBIDDEN, QString("You are not allowed to this client (clientid=%1)").arg(clientId));
+		sendDefaultErrorResponse(req, IFVS_STATUS_INVALID_PARAMETERS, QString("Unknown client (clientid=%1)").arg(receiverId));
 		return;
-	}*/
+	}
 
 	// Add client to list
-	req.session->_clientEntity->remoteVideoIncludes.insert(clientId);
+	req.server->_sender2receiver[senderId].insert(receiverId);
 
 	req.server->updateMediaRecipients();
 	sendDefaultOkResponse(req);
@@ -612,15 +583,20 @@ void RemoteVideoIncludesAddAction::run(const ActionData& req)
 
 ///////////////////////////////////////////////////////////////////////
 
-void RemoteVideoIncludesRemoveAction::run(const ActionData& req)
+void RemoveDirectStreamingRelationAction::run(const ActionData& req)
 {
-	const ocs::clientid_t clientId = req.params["clientid"].toInt();
+	ocs::clientid_t senderId = req.params["senderid"].toInt();
+	ocs::clientid_t receiverId = req.params["receiverid"].toInt();
 
-	// Search other client
-	const auto removed = req.session->_clientEntity->remoteVideoIncludes.remove(clientId);
-	if (removed)
-		req.server->updateMediaRecipients();
+	if (req.server->_sender2receiver.contains(senderId))
+	{
+		auto& list = req.server->_sender2receiver[senderId];
+		list.remove(receiverId);
+		if (list.isEmpty())
+			req.server->_sender2receiver.remove(senderId);
+	}
 
+	req.server->updateMediaRecipients();
 	sendDefaultOkResponse(req);
 }
 
