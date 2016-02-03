@@ -80,8 +80,9 @@ public:
 	QHash<QString, ocs::channelid_t> _ident2channel;                    // Maps and identifier to it's matching channel-id. Optional: Only TS3VIDEO channels use this by now.
 	QHash<ocs::channelid_t, QSet<ocs::clientid_t> > _participants;      // Maps channel-ids to client-ids.
 	QHash<ocs::clientid_t, QSet<ocs::channelid_t> > _client2channels;   // Maps client-ids to channel-ids.
+
+	// Additional mappings related to streaming.
 	QHash<ocs::clientid_t, QSet<ocs::clientid_t> > _sender2receiver;    // Maps sender-ids to receiver-ids (In addition to conference based mappings!)
-	
 
 	// Media streaming attributes.
 	MediaSocketHandler* _mediaSocketHandler;

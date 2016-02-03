@@ -66,6 +66,12 @@ ClientConnectionHandler::~ClientConnectionHandler()
 	_server->removeClientFromChannels(_clientEntity->id);
 	_server->_clients.remove(_clientEntity->id);
 	_server->_connections.remove(_clientEntity->id);
+
+	// Cleanup direct-mapping (as long as it isn't used much).. it may cost time
+	_server->_sender2receiver.remove(_clientEntity->id);
+	for (auto i = _server->_sender2receiver.begin(); i != _server->_sender2receiver.end(); ++i)
+		(*i).remove(_clientEntity->id);
+
 	delete _clientEntity;
 	_connection.clear();
 	_clientEntity = nullptr;

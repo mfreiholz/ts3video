@@ -197,10 +197,10 @@ ServerChannelEntity* VirtualServer::createChannel(const QString& ident)
 	c->ident = ident;
 
 	_channels.insert(c->id, c);
-	
+
 	if (!c->ident.isEmpty())
 		_ident2channel.insert(c->ident, c->id);
-	
+
 	return c;
 }
 
