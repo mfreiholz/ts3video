@@ -10,6 +10,22 @@
 
 HUMBLE_LOGGER(HL, "server.mediasocket");
 
+#ifdef __linux__
+QDataStream& operator<<(QDataStream& out, const UDP::VideoFrameDatagram::dg_frame_id_t& val)
+{
+	out << (quint64)val;
+	return out;
+}
+
+QDataStream& operator>>(QDataStream& in, UDP::VideoFrameDatagram::dg_frame_id_t& val)
+{
+	quint64 i;
+	in >> i;
+	val = i;
+	return in;
+}
+#endif
+
 ///////////////////////////////////////////////////////////////////////
 
 MediaSocketHandler::MediaSocketHandler(const QHostAddress& address, quint16 port, QObject* parent) :
