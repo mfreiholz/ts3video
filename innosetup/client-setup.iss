@@ -14,6 +14,7 @@
 AppId={{6186D48B-32FB-4E48-9085-ACC07BA5FB0F}
 SetupIconFile=..\projects\videoclient\res\app3.ico
 OutputBaseFilename=setup_client-{#MyAppVersion}
+InfoBeforeFile=client-setup_infobefore_english.rtf
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
