@@ -233,14 +233,6 @@ add_custom_command(
 # Install
 #######################################################################
 
-#if(WIN32)
-	#set(INST_BINARY_DIR "client/bin/win-${ARCH}")
-#endif(WIN32)
-#if(CMAKE_COMPILER_IS_GNUCC)
-#	set(INST_BINARY_DIR "client/bin/linux-${ARCH}")
-#endif(CMAKE_COMPILER_IS_GNUCC)
-#install(TARGETS ${PROJECT_NAME} DESTINATION ${INST_BINARY_DIR})
-
 if(WIN32)
 	install(TARGETS ${PROJECT_NAME} DESTINATION $ENV{OCS_DEPLOY_DIR_PATH}/client)
 	install(FILES ${PROJECT_SOURCE_DIR}/res/default.ini DESTINATION $ENV{OCS_DEPLOY_DIR_PATH}/client)
