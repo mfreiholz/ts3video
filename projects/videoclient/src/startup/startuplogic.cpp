@@ -10,6 +10,8 @@
 #include <QDir>
 #include <QHash>
 #include <QHashIterator>
+#include <QString>
+#include <QObject>
 
 #include "humblelogging/api.h"
 
@@ -48,10 +50,9 @@ int AbstractStartupLogic::exec()
 
 void AbstractStartupLogic::initApplication()
 {
-	_qapp->setOrganizationName("mfreiholz");
 	_qapp->setOrganizationDomain("https://mfreiholz.de");
-	_qapp->setApplicationName("ocs-client");
-	_qapp->setApplicationDisplayName("Video Conference Client");
+	_qapp->setApplicationName("Conference Client");
+	_qapp->setApplicationDisplayName(QObject::tr("Conference Client"));
 	_qapp->setApplicationVersion(IFVS_SOFTWARE_VERSION_QSTRING);
 
 #ifdef _WIN32
@@ -71,8 +72,8 @@ void AbstractStartupLogic::initLogging()
 
 	QSettings conf(configFilePath(), QSettings::IniFormat);
 	conf.beginGroup("logging");
-	auto logFilePath = conf.value("FilePath").toString();
-	auto logConfigFilePath = conf.value("ConfigFilePath").toString();
+	auto logFilePath = conf.value("FilePath", "$TEMPDIR/conference-client.log").toString();
+	auto logConfigFilePath = conf.value("ConfigFilePath", "$APPDIR/logging.conf").toString();
 	auto consoleLoggerEnabled = conf.value("ConsoleAppenderEnabled", false).toBool();
 	conf.endGroup();
 
