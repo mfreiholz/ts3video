@@ -51,6 +51,24 @@ char* findClientExeFilePath()
 #endif
 }
 
+char* findClientExeFilePath2()
+{
+	HKEY hkey;
+	long result = RegOpenKeyEx(HKEY_LOCAL_MACHINE, "Software\\VideoClient", 0, KEY_READ, &hkey);
+	if (result != ERROR_SUCCESS)
+		return 0;
+
+	DWORD type;
+	char value[4096];
+	DWORD valueSize = 4096;
+	DWORD dwRet = RegQueryValueEx(hkey, "", NULL, &type, (BYTE*)value, &valueSize);
+	if (result != ERROR_SUCCESS)
+		return 0;
+
+	printf("blah: %s", value);
+	return 0;
+}
+
 char* getParentPath(const char* path)
 {
 	char* parentPath = new char[PATH_MAX_LENGTH];
