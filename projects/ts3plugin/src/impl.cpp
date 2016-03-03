@@ -51,22 +51,40 @@ char* findClientExeFilePath()
 #endif
 }
 
-char* findClientExeFilePath2()
+/*
+	Searches the absolute path to videoclient.exe in Win32 registry.
+	@return char* NULL terminated string or NULL. Ownership goes to caller.
+*/
+char* findClientExeFilePathInRegistry()
 {
+#ifdef _WIN32
 	HKEY hkey;
-	long result = RegOpenKeyEx(HKEY_LOCAL_MACHINE, "Software\\VideoClient", 0, KEY_READ, &hkey);
+	long result;
+
+	result = RegOpenKeyEx(HKEY_LOCAL_MACHINE, "Software\\VideoClient", 0, KEY_READ, &hkey);
 	if (result != ERROR_SUCCESS)
-		return 0;
+	{
+		result = RegOpenKeyEx(HKEY_LOCAL_MACHINE, "Software\\WOW6432Node\\VideoClient", 0, KEY_READ, &hkey);
+		if (result != ERROR_SUCCESS)
+			return 0;
+	}
+
+	// Read path from found key.
+	char* path = new char[PATH_MAX_LENGTH];
+	memset(path, 0, PATH_MAX_LENGTH);
 
 	DWORD type;
-	char value[4096];
-	DWORD valueSize = 4096;
-	DWORD dwRet = RegQueryValueEx(hkey, "", NULL, &type, (BYTE*)value, &valueSize);
+	DWORD valueSize = PATH_MAX_LENGTH;
+	DWORD dwRet = RegQueryValueEx(hkey, "", NULL, &type, (BYTE*)path, &valueSize);
 	if (result != ERROR_SUCCESS)
+	{
+		delete[] path;
 		return 0;
-
-	printf("blah: %s", value);
-	return 0;
+	}
+	strcat(path, "\\");
+	strcat(path, "videoclient.exe");
+	return path;
+#endif
 }
 
 char* getParentPath(const char* path)
@@ -100,9 +118,8 @@ int runClient(TS3Data* ts3data, int runOpts)
 		ts3data->funcs->printMessageToCurrentTab("You can not join a video-conference of a different channel.");
 		return 1;
 	}
-
 	// Find client executable.
-	char* filePath = findClientExeFilePath();
+	char* filePath = findClientExeFilePathInRegistry();
 	if (!filePath)
 		return 1;
 
