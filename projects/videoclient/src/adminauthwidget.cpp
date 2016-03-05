@@ -8,7 +8,6 @@ AdminAuthWidget::AdminAuthWidget(const QSharedPointer<NetworkClient>& networkCli
 {
 	_ui.setupUi(this);
 	QObject::connect(_ui.loginButton, &QPushButton::clicked, this, &AdminAuthWidget::onLogin);
-	QObject::connect(_ui.cancelButton, &QPushButton::clicked, this, &AdminAuthWidget::onCancel);
 }
 
 void AdminAuthWidget::onLogin()

@@ -401,7 +401,6 @@ void ConferenceVideoWindow::onActionLoginAsAdminTriggered()
 {
 	AdminAuthWidget w(_networkClient, this);
 	w.setModal(true);
-	w.adjustSize();
 	w.exec();
 
 	auto action = qobject_cast<QAction*>(sender());
