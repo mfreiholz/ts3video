@@ -275,6 +275,10 @@ void ConferenceVideoWindow::applyVideoInputOptions(const Options& opts)
 	{
 		_sidebar->setVideoEnabled(true);
 	}
+	else
+	{
+		_sidebar->setVideoEnabled(false);
+	}
 }
 
 void ConferenceVideoWindow::loadOptionsFromConfig(Options& opts)
@@ -405,7 +409,10 @@ void ConferenceVideoWindow::onActionLoginAsAdminTriggered()
 
 	auto action = qobject_cast<QAction*>(sender());
 	if (_networkClient->isAdmin() && action)
+	{
 		action->setEnabled(false);
+		action->setText(tr("You are logged in as admin"));
+	}
 }
 
 void ConferenceVideoWindow::onActionAboutTriggered()
