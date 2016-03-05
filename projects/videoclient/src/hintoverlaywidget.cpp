@@ -13,13 +13,10 @@
 QPointer<HintOverlayWidget> HintOverlayWidget::HINT;
 
 HintOverlayWidget::HintOverlayWidget(QWidget* content, QWidget* target, QWidget* parent) :
-	QFrame(parent),
+	QFrame(parent, Qt::Tool | Qt::FramelessWindowHint),
 	_content(content),
 	_target(target)
 {
-	setWindowFlags(windowFlags() | Qt::Tool);
-	setWindowFlags(windowFlags() | Qt::FramelessWindowHint);
-
 	auto l = new QBoxLayout(QBoxLayout::TopToBottom);
 	l->setContentsMargins(0, 0, 0, 0);
 	l->setSpacing(0);
