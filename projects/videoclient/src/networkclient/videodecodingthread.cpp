@@ -57,6 +57,15 @@ void VideoDecodingThread::run()
 		if (/*!item.first || */item.second == 0)
 			continue;
 
+		// Delete VP8Decoder, if frame is empty.
+		if (!item.first)
+		{
+			auto decoder = decoders.take(item.second);
+			if (decoder)
+				delete decoder;
+			continue;
+		}
+
 		// Get/create decoder
 		auto create = false;
 		auto decoder = decoders.value(item.second);

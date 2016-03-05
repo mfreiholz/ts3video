@@ -549,9 +549,12 @@ void NetworkClient::onNewIncomingRequest(QCorFrameRefPtr frame)
 	}
 	else if (action == "notify.clientdisconnected")
 	{
-		ClientEntity clientEntity;
-		clientEntity.fromQJsonObject(parameters["client"].toObject());
-		emit clientDisconnected(clientEntity);
+		ClientEntity client;
+		client.fromQJsonObject(parameters["client"].toObject());
+
+		d->mediaSocket->resetVideoDecoderOfClient(client.id);
+
+		emit clientDisconnected(client);
 	}
 	else if (action == "notify.kicked")
 	{
