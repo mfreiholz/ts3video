@@ -1,10 +1,10 @@
-#define MyAppName "VideoClient"
+#define MyAppName "Conference Client"
 
 #include "all.iss"
 
 [Setup]
 AppId={{6186D48B-32FB-4E48-9085-ACC07BA5FB0F}
-OutputBaseFilename={#MyAppName}-{#MyAppVersion}
+OutputBaseFilename={#MyAppName} {#MyAppVersion} Setup
 InfoBeforeFile=client-setup_infobefore_english.rtf
 
 [Languages]
@@ -19,4 +19,4 @@ Filename: "{app}\vcredist_x86.exe"; Parameters: "/install /quiet"; Flags: skipif
 Filename: "{app}\ts3video.ts3_plugin"; StatusMsg: "Installing TeamSpeak 3 Plugin..."; Flags: shellexec waituntilterminated
 
 [Registry]
-Root: HKLM; Subkey: "Software\{#MyAppName}"; ValueType: string; ValueData: "{app}"; Flags: uninsdeletekey
+Root: HKLM; Subkey: "Software\{#MyOrgDomain}\{#MyAppName}"; ValueType: string; ValueData: "{app}"; Flags: uninsdeletekey

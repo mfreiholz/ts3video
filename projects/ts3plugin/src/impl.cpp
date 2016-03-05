@@ -61,10 +61,10 @@ char* findClientExeFilePathInRegistry()
 	HKEY hkey;
 	long result;
 
-	result = RegOpenKeyEx(HKEY_LOCAL_MACHINE, "Software\\VideoClient", 0, KEY_READ, &hkey);
+	result = RegOpenKeyEx(HKEY_LOCAL_MACHINE, "Software\\mfreiholz.de\\VideoClient", 0, KEY_READ, &hkey);
 	if (result != ERROR_SUCCESS)
 	{
-		result = RegOpenKeyEx(HKEY_LOCAL_MACHINE, "Software\\WOW6432Node\\VideoClient", 0, KEY_READ, &hkey);
+		result = RegOpenKeyEx(HKEY_LOCAL_MACHINE, "Software\\WOW6432Node\\mfreiholz.de\\VideoClient", 0, KEY_READ, &hkey);
 		if (result != ERROR_SUCCESS)
 			return 0;
 	}
