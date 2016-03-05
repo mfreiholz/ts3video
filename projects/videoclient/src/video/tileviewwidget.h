@@ -6,28 +6,28 @@
 #include <QCamera>
 
 #include "baselib/defines.h"
-
-#include "viewbase.h"
+#include "videolib/src/yuvframe.h"
 
 class ConferenceVideoWindow;
+class NetworkClient;
+class ClientEntity;
+class ChannelEntity;
 
 class TileViewWidgetPrivate;
-class TileViewWidget : public QWidget, public ViewBase
+class TileViewWidget : public QWidget
 {
 	Q_OBJECT
 	QScopedPointer<TileViewWidgetPrivate> d;
 
 public:
-	TileViewWidget(ConferenceVideoWindow* window, QWidget* parent = 0, Qt::WindowFlags f = 0);
+	TileViewWidget(ConferenceVideoWindow* window, Qt::WindowFlags f = 0);
 	virtual ~TileViewWidget();
-	ConferenceVideoWindow* window() const
-	{
-		return _window;
-	}
 
-	virtual void addClient(const ClientEntity& client, const ChannelEntity& channel);
-	virtual void removeClient(const ClientEntity& client, const ChannelEntity& channel);
-	virtual void updateClientVideo(YuvFrameRefPtr frame, ocs::clientid_t senderId);
+	ConferenceVideoWindow* window() const;
+
+	void addClient(const ClientEntity& client, const ChannelEntity& channel);
+	void removeClient(const ClientEntity& client, const ChannelEntity& channel);
+	void updateClientVideo(YuvFrameRefPtr frame, ocs::clientid_t senderId);
 
 public slots:
 	void setTileSize(const QSize& size);

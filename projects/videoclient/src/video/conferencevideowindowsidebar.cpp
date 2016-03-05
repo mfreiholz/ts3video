@@ -45,11 +45,12 @@ ConferenceVideoWindowSidebar::ConferenceVideoWindowSidebar(ConferenceVideoWindow
 		_enableVideoToggleButton->setToolTip(tr("Start/stop video."));
 		_enableVideoToggleButton->setFlat(true);
 		_enableVideoToggleButton->setCheckable(true);
-		_enableVideoToggleButton->setVisible(_camera.isNull());
 		mainLayout->addWidget(_enableVideoToggleButton);
 
 		QObject::connect(_enableVideoToggleButton, &QPushButton::clicked, this, &ConferenceVideoWindowSidebar::setVideoEnabled);
 		QObject::connect(_window, &ConferenceVideoWindow::cameraChanged, this, &ConferenceVideoWindowSidebar::onCameraChanged);
+
+		_enableVideoToggleButton->setVisible(_camera.isNull());
 	}
 
 #if defined(OCS_INCLUDE_AUDIO)
@@ -102,43 +103,6 @@ ConferenceVideoWindowSidebar::ConferenceVideoWindowSidebar(ConferenceVideoWindow
 	}
 
 	mainLayout->addStretch(1);
-
-	//// Show/hide sidebar control
-	//if (false)
-	//{
-	//	_hideLeftPanelButton = new QPushButton();
-	//	_hideLeftPanelButton->setIcon(QIcon(":/ic_chevron_left_grey600_48dp.png"));
-	//	_hideLeftPanelButton->setIconSize(__sideBarIconSize / 2);
-	//	_hideLeftPanelButton->setToolTip(tr("Hide action bar"));
-	//	_hideLeftPanelButton->setFlat(true);
-	//	_hideLeftPanelButton->setVisible(true);
-	//	mainLayout->addWidget(_hideLeftPanelButton);
-
-	//	_showLeftPanelButton = new QPushButton(parentWidget());
-	//	_showLeftPanelButton->setObjectName("showLeftPanelButton");
-	//	_showLeftPanelButton->setIcon(QIcon(":/ic_chevron_right_grey600_48dp.png"));
-	//	_showLeftPanelButton->setIconSize(__sideBarIconSize / 2);
-	//	_showLeftPanelButton->setToolTip(tr("Show action bar"));
-	//	_showLeftPanelButton->setFlat(true);
-	//	_showLeftPanelButton->setVisible(!_panelVisible);
-	//	_showLeftPanelButton->resize(_showLeftPanelButton->iconSize());
-	//	_showLeftPanelButton->move(QPoint(0, 0));
-
-	//	QObject::connect(_hideLeftPanelButton, &QPushButton::clicked, [this]()
-	//	{
-	//		this->setVisible(false);
-	//		_showLeftPanelButton->setVisible(true);
-	//		//d->tilesLayout->setContentsMargins(d->showLeftPanelButton->width() - 8, 0, 0, 0);
-	//		_panelVisible = false;
-	//	});
-	//	QObject::connect(_showLeftPanelButton, &QPushButton::clicked, [this]()
-	//	{
-	//		this->setVisible(true);
-	//		_showLeftPanelButton->setVisible(false);
-	//		//d->tilesLayout->setContentsMargins(0, 0, 0, 0);
-	//		_panelVisible = true;
-	//	});
-	//}
 }
 
 void ConferenceVideoWindowSidebar::setVideoEnabled(bool b)
@@ -174,7 +138,8 @@ void ConferenceVideoWindowSidebar::setVideoEnabled(bool b)
 			}
 		}
 	}
-	_enableVideoToggleButton->setChecked(b);
+	if (_enableVideoToggleButton)
+		_enableVideoToggleButton->setChecked(b);
 }
 
 void ConferenceVideoWindowSidebar::onCameraChanged()
@@ -194,42 +159,48 @@ void ConferenceVideoWindowSidebar::onCameraChanged()
 	}
 
 	// Update UI
-	_enableVideoToggleButton->setEnabled(!_camera.isNull());
-	_enableVideoToggleButton->setVisible(!_camera.isNull());
+	if (_enableVideoToggleButton)
+	{
+		_enableVideoToggleButton->setEnabled(!_camera.isNull());
+		_enableVideoToggleButton->setVisible(!_camera.isNull());
+	}
 }
 
 void ConferenceVideoWindowSidebar::onCameraStatusChanged(QCamera::Status s)
 {
-	switch (s)
+	if (_enableVideoToggleButton)
 	{
-	case QCamera::ActiveStatus:
-		_enableVideoToggleButton->setEnabled(true);
-		break;
-	case QCamera::StartingStatus:
-		_enableVideoToggleButton->setEnabled(false);
-		break;
-	case QCamera::StoppingStatus:
-		_enableVideoToggleButton->setEnabled(false);
-		break;
-	case QCamera::StandbyStatus:
-		_enableVideoToggleButton->setEnabled(true);
-		break;
-	case QCamera::LoadedStatus:
-		_enableVideoToggleButton->setEnabled(true);
-		break;
-	case QCamera::LoadingStatus:
-		_enableVideoToggleButton->setEnabled(false);
-		break;
-	case QCamera::UnloadingStatus:
-		_enableVideoToggleButton->setEnabled(false);
-		break;
-	case QCamera::UnloadedStatus:
-		_enableVideoToggleButton->setEnabled(true);
-		_enableVideoToggleButton->setChecked(false);
-		break;
-	case QCamera::UnavailableStatus:
-		_enableVideoToggleButton->setEnabled(false);
-		_enableVideoToggleButton->setChecked(false);
-		break;
+		switch (s)
+		{
+		case QCamera::ActiveStatus:
+			_enableVideoToggleButton->setEnabled(true);
+			break;
+		case QCamera::StartingStatus:
+			_enableVideoToggleButton->setEnabled(false);
+			break;
+		case QCamera::StoppingStatus:
+			_enableVideoToggleButton->setEnabled(false);
+			break;
+		case QCamera::StandbyStatus:
+			_enableVideoToggleButton->setEnabled(true);
+			break;
+		case QCamera::LoadedStatus:
+			_enableVideoToggleButton->setEnabled(true);
+			break;
+		case QCamera::LoadingStatus:
+			_enableVideoToggleButton->setEnabled(false);
+			break;
+		case QCamera::UnloadingStatus:
+			_enableVideoToggleButton->setEnabled(false);
+			break;
+		case QCamera::UnloadedStatus:
+			_enableVideoToggleButton->setEnabled(true);
+			_enableVideoToggleButton->setChecked(false);
+			break;
+		case QCamera::UnavailableStatus:
+			_enableVideoToggleButton->setEnabled(false);
+			_enableVideoToggleButton->setChecked(false);
+			break;
+		}
 	}
 }

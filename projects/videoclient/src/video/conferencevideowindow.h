@@ -25,6 +25,7 @@ class QWidget;
 class QProgressDialog;
 class QStatusBar;
 class QCamera;
+class QBoxLayout;
 class ConferenceVideoWindowSidebar;
 class RemoteClientVideoWidget;
 class TileViewWidget;
@@ -126,6 +127,7 @@ private:
 #endif
 
 	// GUI stuff.
+	QBoxLayout* _layout;
 	ConferenceVideoWindowSidebar* _sidebar;              ///< Sidebar with controls.
 	TileViewWidget* _view;                               ///< Central view to display all video streams.
 	QStatusBar* _statusbar;

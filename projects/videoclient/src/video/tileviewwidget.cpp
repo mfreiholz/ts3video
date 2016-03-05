@@ -29,14 +29,8 @@ HUMBLE_LOGGER(HL, "gui.tileview");
 
 ///////////////////////////////////////////////////////////////////////
 
-//static QSize  __sideBarIconSize(52, 52);
-
-///////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////
-
-TileViewWidget::TileViewWidget(ConferenceVideoWindow* window, QWidget* parent, Qt::WindowFlags f) :
-	QWidget(parent),
+TileViewWidget::TileViewWidget(ConferenceVideoWindow* window, Qt::WindowFlags f) :
+	QWidget(window),
 	d(new TileViewWidgetPrivate(this)),
 	_window(window)
 {
@@ -82,6 +76,23 @@ TileViewWidget::TileViewWidget(ConferenceVideoWindow* window, QWidget* parent, Q
 		topButtonsLayout->addWidget(d->zoomOutButton);
 
 		topButtonsLayout->addStretch(1);
+
+		QObject::connect(d->zoomInButton, &QPushButton::clicked, [this]()
+		{
+			auto newSize = d->tilesCurrentSize;
+			newSize += QSize(25, 25);
+			newSize = d->tilesAspectRatio.scaled(newSize, Qt::KeepAspectRatio);
+			setTileSize(newSize);
+			d->tilesLayout->update();
+		});
+
+		QObject::connect(d->zoomOutButton, &QPushButton::clicked, [this]()
+		{
+			auto newSize = d->tilesCurrentSize;
+			newSize -= QSize(25, 25);
+			newSize = d->tilesAspectRatio.scaled(newSize, Qt::KeepAspectRatio);
+			setTileSize(newSize);
+		});
 	}
 
 	// Video tiles container.
@@ -105,27 +116,6 @@ TileViewWidget::TileViewWidget(ConferenceVideoWindow* window, QWidget* parent, Q
 	auto nc = _window->networkClient();
 	QObject::connect(nc.data(), &NetworkClient::clientEnabledVideo, this, &TileViewWidget::onClientEnabledVideo);
 	QObject::connect(nc.data(), &NetworkClient::clientDisabledVideo, this, &TileViewWidget::onClientDisabledVideo);
-
-	// Self UI events
-	QObject::connect(d->zoomInButton, &QPushButton::clicked, [this]()
-	{
-		auto newSize = d->tilesCurrentSize;
-		newSize += QSize(25, 25);
-		newSize = d->tilesAspectRatio.scaled(newSize, Qt::KeepAspectRatio);
-		setTileSize(newSize);
-		d->tilesLayout->update();
-	});
-
-	QObject::connect(d->zoomOutButton, &QPushButton::clicked, [this]()
-	{
-		auto newSize = d->tilesCurrentSize;
-		newSize -= QSize(25, 25);
-		newSize = d->tilesAspectRatio.scaled(newSize, Qt::KeepAspectRatio);
-		setTileSize(newSize);
-	});
-
-	resize(800, 600);
-	setVisible(true);
 }
 
 TileViewWidget::~TileViewWidget()
@@ -135,6 +125,11 @@ TileViewWidget::~TileViewWidget()
 		_camera->disconnect(this);
 		_camera.clear();
 	}
+}
+
+ConferenceVideoWindow* TileViewWidget::window() const
+{
+	return _window;
 }
 
 void TileViewWidget::addClient(const ClientEntity& client, const ChannelEntity& channel)
@@ -152,9 +147,7 @@ void TileViewWidget::removeClient(const ClientEntity& client, const ChannelEntit
 {
 	auto tileWidget = d->tilesMap.value(client.id);
 	if (!tileWidget)
-	{
 		return;
-	}
 
 	// Mappings
 	d->tilesMap.remove(client.id);

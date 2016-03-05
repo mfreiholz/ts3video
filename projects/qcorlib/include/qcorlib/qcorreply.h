@@ -17,6 +17,8 @@ public:
   void setFrame(QCorFrameRefPtr frame) { _frame = frame; }
   void setElapsedMillis(int ms) { _elapsedMillis = ms; }
 
+  static void autoDelete(QCorReply* reply);
+
 signals:
   void finished();
 
@@ -25,7 +27,6 @@ private:
   int _elapsedMillis;
 };
 
-#define QCORREPLY_AUTODELETE(R) \
-  do { if (R) { QObject::connect(R, &QCorReply::finished, R, &QCorReply::deleteLater); } } while (false)
+#define QCORREPLY_AUTODELETE(R) QCorReply::autoDelete(R);
 
 #endif

@@ -50,7 +50,7 @@ int AbstractStartupLogic::exec()
 
 void AbstractStartupLogic::initApplication()
 {
-	_qapp->setOrganizationDomain("https://mfreiholz.de");
+	_qapp->setOrganizationName("mfreiholz.de");
 	_qapp->setApplicationName("Conference Client");
 	_qapp->setApplicationDisplayName(QObject::tr("Conference Client"));
 	_qapp->setApplicationVersion(IFVS_SOFTWARE_VERSION_QSTRING);

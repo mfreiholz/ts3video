@@ -18,7 +18,6 @@ find_package(Qt5Concurrent REQUIRED)
 # Sources
 set(headers
 	src/startup/startuplogic.h
-	src/video/viewbase.h
 	src/util/qwidgetutil.h
 )
 
@@ -70,7 +69,6 @@ set(sources
 	src/video/cameraframegrabber.cpp
 	src/video/clientcameravideowidget.cpp
 	src/video/remoteclientvideowidget.cpp
-	src/video/viewbase.cpp
 	src/video/tileviewwidget.cpp
 	src/video/videowidget.cpp
 	src/video/videosettingswidget.cpp

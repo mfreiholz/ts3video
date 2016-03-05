@@ -138,89 +138,95 @@ RemoteClientVideoWidget* ConferenceVideoWindow::createRemoteVideoWidget(const Co
 ConferenceVideoWindow::ConferenceVideoWindow(const QSharedPointer<NetworkClient>& nc, QWidget* parent, Qt::WindowFlags flags) :
 	QMainWindow(parent, flags),
 	_networkClient(nc),
+	_layout(nullptr),
 	_sidebar(nullptr),
 	_view(nullptr),
 	_statusbar(nullptr)
 {
-	// GUI STUFF
-	setupMenu();
-
-	// Central container widget
-	auto w = new QWidget(this);
-	auto l = new QBoxLayout(QBoxLayout::LeftToRight);
-	l->setContentsMargins(0, 0, 0, 0);
-	l->setSpacing(0);
-	w->setLayout(l);
-	setCentralWidget(w);
-
-	// Sidebar with actions.
-	_sidebar = new ConferenceVideoWindowSidebar(this);
-	l->addWidget(_sidebar, 0);
-
-	// Central view widget.
-	_view = new TileViewWidget(this, this);
-	l->addWidget(_view, 1);
-
-	// Network usage statistics inside statusbar
-	setupStatusBar();
-
-	// Geometry
-	QWidgetUtil::resizeWidgetPerCent(this, 75.0, 75.0);
-	QSettings settings;
-	restoreGeometry(settings.value("UI/ClientApp-Geometry").toByteArray());
-
-	// NON GUI STUFF
-
-	connect(_networkClient.data(), &NetworkClient::error, this, &ConferenceVideoWindow::onError);
-	connect(_networkClient.data(), &NetworkClient::serverError, this, &ConferenceVideoWindow::onServerError);
-	connect(_networkClient.data(), &NetworkClient::clientJoinedChannel, this, &ConferenceVideoWindow::onClientJoinedChannel);
-	connect(_networkClient.data(), &NetworkClient::clientLeftChannel, this, &ConferenceVideoWindow::onClientLeftChannel);
-	connect(_networkClient.data(), &NetworkClient::clientDisconnected, this, &ConferenceVideoWindow::onClientDisconnected);
-	connect(_networkClient.data(), &NetworkClient::newVideoFrame, this, &ConferenceVideoWindow::onNewVideoFrame);
-
-	// Create initial tiles.
-	auto m = _networkClient->clientModel();
-	for (auto i = 0; i < m->rowCount(); ++i)
-	{
-		auto c = m->data(m->index(i), ClientListModel::ClientEntityRole).value<ClientEntity>();
-		onClientJoinedChannel(c, ChannelEntity());
-	}
-
-#if defined(OCS_INCLUDE_AUDIO)
-	// Create QAudioInput (microphone).
-	if (!_opts.audioInputDeviceId.isEmpty())
-	{
-		_audioInput = createMicrophoneFromOptions(_opts);
-
-		auto grabber = new AudioFrameGrabber(_audioInput, this);
-		QObject::connect(grabber, &AudioFrameGrabber::newFrame, [this](const PcmFrameRefPtr & f)
-		{
-			_networkClient->sendAudioFrame(f);
-		});
-	}
-
-	// Create QAudioOutput (headphones).
+	// Prepare central view (Sidebar + Video view).
 	if (true)
 	{
-		_audioPlayer = QSharedPointer<AudioFramePlayer>(new AudioFramePlayer());
-		_audioPlayer->setDeviceInfo(QAudioDeviceInfo::defaultOutputDevice());
-		_audioPlayer->setFormat(createAudioFormat());
-		QObject::connect(_networkClient.data(), &NetworkClient::newAudioFrame, [this](PcmFrameRefPtr f, ocs::clientid_t senderId)
-		{
-			_audioPlayer->add(f, senderId);
-		});
+		auto w = new QWidget(this);
+		_layout = new QBoxLayout(QBoxLayout::LeftToRight);
+		_layout->setContentsMargins(0, 0, 0, 0);
+		_layout->setSpacing(0);
+		w->setLayout(_layout);
+		setCentralWidget(w);
+
+		// Sidebar with actions.
+		_sidebar = new ConferenceVideoWindowSidebar(this);
+		_layout->addWidget(_sidebar, 0);
+
+		// Central view widget.
+		_view = new TileViewWidget(this);
+		_layout->addWidget(_view, 1);
 	}
 
-	// Auto turn ON microphone.
-	if (_audioInput && _opts.audioInputAutoEnable)
+	setupMenu();
+	setupStatusBar();
+
+	// Network related initializations.
+	if (true)
 	{
-		TileViewWidget* tvw = nullptr;
-		if ((tvw = dynamic_cast<TileViewWidget*>(_view)) != nullptr)
+		connect(_networkClient.data(), &NetworkClient::error, this, &ConferenceVideoWindow::onError);
+		connect(_networkClient.data(), &NetworkClient::serverError, this, &ConferenceVideoWindow::onServerError);
+		connect(_networkClient.data(), &NetworkClient::clientJoinedChannel, this, &ConferenceVideoWindow::onClientJoinedChannel);
+		connect(_networkClient.data(), &NetworkClient::clientLeftChannel, this, &ConferenceVideoWindow::onClientLeftChannel);
+		connect(_networkClient.data(), &NetworkClient::clientDisconnected, this, &ConferenceVideoWindow::onClientDisconnected);
+		connect(_networkClient.data(), &NetworkClient::newVideoFrame, this, &ConferenceVideoWindow::onNewVideoFrame);
+
+		// Create initial tiles.
+		auto m = _networkClient->clientModel();
+		for (auto i = 0; i < m->rowCount(); ++i)
 		{
-			tvw->setAudioInputEnabled(true);
+			auto c = m->data(m->index(i), ClientListModel::ClientEntityRole).value<ClientEntity>();
+			onClientJoinedChannel(c, ChannelEntity());
 		}
-	}
+
+#if defined(OCS_INCLUDE_AUDIO)
+		// Create QAudioInput (microphone).
+		if (!_opts.audioInputDeviceId.isEmpty())
+		{
+			_audioInput = createMicrophoneFromOptions(_opts);
+
+			auto grabber = new AudioFrameGrabber(_audioInput, this);
+			QObject::connect(grabber, &AudioFrameGrabber::newFrame, [this](const PcmFrameRefPtr & f)
+			{
+				_networkClient->sendAudioFrame(f);
+			});
+		}
+
+		// Create QAudioOutput (headphones).
+		if (true)
+		{
+			_audioPlayer = QSharedPointer<AudioFramePlayer>(new AudioFramePlayer());
+			_audioPlayer->setDeviceInfo(QAudioDeviceInfo::defaultOutputDevice());
+			_audioPlayer->setFormat(createAudioFormat());
+			QObject::connect(_networkClient.data(), &NetworkClient::newAudioFrame, [this](PcmFrameRefPtr f, ocs::clientid_t senderId)
+			{
+				_audioPlayer->add(f, senderId);
+			});
+		}
+
+		// Auto turn ON microphone.
+		if (_audioInput && _opts.audioInputAutoEnable)
+		{
+			TileViewWidget* tvw = nullptr;
+			if ((tvw = dynamic_cast<TileViewWidget*>(_view)) != nullptr)
+			{
+				tvw->setAudioInputEnabled(true);
+			}
+		}
 #endif
+	}
+
+	// Default geometry.
+	QWidgetUtil::resizeWidgetPerCent(this, 75.0, 75.0);
+
+	// Latest geometry of user.
+	QSettings settings;
+	restoreGeometry(settings.value("UI/ConferenceVideoWindow-Geometry").toByteArray());
+	restoreState(settings.value("UI/ConferenceVideoWindow-State").toByteArray());
 }
 
 ConferenceVideoWindow::~ConferenceVideoWindow()
@@ -228,10 +234,6 @@ ConferenceVideoWindow::~ConferenceVideoWindow()
 	if (_networkClient)
 	{
 		_networkClient->disconnect(this);
-	}
-	if (_view)
-	{
-		delete _view;
 	}
 	if (_camera)
 	{
@@ -358,12 +360,6 @@ void ConferenceVideoWindow::setupMenu()
 
 void ConferenceVideoWindow::setupStatusBar()
 {
-	if (_statusbar)
-	{
-		delete _statusbar;
-		_statusbar = nullptr;
-	}
-
 	_statusbar = new QStatusBar(this);
 	setStatusBar(_statusbar);
 
@@ -490,7 +486,8 @@ void ConferenceVideoWindow::onReplyFinsihedHandleError()
 void ConferenceVideoWindow::closeEvent(QCloseEvent* e)
 {
 	QSettings settings;
-	settings.setValue("UI/ClientApp-Geometry", saveGeometry());
+	settings.setValue("UI/ConferenceVideoWindow-Geometry", saveGeometry());
+	settings.setValue("UI/ConferenceVideoWindow-State", saveState());
 
 	auto reply = networkClient()->goodbye();
 	QCORREPLY_AUTODELETE(reply);
