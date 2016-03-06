@@ -130,5 +130,7 @@ if(WIN32)
 
 	install(CODE "execute_process(COMMAND \"${CMAKE_COMMAND}\" -DBINARY_PATH=${DEPLOY_DIR_PATH} -DQT_DIR_PATH=${QT_DIR_PATH} -P \"${CMAKE_SOURCE_DIR}/cmake/windeployqt.cmake\")")
 else(WIN32)
-	# ToDo Linux steps...
+	install(TARGETS ${PROJECT_NAME} DESTINATION $ENV{OCS_DEPLOY_DIR_PATH}/server)
+	install(FILES ${PROJECT_SOURCE_DIR}/res/default.ini DESTINATION $ENV{OCS_DEPLOY_DIR_PATH}/server)
+	install(FILES ${PROJECT_SOURCE_DIR}/res/logging.conf DESTINATION $ENV{OCS_DEPLOY_DIR_PATH}/server)
 endif(WIN32)
