@@ -10,10 +10,11 @@
 #define MyAppURL "https://mfreiholz.de/ts3video"
 
 [Setup]
-AppName={#MyAppName}
-AppVersion={#MyAppVersion}
 AppPublisher={#MyOrgName}
 AppPublisherURL={#MyAppURL}
+VersionInfoCompany={#MyOrgName}
+AppName={#MyAppName}
+AppVersion={#MyAppVersion}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
 DefaultDirName={pf}\{#MyOrgDomain}\{#MyAppName}
@@ -23,3 +24,6 @@ SetupLogging=yes
 Compression=lzma
 SolidCompression=yes
 OutputDir={#OCS_SETUP_DIR_PATH}
+
+; Comsmetics
+AppCopyright=Copyright (C) 2015-2016 {#MyOrgName}
