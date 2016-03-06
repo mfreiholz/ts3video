@@ -4,6 +4,7 @@
 
 ; Basic constants for all setups
 #define MyOrgDomain "mfreiholz.de"
+#define MyOrgName "M. Freiholz Software Development"
 
 #define MyAppVersion "0.6"
 #define MyAppURL "https://mfreiholz.de/ts3video"
@@ -14,7 +15,7 @@ AppVersion={#MyAppVersion}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
-DefaultDirName={pf}\{#MyAppName}
+DefaultDirName={pf}\{#MyOrgDomain}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 DisableProgramGroupPage=yes
 SetupLogging=yes

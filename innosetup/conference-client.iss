@@ -5,7 +5,8 @@
 [Setup]
 AppId={{6186D48B-32FB-4E48-9085-ACC07BA5FB0F}
 OutputBaseFilename={#MyAppName} {#MyAppVersion} Setup
-InfoBeforeFile=client-setup_infobefore_english.rtf
+InfoBeforeFile=conference-client_infobeforefile_english.rtf
+InfoAfterFile=conference-client_infoafterfile_english.rtf
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
