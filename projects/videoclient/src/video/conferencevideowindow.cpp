@@ -225,8 +225,12 @@ ConferenceVideoWindow::ConferenceVideoWindow(const QSharedPointer<NetworkClient>
 
 	// Latest geometry of user.
 	QSettings settings;
-	restoreGeometry(settings.value("UI/ConferenceVideoWindow-Geometry").toByteArray());
-	restoreState(settings.value("UI/ConferenceVideoWindow-State").toByteArray());
+	const QSize windowSize = settings.value("UI/ConferenceVideoWindow-Size").toSize();
+	if (!windowSize.isNull() && windowSize.width() > 0 && windowSize.height() > 0)
+		resize(windowSize);
+	const QPoint windowPos = settings.value("UI/ConferenceVideoWindow-Pos").toPoint();
+	if (!windowPos.isNull())
+		move(windowPos);
 }
 
 ConferenceVideoWindow::~ConferenceVideoWindow()
@@ -492,8 +496,8 @@ void ConferenceVideoWindow::onReplyFinsihedHandleError()
 void ConferenceVideoWindow::closeEvent(QCloseEvent* e)
 {
 	QSettings settings;
-	settings.setValue("UI/ConferenceVideoWindow-Geometry", saveGeometry());
-	settings.setValue("UI/ConferenceVideoWindow-State", saveState());
+	settings.setValue("UI/ConferenceVideoWindow-Size", size());
+	settings.setValue("UI/ConferenceVideoWindow-Pos", pos());
 
 	auto reply = networkClient()->goodbye();
 	QCORREPLY_AUTODELETE(reply);
