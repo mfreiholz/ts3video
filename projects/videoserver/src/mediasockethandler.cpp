@@ -11,7 +11,7 @@
 HUMBLE_LOGGER(HL, "server.mediasocket");
 
 #ifdef __linux__
-QDataStream& operator<<(QDataStream& out, const UDP::VideoFrameDatagram::dg_frame_id_t& val)
+/*QDataStream& operator<<(QDataStream& out, const UDP::VideoFrameDatagram::dg_frame_id_t& val)
 {
 	out << (quint64)val;
 	return out;
@@ -23,7 +23,7 @@ QDataStream& operator>>(QDataStream& in, UDP::VideoFrameDatagram::dg_frame_id_t&
 	in >> i;
 	val = i;
 	return in;
-}
+}*/
 #endif
 
 ///////////////////////////////////////////////////////////////////////
@@ -129,7 +129,7 @@ void MediaSocketHandler::onReadyRead()
 		// Video data.
 		case UDP::VideoFrameDatagram::TYPE:
 		{
-			if (_videoCache.maxCost() > 0)
+			/*if (_videoCache.maxCost() > 0)
 			{
 				// Parse datagram
 				auto vfd = std::unique_ptr<UDP::VideoFrameDatagram>(new UDP::VideoFrameDatagram());
@@ -146,7 +146,7 @@ void MediaSocketHandler::onReadyRead()
 				cacheItem->data = data;
 				cacheItem->datagram = std::move(vfd);
 				_videoCache.insert(VideoCacheItem::createKeyFor(*cacheItem->datagram.get()), cacheItem, data.size() + sizeof(*cacheItem->datagram.get()));
-			}
+			}*/
 
 			// Broadcast
 			const auto senderId = MediaSenderEntity::createIdent(senderAddress, senderPort);
