@@ -12,6 +12,7 @@
 [Setup]
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
+AppPublisher={#MyOrgName}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
