@@ -3,35 +3,34 @@
 
 #include <QString>
 #include <QVariant>
-#include <QRect>
-#include <QPoint>
 #include <QHostAddress>
-#include <QTcpSocket>
+class QRect;
+class QPoint;
 
 class ELWS
 {
 public:
-  static bool hasArgsValue(const QString &key);
-  static QVariant getArgsValue(const QString &key, const QVariant &defaultValue = QVariant());
+	static bool hasArgsValue(const QString& key);
+	static QVariant getArgsValue(const QString& key, const QVariant& defaultValue = QVariant());
 
-  static QString getUserName();
+	static QString getUserName();
 
-  static bool registerURISchemeHandler(const QString &scheme, const QString &title, const QString &modulePath, const QString &moduleArgs);
-  static bool unregisterURISchemeHandler(const QString &scheme);
+	static bool registerURISchemeHandler(const QString& scheme, const QString& title, const QString& modulePath, const QString& moduleArgs);
+	static bool unregisterURISchemeHandler(const QString& scheme);
 
-  static void calcScaledAndCenterizedImageRect(const QRect &surfaceRect, QRect &imageRect, QPoint &offset);
+	static void calcScaledAndCenterizedImageRect(const QRect& surfaceRect, QRect& imageRect, QPoint& offset);
 
-  static QString humanReadableSize(quint64 bytes);
-  static QString humanReadableBandwidth(quint64 bytesPerSecond);
+	static QString humanReadableSize(quint64 bytes);
+	static QString humanReadableBandwidth(quint64 bytesPerSecond);
 
-  /*!
-    \note A version MUST be the combination of major and minor: X.X
-    \param version Single version to check against, e.g.: 1.0
-    \param supportedVersions Comma separated list of valid versions, e.g.: 1.0,2.0,3.0
-  */
-  static bool isVersionSupported(const QString &clientVersion, const QString &serverVersion, const QString &clientSupportedServerVersions, const QString &serverSupportedClientVersions);
+	/*!
+		\note A version MUST be the combination of major and minor: X.X
+		\param version Single version to check against, e.g.: 1.0
+		\param supportedVersions Comma separated list of valid versions, e.g.: 1.0,2.0,3.0
+	*/
+	static bool isVersionSupported(const QString& clientVersion, const QString& serverVersion, const QString& clientSupportedServerVersions, const QString& serverSupportedClientVersions);
 
-  static QHostAddress getQHostAddressFromString(const QString &s);
+	static QHostAddress getQHostAddressFromString(const QString& s);
 };
 
 #endif

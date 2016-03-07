@@ -48,10 +48,10 @@ QString VirtualServerConfigEntity::toString() const
 {
 	QStringList sl;
 	sl
-		<< QString::number(maxVideoResolutionWidth)
-		<< QString::number(maxVideoResolutionHeight)
-		<< QString::number(maxVideoBitrate)
-		;
+			<< QString::number(maxVideoResolutionWidth)
+			<< QString::number(maxVideoResolutionHeight)
+			<< QString::number(maxVideoBitrate)
+			;
 	return sl.join("#");
 }
 

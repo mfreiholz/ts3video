@@ -27,7 +27,7 @@ public:
 };
 typedef QSharedPointer<OpusFrame> OpusFrameRefPtr;
 
-QDataStream& operator<<(QDataStream &ds, const OpusFrame &frame);
-QDataStream& operator>>(QDataStream &ds, OpusFrame &frame);
+QDataStream& operator<<(QDataStream& ds, const OpusFrame& frame);
+QDataStream& operator>>(QDataStream& ds, OpusFrame& frame);
 
 #endif

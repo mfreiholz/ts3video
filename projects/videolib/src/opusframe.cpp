@@ -9,7 +9,7 @@ OpusFrame::~OpusFrame()
 {
 }
 
-QDataStream& operator<<(QDataStream &ds, const OpusFrame &frame)
+QDataStream& operator<<(QDataStream& ds, const OpusFrame& frame)
 {
 	ds << frame.time;
 	ds << frame.type;
@@ -17,7 +17,7 @@ QDataStream& operator<<(QDataStream &ds, const OpusFrame &frame)
 	return ds;
 }
 
-QDataStream& operator>>(QDataStream &ds, OpusFrame &frame)
+QDataStream& operator>>(QDataStream& ds, OpusFrame& frame)
 {
 	ds >> frame.time;
 	ds >> frame.type;

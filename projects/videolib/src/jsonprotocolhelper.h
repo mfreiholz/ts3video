@@ -11,12 +11,12 @@
 class JsonProtocolHelper
 {
 public:
-  static QByteArray createJsonRequest(const QString &action, const QJsonObject &parameters);
-  static QByteArray createJsonResponse(const  QJsonObject &data);
-  static QByteArray createJsonResponseError(int status, const QString &errorMessage = QString());
+	static QByteArray createJsonRequest(const QString& action, const QJsonObject& parameters);
+	static QByteArray createJsonResponse(const  QJsonObject& data);
+	static QByteArray createJsonResponseError(int status, const QString& errorMessage = QString());
 
-  static bool fromJsonRequest(const QByteArray &data, QString &action, QJsonObject &parameters);
-  static bool fromJsonResponse(const QByteArray &data, int &status, QJsonObject &parameters, QString &error);
+	static bool fromJsonRequest(const QByteArray& data, QString& action, QJsonObject& parameters);
+	static bool fromJsonResponse(const QByteArray& data, int& status, QJsonObject& parameters, QString& error);
 };
 
 #endif

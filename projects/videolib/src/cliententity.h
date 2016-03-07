@@ -9,7 +9,7 @@
 #include "baselib/defines.h"
 
 /*!
-    This object always needs to be fully copyable.
+	This object always needs to be fully copyable.
 */
 class ClientEntity
 {
@@ -24,20 +24,20 @@ public:
 	QString toString() const;
 
 public:
-	ocs::clientid_t id; ///< The client's ID assigned by server.
-	QString name; ///< Visible name of the client.
+	ocs::clientid_t id; // The client's ID assigned by server.
+	QString name; // Visible name of the client.
 
-	QHostAddress mediaAddress; ///< Do not serialize, as long as we don't support P2P streaming.
-	quint16 mediaPort; ///< Do not serialize, as long as we don't support P2P streaming.
+	QHostAddress mediaAddress; // Do not serialize, as long as we don't support P2P streaming.
+	quint16 mediaPort; // Do not serialize, as long as we don't support P2P streaming.
 
 	// Video settings.
-	bool videoEnabled; ///< Indicates whether the client has video enabled.
+	bool videoEnabled; // Indicates whether the client has video enabled.
 	int videoWidth;
 	int videoHeight;
 	int videoBitrate;
 
 	// Audio settings.
-	bool audioInputEnabled; ///< Indicates whether the client has audio input enabled (microphone).
+	bool audioInputEnabled; // Indicates whether the client has audio input enabled (microphone).
 };
 Q_DECLARE_METATYPE(ClientEntity);
 #endif
