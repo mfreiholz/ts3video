@@ -275,13 +275,13 @@ QCorReply* NetworkClient::enableVideoStream(int width, int height, int bitrate)
 	d->clientEntity.videoBitrate = bitrate;
 	d->clientModel->updateClient(d->clientEntity);
 
-	d->mediaSocket->initVideoEncoder(width, height, bitrate, 16);
+	d->mediaSocket->initVideoEncoder(width, height, bitrate, 15);
 
 	QJsonObject params;
 	params["width"] = width;
 	params["height"] = height;
 	params["bitrate"] = bitrate;
-	params["fps"] = 24;
+	params["fps"] = 15;
 
 	QCorFrame req;
 	req.setData(JsonProtocolHelper::createJsonRequest("clientenablevideo", params));
