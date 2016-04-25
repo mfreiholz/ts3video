@@ -3,7 +3,7 @@
 # All rights reserved
 
 current_dir=`dirname "$0"`
-binary_name="videoserver"
+binary_name=`basename $0 | sed s,\.sh$,,`
 cd "${current_dir}"
 
 case "$1" in
@@ -13,10 +13,10 @@ case "$1" in
       echo "WARNING! For security reasons we adrive: DO NOT RUN THE SERVER AS ROOT"
     fi
     # Start server as background-process.
-    echo "Starting the VideoServer"
+    echo "Starting the Conference Server"
     shift 1
     export LD_LIBRARY_PATH="${current_dir}"
-    "./ld-2.19.so" "./${binary_name}" "$@" &
+    "./ld-linux.so" "./${binary_name}" "$@" &
     echo $! > ${binary_name}.pid
     ;;
 
