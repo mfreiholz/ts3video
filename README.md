@@ -3,15 +3,16 @@
 # Build
 Build has been tested on
 - Windows 8.1
-- Ubuntu 15.04
-
+- Ubuntu 14.04
+- Ubuntu 15.10
 
 ## Requirements
 - CMake 2.8.11
-- Qt 5.4 with OpenGL
-- VC12 (Visual Studio 2013)
-- Optional: Qt Add-in for Visual Studio (http://www.qt.io/download-open-source/)
-- Linux: sudo apt-get install mesa-common-dev
+- Qt 5.6 build with OpenGL and OpenSSL support
+- VC14 (Visual Studio 2015)
+
+__Linux only__
+- `$> sudo apt-get install mesa-common-dev`
 
 
 ## Checkout steps
@@ -24,11 +25,20 @@ $> git submodule update
 
 
 ## Compile and build steps
-```
-$> mkdir build
-$> cd build
-$> cmake -DCMAKE_INSTALL_PREFIX=install -G "Visual Studio 12 Win64" ..
-```
+Since OCS requires Qt you have to define where it can be found.
+You have to do this by setting the following environment variables:
+
+- `OCS_QTDIR_X86_32`
+- `OCS_QTDIR_X86_64`
+
+And then simply run:
+
+__Windows__
+- `$> cmake-win-<platform>.bat`
+- `$> start-vs2015-<platform>.bat`
+
+__Linux__
+- `./build-linux.bash`
 
 
 # Contribute
