@@ -9,7 +9,7 @@
 
 ; Application information
 #define MyAppURL "https://mfreiholz.de/ts3video"
-#define MyAppVersion "0.6"
+#define MyAppVersion "0.7"
 
 [Setup]
 AppPublisher={#MyOrgName}

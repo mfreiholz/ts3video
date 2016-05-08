@@ -12,5 +12,6 @@ echo ---------------------
 echo OCS_BUILD_DIR_PATH  : %OCS_BUILD_DIR_PATH%
 echo OCS_DEPLOY_DIR_PATH : %OCS_DEPLOY_DIR_PATH%
 echo OCS_SETUP_DIR_PATH  : %OCS_SETUP_DIR_PATH%
+echo QTDIR               : %QTDIR%
 echo ---------------------
 echo 

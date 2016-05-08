@@ -20,7 +20,9 @@
 // Server specific defines.
 ///////////////////////////////////////////////////////////////////////
 
-#define IFVS_SERVER_SUPPORTED_CLIENT_VERSIONS "0.6"                    ///< Comma separated list of client versions, which the current server build supports.
+/* Comma separated list of client versions, which the current server build supports. */
+#define IFVS_SERVER_SUPPORTED_CLIENT_VERSIONS "0.6,0.7"
+
 #define IFVS_SERVER_ADDRESS "mfreiholz.de"                             ///< The default server address. Good for testing.
 #define IFVS_SERVER_CONNECTION_PORT 13370                              ///< The default server port to accept connections from clients.
 #define IFVS_SERVER_MEDIA_PORT 13370                                   ///< The default server port to handle media data (e.g. video-stream).
@@ -30,7 +32,8 @@
 // Client specific defines.
 ///////////////////////////////////////////////////////////////////////
 
-#define IFVS_CLIENT_SUPPORTED_SERVER_VERSIONS "0.6"                    ///< Comma separated list of server versions, which the current client build supports.
+/* Comma separated list of server versions, which the current client build supports. */
+#define IFVS_CLIENT_SUPPORTED_SERVER_VERSIONS "0.6,0.7"
 
 ///////////////////////////////////////////////////////////////////////
 // Status Codes
