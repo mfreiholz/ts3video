@@ -13,6 +13,9 @@ public:
 	DevStartupLogic(QApplication* a);
 	virtual ~DevStartupLogic();
 	virtual int exec();
+
+private:
+	int execMassConnectionTest();
 };
 
 #endif

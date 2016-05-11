@@ -36,7 +36,6 @@ public:
 	NetworkClient(QObject* parent = nullptr);
 	~NetworkClient();
 
-	void setMediaEnabled(bool yesno); ///< TODO Remove me... DEV only.
 	const QAbstractSocket* socket() const;
 	const ClientEntity& clientEntity() const;
 	const VirtualServerConfigEntity& serverConfig() const;
@@ -151,6 +150,7 @@ signals:
 	void connected();
 	void disconnected();
 	void error(QAbstractSocket::SocketError socketError);
+	void mediaSocketAuthenticated();
 
 	// Protocol based signals.
 	void serverError(int errorCode, const QString& errorMessage);

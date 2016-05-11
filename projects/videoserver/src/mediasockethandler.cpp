@@ -11,19 +11,19 @@
 HUMBLE_LOGGER(HL, "server.mediasocket");
 
 #ifdef __linux__
-/*QDataStream& operator<<(QDataStream& out, const UDP::VideoFrameDatagram::dg_frame_id_t& val)
-{
+/*  QDataStream& operator<<(QDataStream& out, const UDP::VideoFrameDatagram::dg_frame_id_t& val)
+    {
 	out << (quint64)val;
 	return out;
-}
+    }
 
-QDataStream& operator>>(QDataStream& in, UDP::VideoFrameDatagram::dg_frame_id_t& val)
-{
+    QDataStream& operator>>(QDataStream& in, UDP::VideoFrameDatagram::dg_frame_id_t& val)
+    {
 	quint64 i;
 	in >> i;
 	val = i;
 	return in;
-}*/
+    }*/
 #endif
 
 ///////////////////////////////////////////////////////////////////////
@@ -109,92 +109,92 @@ void MediaSocketHandler::onReadyRead()
 		in >> dg.type;
 		switch (dg.type)
 		{
-		// Authentication
-		case UDP::AuthDatagram::TYPE:
-		{
-			UDP::AuthDatagram dgauth;
-			in >> dgauth.size;
-			dgauth.data = new UDP::dg_byte_t[dgauth.size];
-			auto read = in.readRawData((char*)dgauth.data, dgauth.size);
-			if (read != dgauth.size)
+			// Authentication
+			case UDP::AuthDatagram::TYPE:
 			{
-				// Error.
-				continue;
+				UDP::AuthDatagram dgauth;
+				in >> dgauth.size;
+				dgauth.data = new UDP::dg_byte_t[dgauth.size];
+				auto read = in.readRawData((char*)dgauth.data, dgauth.size);
+				if (read != dgauth.size)
+				{
+					// Error.
+					continue;
+				}
+				auto token = QString::fromUtf8((char*)dgauth.data, dgauth.size);
+				emit tokenAuthentication(token, senderAddress, senderPort);
+				break;
 			}
-			auto token = QString::fromUtf8((char*)dgauth.data, dgauth.size);
-			emit tokenAuthentication(token, senderAddress, senderPort);
-			break;
-		}
 
-		// Video data.
-		case UDP::VideoFrameDatagram::TYPE:
-		{
-			/*if (_videoCache.maxCost() > 0)
+			// Video data.
+			case UDP::VideoFrameDatagram::TYPE:
 			{
-				// Parse datagram
-				auto vfd = std::unique_ptr<UDP::VideoFrameDatagram>(new UDP::VideoFrameDatagram());
-				in >> vfd->flags;
-				in >> vfd->sender;
-				in >> vfd->frameId;
-				in >> vfd->index;
-				in >> vfd->count;
-				in >> vfd->size;
+				/*  if (_videoCache.maxCost() > 0)
+				    {
+					// Parse datagram
+					auto vfd = std::unique_ptr<UDP::VideoFrameDatagram>(new UDP::VideoFrameDatagram());
+					in >> vfd->flags;
+					in >> vfd->sender;
+					in >> vfd->frameId;
+					in >> vfd->index;
+					in >> vfd->count;
+					in >> vfd->size;
 
-				// Cache frame
-				// No longer access "vfd" after move to cacheItem!
-				auto cacheItem = new VideoCacheItem();
-				cacheItem->data = data;
-				cacheItem->datagram = std::move(vfd);
-				_videoCache.insert(VideoCacheItem::createKeyFor(*cacheItem->datagram.get()), cacheItem, data.size() + sizeof(*cacheItem->datagram.get()));
-			}*/
+					// Cache frame
+					// No longer access "vfd" after move to cacheItem!
+					auto cacheItem = new VideoCacheItem();
+					cacheItem->data = data;
+					cacheItem->datagram = std::move(vfd);
+					_videoCache.insert(VideoCacheItem::createKeyFor(*cacheItem->datagram.get()), cacheItem, data.size() + sizeof(*cacheItem->datagram.get()));
+				    }*/
 
-			// Broadcast
-			const auto senderId = MediaSenderEntity::createIdent(senderAddress, senderPort);
-			const auto& senderEntity = _recipients.ident2sender[senderId];
-			for (auto i = 0, end = senderEntity.receivers.size(); i < end; ++i)
+				// Broadcast
+				const auto senderId = MediaSenderEntity::createIdent(senderAddress, senderPort);
+				const auto& senderEntity = _recipients.ident2sender[senderId];
+				for (auto i = 0, end = senderEntity.receivers.size(); i < end; ++i)
+				{
+					const auto& receiverEntity = senderEntity.receivers[i];
+					_socket.writeDatagram(data, receiverEntity.address, receiverEntity.port);
+					_networkUsage.bytesWritten += data.size();
+				}
+				break;
+			}
+
+			// Video recovery.
+			case UDP::VideoFrameRecoveryDatagram::TYPE:
 			{
-				const auto& receiverEntity = senderEntity.receivers[i];
-				_socket.writeDatagram(data, receiverEntity.address, receiverEntity.port);
+				HL_TRACE(HL, QString("Process video frame recovery datagram.").toStdString());
+
+				UDP::VideoFrameRecoveryDatagram dgrec;
+				in >> dgrec.sender;
+				//in >> dgrec.frameId;
+				//in >> dgrec.index;
+
+				// Send to specific receiver only.
+				const auto& receiver = _recipients.clientid2receiver[dgrec.sender];
+				if (receiver.address.isNull() || receiver.port == 0)
+				{
+					HL_WARN(HL, QString("Unknown receiver for recovery frame (client-id=%1)").arg(dgrec.sender).toStdString());
+					continue;
+				}
+				_socket.writeDatagram(data, receiver.address, receiver.port);
 				_networkUsage.bytesWritten += data.size();
+				break;
 			}
-			break;
-		}
 
-		// Video recovery.
-		case UDP::VideoFrameRecoveryDatagram::TYPE:
-		{
-			HL_TRACE(HL, QString("Process video frame recovery datagram.").toStdString());
-
-			UDP::VideoFrameRecoveryDatagram dgrec;
-			in >> dgrec.sender;
-			//in >> dgrec.frameId;
-			//in >> dgrec.index;
-
-			// Send to specific receiver only.
-			const auto& receiver = _recipients.clientid2receiver[dgrec.sender];
-			if (receiver.address.isNull() || receiver.port == 0)
+			// Audio data.
+			case UDP::AudioFrameDatagram::TYPE:
 			{
-				HL_WARN(HL, QString("Unknown receiver for recovery frame (client-id=%1)").arg(dgrec.sender).toStdString());
-				continue;
+				const auto senderId = MediaSenderEntity::createIdent(senderAddress, senderPort);
+				const auto& senderEntity = _recipients.ident2sender[senderId];
+				for (auto i = 0; i < senderEntity.receivers.size(); ++i)
+				{
+					const auto& receiverEntity = senderEntity.receivers[i];
+					_socket.writeDatagram(data, receiverEntity.address, receiverEntity.port);
+					_networkUsage.bytesWritten += data.size();
+				}
+				break;
 			}
-			_socket.writeDatagram(data, receiver.address, receiver.port);
-			_networkUsage.bytesWritten += data.size();
-			break;
-		}
-
-		// Audio data.
-		case UDP::AudioFrameDatagram::TYPE:
-		{
-			const auto senderId = MediaSenderEntity::createIdent(senderAddress, senderPort);
-			const auto& senderEntity = _recipients.ident2sender[senderId];
-			for (auto i = 0; i < senderEntity.receivers.size(); ++i)
-			{
-				const auto& receiverEntity = senderEntity.receivers[i];
-				_socket.writeDatagram(data, receiverEntity.address, receiverEntity.port);
-				_networkUsage.bytesWritten += data.size();
-			}
-			break;
-		}
 
 		}
 

@@ -48,7 +48,6 @@ void NetworkClientPrivate::reset()
 	authToken.clear();
 	isAdmin = false;
 	serverConfig = VirtualServerConfigEntity();
-	useMediaSocket = true;
 }
 
 void NetworkClientPrivate::onAuthFinished()
@@ -120,7 +119,7 @@ NetworkClient::NetworkClient(QObject* parent) :
 	d->heartbeatTimer.setInterval(10000);
 	QObject::connect(&d->heartbeatTimer, &QTimer::timeout, this, &NetworkClient::sendHeartbeat);
 
-	d->clientModel = std::make_unique<ClientListModel>(this);
+	d->clientModel.reset(new ClientListModel(this));
 	d->clientModel->setNetworkClient(this);
 
 	d->reset();
@@ -130,11 +129,6 @@ NetworkClient::~NetworkClient()
 {
 	delete d->corSocket;
 	delete d->mediaSocket;
-}
-
-void NetworkClient::setMediaEnabled(bool yesno)
-{
-	d->useMediaSocket = yesno;
 }
 
 const QAbstractSocket* NetworkClient::socket() const
@@ -173,7 +167,7 @@ bool NetworkClient::isSelf(const ClientEntity& ci) const
 
 ClientListModel* NetworkClient::clientModel() const
 {
-	return d->clientModel.get();
+	return d->clientModel.data();
 }
 
 void NetworkClient::connectToHost(const QHostAddress& address, qint16 port)
@@ -275,7 +269,8 @@ QCorReply* NetworkClient::enableVideoStream(int width, int height, int bitrate)
 	d->clientEntity.videoBitrate = bitrate;
 	d->clientModel->updateClient(d->clientEntity);
 
-	d->mediaSocket->initVideoEncoder(width, height, bitrate, 15);
+	if (d->mediaSocket)
+		d->mediaSocket->initVideoEncoder(width, height, bitrate, 15);
 
 	QJsonObject params;
 	params["width"] = width;
@@ -297,7 +292,8 @@ QCorReply* NetworkClient::disableVideoStream()
 	d->clientEntity.videoEnabled = false;
 	d->clientModel->updateClient(d->clientEntity);
 
-	d->mediaSocket->resetVideoEncoder();
+	if (d->mediaSocket)
+		d->mediaSocket->resetVideoEncoder();
 
 	QCorFrame req;
 	req.setData(JsonProtocolHelper::createJsonRequest("clientdisablevideo", QJsonObject()));
@@ -426,10 +422,6 @@ QCorReply* NetworkClient::kickClient(ocs::clientid_t clientId, bool ban)
 // initMediaSocket Creates a new MediaSocket based on "auth-token".
 void NetworkClient::initMediaSocket()
 {
-	// Create new media socket.
-	if (!d->useMediaSocket)
-		return;
-
 	if (d->mediaSocket)
 	{
 		d->mediaSocket->close();
@@ -465,20 +457,20 @@ void NetworkClient::onStateChanged(QAbstractSocket::SocketState state)
 	HL_DEBUG(HL, QString("Socket connection state changed (state=%1)").arg(state).toStdString());
 	switch (state)
 	{
-	case QAbstractSocket::ConnectedState:
-		d->heartbeatTimer.start();
-		emit connected();
-		break;
-	case QAbstractSocket::UnconnectedState:
-		if (d->mediaSocket)
-		{
-			d->mediaSocket->close();
-			delete d->mediaSocket;
-			d->mediaSocket = nullptr;
-		}
-		d->heartbeatTimer.stop();
-		emit disconnected();
-		break;
+		case QAbstractSocket::ConnectedState:
+			d->heartbeatTimer.start();
+			emit connected();
+			break;
+		case QAbstractSocket::UnconnectedState:
+			if (d->mediaSocket)
+			{
+				d->mediaSocket->close();
+				delete d->mediaSocket;
+				d->mediaSocket = nullptr;
+			}
+			d->heartbeatTimer.stop();
+			emit disconnected();
+			break;
 	}
 }
 
@@ -512,13 +504,15 @@ void NetworkClient::onNewIncomingRequest(QCorFrameRefPtr frame)
 	if (action == "notify.mediaauthsuccess")
 	{
 		d->mediaSocket->setAuthenticated(true);
+		emit mediaSocketAuthenticated();
 	}
 	else if (action == "notify.clientvideoenabled")
 	{
 		ClientEntity client;
 		client.fromQJsonObject(parameters["client"].toObject());
 
-		d->mediaSocket->resetVideoDecoderOfClient(client.id);
+		if (d->mediaSocket)
+			d->mediaSocket->resetVideoDecoderOfClient(client.id);
 
 		emit clientEnabledVideo(client);
 	}
@@ -527,7 +521,8 @@ void NetworkClient::onNewIncomingRequest(QCorFrameRefPtr frame)
 		ClientEntity client;
 		client.fromQJsonObject(parameters["client"].toObject());
 
-		d->mediaSocket->resetVideoDecoderOfClient(client.id);
+		if (d->mediaSocket)
+			d->mediaSocket->resetVideoDecoderOfClient(client.id);
 
 		emit clientDisabledVideo(client);
 	}
@@ -552,7 +547,8 @@ void NetworkClient::onNewIncomingRequest(QCorFrameRefPtr frame)
 		ClientEntity client;
 		client.fromQJsonObject(parameters["client"].toObject());
 
-		d->mediaSocket->resetVideoDecoderOfClient(client.id);
+		if (d->mediaSocket)
+			d->mediaSocket->resetVideoDecoderOfClient(client.id);
 
 		emit clientDisconnected(client);
 	}

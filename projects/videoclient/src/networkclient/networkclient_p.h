@@ -1,8 +1,6 @@
 #ifndef NetworkClient_P_H
 #define NetworkClient_P_H
 
-#include <memory>
-
 #include <QHash>
 #include <QPair>
 #include <QUdpSocket>
@@ -12,6 +10,7 @@
 #include <QQueue>
 #include <QTime>
 #include <QTimer>
+#include <QScopedPointer>
 
 #include "cliententity.h"
 #include "channelentity.h"
@@ -38,8 +37,7 @@ public:
 		corSocket(nullptr),
 		mediaSocket(nullptr),
 		goodbye(false),
-		isAdmin(false),
-		useMediaSocket(true)
+		isAdmin(false)
 	{}
 	NetworkClientPrivate(const NetworkClientPrivate&);
 	void reset();
@@ -64,10 +62,7 @@ public:
 	VirtualServerConfigEntity serverConfig;
 
 	// Data about others.
-	std::unique_ptr<ClientListModel> clientModel;
-
-	// DEV
-	bool useMediaSocket; ///< TODO Remove me (DEV ONLY)
+	QScopedPointer<ClientListModel> clientModel;
 };
 
 #endif

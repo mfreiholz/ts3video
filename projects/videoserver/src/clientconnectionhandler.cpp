@@ -94,32 +94,33 @@ void ClientConnectionHandler::onStateChanged(QAbstractSocket::SocketState state)
 {
 	switch (state)
 	{
-	case QAbstractSocket::ConnectedState:
-	{
-		HL_INFO(HL, QString("New client connection (addr=%1; port=%2; clientid=%3)").arg(_connection->socket()->peerAddress().toString()).arg(_connection->socket()->peerPort()).arg(_clientEntity->id).toStdString());
-		break;
-	}
-	case QAbstractSocket::UnconnectedState:
-	{
-		HL_INFO(HL, QString("Client disconnected (addr=%1; port=%2; clientid=%3)").arg(_connection->socket()->peerAddress().toString()).arg(_connection->socket()->peerPort()).arg(_clientEntity->id).toStdString());
-		// Notify sibling clients about the disconnect.
-		QJsonObject params;
-		params["client"] = _clientEntity->toQJsonObject();
-		QCorFrame req;
-		req.setData(JsonProtocolHelper::createJsonRequest("notify.clientdisconnected", params));
-		auto clientConns = _server->_connections.values();
-		foreach (auto clientConn, clientConns)
+		case QAbstractSocket::ConnectedState:
 		{
-			if (clientConn && clientConn != this)
-			{
-				auto reply = clientConn->_connection->sendRequest(req);
-				QCORREPLY_AUTODELETE(reply);
-			}
+			HL_INFO(HL, QString("New client connection (addr=%1; port=%2; clientid=%3)").arg(_connection->socket()->peerAddress().toString()).arg(_connection->socket()->peerPort()).arg(_clientEntity->id).toStdString());
+			break;
 		}
-		// Delete itself.
-		deleteLater();
-		break;
-	}
+		case QAbstractSocket::UnconnectedState:
+		{
+			HL_INFO(HL, QString("Client disconnected (addr=%1; port=%2; clientid=%3)").arg(_connection->socket()->peerAddress().toString()).arg(_connection->socket()->peerPort()).arg(_clientEntity->id).toStdString());
+			// Notify sibling clients about the disconnect.
+			QJsonObject params;
+			params["client"] = _clientEntity->toQJsonObject();
+			QCorFrame req;
+			req.setData(JsonProtocolHelper::createJsonRequest("notify.clientdisconnected", params));
+			auto clients = _server->getSiblingClientIds(_clientEntity->id, true);
+			foreach (auto clientId, clients)
+			{
+				auto clientConn = _server->_connections.value(clientId);
+				if (clientConn && clientConn != this)
+				{
+					auto reply = clientConn->_connection->sendRequest(req);
+					QCORREPLY_AUTODELETE(reply);
+				}
+			}
+			// Delete itself.
+			deleteLater();
+			break;
+		}
 	}
 }
 
@@ -190,4 +191,5 @@ void ClientConnectionHandler::onConnectionTimeout()
 	HL_WARN(HL, QString("Client connection timed out. No heartbeat since 20 seconds.").toStdString());
 	ActionBase::sendErrorRequest(*_connection.data(), IFVS_STATUS_CONNECTION_TIMEOUT, "Connection timeout. No heartbeat since 20 seconds.");
 	QMetaObject::invokeMethod(_connection.data(), "disconnectFromHost", Qt::QueuedConnection);
+	QMetaObject::invokeMethod(_connection->socket(), "close", Qt::QueuedConnection);
 }

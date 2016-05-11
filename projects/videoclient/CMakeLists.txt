@@ -56,6 +56,7 @@ set(qheaders
 	src/ts3video/ts3videostartuplogic.h
 	src/ts3video/ts3videoentities.h
 	src/ts3video/ts3videoupdatedialog.h
+	src/test/connectionteststartuplogic.h
 )
 
 set(sources
@@ -91,6 +92,7 @@ set(sources
 	src/ts3video/ts3videoentities.cpp
 	src/ts3video/ts3videoupdatedialog.cpp
 	src/util/qwidgetutil.cpp
+	src/test/connectionteststartuplogic.cpp
 )
 
 set(qforms

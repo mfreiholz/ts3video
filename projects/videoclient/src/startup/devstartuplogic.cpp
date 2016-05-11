@@ -36,7 +36,7 @@ int DevStartupLogic::exec()
 				// Open conference video-chat UI.
 				ConferenceVideoWindow::Options opts;
 				opts.cameraDeviceId = QCameraInfo::defaultCamera().deviceName();
-				opts.cameraAutoEnable = true;
+				opts.cameraAutoEnable = false;
 #if defined(OCS_INCLUDE_AUDIO)
 				opts.audioInputDeviceId = QAudioDeviceInfo::defaultInputDevice().deviceName();
 				opts.audioInputAutoEnable = true;
