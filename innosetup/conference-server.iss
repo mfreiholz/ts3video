@@ -13,7 +13,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: ServiceInstall; Description: "Install the Conference Server as Windows Service to automatically run with Windows startup."
 
 [Files]
-Source: "{#OCS_DEPLOY_DIR_PATH}\server\*"; DestDir: "{app}"; Flags: recursesubdirs
+Source: "{#OCS_DEPLOY_DIR_PATH}\server\*"; DestDir: "{app}"; Flags: recursesubdirs ignoreversion
 
 [Run]
 Filename: "{app}\vcredist_x86.exe"; Parameters: "/install /quiet"; Flags: skipifdoesntexist; StatusMsg: "Installing VC Redistributable (32-bit)... This may take a while";
