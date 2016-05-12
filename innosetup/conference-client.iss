@@ -11,8 +11,8 @@ InfoAfterFile=conference-client_infoafterfile_english.rtf
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Files]
-Source: "{#OCS_DEPLOY_DIR_PATH}\client\*"; DestDir: "{app}"; Flags: recursesubdirs
-Source: "{#OCS_DEPLOY_DIR_PATH}\ts3plugin\*.ts3_plugin"; DestDir: "{app}";
+Source: "{#OCS_DEPLOY_DIR_PATH}\client\*"; DestDir: "{app}"; Flags: recursesubdirs ignoreversion
+Source: "{#OCS_DEPLOY_DIR_PATH}\ts3plugin\*.ts3_plugin"; DestDir: "{app}"; Flags: ignoreversion
 
 [Run]
 Filename: "{app}\vcredist_x86.exe"; Parameters: "/install /quiet"; Flags: skipifdoesntexist; StatusMsg: "Installing VC Redistributable (32-bit)... This may take a while";
