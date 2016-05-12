@@ -15,7 +15,7 @@ ConnectionTestClient::ConnectionTestClient(const QHostAddress& serverAddress, co
 
 	QObject::connect(_nc.data(), &NetworkClient::connected, [this, user]()
 	{
-		auto reply = _nc->auth(user, "Secret!!!");
+		auto reply = _nc->auth(user, QString());
 		QCorReply::autoDelete(reply);
 	});
 
@@ -65,7 +65,6 @@ int ConnectionTestStartupLogic::exec()
 {
 	QTimer timer;
 	timer.setInterval(250);
-	timer.setSingleShot(true);
 	QObject::connect(&timer, &QTimer::timeout, [this]()
 	{
 		auto c = new ConnectionTestClient(QHostAddress("81.169.176.229"), "Test User", this);
