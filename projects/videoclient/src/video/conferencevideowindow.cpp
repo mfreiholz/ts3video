@@ -70,12 +70,14 @@ static QSharedPointer<QCamera> createCameraFromOptions(const ConferenceVideoWind
 		}
 	}
 	auto cam = cameraInfo.isNull() ? QSharedPointer<QCamera>() : QSharedPointer<QCamera>(new QCamera(cameraInfo));
+#if QT_VERSION >= QT_VERSION_CHECK(5, 5, 0)
 	if (cam)
 	{
 		auto sett = cam->viewfinderSettings();
 		sett.setResolution(opts.cameraResolution);
 		cam->setViewfinderSettings(sett);
 	}
+#endif
 	return cam;
 }
 

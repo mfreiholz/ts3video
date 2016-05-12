@@ -6,6 +6,7 @@
 #include <QUrlQuery>
 #include <QHostInfo>
 #include <QThread>
+#include <QTimer>
 
 #include <QEventLoop>
 #include <QNetworkAccessManager>
@@ -102,7 +103,6 @@ Ts3VideoStartupLogic::Ts3VideoStartupLogic(QApplication* a) :
 
 	// Init GUI.
 	_ui.setupUi(this);
-	QObject::connect(this, &Ts3VideoStartupLogic::newProgress, this, &Ts3VideoStartupLogic::showProgress);
 
 	QWidgetUtil::resizeWidgetPerCent(this, 35.0, 35.0);
 }
@@ -148,25 +148,37 @@ int Ts3VideoStartupLogic::exec()
 	return execCode;
 }
 
-void Ts3VideoStartupLogic::showProgress(const QString& text)
+void Ts3VideoStartupLogic::setStatus(const QString& text)
 {
-	_ui.progress->append(text.trimmed() + QString("<br>\n"));
+	_ui.progress->append(QString("<br>") + text.trimmed().toHtmlEscaped() + QString("<br>"));
 }
 
-void Ts3VideoStartupLogic::showResponseError(int status, const QString& errorMessage, const QString& details)
+void Ts3VideoStartupLogic::setStatusInfo(const QString& text)
 {
-	HL_ERROR(HL, QString("%1: %2 => %3").arg(QString::number(status)).arg(errorMessage).arg(details).toStdString());
-	showProgress(QString("<font color=red>ERROR:</font> ") + QString::number(status) + QString(": ") + errorMessage);
+	_ui.progress->append(QString("<font color=blue>") + text.trimmed() + QString("</font><br>"));
 }
 
-void Ts3VideoStartupLogic::showError(const QString& shortText, const QString& longText)
+void Ts3VideoStartupLogic::setStatusError(const QString& text, const QString& detail)
 {
-	HL_ERROR(HL, QString("%1 => %2").arg(shortText).arg(longText).toStdString());
-	showProgress(QString("<font color=red>ERROR:</font> ") + shortText + QString("<br>") + longText);
+	QString s;
+	s.append("<font color=red>");
+	s.append(text.trimmed());
+	s.append("</font>");
+	if (!detail.isEmpty())
+	{
+		s.append("<br>");
+		s.append("<font color=\"#aaaaaa\">");
+		s.append(detail.trimmed().toHtmlEscaped());
+		s.append("</font>");
+	}
+	s.append("<br>");
+	_ui.progress->append(s);
 }
 
 void Ts3VideoStartupLogic::start()
 {
+	setStatus(tr("Initializing conference now"));
+
 	// Check for updates.
 	if (!checkVersion())
 	{
@@ -202,7 +214,7 @@ void Ts3VideoStartupLogic::start()
 
 bool Ts3VideoStartupLogic::checkVersion()
 {
-	showProgress(tr("Checking for plugin updates..."));
+	setStatus(tr("Checking updates..."));
 
 	QEventLoop loop;
 	QNetworkAccessManager mgr;
@@ -213,7 +225,7 @@ bool Ts3VideoStartupLogic::checkVersion()
 
 	if (reply->error() != QNetworkReply::NoError)
 	{
-		showError(tr("Update check failed"), reply->errorString());
+		setStatusError(tr("Update check failed"), reply->errorString());
 		return true;
 	}
 
@@ -222,7 +234,7 @@ bool Ts3VideoStartupLogic::checkVersion()
 	auto doc = QJsonDocument::fromJson(data, &err);
 	if (err.error != QJsonParseError::NoError)
 	{
-		showError(err.errorString(), QString::fromUtf8(data));
+		setStatusError(tr("Update check failed"), QString("%1: %2").arg(err.errorString()).arg(QString::fromUtf8(data)));
 		return true;
 	}
 
@@ -238,11 +250,11 @@ bool Ts3VideoStartupLogic::checkVersion()
 
 	if (versions.isEmpty())
 	{
-		showProgress(tr("No updates available."));
+		setStatusInfo(tr("Your software is up-to-date."));
 		return true;
 	}
 
-	showProgress(tr("<font color=green>Updates available!</font>"));
+	setStatusInfo(tr("Software updates available."));
 	Ts3VideoUpdateDialog dlg;
 	dlg.setVersions(versions);
 	if (dlg.exec() == QDialog::Accepted)
@@ -256,7 +268,7 @@ bool Ts3VideoStartupLogic::checkVersion()
 bool Ts3VideoStartupLogic::lookupConference()
 {
 	// Lookup video server on master server.
-	showProgress(tr("Looking for conference on master server..."));
+	setStatus(tr("Looking for conference on master server..."));
 
 	QEventLoop loop;
 	QNetworkAccessManager mgr;
@@ -271,22 +283,30 @@ bool Ts3VideoStartupLogic::lookupConference()
 
 	if (reply->error() != QNetworkReply::NoError)
 	{
-		showError(tr("Conference lookup failed"), QString("%1: %2").arg(reply->errorString()).arg(QString::fromUtf8(reply->readAll())));
-		return false;
+		if (reply->error() == QNetworkReply::ContentNotFoundError)
+		{
+			setStatusInfo(tr("No conference server registered on master, falling back to self hosted server."));
+			return false;
+		}
+		else
+		{
+			setStatusError(tr("Conference lookup failed"), QString("%1: %2").arg(reply->errorString()).arg(QString::fromUtf8(reply->readAll())));
+			return false;
+		}
 	}
 
-	auto data = reply->readAll();
+	const auto data = reply->readAll();
 	QJsonParseError err;
 	auto doc = QJsonDocument::fromJson(data, &err);
 	if (err.error != QJsonParseError::NoError)
 	{
-		showError(err.errorString(), QString::fromUtf8(data));
+		setStatusError(tr("Conference lookup failed"), QString("%1: %2").arg(err.errorString()).arg(QString::fromUtf8(data)));
 		return false;
 	}
 
 	if (!_joinInfo.fromJson(doc.object()))
 	{
-		showError("Received invalid conference information", QString::fromUtf8(data));
+		setStatusError(tr("Received invalid conference information"), QString::fromUtf8(data));
 		return false;
 	}
 	return true;
@@ -295,7 +315,7 @@ bool Ts3VideoStartupLogic::lookupConference()
 bool Ts3VideoStartupLogic::lookupPublicConference()
 {
 	// Lookup video server on master server.
-	showProgress(tr("Looking for public conference on master server..."));
+	setStatus(tr("Looking for public conference on master server..."));
 
 	QEventLoop loop;
 	QNetworkAccessManager mgr;
@@ -310,8 +330,16 @@ bool Ts3VideoStartupLogic::lookupPublicConference()
 
 	if (reply->error() != QNetworkReply::NoError)
 	{
-		showError(tr("Conference lookup failed"), QString("%1: %2").arg(reply->errorString()).arg(QString::fromUtf8(reply->readAll())));
-		return false;
+		if (reply->error() == QNetworkReply::ContentNotFoundError)
+		{
+			setStatusInfo(tr("No conference server registered on master, falling back to self hosted server."));
+			return false;
+		}
+		else
+		{
+			setStatusError(tr("Conference lookup failed"), QString("%1: %2").arg(reply->errorString()).arg(QString::fromUtf8(reply->readAll())));
+			return false;
+		}
 	}
 
 	auto data = reply->readAll();
@@ -319,13 +347,13 @@ bool Ts3VideoStartupLogic::lookupPublicConference()
 	auto doc = QJsonDocument::fromJson(data, &err);
 	if (err.error != QJsonParseError::NoError)
 	{
-		showError(err.errorString(), QString::fromUtf8(data));
+		setStatusError(tr("Conference lookup failed"), QString("%1: %2").arg(err.errorString()).arg(QString::fromUtf8(data)));
 		return false;
 	}
 
 	if (!_joinInfo.fromJson(doc.object()))
 	{
-		showError("Received invalid conference information", QString::fromUtf8(data));
+		setStatusError(tr("Received invalid conference information"), QString::fromUtf8(data));
 		return false;
 	}
 	return true;
@@ -345,13 +373,13 @@ void Ts3VideoStartupLogic::initNetwork()
 	auto hostAddress = QHostAddress(address);
 	if (!hostAddress.isNull())
 	{
-		showProgress(tr("Connecting to server %1:%2 (address=%3)").arg(address).arg(port).arg(hostAddress.toString()));
+		setStatus(tr("Connecting to server %1:%2 (address=%3)").arg(address).arg(port).arg(hostAddress.toString()));
 		_nc->connectToHost(hostAddress, port);
 		return;
 	}
 
 	// Async DNS lookup.
-	showProgress(tr("Resolve DNS for %1").arg(address));
+	setStatus(tr("Resolve DNS for %1").arg(address));
 	QtAsync::async([address]()
 	{
 		auto hostInfo = QHostInfo::fromName(address);
@@ -362,11 +390,11 @@ void Ts3VideoStartupLogic::initNetwork()
 		auto hostInfo = v.value<QHostInfo>();
 		if (hostInfo.error() != QHostInfo::NoError || hostInfo.addresses().isEmpty())
 		{
-			showError(tr("DNS lookup failed"), hostInfo.errorString());
+			setStatusError(tr("DNS lookup failed"), hostInfo.errorString());
 			return;
 		}
 		auto hostAddress = hostInfo.addresses().first();
-		showProgress(tr("Connecting to server %1:%2 (address=%3)").arg(address).arg(port).arg(hostAddress.toString()));
+		setStatus(tr("Connecting to server %1:%2 (address=%3)").arg(address).arg(port).arg(hostAddress.toString()));
 		_nc->connectToHost(hostAddress, port);
 	});
 }
@@ -374,7 +402,7 @@ void Ts3VideoStartupLogic::initNetwork()
 void Ts3VideoStartupLogic::authAndJoinConference()
 {
 	// Authenticate.
-	showProgress(tr("Authenticating..."));
+	setStatus(tr("Authenticating..."));
 	QHash<QString, QVariant> authParams;
 	authParams.insert("ts3_client_database_id", _args.ts3ClientDbId);
 	auto reply = _nc->auth(_args.ts3Username, _joinInfo.server.password, authParams);
@@ -388,17 +416,37 @@ void Ts3VideoStartupLogic::authAndJoinConference()
 		QJsonObject params;
 		if (!JsonProtocolHelper::fromJsonResponse(reply->frame()->data(), status, params, errorString))
 		{
-			this->showError(tr("Protocol error"), reply->frame()->data());
+			setStatusError(tr("Protocol error"), reply->frame()->data());
 			return;
 		}
 		else if (status != 0)
 		{
-			this->showResponseError(status, errorString, reply->frame()->data());
+			setStatusError(tr("Authentication failed"), QString("%1: %2").arg(status).arg(errorString));
 			return;
 		}
+	});
+
+	// Wait for media socket authentication notification.
+	// Do not wait longer than X seconds.. timeout.
+	auto mediaAuthTimer = new QTimer(this);
+	mediaAuthTimer->setSingleShot(true);
+	mediaAuthTimer->start(10000);
+	QObject::connect(mediaAuthTimer, &QTimer::timeout, [this]()
+	{
+		setStatusError(tr("Can not authorize media socket (UDP)."
+						  "Make sure that all required ports are open on client and server side."
+						  "You might contact your server administrator or "
+						  "<a href=\"mailto:info@mfreiholz.de\">info@mfreiholz.de</a> in case of public servers."),
+					   QString());
+		QCorReply::autoDelete(_nc->goodbye());
+		return;
+	});
+	QObject::connect(_nc.data(), &NetworkClient::mediaSocketAuthenticated, [this, mediaAuthTimer]()
+	{
+		mediaAuthTimer->stop();
 
 		// Join channel.
-		showProgress(tr("Joining conference..."));
+		setStatus(tr("Joining conference..."));
 		auto reply2 = _nc->joinChannelByIdentifier(_joinInfo.room.uid, _joinInfo.room.password);
 		QObject::connect(reply2, &QCorReply::finished, [this, reply2]()
 		{
@@ -410,12 +458,12 @@ void Ts3VideoStartupLogic::authAndJoinConference()
 			QJsonObject params;
 			if (!JsonProtocolHelper::fromJsonResponse(reply2->frame()->data(), status, params, errorString))
 			{
-				this->showError(tr("Protocol error"), reply2->frame()->data());
+				setStatusError(tr("Protocol error"), reply2->frame()->data());
 				return;
 			}
 			else if (status != 0)
 			{
-				this->showResponseError(status, errorString, reply2->frame()->data());
+				setStatusError(tr("Conference join process failed"), QString("%1: %2").arg(status).arg(errorString));
 				return;
 			}
 			this->startVideoGui();
@@ -474,10 +522,10 @@ void Ts3VideoStartupLogic::onConnected()
 
 void Ts3VideoStartupLogic::onDisconnected()
 {
-	showProgress(tr("Disconnected!"));
+	setStatus(tr("Disconnected!"));
 }
 
 void Ts3VideoStartupLogic::onError(QAbstractSocket::SocketError socketError)
 {
-	showError(_nc->socket()->errorString());
+	setStatusError(tr("Connection problem"), _nc->socket()->errorString());
 }

@@ -36,9 +36,9 @@ public:
 	virtual int exec();
 
 private slots:
-	void showProgress(const QString& text);
-	void showResponseError(int status, const QString& errorMessage, const QString& details = QString());
-	void showError(const QString& shortText, const QString& longText = QString());
+	void setStatus(const QString& text);
+	void setStatusInfo(const QString& text);
+	void setStatusError(const QString& text, const QString& detail);
 
 private:
 	void start();
@@ -54,10 +54,6 @@ private slots:
 	void onConnected();
 	void onDisconnected();
 	void onError(QAbstractSocket::SocketError socketError);
-
-signals:
-	// Internal used signal, called from worker threads to update progress status.
-	void newProgress(const QString& text);
 
 private:
 	Ui::TS3VideoStartupLogicDialogForm _ui;

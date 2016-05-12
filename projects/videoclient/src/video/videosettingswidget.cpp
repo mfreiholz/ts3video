@@ -22,7 +22,30 @@ public:
 		const auto& serverConfig = _nc->serverConfig();
 		QCamera cam(cameraInfo);
 		cam.load();
-		_resolutions = cam.supportedViewfinderResolutions();
+#if QT_VERSION >= QT_VERSION_CHECK(5, 5, 0)
+		//_resolutions = cam.supportedViewfinderResolutions();
+#else
+		_resolutions = QList<QSize>()
+			<< QSize(160, 120)
+			<< QSize(176, 144)
+			<< QSize(320, 176)
+			<< QSize(320, 240)
+			<< QSize(352, 288)
+			<< QSize(432, 240)
+			<< QSize(544, 288)
+			<< QSize(640, 360)
+			<< QSize(640, 480)
+			<< QSize(752, 416)
+			<< QSize(800, 448)
+			<< QSize(864, 480)
+			<< QSize(800, 600)
+			<< QSize(960, 544)
+			<< QSize(1024, 576)
+			<< QSize(960, 720)
+			<< QSize(1184, 656)
+			<< QSize(1280, 720)
+			;
+#endif
 	}
 
 	virtual int rowCount(const QModelIndex& parent = QModelIndex()) const
