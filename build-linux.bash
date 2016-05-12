@@ -28,6 +28,7 @@ cmake -DCMAKE_INSTALL_PREFIX="$OCS_DEPLOY_DIR_PATH" -DCMAKE_BUILD_TYPE=Release .
 # Run Make + Install
 make && make install
 
+# Deploy
 # Copy dependencies
 ARCH=$(uname -m)
 if [ $ARCH = "i686" ]; then 
@@ -40,7 +41,7 @@ if [ $ARCH = "i686" ]; then
 	cp /lib/i386-linux-gnu/librt.so.1 $OCS_DEPLOY_DIR_PATH/server/
 	cp /lib/i386-linux-gnu/libglib-2.0.so.0 $OCS_DEPLOY_DIR_PATH/server/
 	cp /lib/i386-linux-gnu/libm.so.6 $OCS_DEPLOY_DIR_PATH/server/
-	cp /lib/ld-linux.so.2 $OCS_DEPLOY_DIR_PATH/server/
+	cp /lib/ld-linux.so.2 $OCS_DEPLOY_DIR_PATH/server/ld.so
 	cp /lib/i386-linux-gnu/libpcre.so.3 $OCS_DEPLOY_DIR_PATH/server/
 elif [ $ARCH = "x86_64" ]; then
 	cp /usr/lib/x86_64-linux-gnu/libstdc++.so.6 $OCS_DEPLOY_DIR_PATH/server/
@@ -52,7 +53,7 @@ elif [ $ARCH = "x86_64" ]; then
 	cp /lib/x86_64-linux-gnu/librt.so.1 $OCS_DEPLOY_DIR_PATH/server/
 	cp /lib/x86_64-linux-gnu/libglib-2.0.so.0 $OCS_DEPLOY_DIR_PATH/server/
 	cp /lib/x86_64-linux-gnu/libm.so.6 $OCS_DEPLOY_DIR_PATH/server/
-	cp /lib64/ld-linux-x86-64.so.2 $OCS_DEPLOY_DIR_PATH/server/
+	cp /lib64/ld-linux-x86-64.so.2 $OCS_DEPLOY_DIR_PATH/server/ld.so
 	cp /lib/x86_64-linux-gnu/libpcre.so.3 $OCS_DEPLOY_DIR_PATH/server/
 fi
 
@@ -63,8 +64,8 @@ cp $QTDIR/lib/libicui18n.so.53 $OCS_DEPLOY_DIR_PATH/server/
 cp $QTDIR/lib/libicuuc.so.53 $OCS_DEPLOY_DIR_PATH/server/
 cp $QTDIR/lib/libicudata.so.53 $OCS_DEPLOY_DIR_PATH/server/
 
-cp $BASEDIR/projects/videoserver/res/scripts/start.sh $OCS_DEPLOY_DIR_PATH/server/videoserver.sh
-cp $BASEDIR/projects/videoserver/res/scripts/start-initd.sh $OCS_DEPLOY_DIR_PATH/server/videoserver-initd.sh
+cp $BASEDIR/projects/videoserver/res/scripts/videoserver.sh $OCS_DEPLOY_DIR_PATH/server/
+cp $BASEDIR/projects/videoserver/res/scripts/videoserver-initd.sh $OCS_DEPLOY_DIR_PATH/server/
 
 
 # Copy LDD dependencies (DO NOT USE YET!)

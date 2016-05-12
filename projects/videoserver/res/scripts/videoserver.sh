@@ -16,7 +16,7 @@ case "$1" in
     echo "Starting the Conference Server"
     shift 1
     export LD_LIBRARY_PATH="${current_dir}"
-    "./ld-linux.so" "./${binary_name}" "$@" &
+    "./ld.so" "./${binary_name}" "$@" &
     echo $! > ${binary_name}.pid
     ;;
 
@@ -54,6 +54,3 @@ case "$1" in
     exit 1
     ;;
 esac
-
-#export LD_LIBRARY_PATH="$current_dir"
-#exec "$current_dir/ld-2.19.so" "$current_dir/videoserver" "$@"
