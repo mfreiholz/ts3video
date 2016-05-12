@@ -29,17 +29,32 @@ cmake -DCMAKE_INSTALL_PREFIX="$OCS_DEPLOY_DIR_PATH" -DCMAKE_BUILD_TYPE=Release .
 make && make install
 
 # Copy dependencies
-cp /usr/lib/i386-linux-gnu/libstdc++.so.6 $OCS_DEPLOY_DIR_PATH/server/
-cp /lib/i386-linux-gnu/libgcc_s.so.1 $OCS_DEPLOY_DIR_PATH/server/
-cp /lib/i386-linux-gnu/libc.so.6 $OCS_DEPLOY_DIR_PATH/server/
-cp /lib/i386-linux-gnu/libpthread.so.0 $OCS_DEPLOY_DIR_PATH/server/
-cp /lib/i386-linux-gnu/libdl.so.2 $OCS_DEPLOY_DIR_PATH/server/
-cp /usr/lib/i386-linux-gnu/libgthread-2.0.so.0 $OCS_DEPLOY_DIR_PATH/server/
-cp /lib/i386-linux-gnu/librt.so.1 $OCS_DEPLOY_DIR_PATH/server/
-cp /lib/i386-linux-gnu/libglib-2.0.so.0 $OCS_DEPLOY_DIR_PATH/server/
-cp /lib/i386-linux-gnu/libm.so.6 $OCS_DEPLOY_DIR_PATH/server/
-cp /lib/ld-linux.so.2 $OCS_DEPLOY_DIR_PATH/server/
-cp /lib/i386-linux-gnu/libpcre.so.3 $OCS_DEPLOY_DIR_PATH/server/
+ARCH=$(uname -m)
+if [ $ARCH = "x86_32" ]; then 
+	cp /usr/lib/i386-linux-gnu/libstdc++.so.6 $OCS_DEPLOY_DIR_PATH/server/
+	cp /lib/i386-linux-gnu/libgcc_s.so.1 $OCS_DEPLOY_DIR_PATH/server/
+	cp /lib/i386-linux-gnu/libc.so.6 $OCS_DEPLOY_DIR_PATH/server/
+	cp /lib/i386-linux-gnu/libpthread.so.0 $OCS_DEPLOY_DIR_PATH/server/
+	cp /lib/i386-linux-gnu/libdl.so.2 $OCS_DEPLOY_DIR_PATH/server/
+	cp /usr/lib/i386-linux-gnu/libgthread-2.0.so.0 $OCS_DEPLOY_DIR_PATH/server/
+	cp /lib/i386-linux-gnu/librt.so.1 $OCS_DEPLOY_DIR_PATH/server/
+	cp /lib/i386-linux-gnu/libglib-2.0.so.0 $OCS_DEPLOY_DIR_PATH/server/
+	cp /lib/i386-linux-gnu/libm.so.6 $OCS_DEPLOY_DIR_PATH/server/
+	cp /lib/ld-linux.so.2 $OCS_DEPLOY_DIR_PATH/server/
+	cp /lib/i386-linux-gnu/libpcre.so.3 $OCS_DEPLOY_DIR_PATH/server/
+elif [ $ARCH = "x86_64" ]; then
+	cp /usr/lib/x86_64-linux-gnu/libstdc++.so.6 $OCS_DEPLOY_DIR_PATH/server/
+	cp /lib/x86_64-linux-gnu/libgcc_s.so.1 $OCS_DEPLOY_DIR_PATH/server/
+	cp /lib/x86_64-linux-gnu/libc.so.6 $OCS_DEPLOY_DIR_PATH/server/
+	cp /lib/x86_64-linux-gnu/libpthread.so.0 $OCS_DEPLOY_DIR_PATH/server/
+	cp /lib/x86_64-linux-gnu/libdl.so.2 $OCS_DEPLOY_DIR_PATH/server/
+	cp /usr/lib/x86_64-linux-gnu/libgthread-2.0.so.0 $OCS_DEPLOY_DIR_PATH/server/
+	cp /lib/x86_64-linux-gnu/librt.so.1 $OCS_DEPLOY_DIR_PATH/server/
+	cp /lib/x86_64-linux-gnu/libglib-2.0.so.0 $OCS_DEPLOY_DIR_PATH/server/
+	cp /lib/x86_64-linux-gnu/libm.so.6 $OCS_DEPLOY_DIR_PATH/server/
+	cp /lib64/ld-linux-x86-64.so.2 $OCS_DEPLOY_DIR_PATH/server/
+	cp /lib/x86_64-linux-gnu/libpcre.so.3 $OCS_DEPLOY_DIR_PATH/server/
+fi
 
 cp $QTDIR/lib/libQt5Core.so.5 $OCS_DEPLOY_DIR_PATH/server/
 cp $QTDIR/lib/libQt5Network.so.5 $OCS_DEPLOY_DIR_PATH/server/
