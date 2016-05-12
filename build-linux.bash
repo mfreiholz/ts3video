@@ -30,7 +30,7 @@ make && make install
 
 # Copy dependencies
 ARCH=$(uname -m)
-if [ $ARCH = "x86_32" ]; then 
+if [ $ARCH = "i686" ]; then 
 	cp /usr/lib/i386-linux-gnu/libstdc++.so.6 $OCS_DEPLOY_DIR_PATH/server/
 	cp /lib/i386-linux-gnu/libgcc_s.so.1 $OCS_DEPLOY_DIR_PATH/server/
 	cp /lib/i386-linux-gnu/libc.so.6 $OCS_DEPLOY_DIR_PATH/server/
