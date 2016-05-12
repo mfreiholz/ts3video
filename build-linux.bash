@@ -67,6 +67,7 @@ cp $QTDIR/lib/libicudata.so.53 $OCS_DEPLOY_DIR_PATH/server/
 cp $BASEDIR/projects/videoserver/res/scripts/videoserver.sh $OCS_DEPLOY_DIR_PATH/server/
 cp $BASEDIR/projects/videoserver/res/scripts/videoserver-initd.sh $OCS_DEPLOY_DIR_PATH/server/
 
+cp -rf $BASEDIR/projects/serverstatus $OCS_DEPLOY_DIR_PATH/server/
 
 # Copy LDD dependencies (DO NOT USE YET!)
 if false; then
