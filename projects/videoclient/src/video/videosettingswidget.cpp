@@ -44,6 +44,8 @@ public:
 			<< QSize(960, 720)
 			<< QSize(1184, 656)
 			<< QSize(1280, 720)
+			<< QSize(1280, 960)
+			<< QSize(1920, 1080)
 			;
 #endif
 	}
