@@ -28,12 +28,29 @@ cmake -DCMAKE_INSTALL_PREFIX="$OCS_DEPLOY_DIR_PATH" -DCMAKE_BUILD_TYPE=Release .
 # Run Make + Install
 make && make install
 
-# Copy Qt to deploy directory.
-cp $QTDIR/lib/libQt5Core.so.5.6.0 $OCS_DEPLOY_DIR_PATH/server/libQt5Core.so.5
-cp $QTDIR/lib/libQt5Network.so.5.6.0 $OCS_DEPLOY_DIR_PATH/server/libQt5Network.so.5
-cp $QTDIR/lib/libQt5WebSockets.so.5.6.0 $OCS_DEPLOY_DIR_PATH/server/libQt5WebSockets.so.5
+# Copy dependencies
+cp /usr/lib/i386-linux-gnu/libstdc++.so.6 $OCS_DEPLOY_DIR_PATH/server/
+cp /lib/i386-linux-gnu/libgcc_s.so.1 $OCS_DEPLOY_DIR_PATH/server/
+cp /lib/i386-linux-gnu/libc.so.6 $OCS_DEPLOY_DIR_PATH/server/
+cp /lib/i386-linux-gnu/libpthread.so.0 $OCS_DEPLOY_DIR_PATH/server/
+cp /lib/i386-linux-gnu/libdl.so.2 $OCS_DEPLOY_DIR_PATH/server/
+cp /usr/lib/i386-linux-gnu/libgthread-2.0.so.0 $OCS_DEPLOY_DIR_PATH/server/
+cp /lib/i386-linux-gnu/librt.so.1 $OCS_DEPLOY_DIR_PATH/server/
+cp /lib/i386-linux-gnu/libglib-2.0.so.0 $OCS_DEPLOY_DIR_PATH/server/
+cp /lib/i386-linux-gnu/libm.so.6 $OCS_DEPLOY_DIR_PATH/server/
+cp /lib/ld-linux.so.2 $OCS_DEPLOY_DIR_PATH/server/
+cp /lib/i386-linux-gnu/libpcre.so.3 $OCS_DEPLOY_DIR_PATH/server/
+
+cp $QTDIR/lib/libQt5Core.so.5 $OCS_DEPLOY_DIR_PATH/server/
+cp $QTDIR/lib/libQt5Network.so.5 $OCS_DEPLOY_DIR_PATH/server/
+cp $QTDIR/lib/libQt5WebSockets.so.5 $OCS_DEPLOY_DIR_PATH/server/
+cp $QTDIR/lib/libicui18n.so.53 $OCS_DEPLOY_DIR_PATH/server/
+cp $QTDIR/lib/libicuuc.so.53 $OCS_DEPLOY_DIR_PATH/server/
+cp $QTDIR/lib/libicudata.so.53 $OCS_DEPLOY_DIR_PATH/server/
+
 cp $BASEDIR/projects/videoserver/res/scripts/start.sh $OCS_DEPLOY_DIR_PATH/server/videoserver.sh
 cp $BASEDIR/projects/videoserver/res/scripts/start-initd.sh $OCS_DEPLOY_DIR_PATH/server/videoserver-initd.sh
+
 
 # Copy LDD dependencies (DO NOT USE YET!)
 if false; then
