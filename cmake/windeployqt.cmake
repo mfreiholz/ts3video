@@ -8,8 +8,8 @@
 #		Path to the "bin" directory of Qt
 #
 
-set(ENV{QTDIR} ${QT_DIR_PATH})
-set(ENV{PATH} ${QT_DIR_PATH};$ENV{PATH})
+set(ENV{QTDIR} "${QT_DIR_PATH}")
+set(ENV{PATH} "${QT_DIR_PATH};$ENV{PATH}")
 
 message("Executing WINDEPLOYQT
 	BINARY_PATH=${BINARY_PATH}
