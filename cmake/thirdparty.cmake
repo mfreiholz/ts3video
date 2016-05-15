@@ -29,14 +29,11 @@
 
 if(WIN32)
 	set(vpx_INCLUDE_DIRS
-	  #${PROJECT_SOURCE_DIR}/thirdparty/vpx/include
-	  "C:/Users/Manuel/Sources/_libs/libvpx-builds/${ARCH}-vc12/include"
+		${PROJECT_SOURCE_DIR}/thirdparty/vendor-vpx/win-${ARCH}-vc12/include
 	)
 	set(vpx_LIBRARIES
-		#optimized "${PROJECT_SOURCE_DIR}/thirdparty/vpx/lib-win-${ARCH}-vc14-md-release/vpxmd.lib"
-		#debug "${PROJECT_SOURCE_DIR}/thirdparty/vpx/lib-win-${ARCH}-vc14-md-debug/vpxmdd.lib"
-		optimized "C:/Users/Manuel/Sources/_libs/libvpx-builds/${ARCH}-vc12/lib/vpxmd.lib"
-		debug     "C:/Users/Manuel/Sources/_libs/libvpx-builds/${ARCH}-vc12/lib/vpxmdd.lib"
+		optimized ${PROJECT_SOURCE_DIR}/thirdparty/vendor-vpx/win-${ARCH}-vc12/lib/vpxmd.lib
+		debug ${PROJECT_SOURCE_DIR}/thirdparty/vendor-vpx/win-${ARCH}-vc12/lib/vpxmdd.lib
 	)
 else(WIN32)
 	set(vpx_INCLUDE_DIRS
