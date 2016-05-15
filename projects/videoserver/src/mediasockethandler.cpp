@@ -3,9 +3,7 @@
 #include <QString>
 #include <QDataStream>
 #include <QTimer>
-
 #include "humblelogging/api.h"
-
 #include "virtualserver.h"
 
 HUMBLE_LOGGER(HL, "server.mediasocket");
@@ -33,11 +31,11 @@ MediaSocketHandler::MediaSocketHandler(const QHostAddress& address, quint16 port
 	_address(address),
 	_port(port),
 	_socket(this),
-	_videoCache(0),//(10485760), // 10 MB
 	_networkUsage(),
 	_networkUsageHelper(_networkUsage)
 {
 	connect(&_socket, &QUdpSocket::readyRead, this, &MediaSocketHandler::onReadyRead);
+	connect(&_socket, static_cast<void(QUdpSocket::*)(QAbstractSocket::SocketError)>(&QUdpSocket::error), this, &MediaSocketHandler::onError);
 
 	// Update bandwidth status every X seconds.
 	auto bandwidthTimer = new QTimer(this);
@@ -68,7 +66,6 @@ bool MediaSocketHandler::init()
 void MediaSocketHandler::setRecipients(MediaRecipients&& rec)
 {
 	_recipients = rec;
-
 	//printf("\n");
 	//foreach (const auto& sender, rec.id2sender.values())
 	//{
@@ -93,7 +90,6 @@ void MediaSocketHandler::onReadyRead()
 		_socket.readDatagram(data.data(), data.size(), &senderAddress, &senderPort);
 		_networkUsage.bytesRead += data.size();
 
-		// Check magic.
 		QDataStream in(data);
 		in.setByteOrder(QDataStream::BigEndian);
 
@@ -105,11 +101,9 @@ void MediaSocketHandler::onReadyRead()
 			continue;
 		}
 
-		// Handle by type.
 		in >> dg.type;
 		switch (dg.type)
 		{
-			// Authentication
 			case UDP::AuthDatagram::TYPE:
 			{
 				UDP::AuthDatagram dgauth;
@@ -126,29 +120,8 @@ void MediaSocketHandler::onReadyRead()
 				break;
 			}
 
-			// Video data.
 			case UDP::VideoFrameDatagram::TYPE:
 			{
-				/*  if (_videoCache.maxCost() > 0)
-				    {
-					// Parse datagram
-					auto vfd = std::unique_ptr<UDP::VideoFrameDatagram>(new UDP::VideoFrameDatagram());
-					in >> vfd->flags;
-					in >> vfd->sender;
-					in >> vfd->frameId;
-					in >> vfd->index;
-					in >> vfd->count;
-					in >> vfd->size;
-
-					// Cache frame
-					// No longer access "vfd" after move to cacheItem!
-					auto cacheItem = new VideoCacheItem();
-					cacheItem->data = data;
-					cacheItem->datagram = std::move(vfd);
-					_videoCache.insert(VideoCacheItem::createKeyFor(*cacheItem->datagram.get()), cacheItem, data.size() + sizeof(*cacheItem->datagram.get()));
-				    }*/
-
-				// Broadcast
 				const auto senderId = MediaSenderEntity::createIdent(senderAddress, senderPort);
 				const auto& senderEntity = _recipients.ident2sender[senderId];
 				for (auto i = 0, end = senderEntity.receivers.size(); i < end; ++i)
@@ -160,15 +133,10 @@ void MediaSocketHandler::onReadyRead()
 				break;
 			}
 
-			// Video recovery.
 			case UDP::VideoFrameRecoveryDatagram::TYPE:
 			{
-				HL_TRACE(HL, QString("Process video frame recovery datagram.").toStdString());
-
 				UDP::VideoFrameRecoveryDatagram dgrec;
 				in >> dgrec.sender;
-				//in >> dgrec.frameId;
-				//in >> dgrec.index;
 
 				// Send to specific receiver only.
 				const auto& receiver = _recipients.clientid2receiver[dgrec.sender];
@@ -182,7 +150,6 @@ void MediaSocketHandler::onReadyRead()
 				break;
 			}
 
-			// Audio data.
 			case UDP::AudioFrameDatagram::TYPE:
 			{
 				const auto senderId = MediaSenderEntity::createIdent(senderAddress, senderPort);
@@ -198,5 +165,10 @@ void MediaSocketHandler::onReadyRead()
 
 		}
 
-	} // while (datagrams)
+	}
+}
+
+void MediaSocketHandler::onError(QAbstractSocket::SocketError socketError)
+{
+	HL_ERROR(HL, QString("socket error (err=%1; message=%2)").arg(socketError).arg(_socket.errorString()).toStdString());
 }
