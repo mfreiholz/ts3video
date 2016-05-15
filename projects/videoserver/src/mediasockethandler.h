@@ -8,6 +8,10 @@
 #include <QString>
 #include <QCache>
 #include <QBuffer>
+#include <QDataStream>
+#include <QHostAddress>
+#include <QByteArray>
+#include <QHash>
 #include "baselib/defines.h"
 #include "medlib/protocol.h"
 #include "videolib/src/networkusageentity.h"

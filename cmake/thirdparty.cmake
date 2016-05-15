@@ -27,17 +27,24 @@
 # Third party (VPX)
 # ---------------------------------------------------------------------
 
-set(vpx_INCLUDE_DIRS
-  #${PROJECT_SOURCE_DIR}/thirdparty/vpx/include
-  "C:/Users/Manuel/Sources/_libs/libvpx-builds/${ARCH}-vc12/include"
-)
 if(WIN32)
-  set(vpx_LIBRARIES
-    #optimized "${PROJECT_SOURCE_DIR}/thirdparty/vpx/lib-win-${ARCH}-vc14-md-release/vpxmd.lib"
-    #debug "${PROJECT_SOURCE_DIR}/thirdparty/vpx/lib-win-${ARCH}-vc14-md-debug/vpxmdd.lib"
-	optimized "C:/Users/Manuel/Sources/_libs/libvpx-builds/${ARCH}-vc12/lib/vpxmd.lib"
-	debug     "C:/Users/Manuel/Sources/_libs/libvpx-builds/${ARCH}-vc12/lib/vpxmdd.lib"
-  )
+	set(vpx_INCLUDE_DIRS
+	  #${PROJECT_SOURCE_DIR}/thirdparty/vpx/include
+	  "C:/Users/Manuel/Sources/_libs/libvpx-builds/${ARCH}-vc12/include"
+	)
+	set(vpx_LIBRARIES
+		#optimized "${PROJECT_SOURCE_DIR}/thirdparty/vpx/lib-win-${ARCH}-vc14-md-release/vpxmd.lib"
+		#debug "${PROJECT_SOURCE_DIR}/thirdparty/vpx/lib-win-${ARCH}-vc14-md-debug/vpxmdd.lib"
+		optimized "C:/Users/Manuel/Sources/_libs/libvpx-builds/${ARCH}-vc12/lib/vpxmd.lib"
+		debug     "C:/Users/Manuel/Sources/_libs/libvpx-builds/${ARCH}-vc12/lib/vpxmdd.lib"
+	)
+else(WIN32)
+	set(vpx_INCLUDE_DIRS
+	  "/home/manuel/Libraries/libvpx-x86-64-gcc521/install/include"
+	)
+	set(vpx_LIBRARIES
+		"/home/manuel/Libraries/libvpx-x86-64-gcc521/install/lib/libvpx.a"
+	)
 endif(WIN32)
 
 # ---------------------------------------------------------------------

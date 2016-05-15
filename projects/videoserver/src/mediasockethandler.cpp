@@ -1,7 +1,6 @@
 #include "mediasockethandler.h"
 
 #include <QString>
-#include <QDataStream>
 #include <QTimer>
 #include "humblelogging/api.h"
 #include "virtualserver.h"

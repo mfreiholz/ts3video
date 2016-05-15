@@ -22,8 +22,8 @@ public:
 		const auto& serverConfig = _nc->serverConfig();
 		QCamera cam(cameraInfo);
 		cam.load();
-#if QT_VERSION >= QT_VERSION_CHECK(5, 5, 0)
-		//_resolutions = cam.supportedViewfinderResolutions();
+#if QT_VERSION >= QT_VERSION_CHECK(5, 5, 0) && _WIN32
+		_resolutions = cam.supportedViewfinderResolutions();
 #else
 		_resolutions = QList<QSize>()
 			<< QSize(160, 120)
