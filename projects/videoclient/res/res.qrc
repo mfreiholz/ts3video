@@ -32,6 +32,7 @@
     </qresource>
     <qresource prefix="/opengl">
         <file>vertex.vsh</file>
-        <file>fragment.fsh</file>
+        <file>fragment-win.fsh</file>
+        <file>fragment-linux.fsh</file>
     </qresource>
 </RCC>

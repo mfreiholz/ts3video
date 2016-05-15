@@ -35,10 +35,17 @@ void GLVideoWidget::setFrame(YuvFrameRefPtr frame)
 void GLVideoWidget::initializeGL()
 {
 	// Init shaders.
+#ifdef _WIN32
 	d->program = new QOpenGLShaderProgram(this);
 	d->program->addShaderFromSourceFile(QOpenGLShader::Vertex, ":/opengl/vertex.vsh");
-	d->program->addShaderFromSourceFile(QOpenGLShader::Fragment, ":/opengl/fragment.fsh");
+	d->program->addShaderFromSourceFile(QOpenGLShader::Fragment, ":/opengl/fragment-win.fsh");
 	d->program->link();
+#else
+	d->program = new QOpenGLShaderProgram(this);
+	d->program->addShaderFromSourceFile(QOpenGLShader::Vertex, ":/opengl/vertex.vsh");
+	d->program->addShaderFromSourceFile(QOpenGLShader::Fragment, ":/opengl/fragment-linux.fsh");
+	d->program->link();
+#endif
 
 	auto gl = QOpenGLContext::currentContext()->functions();
 
