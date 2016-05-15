@@ -7,6 +7,7 @@
 #include <QTime>
 #include <QString>
 #include <QCache>
+#include <QBuffer>
 #include "baselib/defines.h"
 #include "medlib/protocol.h"
 #include "videolib/src/networkusageentity.h"
@@ -19,12 +20,6 @@ class MediaRecipients;
 class MediaSenderEntity
 {
 public:
-	static inline QString createIdent(const QHostAddress& address, quint16 port)
-	{
-		return address.toString() + QString(":") + QString::number(port);
-	}
-
-	QString ident;
 	ocs::clientid_t clientId;
 	QHostAddress address;
 	quint16 port;
@@ -44,10 +39,10 @@ public:
 class MediaRecipients
 {
 public:
-	// Maps a sender's adress-id to itself.
-	QHash<QString, MediaSenderEntity> ident2sender;
+	// Maps a SENDER's address+port to itself.
+	QHash<QHostAddress, QHash<quint16, MediaSenderEntity> > addr2sender;
 
-	// Maps a receiver's client-id to itself.
+	// Maps a RECEIVER's client-id to itself.
 	QHash<ocs::clientid_t, MediaReceiverEntity> clientid2receiver;
 };
 
@@ -81,7 +76,26 @@ private:
 	QUdpSocket _socket;
 	MediaRecipients _recipients;
 
-	// Network usage.
+	/* onReadyRead() related variables */
+
+	// Socket buffer and cached items.
+	// Instead of creating local stacked members we reuse this variables
+	// inside onReadyRead() to save allocations.
+
+	char _buffer[4096];
+	int _bufferLen = 0;
+	
+	QByteArray _data;
+	QBuffer _dataBuffer;
+	QDataStream _in;
+
+	QHostAddress _senderAddress;
+	quint16 _senderPort = 0;
+
+	UDP::Datagram _baseDatagram;
+
+	/* network usage */
+
 	NetworkUsageEntity _networkUsage;
 	NetworkUsageEntityHelper _networkUsageHelper;
 };

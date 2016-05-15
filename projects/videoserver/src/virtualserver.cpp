@@ -125,6 +125,7 @@ void VirtualServer::updateMediaRecipients()
 	auto clients = _clients.values();
 	for (auto client : clients)
 	{
+		// Create SENDER entity for "client"
 		// Validate client for streaming
 		if (!client)
 			continue;
@@ -133,21 +134,13 @@ void VirtualServer::updateMediaRecipients()
 		else if (!client->videoEnabled && !client->audioInputEnabled)
 			continue;
 
-		// Create Sender and Receiver entities for current client
 		MediaSenderEntity sender;
 		sender.clientId = client->id;
-		sender.address = QHostAddress(client->mediaAddress);
+		sender.address = client->mediaAddress;
 		sender.port = client->mediaPort;
-		sender.ident = MediaSenderEntity::createIdent(sender.address, sender.port);
 
-		MediaReceiverEntity receiver;
-		receiver.clientId = client->id;
-		receiver.address = client->mediaAddress;
-		receiver.port = client->mediaPort;
-		recips.clientid2receiver.insert(receiver.clientId, receiver);
-
-		// Fill Sender's receivers list by conference participants
-		auto siblingClientIds = getSiblingClientIds(client->id, true);
+		// Fill SENDER receiver list - by conference members.
+		auto siblingClientIds = getSiblingClientIds(sender.clientId, true);
 		for (const auto clientId : siblingClientIds)
 		{
 			auto c = _clients.value(clientId);
@@ -162,11 +155,10 @@ void VirtualServer::updateMediaRecipients()
 			r.clientId = c->id;
 			r.address = c->mediaAddress;
 			r.port = c->mediaPort;
-			sender.receivers.append(r);
+			sender.receivers.append(std::move(r));
 		}
-		recips.ident2sender.insert(sender.ident, sender);
 
-		// Fill Sender's receivers list by direct mappings
+		// Fill SENDER receiver list - by direct mappings.
 		auto directReceivers = _sender2receiver.value(sender.clientId);
 		for (const auto clientId : directReceivers)
 		{
@@ -182,11 +174,19 @@ void VirtualServer::updateMediaRecipients()
 			r.clientId = c->id;
 			r.address = c->mediaAddress;
 			r.port = c->mediaPort;
-			sender.receivers.append(r);
+			sender.receivers.append(std::move(r));
 		}
-	}
 
-	// Done. Mapping for media socket has been created, pass it now.
+		// Create RECEIVER entity for "client".
+		MediaReceiverEntity receiver;
+		receiver.clientId = client->id;
+		receiver.address = client->mediaAddress;
+		receiver.port = client->mediaPort;
+
+		// Fill "recips" with created information.
+		recips.addr2sender[sender.address][sender.port] = sender;
+		recips.clientid2receiver.insert(receiver.clientId, receiver);
+	}
 	_mediaSocketHandler->setRecipients(std::move(recips));
 }
 
