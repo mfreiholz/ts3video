@@ -207,13 +207,12 @@ target_link_libraries(
 	videolib
 )
 
-target_link_libraries(${PROJECT_NAME} pthread)
-
 if(IncludeOpenGLSupport)
 	if(WIN32)
 		target_link_libraries(${PROJECT_NAME} opengl32) # TODO This shouldn't be here!
 	else()
 		target_link_libraries(${PROJECT_NAME} libGL.so)
+		target_link_libraries(${PROJECT_NAME} pthread)
 	endif()
 endif()
 
