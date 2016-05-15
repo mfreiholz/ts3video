@@ -83,7 +83,7 @@ public:
 	MediaSocketHandler(const QHostAddress& address, quint16 port, QObject* parent);
 	~MediaSocketHandler();
 	bool init();
-	void setRecipients(const MediaRecipients& rec);
+	void setRecipients(MediaRecipients&& rec);
 
 signals:
 	/*! Emits for every incoming authentication from a client.

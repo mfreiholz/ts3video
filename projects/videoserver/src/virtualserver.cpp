@@ -187,7 +187,7 @@ void VirtualServer::updateMediaRecipients()
 	}
 
 	// Done. Mapping for media socket has been created, pass it now.
-	_mediaSocketHandler->setRecipients(recips);
+	_mediaSocketHandler->setRecipients(std::move(recips));
 }
 
 ServerChannelEntity* VirtualServer::createChannel(const QString& ident)

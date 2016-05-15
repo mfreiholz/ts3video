@@ -65,7 +65,7 @@ bool MediaSocketHandler::init()
 	return true;
 }
 
-void MediaSocketHandler::setRecipients(const MediaRecipients& rec)
+void MediaSocketHandler::setRecipients(MediaRecipients&& rec)
 {
 	_recipients = rec;
 
