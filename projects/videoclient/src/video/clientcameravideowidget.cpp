@@ -5,6 +5,9 @@
 #include <QLabel>
 #include <QCameraInfo>
 #include <QMessageBox>
+#include <QPaintEvent>
+#include <QPainter>
+#include <QImage>
 
 #include "humblelogging/api.h"
 
@@ -16,6 +19,61 @@
 
 HUMBLE_LOGGER(HL, "client.camera");
 
+static QTransform flipHorizontal(const QRect& surfaceRect, const QTransform& t)
+{
+	QTransform transform(t);
+	qreal m11 = transform.m11();    // Horizontal scaling
+	qreal m12 = transform.m12();    // Vertical shearing
+	qreal m13 = transform.m13();    // Horizontal Projection
+	qreal m21 = transform.m21();    // Horizontal shearing
+	qreal m22 = transform.m22();    // vertical scaling
+	qreal m23 = transform.m23();    // Vertical Projection
+	qreal m31 = transform.m31();    // Horizontal Position (DX)
+	qreal m32 = transform.m32();    // Vertical Position (DY)
+	qreal m33 = transform.m33();    // Addtional Projection Factor
+
+	qreal scale = m11;
+	m11 = -m11;
+
+	if (m31 > 0)
+		m31 = 0;
+	else
+		m31 = (surfaceRect.width() * scale);
+
+	transform.setMatrix(m11, m12, m13, m21, m22, m23, m31, m32, m33);
+	return std::move(transform);
+}
+
+static QTransform flipVertical(const QRect& surfaceRect, const QTransform& t)
+{
+	QTransform transform(t);
+	qreal m11 = transform.m11();    // Horizontal scaling
+	qreal m12 = transform.m12();    // Vertical shearing
+	qreal m13 = transform.m13();    // Horizontal Projection
+	qreal m21 = transform.m21();    // Horizontal shearing
+	qreal m22 = transform.m22();    // vertical scaling
+	qreal m23 = transform.m23();    // Vertical Projection
+	qreal m31 = transform.m31();    // Horizontal Position (DX)
+	qreal m32 = transform.m32();    // Vertical Position (DY)
+	qreal m33 = transform.m33();    // Addtional Projection Factor
+
+	// We need this in a minute
+	qreal scale = m22;
+
+	// Vertical flip
+	m22 = -m22;
+
+	// Re-position back to origin
+	if (m32 > 0)
+		m32 = 0;
+	else
+		m32 = (surfaceRect.height() * scale);
+
+	// Write back to the matrix
+	transform.setMatrix(m11, m12, m13, m21, m22, m23, m31, m32, m33);
+	return std::move(transform);
+}
+
 ///////////////////////////////////////////////////////////////////////
 
 ClientCameraVideoWidget::ClientCameraVideoWidget(ConferenceVideoWindow* window, QWidget* parent) :
@@ -25,8 +83,10 @@ ClientCameraVideoWidget::ClientCameraVideoWidget(ConferenceVideoWindow* window, 
 	_camera(window->camera()),
 	_videoWidget(nullptr)
 {
+	setAutoFillBackground(true);
+
 	// Load camera and forward frames to grabber.
-	_grabber.reset(new CameraFrameGrabber(_window->options().cameraResolution, this));
+	_grabber.reset(new CameraFrameGrabber(_window->options().cameraResolution, nullptr, this));
 	_camera->setViewfinder(_grabber.data());
 
 	// GUI
@@ -82,11 +142,43 @@ QSharedPointer<QCamera> ClientCameraVideoWidget::camera() const
 
 void ClientCameraVideoWidget::setFrame(const QImage& f)
 {
-	_videoWidget->setFrame(f);
+	if (_videoWidget)
+		_videoWidget->setFrame(f);
+}
+
+void ClientCameraVideoWidget::paintEvent(QPaintEvent* e)
+{
+	auto f = _grabber->current;
+	if (f.isValid())
+	{
+		if (f.map(QAbstractVideoBuffer::ReadOnly))
+		{
+			const auto imageFormat = QVideoFrame::imageFormatFromPixelFormat(f.pixelFormat());
+			const auto image = QImage(f.bits(), f.width(), f.height(), imageFormat);
+
+			QPainter p(this);
+
+			const auto surfaceRect = rect();
+			const auto imageRect = image.rect();
+			auto surfaceRatio = (float)surfaceRect.width() / (float)surfaceRect.height();
+			auto imageRatio = (float)imageRect.width() / (float)imageRect.height();
+			auto scaleFactor = 1.0F;
+			if (surfaceRatio < imageRatio)
+				scaleFactor = (float)surfaceRect.height() / (float)imageRect.height();
+			else
+				scaleFactor = (float)surfaceRect.width() / (float)imageRect.width();
+
+			p.setTransform(flipVertical(surfaceRect, p.transform()));
+			p.scale(scaleFactor, scaleFactor);
+			p.drawImage(0, 0, image);
+			f.unmap();
+		}
+	}
 }
 
 void ClientCameraVideoWidget::onNewQImage(const QImage& image)
 {
-	_videoWidget->setFrame(image);
+	if (_videoWidget)
+		_videoWidget->setFrame(image);
 	_nc->sendVideoFrame(image);
 }

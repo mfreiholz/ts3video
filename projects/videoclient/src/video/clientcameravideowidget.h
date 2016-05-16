@@ -25,6 +25,9 @@ public:
 public slots:
 	void setFrame(const QImage& f);
 
+protected:
+	virtual void paintEvent(QPaintEvent* e);
+
 private slots:
 	void onNewQImage(const QImage& image);
 

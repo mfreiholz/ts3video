@@ -1,18 +1,18 @@
 #include "cameraframegrabber.h"
 
+#include <QWidget>
 #include "humblelogging/api.h"
-
-//#include "ts3video.h"
 #include "elws.h"
 
 HUMBLE_LOGGER(HL, "client.camera");
 
 ///////////////////////////////////////////////////////////////////////
 
-CameraFrameGrabber::CameraFrameGrabber(const QSize& resolution, QObject* parent) :
+CameraFrameGrabber::CameraFrameGrabber(const QSize& resolution, QWidget* widget, QObject* parent) :
 	QAbstractVideoSurface(parent),
 	_firstFrame(true),
-	_targetSize(resolution)//(IFVS_CLIENT_VIDEO_SIZE)
+	_targetSize(resolution),
+	_widget(widget)
 {
 	setNativeResolution(_targetSize);
 }
@@ -86,6 +86,13 @@ bool CameraFrameGrabber::present(const QVideoFrame& frame)
 		auto surfaceRect = QRect(QPoint(0, 0), _targetSize);
 		_imageRect = QRect(QPoint(0, 0), f.size());
 		ELWS::calcScaledAndCenterizedImageRect(surfaceRect, _imageRect, _imageOffset);
+	}
+
+	if (_widget)
+	{
+		current = frame;
+		_widget->repaint();
+		return true;
 	}
 
 	if (f.map(QAbstractVideoBuffer::ReadOnly))
