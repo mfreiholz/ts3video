@@ -92,6 +92,9 @@ bool CameraFrameGrabber::present(const QVideoFrame& frame)
 	{
 		// Create copy via copy() or mirrored(). At least we need a copy as long as we don't directly print here.
 		auto image = QImage(f.bits(), f.width(), f.height(), imageFormat);
+#ifdef _WIN32
+		image = image.mirrored();
+#endif
 		if (image.size() != _imageRect.size())
 		{
 			image = image.scaled(_imageRect.size());
@@ -104,10 +107,12 @@ bool CameraFrameGrabber::present(const QVideoFrame& frame)
 		{
 			image = image.copy(0, _imageOffset.y(), _targetSize.width(), _targetSize.height());
 		}
+#ifndef _WIN32
 		else
 		{
-			image= image.copy();
+			image = image.copy();
 		}
+#endif
 		emit newQImage(image);
 		f.unmap();
 	}

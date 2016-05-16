@@ -14,6 +14,7 @@
 #include "startup/devstartuplogic.h"
 #include "ts3video/ts3videostartuplogic.h"
 #include "test/connectionteststartuplogic.h"
+#include "test/directconnectstartuplogic.h"
 
 HUMBLE_LOGGER(HL, "client");
 
@@ -49,6 +50,10 @@ int main(int argc, char* argv[])
 	else if (mode.compare("connection-test", Qt::CaseInsensitive) == 0)
 	{
 		sl.reset(new ConnectionTestStartupLogic(&a));
+	}
+	else if (mode.compare("directconnect", Qt::CaseInsensitive) == 0)
+	{
+		sl.reset(new DirectConnectStartupLogic(&a));
 	}
 	if (!sl)
 	{
