@@ -1,9 +1,6 @@
 [submodule "thirdparty/humblelogging"]
 	path = thirdparty/humblelogging
 	url = https://github.com/mfreiholz/humble-logging-library.git
-[submodule "thirdparty/vpx"]
-	path = thirdparty/vpx
-	url = https://github.com/mfreiholz/ocs-vpx.git
 [submodule "thirdparty/teamspeak3-clientpluginsdk"]
 	path = thirdparty/teamspeak3-clientpluginsdk
 	url = https://github.com/mfreiholz/ocs-ts3clientpluginsdk.git
