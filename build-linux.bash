@@ -25,11 +25,15 @@ mkdir $OCS_BUILD_DIR_PATH
 cd $OCS_BUILD_DIR_PATH
 cmake -DCMAKE_INSTALL_PREFIX="$OCS_DEPLOY_DIR_PATH" -DCMAKE_BUILD_TYPE=Release ..
 
-# Run Make + Install
-make && make install
+read -rsp $'Press any key to run "make"'
+make
+
+read -rsp $'Press any key to run "make install"'
+make install
 
 # Deploy
 # Copy dependencies
+read -rsp $'Press any key to run "deployment"'
 ARCH=$(uname -m)
 if [ $ARCH = "i686" ]; then 
 	cp /usr/lib/i386-linux-gnu/libstdc++.so.6 $OCS_DEPLOY_DIR_PATH/server/
