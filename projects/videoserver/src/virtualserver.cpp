@@ -72,8 +72,7 @@ VirtualServer::VirtualServer(const VirtualServerOptions& opts, QObject* parent) 
 
 VirtualServer::~VirtualServer()
 {
-	delete _mediaSocketHandler;
-	delete _wsStatusServer;
+	stop();
 }
 
 bool VirtualServer::init()
@@ -88,20 +87,20 @@ bool VirtualServer::init()
 	HL_INFO(HL, QString("Listening for client connections (protocol=TCP; address=%1; port=%2)").arg(_opts.address.toString()).arg(_opts.port).toStdString());
 
 	// Init media socket.
-	_mediaSocketHandler = new MediaSocketHandler(_opts.address, _opts.port, this);
+	_mediaSocketHandler = std::make_unique<MediaSocketHandler>(_opts.address, _opts.port, this);
 	if (!_mediaSocketHandler->init())
 	{
 		return false;
 	}
-	connect(_mediaSocketHandler, &MediaSocketHandler::tokenAuthentication, this, &VirtualServer::onMediaSocketTokenAuthentication);
-	connect(_mediaSocketHandler, &MediaSocketHandler::networkUsageUpdated, this, &VirtualServer::onMediaSocketNetworkUsageUpdated);
+	connect(_mediaSocketHandler.get(), &MediaSocketHandler::tokenAuthentication, this, &VirtualServer::onMediaSocketTokenAuthentication);
+	connect(_mediaSocketHandler.get(), &MediaSocketHandler::networkUsageUpdated, this, &VirtualServer::onMediaSocketNetworkUsageUpdated);
 	HL_INFO(HL, QString("Listening for media data (protocol=UDP; address=%1; port=%2)").arg(_opts.address.toString()).arg(_opts.port).toStdString());
 
 	// Init status web-socket.
 	WebSocketStatusServer::Options wsopts;
 	wsopts.address = _opts.wsStatusAddress;
 	wsopts.port = _opts.wsStatusPort;
-	_wsStatusServer = new WebSocketStatusServer(wsopts, this);
+	_wsStatusServer = std::make_unique<WebSocketStatusServer>(wsopts, this);
 	if (!_wsStatusServer->init())
 	{
 		HL_ERROR(HL, QString("Can not bind to TCP port (port=%1)").arg(wsopts.port).toStdString());
@@ -110,6 +109,21 @@ bool VirtualServer::init()
 	HL_INFO(HL, QString("Listening for web-socket status connections (protocol=TCP; address=%1; port=%2)").arg(wsopts.address.toString()).arg(wsopts.port).toStdString());
 
 	return true;
+}
+
+void VirtualServer::stop()
+{
+	// Main
+	_corServer.close();
+	_corServer.disconnect(this);
+
+	// Media
+	_mediaSocketHandler->disconnect(this);
+	_mediaSocketHandler.reset();
+
+	// Web socket
+	_wsStatusServer->disconnect(this);
+	_wsStatusServer.reset();
 }
 
 const VirtualServerOptions& VirtualServer::options() const

@@ -156,6 +156,18 @@ public:
 
 ///////////////////////////////////////////////////////////////////////
 
+class GetChannelListAction : public ActionBase
+{
+public:
+	QString name() const
+	{
+		return QString("GetChannelList");
+	}
+	void run(const ActionData& req);
+};
+
+///////////////////////////////////////////////////////////////////////
+
 class JoinChannelAction : public ActionBase
 {
 public:

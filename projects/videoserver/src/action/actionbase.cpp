@@ -382,6 +382,30 @@ void DisableAudioInputAction::run(const ActionData& req)
 
 ///////////////////////////////////////////////////////////////////////
 
+void GetChannelListAction::run(const ActionData& req)
+{
+	const auto offset = req.params["offset"].toInt();
+	const auto limit = req.params["limit"].toInt();
+
+	if (offset < 0 || offset > req.server->_channels.count() || limit <= 0)
+	{
+		sendDefaultErrorResponse(req, IFVS_STATUS_INVALID_PARAMETERS, QString("Offset/Limit out of range."));
+		return;
+	}
+
+	QJsonArray jchannels;
+	foreach (auto c, req.server->_channels)
+	{
+		jchannels.append(c->toQJsonObject());
+	}
+
+	QJsonObject params;
+	params["channels"] = jchannels;
+	sendDefaultOkResponse(req, params);
+}
+
+///////////////////////////////////////////////////////////////////////
+
 /*
 	Joins a channel with different logics.
 	1. By it's ID - The channel has to exist.

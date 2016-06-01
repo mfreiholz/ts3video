@@ -1,15 +1,14 @@
 #ifndef VirtualServer_H
 #define VirtualServer_H
 
-#include <limits.h>
+#include <limits>
+#include <memory>
 
 #include <QObject>
 #include <QList>
 #include <QHash>
 #include <QSet>
-#include <QScopedPointer>
 #include <QHostAddress>
-#include <QSize>
 
 #include "qcorlib/qcorserver.h"
 
@@ -39,6 +38,8 @@ public:
 	virtual ~VirtualServer();
 
 	bool init();
+	void stop();
+
 	const VirtualServerOptions& options() const;
 	void updateMediaRecipients();
 
@@ -62,8 +63,8 @@ private:
 	void registerAction(const ActionPtr& action);
 
 public:
-	VirtualServerOptions _opts; ///< Complete configuration for this VirtualServer instance.
-	VirtualServerConfigEntity _config; ///< Config part from VirtualServerOptions, which is send to clients.
+	VirtualServerOptions _opts;         // Complete configuration for this VirtualServer instance.
+	VirtualServerConfigEntity _config;  // Config part from VirtualServerOptions, which is send to clients.
 
 	// Listens for new client connections.
 	QCorServer _corServer;
@@ -71,8 +72,8 @@ public:
 
 	// Information about connected clients.
 	ocs::clientid_t _nextClientId;
-	QHash<ocs::clientid_t, ServerClientEntity*> _clients; ///< Maps client-ids to their info object.
-	QHash<ocs::clientid_t, ClientConnectionHandler*> _connections; ///< Maps client-ids to their connection handlers.
+	QHash<ocs::clientid_t, ServerClientEntity*> _clients;               // Maps client-ids to their info object.
+	QHash<ocs::clientid_t, ClientConnectionHandler*> _connections;      // Maps client-ids to their connection handlers.
 
 	// Information about existing conferences.
 	ocs::channelid_t _nextChannelId;
@@ -85,17 +86,14 @@ public:
 	QHash<ocs::clientid_t, QSet<ocs::clientid_t> > _sender2receiver;    // Maps sender-ids to receiver-ids (In addition to conference based mappings!)
 
 	// Media streaming attributes.
-	MediaSocketHandler* _mediaSocketHandler;
-	QHash<QString, ocs::clientid_t> _tokens; ///< Maps auth-tokens to client-ids.
+	std::unique_ptr<MediaSocketHandler> _mediaSocketHandler;
+	QHash<QString, ocs::clientid_t> _tokens; // Maps auth-tokens to client-ids.
 
 	// Web-socket status server.
-	WebSocketStatusServer* _wsStatusServer;
+	std::unique_ptr<WebSocketStatusServer> _wsStatusServer;
 
 	// Network usages (COR, Media, WebSocket, ...)
 	NetworkUsageEntity _networkUsageMediaSocket;
-
-	// Statistics database
-
 };
 
 #endif
