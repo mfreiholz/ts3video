@@ -36,12 +36,13 @@ if(WIN32)
 		debug ${PROJECT_SOURCE_DIR}/thirdparty/vendor-libvpx/win-${ARCH}-vc12/lib/vpxmdd.lib
 	)
 else(WIN32)
-	set(vpx_INCLUDE_DIRS
-	  "/home/manuel/Libraries/libvpx-x86-64-gcc521/install/include"
-	)
-	set(vpx_LIBRARIES
-		"/home/manuel/Libraries/libvpx-x86-64-gcc521/install/lib/libvpx.a"
-	)
+        set(vpx_INCLUDE_DIRS
+		${PROJECT_SOURCE_DIR}/thirdparty/vendor-libvpx/linux-${ARCH}-gcc/include
+        )
+        set(vpx_LIBRARIES
+		optimized "${PROJECT_SOURCE_DIR}/thirdparty/vendor-libvpx/linux-${ARCH}-gcc/lib/libvpx.a"
+		debug "${PROJECT_SOURCE_DIR}/thirdparty/vendor-libvpx/linux-${ARCH}-gcc/lib/libvpx.a"
+        )
 endif(WIN32)
 
 # ---------------------------------------------------------------------

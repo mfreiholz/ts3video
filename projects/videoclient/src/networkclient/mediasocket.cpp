@@ -10,7 +10,7 @@ HUMBLE_LOGGER(HL, "networkclient.mediasocket");
 
 ///////////////////////////////////////////////////////////////////////
 
-#ifdef __linux__
+#ifdef __linux__ && (__x86_64__ || __ppc64__)
 QDataStream& operator<<(QDataStream& out, const UDP::VideoFrameDatagram::dg_frame_id_t& val)
 {
 	out << (quint64)val;

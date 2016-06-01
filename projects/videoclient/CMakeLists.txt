@@ -213,7 +213,7 @@ if(IncludeOpenGLSupport)
 	if(WIN32)
 		target_link_libraries(${PROJECT_NAME} opengl32) # TODO This shouldn't be here!
 	else()
-		target_link_libraries(${PROJECT_NAME} libGL.so)
+		target_link_libraries(${PROJECT_NAME} /usr/lib/nvidia-352/libGL.so)
 		target_link_libraries(${PROJECT_NAME} pthread)
 	endif()
 endif()
