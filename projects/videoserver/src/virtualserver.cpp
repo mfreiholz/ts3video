@@ -27,7 +27,6 @@ VirtualServer::VirtualServer(const VirtualServerOptions& opts, QObject* parent) 
 	_nextClientId(0),
 	_clients(),
 	_nextChannelId(0),
-	_channels(),
 	_participants(),
 	_mediaSocketHandler(nullptr),
 	_tokens(),
@@ -210,8 +209,7 @@ ServerChannelEntity* VirtualServer::createChannel(const QString& ident)
 	c->id = ++_nextChannelId;
 	c->ident = ident;
 
-	_channels.insert(c->id, c);
-
+	_id2channel.insert(c->id, c);
 	if (!c->ident.isEmpty())
 		_ident2channel.insert(c->ident, c->id);
 
@@ -220,7 +218,7 @@ ServerChannelEntity* VirtualServer::createChannel(const QString& ident)
 
 ServerChannelEntity* VirtualServer::addClientToChannel(ocs::clientid_t clientId, ocs::channelid_t channelId)
 {
-	auto channelEntity = _channels.value(channelId);
+	auto channelEntity = _id2channel.value(channelId);
 	if (!channelEntity)
 	{
 		HL_ERROR(HL, QString("Channel does not exist (channelId=%1)").arg(channelId).toStdString());
@@ -241,7 +239,7 @@ void VirtualServer::removeClientFromChannel(ocs::clientid_t clientId, ocs::chann
 	if (_participants[channelId].isEmpty())
 	{
 		_participants.remove(channelId);
-		auto c = _channels.take(channelId);
+		auto c = _id2channel.take(channelId);
 		_ident2channel.remove(c->ident);
 		delete c;
 	}

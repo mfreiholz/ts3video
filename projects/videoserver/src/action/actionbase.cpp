@@ -387,17 +387,30 @@ void GetChannelListAction::run(const ActionData& req)
 	const auto offset = req.params["offset"].toInt();
 	const auto limit = req.params["limit"].toInt();
 
-	if (offset < 0 || offset > req.server->_channels.count() || limit <= 0)
+	if (offset < 0 || offset >= req.server->_id2channel.count() || limit <= 0)
 	{
 		sendDefaultErrorResponse(req, IFVS_STATUS_INVALID_PARAMETERS, QString("Offset/Limit out of range."));
 		return;
 	}
 
 	QJsonArray jchannels;
-	foreach (auto c, req.server->_channels)
+	auto channels = req.server->_id2channel.values();
+	qSort(channels.begin(), channels.end(), [](const ServerChannelEntity * a, const ServerChannelEntity * b)
+	{
+		return a->id < b->id;
+	});
+	foreach (const auto c, channels)
 	{
 		jchannels.append(c->toQJsonObject());
 	}
+
+	//QJsonArray jchannels;
+	//const auto end = offset + limit > req.server->_channels.count() ? req.server->_channels.count() : offset + limit;
+	//for (auto i = offset; i < end; ++i)
+	//{
+	//	const auto& c = req.server->_channels.at(i);
+	//	jchannels.append(c->toQJsonObject());
+	//}
 
 	QJsonObject params;
 	params["channels"] = jchannels;
@@ -430,7 +443,7 @@ void JoinChannelAction::run(const ActionData& req)
 
 	// Retrieve channel
 	// Create the channel, if a IDENT-String is given
-	auto channelEntity = req.server->_channels.value(channelId);
+	auto channelEntity = req.server->_id2channel.value(channelId);
 	if (!channelEntity && !channelIdent.isEmpty())
 	{
 		channelEntity = req.server->createChannel(channelIdent);
@@ -487,7 +500,7 @@ void LeaveChannelAction::run(const ActionData& req)
 	const ocs::channelid_t channelId = req.params["channelid"].toInt();
 
 	// Find channel.
-	auto channelEntity = req.server->_channels.value(channelId);
+	auto channelEntity = req.server->_id2channel.value(channelId);
 	if (!channelEntity)
 	{
 		sendDefaultErrorResponse(req, IFVS_STATUS_INVALID_PARAMETERS, QString("Invalid channel id (channelid=%1)").arg(channelId));

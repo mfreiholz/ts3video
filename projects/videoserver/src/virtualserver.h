@@ -77,7 +77,7 @@ public:
 
 	// Information about existing conferences.
 	ocs::channelid_t _nextChannelId;
-	QHash<ocs::channelid_t, ServerChannelEntity*> _channels;            // Maps channel-ids to their info object.
+	QHash<ocs::channelid_t, ServerChannelEntity*> _id2channel;          // Maps channel-ids to their info object.
 	QHash<QString, ocs::channelid_t> _ident2channel;                    // Maps and identifier to it's matching channel-id. Optional: Only TS3VIDEO channels use this by now.
 	QHash<ocs::channelid_t, QSet<ocs::clientid_t> > _participants;      // Maps channel-ids to client-ids.
 	QHash<ocs::clientid_t, QSet<ocs::channelid_t> > _client2channels;   // Maps client-ids to channel-ids.

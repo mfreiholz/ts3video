@@ -239,7 +239,7 @@ QJsonValue WebSocketStatusServer::getClientsInfo() const
 QJsonValue WebSocketStatusServer::getChannelsInfo() const
 {
 	QJsonArray channels;
-	foreach (auto channelEntity, _server->_channels)
+	foreach (auto channelEntity, _server->_id2channel)
 	{
 		auto jsChannel = channelEntity->toQJsonObject();
 		QJsonArray jsParticipants;
