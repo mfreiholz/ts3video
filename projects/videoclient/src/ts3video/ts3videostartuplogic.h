@@ -23,6 +23,9 @@ public:
 
 	// Indicates whether a public server should be used.
 	bool usePublicConferenceServer = false;
+
+	bool skipUpdateCheck = false;
+	bool skipServerLookup = false;
 };
 
 

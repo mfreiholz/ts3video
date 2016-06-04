@@ -90,10 +90,16 @@ static QString generateConferenceRoomPassword(const QString& uid)
 	--username      The name of the TeamSpeak user.
 	--public        Indicates that a public server should be used.
 
+	--skip-update-check
+		Skips the update check.
+	--skip-server-lookup
+		Skips the server lookup on master (does not work with --public flag).
+
 	# Commands
 
 	--mode ts3video --address teamspeak.insanefactory.com --port 9987 --channelid 1 --clientdbid 6 --username "Manuel"
 	--mode ts3video --address 127.0.0.1 --port 9987 --channelid 1 --username "Manuel"
+	--mode ts3video --address 127.0.0.1 --port 9987 --channelid 1 --username "Manuel" --skip-update-check --skip-server-lookup
 */
 Ts3VideoStartupLogic::Ts3VideoStartupLogic(QApplication* a) :
 	QDialog(nullptr), AbstractStartupLogic(a), _window(nullptr)
@@ -127,6 +133,8 @@ int Ts3VideoStartupLogic::exec()
 	_args.ts3ClientDbId = ELWS::getArgsValue("--clientdbid").toString().toULongLong();
 	_args.ts3Username = ELWS::getArgsValue("--username").toString();
 	_args.usePublicConferenceServer = ELWS::hasArgsValue("--public");
+	_args.skipUpdateCheck = ELWS::hasArgsValue("--skip-update-check");
+	_args.skipServerLookup = ELWS::hasArgsValue("--skip-server-lookup");
 
 	// TODO Load options from single encrypted argument.
 	//auto enc = ELWS::getArgsValue("--data").toString();
@@ -180,10 +188,13 @@ void Ts3VideoStartupLogic::start()
 	setStatus(tr("Initializing conference now"));
 
 	// Check for updates.
-	if (!checkVersion())
+	if (!_args.skipUpdateCheck)
 	{
-		quitDelayed();
-		return;
+		if (!checkVersion())
+		{
+			quitDelayed();
+			return;
+		}
 	}
 
 	// Lookup conference.
@@ -196,7 +207,7 @@ void Ts3VideoStartupLogic::start()
 	}
 	else
 	{
-		if (!lookupConference())
+		if (_args.skipServerLookup || !lookupConference())
 		{
 			// Lookup failed.
 			// Fallback to old behavior and join own dedicated server.
