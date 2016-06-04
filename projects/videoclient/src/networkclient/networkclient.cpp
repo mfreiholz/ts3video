@@ -223,6 +223,22 @@ QCorReply* NetworkClient::goodbye()
 	return d->corSocket->sendRequest(req);
 }
 
+QCorReply* NetworkClient::getChannelList(int offset, int limit)
+{
+	REQUEST_PRECHECK
+
+	HL_DEBUG(HL, QString("Get channel list (offset=%1; limit=%2)").arg(offset).arg(limit).toStdString());
+
+	QJsonObject params;
+	params["offset"] = offset;
+	params["limit"] = limit;
+
+	QCorFrame req;
+	req.setData(JsonProtocolHelper::createJsonRequest("GetChannelList", params));
+	auto reply = d->corSocket->sendRequest(req);
+	return reply;
+}
+
 QCorReply* NetworkClient::joinChannel(ocs::channelid_t id, const QString& password)
 {
 	REQUEST_PRECHECK

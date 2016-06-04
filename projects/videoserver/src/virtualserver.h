@@ -44,6 +44,7 @@ public:
 	void updateMediaRecipients();
 
 	ServerChannelEntity* createChannel(const QString& ident = QString());
+	//void deleteChannel(ocs::channelid_t channelId);
 	ServerChannelEntity* addClientToChannel(ocs::clientid_t clientId, ocs::channelid_t channelId);
 	void removeClientFromChannel(ocs::clientid_t clientId, ocs::channelid_t channelId);
 	void removeClientFromChannels(ocs::clientid_t clientId);

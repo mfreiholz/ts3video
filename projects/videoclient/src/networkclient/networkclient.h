@@ -72,6 +72,14 @@ public:
 	QCorReply* goodbye();
 
 	/*!
+		Gets list of channels.
+		Requires an authenticated connection.
+		\see auth()
+		\return QCorReply* Ownership goes over to caller who needs to delete it with "deleteLater()".
+	*/
+	QCorReply* getChannelList(int offset = 0, int limit = INT_MAX);
+
+	/*!
 	    Joins a channel/room/conference.
 	    Requires an authenticated connection.
 	    \see auth()

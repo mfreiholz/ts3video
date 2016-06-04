@@ -22,6 +22,7 @@ public:
 	ocs::channelid_t id;
 	QString name;
 	bool isPasswordProtected;
+	bool isPersistent;
 };
 Q_DECLARE_METATYPE(ChannelEntity);
 #endif

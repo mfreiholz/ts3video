@@ -42,6 +42,8 @@ set(qheaders
 	src/movablewidgetcontainer.h
 	src/hintoverlaywidget.h
 	src/proxysettingswidget.h
+	src/channellistwidget.h
+	src/channellistmodel.h
 	src/networkclient/networkclient.h
 	src/networkclient/networkclient_p.h
 	src/networkclient/mediasocket.h
@@ -81,6 +83,8 @@ set(sources
 	src/movablewidgetcontainer.cpp
 	src/hintoverlaywidget.cpp
 	src/proxysettingswidget.cpp
+	src/channellistwidget.cpp
+	src/channellistmodel.cpp
 	src/networkclient/networkclient.cpp
 	src/networkclient/mediasocket.cpp
 	src/networkclient/videoencodingthread.cpp
@@ -103,6 +107,8 @@ set(qforms
 	src/startup/startupwidget.ui
 	src/aboutwidget.ui
 	src/proxysettingswidget.ui
+	src/channellistwidget.ui
+	src/channellistmodel.ui
 	src/ts3video/ts3videostartuplogic.ui
 	src/ts3video/ts3videoupdatedialog.ui
 	src/video/videosettingswidget.ui

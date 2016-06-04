@@ -216,6 +216,40 @@ ServerChannelEntity* VirtualServer::createChannel(const QString& ident)
 	return c;
 }
 
+/*  void VirtualServer::deleteChannel(ocs::channelid_t channelId)
+    {
+	auto channel = _id2channel.take(channelId);
+	if (!channel)
+	{
+		HL_ERROR(HL, QString("invalid channel (id=%1)").arg(channelId).toStdString());
+		return;
+	}
+	delete channel;
+	channel = nullptr;
+
+	// notify users if there are still some in channel
+	// -> ???
+
+
+	// clean up mappings
+	const auto clientIds = _participants.take(channelId);
+	foreach (auto clientId, clientIds)
+	{
+
+	}
+
+
+
+	if (_participants[channelId].isEmpty())
+	{
+		_participants.remove(channelId);
+		auto c = _id2channel.take(channelId);
+		_ident2channel.remove(c->ident);
+		delete c;
+	}
+
+    }*/
+
 ServerChannelEntity* VirtualServer::addClientToChannel(ocs::clientid_t clientId, ocs::channelid_t channelId)
 {
 	auto channelEntity = _id2channel.value(channelId);
