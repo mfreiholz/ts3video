@@ -108,7 +108,6 @@ set(qforms
 	src/aboutwidget.ui
 	src/proxysettingswidget.ui
 	src/channellistwidget.ui
-	src/channellistmodel.ui
 	src/ts3video/ts3videostartuplogic.ui
 	src/ts3video/ts3videoupdatedialog.ui
 	src/video/videosettingswidget.ui
@@ -219,7 +218,8 @@ if(IncludeOpenGLSupport)
 	if(WIN32)
 		target_link_libraries(${PROJECT_NAME} opengl32) # TODO This shouldn't be here!
 	else()
-		target_link_libraries(${PROJECT_NAME} /usr/lib/nvidia-352/libGL.so)
+#		target_link_libraries(${PROJECT_NAME} /usr/lib/nvidia-352/libGL.so)
+		target_link_libraries(${PROJECT_NAME} /usr/lib/x86_64-linux-gnu/libGL.so)
 		target_link_libraries(${PROJECT_NAME} pthread)
 	endif()
 endif()

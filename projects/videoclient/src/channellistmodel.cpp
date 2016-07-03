@@ -86,7 +86,7 @@ const ChannelEntity& ChannelListModel::getChannelByIndex(const QModelIndex& inde
 {
 	if (index.row() >= _channels.count())
 	{
-		throw std::exception("index out of bounds", 1);
+		throw std::exception();
 	}
 	return _channels.at(index.row());
 }
