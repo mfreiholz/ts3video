@@ -8,6 +8,7 @@
 
 #include "qcorlib/qcorconnection.h"
 
+#include "action/channels.h"
 #include "mediasockethandler.h"
 #include "websocketstatusserver.h"
 #include "servercliententity.h"

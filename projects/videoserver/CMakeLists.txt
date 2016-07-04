@@ -16,6 +16,7 @@ set(headers
 	src/serverchannelentity.h
 	src/virtualserveroptions.h
 	src/action/actionbase.h
+	src/action/channels.h
 	src/statistics/logserverstatisticstask.h
 )
 
@@ -36,6 +37,7 @@ set(sources
 	src/servercliententity.cpp
 	src/serverchannelentity.cpp
 	src/action/actionbase.cpp
+	src/action/channels.cpp
 	src/statistics/logserverstatisticstask.cpp
 )
 
