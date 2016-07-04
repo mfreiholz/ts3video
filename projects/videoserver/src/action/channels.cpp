@@ -22,6 +22,10 @@ void GetChannelListAction::run(const ActionData& req)
 		jchannels.append(c->toQJsonObject());
 	}
 
+	QJsonObject params;
+	params["channels"] = jchannels;
+	sendDefaultOkResponse(req, params);
+
 	//QJsonArray jchannels;
 	//const auto end = offset + limit > req.server->_channels.count() ? req.server->_channels.count() : offset + limit;
 	//for (auto i = offset; i < end; ++i)
@@ -29,10 +33,6 @@ void GetChannelListAction::run(const ActionData& req)
 	//	const auto& c = req.server->_channels.at(i);
 	//	jchannels.append(c->toQJsonObject());
 	//}
-
-	QJsonObject params;
-	params["channels"] = jchannels;
-	sendDefaultOkResponse(req, params);
 }
 
 /*

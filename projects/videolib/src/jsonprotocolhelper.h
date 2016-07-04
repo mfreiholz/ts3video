@@ -19,4 +19,16 @@ public:
 	static bool fromJsonResponse(const QByteArray& data, int& status, QJsonObject& parameters, QString& error);
 };
 
+class JsonSerializable
+{
+public:
+	virtual QJsonObject toJson() const = 0;
+};
+
+class JsonDeserializeable
+{
+public:
+	virtual void fromJson(const QJsonObject& json) = 0;
+};
+
 #endif
