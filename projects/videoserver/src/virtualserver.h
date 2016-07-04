@@ -9,6 +9,7 @@
 #include <QHash>
 #include <QSet>
 #include <QHostAddress>
+#include <QSharedPointer>
 
 #include "qcorlib/qcorserver.h"
 
@@ -18,7 +19,6 @@
 #include "videolib/src/networkusageentity.h"
 #include "videolib/src/virtualserverconfigentity.h"
 
-#include "action/actionbase.h"
 #include "virtualserveroptions.h"
 
 class ClientConnectionHandler;
@@ -26,6 +26,7 @@ class MediaSocketHandler;
 class WebSocketStatusServer;
 class ServerClientEntity;
 class ServerChannelEntity;
+class ActionBase;
 
 class VirtualServer : public QObject
 {
@@ -61,7 +62,7 @@ private slots:
 	void onMediaSocketNetworkUsageUpdated(const NetworkUsageEntity& networkUsage);
 
 private:
-	void registerAction(const ActionPtr& action);
+	void registerAction(const QSharedPointer<ActionBase>& action);
 
 public:
 	VirtualServerOptions _opts;         // Complete configuration for this VirtualServer instance.
@@ -69,7 +70,7 @@ public:
 
 	// Listens for new client connections.
 	QCorServer _corServer;
-	QHash<QString, ActionPtr> _actions;
+	QHash<QString, QSharedPointer<ActionBase> > _actions;
 
 	// Information about connected clients.
 	ocs::clientid_t _nextClientId;

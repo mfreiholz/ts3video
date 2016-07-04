@@ -17,6 +17,7 @@ set(headers
 	src/virtualserveroptions.h
 	src/action/actionbase.h
 	src/action/channels.h
+	src/action/media.h
 	src/statistics/logserverstatisticstask.h
 )
 
@@ -38,6 +39,7 @@ set(sources
 	src/serverchannelentity.cpp
 	src/action/actionbase.cpp
 	src/action/channels.cpp
+	src/action/media.cpp
 	src/statistics/logserverstatisticstask.cpp
 )
 

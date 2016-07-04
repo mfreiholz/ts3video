@@ -9,6 +9,7 @@
 #include "qcorlib/qcorconnection.h"
 
 #include "action/channels.h"
+#include "action/media.h"
 #include "mediasockethandler.h"
 #include "websocketstatusserver.h"
 #include "servercliententity.h"
@@ -393,7 +394,7 @@ void VirtualServer::onMediaSocketNetworkUsageUpdated(const NetworkUsageEntity& n
 	_networkUsageMediaSocket = networkUsage;
 }
 
-void VirtualServer::registerAction(const ActionPtr& action)
+void VirtualServer::registerAction(const QSharedPointer<ActionBase>& action)
 {
 	if (_actions.contains(action->name()))
 	{

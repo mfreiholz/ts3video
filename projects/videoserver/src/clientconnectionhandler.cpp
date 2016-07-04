@@ -20,6 +20,7 @@
 #include "virtualserver.h"
 #include "servercliententity.h"
 #include "serverchannelentity.h"
+#include "action/actionbase.h"
 
 HUMBLE_LOGGER(HL, "server.clientconnection");
 

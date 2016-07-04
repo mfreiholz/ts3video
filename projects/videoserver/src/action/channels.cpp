@@ -1,16 +1,5 @@
 #include "channels.h"
 
-#include <QJsonValue>
-#include <QJsonObject>
-#include <QJsonArray>
-
-#include "videolib/src/ts3video.h"
-
-#include "../virtualserver.h"
-#include "../clientconnectionhandler.h"
-#include "../serverchannelentity.h"
-#include "../servercliententity.h"
-
 void GetChannelListAction::run(const ActionData& req)
 {
 	const auto offset = req.params["offset"].toInt();

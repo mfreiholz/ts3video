@@ -1,16 +1,23 @@
-#ifndef ACTIONBASE_H
-#define ACTIONBASE_H
+#pragma once
 
+#include <QString>
 #include <QPointer>
 #include <QSharedPointer>
-#include <QRunnable>
-#include <QJsonObject>
 
+#include <QJsonDocument>
+#include <QJsonValue>
+#include <QJsonObject>
+#include <QJsonArray>
+
+#include "qcorlib/qcorconnection.h"
 #include "qcorlib/qcorframe.h"
 
-class QCorConnection;
-class VirtualServer;
-class ClientConnectionHandler;
+#include "videolib/src/ts3video.h"
+
+#include "../virtualserver.h"
+#include "../clientconnectionhandler.h"
+#include "../serverchannelentity.h"
+#include "../servercliententity.h"
 
 /*
 	List of notifications
@@ -108,30 +115,6 @@ public:
 
 ///////////////////////////////////////////////////////////////////////
 
-class EnableVideoAction : public ActionBase
-{
-public:
-	QString name() const
-	{
-		return QString("clientenablevideo");
-	}
-	void run(const ActionData& req);
-};
-
-///////////////////////////////////////////////////////////////////////
-
-class DisableVideoAction : public ActionBase
-{
-public:
-	QString name() const
-	{
-		return QString("clientdisablevideo");
-	}
-	void run(const ActionData& req);
-};
-
-///////////////////////////////////////////////////////////////////////
-
 class EnableAudioInputAction : public ActionBase
 {
 public:
@@ -200,7 +183,7 @@ public:
 
 ///////////////////////////////////////////////////////////////////////
 
-/* Sets a direct streaming relation between a sender and receiver.
+/*  Sets a direct streaming relation between a sender and receiver.
 */
 class AddDirectStreamingRelationAction : public ActionBase
 {
@@ -218,7 +201,7 @@ public:
 
 ///////////////////////////////////////////////////////////////////////
 
-/* Removes a direct streaming relation between a sender and receiver.
+/*  Removes a direct streaming relation between a sender and receiver.
 */
 class RemoveDirectStreamingRelationAction : public ActionBase
 {
@@ -233,7 +216,3 @@ public:
 	}
 	void run(const ActionData& req);
 };
-
-///////////////////////////////////////////////////////////////////////
-
-#endif
