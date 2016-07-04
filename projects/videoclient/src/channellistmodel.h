@@ -7,7 +7,7 @@
 #include <QMap>
 #include <QString>
 
-#include "videolib/src/channelentity.h"
+#include "videolib/channelentity.h"
 
 class NetworkClient;
 

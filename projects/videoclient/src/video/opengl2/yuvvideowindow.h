@@ -4,7 +4,7 @@
 #include <QWindow>
 #include <QOpenGLFunctions>
 
-#include "yuvframe.h"
+#include "videolib/yuvframe.h"
 
 class QOpenGLContext;
 class QOpenGLPaintDevice;

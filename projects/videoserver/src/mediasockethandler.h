@@ -12,9 +12,12 @@
 #include <QHostAddress>
 #include <QByteArray>
 #include <QHash>
+
 #include "baselib/defines.h"
+
 #include "medlib/protocol.h"
-#include "videolib/src/networkusageentity.h"
+
+#include "videolib/networkusageentity.h"
 
 class MediaSenderEntity;
 class MediaReceiverEntity;

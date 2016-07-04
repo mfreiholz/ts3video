@@ -9,7 +9,7 @@
 #include <QSize>
 #include <QHostAddress>
 
-#include "videolib/src/ts3video.h"
+#include "videolib/ts3video.h"
 
 class VirtualServerOptions
 {

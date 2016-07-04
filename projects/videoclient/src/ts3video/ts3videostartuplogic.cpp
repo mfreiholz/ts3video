@@ -23,11 +23,11 @@
 
 #include "qtasync/qtasync.h"
 
-#include "videolib/src/ts3video.h"
-#include "videolib/src/elws.h"
-#include "videolib/src/jsonprotocolhelper.h"
-#include "videolib/src/cliententity.h"
-#include "videolib/src/channelentity.h"
+#include "videolib/ts3video.h"
+#include "videolib/elws.h"
+#include "videolib/jsonprotocolhelper.h"
+#include "videolib/cliententity.h"
+#include "videolib/channelentity.h"
 
 #include "startup/startupwidget.h"
 #include "video/conferencevideowindow.h"

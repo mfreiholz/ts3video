@@ -6,7 +6,8 @@
 
 #include "qtasync/qtasync.h"
 
-#include "videolib/src/virtualserverconfigentity.h"
+#include "videolib/virtualserverconfigentity.h"
+
 #include "util/qwidgetutil.h"
 
 ///////////////////////////////////////////////////////////////////////

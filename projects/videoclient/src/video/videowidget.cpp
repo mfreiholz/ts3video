@@ -4,7 +4,7 @@
 #include <QPaintEvent>
 #include <QBoxLayout>
 
-#include "elws.h"
+#include "videolib/elws.h"
 
 ///////////////////////////////////////////////////////////////////////
 

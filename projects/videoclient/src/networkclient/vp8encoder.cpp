@@ -2,7 +2,7 @@
 
 #include <QDateTime>
 
-#include "vp8frame.h"
+#include "videolib/vp8frame.h"
 
 // VPX defines.
 #define VPX_CODEC_DISABLE_COMPAT 1

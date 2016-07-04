@@ -11,7 +11,7 @@
 
 #include "baselib/defines.h"
 
-#include "vp8frame.h"
+#include "videolib/vp8frame.h"
 
 class QByteArray;
 class QImage;

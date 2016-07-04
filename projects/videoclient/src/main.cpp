@@ -8,8 +8,8 @@
 
 #include "baselib/defines.h"
 
-#include "videolib/src/ts3video.h"
-#include "videolib/src/elws.h"
+#include "videolib/ts3video.h"
+#include "videolib/elws.h"
 
 #include "startup/devstartuplogic.h"
 #include "ts3video/ts3videostartuplogic.h"

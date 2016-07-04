@@ -13,9 +13,9 @@
 #include "qcorlib/qcorconnection.h"
 #include "qcorlib/qcorreply.h"
 
-#include "ts3video.h"
-#include "elws.h"
-#include "jsonprotocolhelper.h"
+#include "videolib/ts3video.h"
+#include "videolib/elws.h"
+#include "videolib/jsonprotocolhelper.h"
 
 #include "virtualserver.h"
 #include "servercliententity.h"

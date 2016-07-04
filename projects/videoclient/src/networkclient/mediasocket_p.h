@@ -2,7 +2,8 @@
 #define MEDIASOCKETPRIVATE_H
 
 #include "mediasocket.h"
-#include "networkusageentity.h"
+
+#include "videolib/networkusageentity.h"
 
 #include "udpvideoframedecoder.h"
 #include "videoencodingthread.h"

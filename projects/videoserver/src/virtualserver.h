@@ -15,9 +15,9 @@
 
 #include "baselib/defines.h"
 
-#include "videolib/src/ts3video.h"
-#include "videolib/src/networkusageentity.h"
-#include "videolib/src/virtualserverconfigentity.h"
+#include "videolib/ts3video.h"
+#include "videolib/networkusageentity.h"
+#include "videolib/virtualserverconfigentity.h"
 
 #include "virtualserveroptions.h"
 

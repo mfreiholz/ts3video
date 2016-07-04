@@ -9,7 +9,7 @@
 #include "QtGui/QWindow"
 #include "QtGui/QOpenGLFunctions"
 
-#include "yuvframe.h"
+#include "videolib/yuvframe.h"
 
 #include "openglwindow.h"
 

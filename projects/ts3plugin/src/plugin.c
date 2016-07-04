@@ -20,7 +20,7 @@
 #include "ts3_functions.h"
 #include "plugin.h"
 #include "impl.h"
-#include "ts3video.h"
+#include "videolib/ts3video.h"
 
 static struct TS3Functions ts3Functions;
 

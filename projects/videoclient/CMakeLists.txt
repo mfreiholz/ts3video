@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 project(videoclient)
+
 cmake_policy(SET CMP0020 NEW)
 
 option(IncludeOpenGLSupport "IncludeOpenGLSupport" ON)
@@ -174,7 +175,6 @@ include_directories(
 	../baselib/include
 	../medlib/include
 	../qcorlib/include
-	../videolib/src
 	./src
 )
 

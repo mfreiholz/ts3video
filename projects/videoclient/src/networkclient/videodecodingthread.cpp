@@ -1,6 +1,9 @@
 #include "videodecodingthread.h"
+
 #include "humblelogging/api.h"
-#include "ts3video.h"
+
+#include "videolib/ts3video.h"
+
 #include "vp8decoder.h"
 
 HUMBLE_LOGGER(HL, "networkclient.videodecodingthread");

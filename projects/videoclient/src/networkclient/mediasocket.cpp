@@ -2,9 +2,12 @@
 
 #include <QTimer>
 #include <QTimerEvent>
+
 #include "humblelogging/api.h"
+
 #include "medlib/protocol.h"
-#include "timeutil.h"
+
+#include "videolib/timeutil.h"
 
 HUMBLE_LOGGER(HL, "networkclient.mediasocket");
 

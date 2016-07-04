@@ -1,6 +1,6 @@
 #include "aboutwidget.h"
 
-#include "ts3video.h"
+#include "videolib/ts3video.h"
 
 ///////////////////////////////////////////////////////////////////////
 

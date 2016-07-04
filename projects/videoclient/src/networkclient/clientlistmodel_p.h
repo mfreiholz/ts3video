@@ -3,8 +3,8 @@
 
 #include "clientlistmodel.h"
 
-#include "cliententity.h"
-#include "channelentity.h"
+#include "videolib/cliententity.h"
+#include "videolib/channelentity.h"
 
 class ClientListModelPrivate : public QObject
 {

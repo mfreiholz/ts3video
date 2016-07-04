@@ -3,7 +3,8 @@
 
 #include <QScopedPointer>
 #include <QWidget>
-#include "yuvframe.h"
+
+#include "videolib/yuvframe.h"
 
 class VideoWidgetPrivate;
 class VideoWidget : public QWidget

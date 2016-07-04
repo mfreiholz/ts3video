@@ -1,6 +1,9 @@
 #include "devstartuplogic.h"
-#include "videolib/src/elws.h"
+
+#include "videolib/elws.h"
+
 #include "../networkclient/networkclient.h"
+
 #include <QCameraInfo>
 #include <QHostAddress>
 

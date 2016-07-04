@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 project(videoserver)
+
 cmake_policy(SET CMP0020 NEW)
 
 # Qt5
@@ -55,12 +56,10 @@ qt5_wrap_cpp(qheaders_wrap ${qheaders})
 qt5_add_resources(qresources_wrap ${qresources})
 source_group(QtWrap FILES ${qheaders_wrap} ${qresources_wrap})
 
-# Defines
 add_definitions(
 	-DNOMINMAX
 )
 
-# Includes
 include_directories(
 	${humblelogging_INCLUDE_DIRS}
 	../humblesrvproc/include
@@ -68,8 +67,6 @@ include_directories(
 	../baselib/include
 	../medlib/include
 	../qcorlib/include
-	../qts3serverquerylib/src
-	../videolib/src
 )
 
 # Target prerequisites.
@@ -102,7 +99,7 @@ target_link_libraries(
 	baselib
 	medlib
 	qcorlib
-	qts3serverquerylib
+	libts3
 	videolib
 )
 

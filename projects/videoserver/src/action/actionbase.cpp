@@ -13,16 +13,16 @@
 #include "qcorlib/qcorconnection.h"
 #include "qcorlib/qcorreply.h"
 
-#include "ts3util.h"
-#include "ts3serverquery.h"
-#include "ts3queryconsolesocket.h"
+#include "libts3/ts3util.h"
+#include "libts3/ts3serverquery.h"
+#include "libts3/ts3queryconsolesocket.h"
 
 #include "qtasync/qtasync.h"
 
-#include "ts3video.h"
-#include "elws.h"
-#include "jsonprotocolhelper.h"
-#include "videolib/src/virtualserverconfigentity.h"
+#include "videolib/ts3video.h"
+#include "videolib/elws.h"
+#include "videolib/jsonprotocolhelper.h"
+#include "videolib/virtualserverconfigentity.h"
 
 #include "../virtualserver.h"
 #include "../clientconnectionhandler.h"

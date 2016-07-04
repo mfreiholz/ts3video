@@ -4,7 +4,7 @@
 #include <QScopedPointer>
 #include <QGLWidget>
 
-#include "yuvframe.h"
+#include "videolib/yuvframe.h"
 
 class GLVideoWidgetPrivate;
 class GLVideoWidget : public QGLWidget

@@ -6,7 +6,7 @@
 #include <QString>
 #include <QPixmap>
 
-#include "yuvframe.h"
+#include "videolib/yuvframe.h"
 
 #include "opengl/openglrenderthread.h"
 #include "opengl/openglwindow.h"

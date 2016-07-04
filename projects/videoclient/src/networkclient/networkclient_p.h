@@ -12,14 +12,13 @@
 #include <QTimer>
 #include <QScopedPointer>
 
-#include "cliententity.h"
-#include "channelentity.h"
-#include "networkusageentity.h"
-#include "jsonprotocolhelper.h"
-#include "virtualserverconfigentity.h"
-
-#include "vp8frame.h"
-#include "yuvframe.h"
+#include "videolib/cliententity.h"
+#include "videolib/channelentity.h"
+#include "videolib/networkusageentity.h"
+#include "videolib/jsonprotocolhelper.h"
+#include "videolib/virtualserverconfigentity.h"
+#include "videolib/vp8frame.h"
+#include "videolib/yuvframe.h"
 
 #include "networkclient.h"
 #include "clientlistmodel.h"

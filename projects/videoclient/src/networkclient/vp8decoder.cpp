@@ -6,9 +6,9 @@
 
 #include "humblelogging/api.h"
 
-#include "yuvframe.h"
-#include "vp8frame.h"
-#include "imageutil.h"
+#include "videolib/yuvframe.h"
+#include "videolib/vp8frame.h"
+#include "videolib/imageutil.h"
 
 HUMBLE_LOGGER(HL, "vp8.decoder");
 

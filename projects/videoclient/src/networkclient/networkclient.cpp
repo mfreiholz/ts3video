@@ -15,8 +15,8 @@
 #include "qcorlib/qcorconnection.h"
 #include "qcorlib/qcorreply.h"
 
-#include "ts3video.h"
-#include "timeutil.h"
+#include "videolib/ts3video.h"
+#include "videolib/timeutil.h"
 
 #include "mediasocket.h"
 

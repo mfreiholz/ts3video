@@ -14,7 +14,6 @@
 #include "websocketstatusserver.h"
 #include "servercliententity.h"
 #include "serverchannelentity.h"
-
 #include "clientconnectionhandler.h"
 
 HUMBLE_LOGGER(HL, "server");

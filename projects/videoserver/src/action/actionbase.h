@@ -12,7 +12,7 @@
 #include "qcorlib/qcorconnection.h"
 #include "qcorlib/qcorframe.h"
 
-#include "videolib/src/ts3video.h"
+#include "videolib/ts3video.h"
 
 #include "../virtualserver.h"
 #include "../clientconnectionhandler.h"

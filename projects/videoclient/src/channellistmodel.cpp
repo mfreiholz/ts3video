@@ -2,7 +2,8 @@
 
 #include <exception>
 
-#include "videolib/src/jsonprotocolhelper.h"
+#include "videolib/jsonprotocolhelper.h"
+
 #include "networkclient/networkclient.h"
 
 ChannelListModel::ChannelListModel(QObject* parent) :

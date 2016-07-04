@@ -10,7 +10,7 @@
 #include <QtWidgets/QListView>
 #include <QtWidgets/QMenu>
 
-#include "videolib/src/cliententity.h"
+#include "videolib/cliententity.h"
 
 #include "networkclient/clientlistmodel.h"
 #include "networkclient/networkclient.h"

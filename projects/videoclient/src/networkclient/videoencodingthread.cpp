@@ -1,7 +1,11 @@
 #include "videoencodingthread.h"
+
 #include <QTime>
+
 #include "humblelogging/api.h"
-#include "ts3video.h"
+
+#include "videolib/ts3video.h"
+
 #include "vp8encoder.h"
 
 HUMBLE_LOGGER(HL, "networkclient.videoencodingthread");

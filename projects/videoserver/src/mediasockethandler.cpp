@@ -2,7 +2,9 @@
 
 #include <QString>
 #include <QTimer>
+
 #include "humblelogging/api.h"
+
 #include "virtualserver.h"
 
 HUMBLE_LOGGER(HL, "server.mediasocket");

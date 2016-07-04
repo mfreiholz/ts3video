@@ -1,7 +1,7 @@
 #include <string>
 #include <stdio.h>
 #include <Windows.h>
-#include "ts3video.h"
+#include "videolib/ts3video.h"
 #include "ts3_functions.h"
 #include "impl.h"
 

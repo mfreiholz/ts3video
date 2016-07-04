@@ -10,8 +10,8 @@
 
 #include "baselib/defines.h"
 
-#include "videolib/src/ts3video.h"
-#include "videolib/src/yuvframe.h"
+#include "videolib/ts3video.h"
+#include "videolib/yuvframe.h"
 
 #include "networkclient/networkclient.h"
 

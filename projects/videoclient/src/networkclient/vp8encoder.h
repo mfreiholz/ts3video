@@ -4,7 +4,7 @@
 #include "vpx/vpx_encoder.h"
 #include "vpx/vp8cx.h"
 
-#include "yuvframe.h"
+#include "videolib/yuvframe.h"
 
 class VP8Frame;
 
