@@ -37,6 +37,7 @@ set(qheaders
 	src/video/videosettingswidget.h
 	src/startup/startupwidget.h
 	src/startup/devstartuplogic.h
+	src/startup/defaultstartuplogic.h
 	src/adminauthwidget.h
 	src/flowlayout.h
 	src/aboutwidget.h
@@ -78,6 +79,7 @@ set(sources
 	src/startup/startuplogic.cpp
 	src/startup/startupwidget.cpp
 	src/startup/devstartuplogic.cpp
+	src/startup/defaultstartuplogic.cpp
 	src/adminauthwidget.cpp
 	src/flowlayout.cpp
 	src/aboutwidget.cpp

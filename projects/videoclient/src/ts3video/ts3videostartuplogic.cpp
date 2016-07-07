@@ -197,6 +197,19 @@ void Ts3VideoStartupLogic::start()
 		}
 	}
 
+	// Lookup dedicated server on "--address":default-port
+	QEventLoop ev;
+	NetworkClient nc;
+	nc.connectToHost(QHostAddress(_args.ts3ServerAddress), 13370); // DNS lookup?
+	//QObject::connect(&nc, &NetworkClient::connected, &ev, &QEventLoop::exit);
+	//QObject::connect(&nc, &NetworkClient::error, &ev, &QEventLoop::exit);
+	ev.exec();
+	if (nc.socket()->state() == QAbstractSocket::ConnectedState)
+	{
+		QCorReply::autoDelete(nc.goodbye());
+		QApplication::processEvents();
+	}
+
 	// Lookup conference.
 	if (_args.usePublicConferenceServer)
 	{
