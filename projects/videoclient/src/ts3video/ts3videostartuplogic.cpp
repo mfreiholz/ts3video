@@ -233,7 +233,7 @@ void Ts3VideoStartupLogic::start()
 	}
 
 	// Connect to conference.
-	initNetwork();
+	initNetwork(_joinInfo.server.address, _joinInfo.server.port);
 }
 
 bool Ts3VideoStartupLogic::checkVersion()
@@ -383,11 +383,8 @@ bool Ts3VideoStartupLogic::lookupPublicConference()
 	return true;
 }
 
-void Ts3VideoStartupLogic::initNetwork()
+void Ts3VideoStartupLogic::initNetwork(const QString& address, quint16 port)
 {
-	const auto address = _joinInfo.server.address;
-	const auto port = _joinInfo.server.port;
-
 	_nc = QSharedPointer<NetworkClient>(new NetworkClient());
 	connect(_nc.data(), &NetworkClient::connected, this, &Ts3VideoStartupLogic::onConnected);
 	connect(_nc.data(), &NetworkClient::disconnected, this, &Ts3VideoStartupLogic::onDisconnected);

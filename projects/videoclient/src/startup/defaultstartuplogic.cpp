@@ -1,4 +1,7 @@
 #include "defaultstartuplogic.h"
+#include <QMetaObject>
+#include <QEventLoop>
+#include "videolib/elws.h"
 
 /*
 - check if there is a dedicated server
@@ -20,7 +23,17 @@ DefaultStartupLogic::~DefaultStartupLogic()
 
 int DefaultStartupLogic::exec()
 {
-
-
+	QMetaObject::invokeMethod(this, "start", Qt::QueuedConnection);
 	return AbstractStartupLogic::exec();
+}
+
+void DefaultStartupLogic::start()
+{
+	QEventLoop loop;
+
+	// init startup parameters
+	Options opts;
+	opts.address = ELWS::getArgsValue("--address").toString();
+	opts.port = ELWS::getArgsValue("--port").toString().toUInt();
+
 }

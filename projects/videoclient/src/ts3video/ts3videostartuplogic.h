@@ -48,7 +48,7 @@ private:
 	bool checkVersion();
 	bool lookupConference();
 	bool lookupPublicConference();
-	void initNetwork();
+	void initNetwork(const QString& address, quint16 port);
 	void authAndJoinConference();
 	void startVideoGui();
 	void quitDelayed();
