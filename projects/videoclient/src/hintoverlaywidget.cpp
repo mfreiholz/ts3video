@@ -39,7 +39,7 @@ QWidget* HintOverlayWidget::showHint(QWidget* content, QWidget* target)
 		hideHint();
 	}
 
-	HINT = new HintOverlayWidget(content, target, nullptr);
+	HINT = new HintOverlayWidget(content, target, target);
 
 	auto pos = target->mapToGlobal(target->rect().topRight());
 	HINT->move(pos);
