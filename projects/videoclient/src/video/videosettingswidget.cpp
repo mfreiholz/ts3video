@@ -60,7 +60,7 @@ public:
 	{
 		const auto& serverConfig = _nc->serverConfig();
 		const auto& size = _resolutions[index.row()];
-		if (!serverConfig.isResolutionSupported(size))
+		if (!VirtualServerConfigEntity::isResolutionSupported(serverConfig, size))
 			return QAbstractListModel::flags(index) ^ Qt::ItemIsEnabled;
 		return QAbstractListModel::flags(index);
 	}
@@ -77,7 +77,7 @@ public:
 		{
 		case Qt::DisplayRole:
 		{
-			if (!serverConfig.isResolutionSupported(size))
+			if (!VirtualServerConfigEntity::isResolutionSupported(serverConfig, size))
 				return QString("%1x%2 (Not supported by server)").arg(size.width()).arg(size.height());
 			else
 				return QString("%1x%2").arg(size.width()).arg(size.height());
@@ -106,8 +106,8 @@ static int bitrateForResolution(const QSize& resolution, int defaultBitrate, con
 	dimBitrates.append(qMakePair(QSize(640, 360), 100));
 	for (const auto& item : dimBitrates)
 	{
-		if (serverConfig.isResolutionSupported(item.first)
-				&& serverConfig.isBitrateSupported(item.second)
+		if (VirtualServerConfigEntity::isResolutionSupported(serverConfig, item.first)
+				&& VirtualServerConfigEntity::isBitrateSupported(serverConfig, item.second)
 				&& resolution.width() >= item.first.width()
 				&& resolution.height() >= item.first.height())
 		{

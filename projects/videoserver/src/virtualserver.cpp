@@ -8,6 +8,8 @@
 
 #include "qcorlib/qcorconnection.h"
 
+#include "videolib/virtualserverconfigentity.h"
+
 #include "action/channels.h"
 #include "action/media.h"
 #include "mediasockethandler.h"
@@ -33,40 +35,37 @@ VirtualServer::VirtualServer(const VirtualServerOptions& opts, QObject* parent) 
 	_tokens(),
 	_wsStatusServer(nullptr)
 {
-	_config.maxVideoResolutionWidth = opts.maximumResolution.width();
-	_config.maxVideoResolutionHeight = opts.maximumResolution.height();
-	_config.maxVideoBitrate = opts.maximumBitrate;
-
 	// Basic actions.
-	registerAction(ActionPtr(new AuthenticationAction()));
+	registerAction(std::make_shared<HeartbeatAction>());
+	registerAction(std::make_shared<GoodbyeAction>());
+	registerAction(std::make_shared<AuthenticationAction>());
 
 	// Authenticated actions (RequiresAuthentication).
 	if (true)
 	{
-		registerAction(ActionPtr(new GoodbyeAction()));
-		registerAction(ActionPtr(new HeartbeatAction()));
-
 		// Channels, Conferences
-		registerAction(ActionPtr(new JoinChannelAction()));
-		registerAction(ActionPtr(new JoinChannel2Action()));
+		registerAction(std::make_shared<GetChannelListAction>());
+		registerAction(std::make_shared<CreateChannelAction>());
+		registerAction(std::make_shared<JoinChannelAction>());
+		registerAction(std::make_shared<JoinChannel2Action>());
 
 		// Video
-		registerAction(ActionPtr(new EnableVideoAction()));
-		registerAction(ActionPtr(new DisableVideoAction()));
+		registerAction(std::make_shared<EnableVideoAction>());
+		registerAction(std::make_shared<DisableVideoAction>());
 
 		// Audio
-		registerAction(ActionPtr(new EnableAudioInputAction()));
-		registerAction(ActionPtr(new DisableAudioInputAction()));
+		registerAction(std::make_shared<EnableAudioInputAction>());
+		registerAction(std::make_shared<DisableAudioInputAction>());
 	}
 
 	// Admin actions (RequiresAdminPrivileges)
 	if (true)
 	{
-		registerAction(ActionPtr(new AdminAuthAction()));
-		registerAction(ActionPtr(new KickClientAction()));
-		registerAction(ActionPtr(new UpdateVisibilityLevelAction()));
-		registerAction(ActionPtr(new AddDirectStreamingRelationAction()));
-		registerAction(ActionPtr(new RemoveDirectStreamingRelationAction()));
+		registerAction(std::make_shared<AdminAuthAction>());
+		registerAction(std::make_shared<KickClientAction>());
+		registerAction(std::make_shared<UpdateVisibilityLevelAction>());
+		registerAction(std::make_shared<AddDirectStreamingRelationAction>());
+		registerAction(std::make_shared<RemoveDirectStreamingRelationAction>());
 	}
 }
 
@@ -202,6 +201,11 @@ void VirtualServer::updateMediaRecipients()
 		recips.clientid2receiver.insert(receiver.clientId, receiver);
 	}
 	_mediaSocketHandler->setRecipients(std::move(recips));
+}
+
+std::shared_ptr<ActionBase> VirtualServer::findHandlerByName(const QString& name) const
+{
+	return _actions.value(name);
 }
 
 ServerChannelEntity* VirtualServer::createChannel(const QString& ident)
@@ -393,7 +397,7 @@ void VirtualServer::onMediaSocketNetworkUsageUpdated(const NetworkUsageEntity& n
 	_networkUsageMediaSocket = networkUsage;
 }
 
-void VirtualServer::registerAction(const QSharedPointer<ActionBase>& action)
+void VirtualServer::registerAction(std::shared_ptr<ActionBase> action)
 {
 	if (_actions.contains(action->name()))
 	{

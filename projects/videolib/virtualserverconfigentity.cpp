@@ -55,16 +55,16 @@ QString VirtualServerConfigEntity::toString() const
 	return sl.join("#");
 }
 
-bool VirtualServerConfigEntity::isResolutionSupported(const QSize& size) const
+bool VirtualServerConfigEntity::isResolutionSupported(const VirtualServerConfigEntity& config, const QSize& size)
 {
-	if (size.width() > maxVideoResolutionWidth || size.height() > maxVideoResolutionHeight)
+	if (size.width() > config.maxVideoResolutionWidth || size.height() > config.maxVideoResolutionHeight)
 		return false;
 	return true;
 }
 
-bool VirtualServerConfigEntity::isBitrateSupported(int bitrate) const
+bool VirtualServerConfigEntity::isBitrateSupported(const VirtualServerConfigEntity& config, int bitrate)
 {
-	if (bitrate > maxVideoBitrate)
+	if (bitrate > config.maxVideoBitrate)
 		return false;
 	return true;
 }

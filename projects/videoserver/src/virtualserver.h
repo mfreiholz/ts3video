@@ -17,7 +17,6 @@
 
 #include "videolib/ts3video.h"
 #include "videolib/networkusageentity.h"
-#include "videolib/virtualserverconfigentity.h"
 
 #include "virtualserveroptions.h"
 
@@ -44,6 +43,8 @@ public:
 	const VirtualServerOptions& options() const;
 	void updateMediaRecipients();
 
+	std::shared_ptr<ActionBase> findHandlerByName(const QString& name) const;
+
 	ServerChannelEntity* createChannel(const QString& ident = QString());
 	//void deleteChannel(ocs::channelid_t channelId);
 	ServerChannelEntity* addClientToChannel(ocs::clientid_t clientId, ocs::channelid_t channelId);
@@ -62,15 +63,14 @@ private slots:
 	void onMediaSocketNetworkUsageUpdated(const NetworkUsageEntity& networkUsage);
 
 private:
-	void registerAction(const QSharedPointer<ActionBase>& action);
+	void registerAction(std::shared_ptr<ActionBase> action);
 
 public:
 	VirtualServerOptions _opts;         // Complete configuration for this VirtualServer instance.
-	VirtualServerConfigEntity _config;  // Config part from VirtualServerOptions, which is send to clients.
 
 	// Listens for new client connections.
 	QCorServer _corServer;
-	QHash<QString, QSharedPointer<ActionBase> > _actions;
+	QHash<QString, std::shared_ptr<ActionBase> > _actions;
 
 	// Information about connected clients.
 	ocs::clientid_t _nextClientId;

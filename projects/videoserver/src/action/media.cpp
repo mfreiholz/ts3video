@@ -2,6 +2,8 @@
 
 #include "humblelogging/api.h"
 
+#include "videolib/virtualserverconfigentity.h"
+
 HUMBLE_LOGGER(HL, "server.clientconnection.action");
 
 void EnableVideoAction::run(const ActionData& req)
@@ -12,7 +14,11 @@ void EnableVideoAction::run(const ActionData& req)
 	const auto bitrate = req.params["bitrate"].toInt();
 	const QSize size(width, height);
 
-	if (!req.server->_config.isResolutionSupported(size))
+	//TODO do not create "config".. instead prove _opts directly
+	VirtualServerConfigEntity config;
+	config.maxVideoResolutionWidth = req.server->_opts.maximumResolution.width();
+	config.maxVideoResolutionHeight = req.server->_opts.maximumResolution.height();
+	if (!VirtualServerConfigEntity::isResolutionSupported(config, size))
 	{
 		HL_WARN(HL, QString("Client tried to enable video with unsupported video settings (width=%1; height=%2; bitrate=0)").arg(width).arg(height).arg(bitrate).toStdString());
 		sendDefaultErrorResponse(req, IFVS_STATUS_INVALID_PARAMETERS, QString("Unsupported video settings by server (%1x%2 @ %3 bps)").arg(width).arg(height).arg(bitrate));

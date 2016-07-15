@@ -276,10 +276,15 @@ void AuthenticationAction::run(const ActionData& req)
 		req.server->_tokens.insert(token, req.session->_clientEntity->id);
 
 		// Respond.
+		VirtualServerConfigEntity config;
+		config.maxVideoResolutionWidth = req.server->_opts.maximumResolution.width();
+		config.maxVideoResolutionHeight = req.server->_opts.maximumResolution.height();
+		config.maxVideoBitrate = req.server->_opts.maximumBitrate;
+
 		QJsonObject params;
 		params["client"] = req.session->_clientEntity->toQJsonObject();
 		params["authtoken"] = token;
-		params["virtualserverconfig"] = req.server->_config.toQJsonObject();
+		params["virtualserverconfig"] = config.toQJsonObject();
 		sendDefaultOkResponse(req, params);
 	});
 

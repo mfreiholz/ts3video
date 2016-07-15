@@ -14,6 +14,10 @@ public:
 	ChannelEntity(const ChannelEntity& other);
 	ChannelEntity& operator=(const ChannelEntity& other);
 	~ChannelEntity();
+
+	// merges all attributes except the ID.
+	void merge(const ChannelEntity& other);
+
 	void fromQJsonObject(const QJsonObject& obj);
 	QJsonObject toQJsonObject() const;
 	QString toString() const;

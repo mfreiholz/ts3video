@@ -7,7 +7,17 @@ class GetChannelListAction : public ActionBase
 public:
 	QString name() const
 	{
-		return QString("GetChannelList");
+		return QString("/channels");
+	}
+	void run(const ActionData& req);
+};
+
+class CreateChannelAction : public ActionBase
+{
+public:
+	QString name() const
+	{
+		return QString("/channels/new");
 	}
 	void run(const ActionData& req);
 };

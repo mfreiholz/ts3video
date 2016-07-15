@@ -1,5 +1,9 @@
 #include "channels.h"
+#include "videolib/jsonprotocolhelper.h"
 
+/*
+	Retrieves a list of all existing channels.
+*/
 void GetChannelListAction::run(const ActionData& req)
 {
 	const auto offset = req.params["offset"].toInt();
@@ -36,9 +40,46 @@ void GetChannelListAction::run(const ActionData& req)
 }
 
 /*
-    Joins a channel with different logics.
-    1. By it's ID - The channel has to exist.
-    2. By it's IDENT-String - The channel will be created, if it doesn't already exists (required by TS3VIDEO).
+	creates a new channel.
+	the client also automatically joins the channel.
+*/
+void CreateChannelAction::run(const ActionData& req)
+{
+	ChannelEntity channel;
+	channel.fromQJsonObject(req.params["channel"].toObject());
+	const QString password = req.params["password"].toString();
+
+	if (channel.isPersistent && false/*!isAllowedToCreatePersistentChannel*/)
+	{
+		sendDefaultErrorResponse(req, IFVS_STATUS_FORBIDDEN,
+								 "You are not allowed to create a persistent channel.");
+		return;
+	}
+
+	// initialize new channel
+	//TODO can this ever fail (restrictions)?
+	auto sce = req.server->createChannel();
+	sce->merge(channel);
+	if (!password.isEmpty())
+	{
+		sce->isPasswordProtected = true;
+		sce->password = password;
+	}
+
+	// join channel
+	req.server->addClientToChannel(req.session->_clientEntity->id, sce->id);
+	req.server->updateMediaRecipients();
+
+	// respond
+	QJsonObject params;
+	params["channel"] = sce->toQJsonObject();
+	sendDefaultOkResponse(req, params);
+}
+
+/*
+	Joins a channel with different logics.
+	1. By it's ID - The channel has to exist.
+	2. By it's IDENT-String - The channel will be created, if it doesn't already exists (required by TS3VIDEO).
 */
 void JoinChannelAction::run(const ActionData& req)
 {

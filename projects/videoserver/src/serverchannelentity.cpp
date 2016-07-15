@@ -11,3 +11,8 @@ ServerChannelEntity::ServerChannelEntity(const ServerChannelEntity& other) :
 	ident = other.ident;
 	password = other.password;
 }
+
+void ServerChannelEntity::merge(const ChannelEntity& other)
+{
+	ChannelEntity::merge(other);
+}

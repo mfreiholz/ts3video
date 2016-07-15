@@ -12,22 +12,25 @@ ChannelEntity::ChannelEntity() :
 ChannelEntity::ChannelEntity(const ChannelEntity& other)
 {
 	this->id = other.id;
-	this->name = other.id;
-	this->isPasswordProtected = other.isPasswordProtected;
-	this->isPersistent = other.isPersistent;
+	merge(other);
 }
 
 ChannelEntity& ChannelEntity::operator=(const ChannelEntity& other)
 {
 	this->id = other.id;
-	this->name = other.id;
-	this->isPasswordProtected = other.isPasswordProtected;
-	this->isPersistent = other.isPersistent;
+	merge(other);
 	return *this;
 }
 
 ChannelEntity::~ChannelEntity()
 {
+}
+
+void ChannelEntity::merge(const ChannelEntity& other)
+{
+	this->name = other.name;
+	this->isPasswordProtected = other.isPasswordProtected;
+	this->isPersistent = other.isPersistent;
 }
 
 void ChannelEntity::fromQJsonObject(const QJsonObject& obj)

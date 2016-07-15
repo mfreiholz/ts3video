@@ -16,31 +16,31 @@ class VirtualServer;
 class ServerClientEntity;
 
 /*
-    JSON Example Request
-    --------------------
-    {
-      "action": "auth",
-      "parameters": {
-        "key1": "value1",
-        "key2": [1, 2, 3]
-      }
-    }
+	JSON Example Request
+	--------------------
+	{
+		"action": "auth",
+		"parameters": {
+			"key1": "value1",
+			"key2": [1, 2, 3]
+		}
+	}
 
-    JSON Example Response
-    ---------------------
-    {
-    "status": 0,  // Required. Status of the response (0 Always means OK!).
-    "error": "",  // Optional. Custom error/status message.
-    "data": 0     // Optional. Can be everything, defined by action.
-    }
+	JSON Example Response
+	---------------------
+	{
+		"status": 0,  // Required. Status of the response (0 Always means OK!).
+		"error": "",  // Optional. Custom error/status message.
+		"data": 0     // Optional. Can be everything, defined by action.
+	}
 */
 class ClientConnectionHandler : public QObject
 {
 	Q_OBJECT
 
 public:
-	ClientConnectionHandler(VirtualServer* server, QSharedPointer<QCorConnection> connection, QObject* parent);
-	~ClientConnectionHandler();
+	explicit ClientConnectionHandler(VirtualServer* server, QSharedPointer<QCorConnection> connection, QObject* parent);
+	virtual ~ClientConnectionHandler();
 	void sendMediaAuthSuccessNotify();
 
 private slots:

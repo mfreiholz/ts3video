@@ -71,8 +71,6 @@ public:
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(ActionBase::Flags)
 
-typedef QSharedPointer<ActionBase> ActionPtr;
-
 ///////////////////////////////////////////////////////////////////////
 
 class AuthenticationAction : public ActionBase

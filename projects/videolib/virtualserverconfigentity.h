@@ -21,8 +21,8 @@ public:
 	QJsonObject toQJsonObject() const;
 	QString toString() const;
 
-	bool isResolutionSupported(const QSize& size) const;
-	bool isBitrateSupported(int bitrate) const;
+	static bool isResolutionSupported(const VirtualServerConfigEntity& config, const QSize& size);
+	static bool isBitrateSupported(const VirtualServerConfigEntity& config, int bitrate);
 
 public:
 	// Video stuff
