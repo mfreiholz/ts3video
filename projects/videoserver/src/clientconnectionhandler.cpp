@@ -26,8 +26,8 @@ HUMBLE_LOGGER(HL, "server.clientconnection");
 
 ///////////////////////////////////////////////////////////////////////
 
-ClientConnectionHandler::ClientConnectionHandler(VirtualServer* server, QSharedPointer<QCorConnection> connection, QObject* parent) :
-	QObject(parent),
+ClientConnectionHandler::ClientConnectionHandler(VirtualServer* server, QSharedPointer<QCorConnection> connection) :
+	QObject(nullptr),
 	_server(server),
 	_connection(connection),
 	_clientEntity(nullptr),
@@ -128,7 +128,7 @@ void ClientConnectionHandler::onStateChanged(QAbstractSocket::SocketState state)
 
 void ClientConnectionHandler::onNewIncomingRequest(QCorFrameRefPtr frame)
 {
-	HL_TRACE(HL, QString("New incoming request (size=%1; content=%2)").arg(frame->data().size()).arg(QString(frame->data())).toStdString());
+	HL_TRACE(HL, QString("incoming request (size=%1): %2").arg(frame->data().size()).arg(QString(frame->data())).toStdString());
 	_networkUsage.bytesRead += frame->data().size(); // TODO Not correct, we need to get values from QCORLIB to include bytes of cor_frame (same for write).
 
 	// Parse incoming request.
@@ -142,7 +142,7 @@ void ClientConnectionHandler::onNewIncomingRequest(QCorFrameRefPtr frame)
 	}
 
 	// Find matching action handler.
-	auto actionHandler = _server->_actions.value(action);
+	const auto actionHandler = _server->findHandlerByName(action);
 	if (!actionHandler)
 	{
 		HL_WARN(HL, QString("Retrieved request with unknown action (action=%1)").arg(action).toStdString());

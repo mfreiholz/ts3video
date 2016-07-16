@@ -34,12 +34,17 @@ class ServerClientEntity;
 		"data": 0     // Optional. Can be everything, defined by action.
 	}
 */
+
+/*
+	manages the connection and state of a client.
+*/
 class ClientConnectionHandler : public QObject
 {
 	Q_OBJECT
 
 public:
-	explicit ClientConnectionHandler(VirtualServer* server, QSharedPointer<QCorConnection> connection, QObject* parent);
+	explicit ClientConnectionHandler(VirtualServer* server,
+									 QSharedPointer<QCorConnection> connection);
 	virtual ~ClientConnectionHandler();
 	void sendMediaAuthSuccessNotify();
 
@@ -54,12 +59,10 @@ signals:
 
 public:
 	VirtualServer* _server;
-
-	// Connection data.
 	QSharedPointer<QCorConnection> _connection;
 	QTimer _connectionTimeoutTimer;
 
-	// Status information.
+	// information about the client (session data)
 	ServerClientEntity* _clientEntity;
 
 	// Network usage.

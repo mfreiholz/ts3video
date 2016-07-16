@@ -359,7 +359,7 @@ bool VirtualServer::isBanned(const QHostAddress& address)
 void VirtualServer::onNewConnection(QCorConnection* c)
 {
 	auto sc = QSharedPointer<QCorConnection>(c);
-	new ClientConnectionHandler(this, sc, nullptr);
+	new ClientConnectionHandler(this, sc);
 }
 
 void VirtualServer::onMediaSocketTokenAuthentication(const QString& token, const QHostAddress& address, quint16 port)
