@@ -8,10 +8,11 @@ endif()
 # Sources
 set(headers
 	include/baselib/defines.h
+	include/baselib/exception.h
 )
 
 set(sources
-	src/main.cpp
+	src/exception.cpp
 )
 
 # Defines

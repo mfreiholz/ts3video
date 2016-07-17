@@ -158,6 +158,25 @@ if(WIN32)
 	list(APPEND sources res/app.rc)
 endif(WIN32)
 
+# lookup
+if(1)
+	set(lookup_headers
+	)
+	list(APPEND headers ${lookup_headers})
+
+	set(lookup_qheaders
+		src/lookup/lookup_client.h
+	)
+	list(APPEND qheaders ${lookup_qheaders})
+
+	set(lookup_sources
+		src/lookup/lookup_client.cpp
+	)
+	list(APPEND sources ${lookup_sources})
+
+	source_group(lookup FILES ${lookup_headers} ${lookup_qheaders} ${lookup_sources})
+endif()
+
 qt5_wrap_cpp(qheaders_wrap ${qheaders})
 qt5_wrap_ui(qforms_wrap ${qforms})
 qt5_add_resources(qresources_wrap ${qresources})
