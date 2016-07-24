@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <QObject>
 #include "startuplogic.h"
 
@@ -13,9 +14,10 @@ public:
 	class Options
 	{
 	public:
-		QString address;
-		quint16 port;
-		QString displayName;
+		QString serverAddress;
+		quint16 serverPort;
+		QString serverPassword;
+		QString userDisplayName;
 	};
 
 	explicit DefaultStartupLogic(QApplication* a);
@@ -24,4 +26,8 @@ public:
 
 private slots:
 	void start();
+
+private:
+	class Private;
+	std::unique_ptr<Private> d;
 };

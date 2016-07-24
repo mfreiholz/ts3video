@@ -31,6 +31,11 @@ public:
 	static bool isVersionSupported(const QString& clientVersion, const QString& serverVersion, const QString& clientSupportedServerVersions, const QString& serverSupportedClientVersions);
 
 	static QHostAddress getQHostAddressFromString(const QString& s);
+
+	/*
+		resolves a DNS
+	*/
+	static QHostAddress resolveDns(const QString& dns);
 };
 
 #endif

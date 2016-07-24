@@ -11,6 +11,7 @@
 #include <QPoint>
 #include <QFileInfo>
 #include <QSettings>
+#include <QHostInfo>
 
 bool ELWS::hasArgsValue(const QString& key)
 {
@@ -184,4 +185,21 @@ QHostAddress ELWS::getQHostAddressFromString(const QString& s)
 		return QHostAddress(QHostAddress::Any);
 	}
 	return QHostAddress(s);
+}
+
+QHostAddress ELWS::resolveDns(const QString& dns)
+{
+	QHostAddress addr(dns);
+	if (!addr.isNull())
+	{
+		return addr;
+	}
+
+	auto hostInfo = QHostInfo::fromName(dns);
+	if (hostInfo.error() != QHostInfo::NoError || hostInfo.addresses().isEmpty())
+	{
+		return addr;
+	}
+	addr = hostInfo.addresses().first();
+	return addr;
 }

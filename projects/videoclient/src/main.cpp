@@ -12,6 +12,7 @@
 #include "videolib/elws.h"
 
 #include "startup/devstartuplogic.h"
+#include "startup/defaultstartuplogic.h"
 #include "ts3video/ts3videostartuplogic.h"
 #include "test/connectionteststartuplogic.h"
 #include "test/directconnectstartuplogic.h"
@@ -54,6 +55,10 @@ int main(int argc, char* argv[])
 	else if (mode.compare("directconnect", Qt::CaseInsensitive) == 0)
 	{
 		sl.reset(new DirectConnectStartupLogic(&a));
+	}
+	else if (mode.compare("default", Qt::CaseInsensitive) == 0)
+	{
+		sl.reset(new DefaultStartupLogic(&a));
 	}
 	if (!sl)
 	{
