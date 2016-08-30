@@ -62,7 +62,6 @@ add_definitions(
 
 include_directories(
 	${humblelogging_INCLUDE_DIRS}
-	../humblesrvproc/include
 	../qtasync/include
 	../qcorlib/include
 )
@@ -92,7 +91,7 @@ target_link_libraries(
 	Qt5::Concurrent
 #	Qt5::Sql
 	${humblelogging_LIBRARIES}
-	humblesrvproc
+	libdaemon
 	qtasync
 	libbase
 	libmediaprotocol

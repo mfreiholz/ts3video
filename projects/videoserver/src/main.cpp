@@ -9,7 +9,8 @@
 #include <QRegExp>
 
 #include "humblelogging/api.h"
-#include "humblesrvproc/api.h"
+
+#include "libdaemon/api.h"
 
 #include "libbase/defines.h"
 

@@ -1,5 +1,5 @@
 #include <Windows.h>
-#include "humblesrvproc/api.h"
+#include "api.h"
 
 #define SVCNAME TEXT("MyService")
 

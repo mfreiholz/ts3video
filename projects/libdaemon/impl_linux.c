@@ -1,5 +1,5 @@
 #include <stdlib.h>
-#include "humblesrvproc/api.h"
+#include "api.h"
 
 hbl_service_config_t  *gHblConf = 0;
 
