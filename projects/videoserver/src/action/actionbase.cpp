@@ -13,9 +13,9 @@
 #include "qcorlib/qcorconnection.h"
 #include "qcorlib/qcorreply.h"
 
-#include "libts3/ts3util.h"
-#include "libts3/ts3serverquery.h"
-#include "libts3/ts3queryconsolesocket.h"
+#include "libqtteamspeak3/ts3util.h"
+#include "libqtteamspeak3/ts3serverquery.h"
+#include "libqtteamspeak3/ts3queryconsolesocket.h"
 
 #include "qtasync/qtasync.h"
 

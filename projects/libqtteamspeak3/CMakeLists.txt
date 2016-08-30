@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
-project(libts3)
+project(libqtteamspeak3)
 
 cmake_policy(SET CMP0020 NEW)
 

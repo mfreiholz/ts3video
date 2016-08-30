@@ -96,7 +96,7 @@ target_link_libraries(
 	libbase
 	libmediaprotocol
 	qcorlib
-	libts3
+	libqtteamspeak3
 	videolib
 )
 

@@ -31,10 +31,14 @@ add_subdirectory(projects/qcorlib)
 add_subdirectory(projects/libdaemon)
 add_subdirectory(projects/qtasync)
 
-# Projects to build.
+# stl based libs
 add_subdirectory(projects/libbase)
 add_subdirectory(projects/libmediaprotocol)
-add_subdirectory(projects/libts3)
+
+# project qt based libs
+add_subdirectory(projects/libqtteamspeak3)
+
+# binaries
 add_subdirectory(projects/videolib)
 add_subdirectory(projects/videoserver)
 add_subdirectory(projects/videoclient)
