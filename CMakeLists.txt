@@ -25,13 +25,15 @@ FILE(WRITE projects/project-defines.h
 )
 include_directories(projects)
 
-# Projects to build.
-add_subdirectory(projects/libbase)
+# project independent libs
 add_subdirectory(projects/corlib)
-add_subdirectory(projects/medlib)
+add_subdirectory(projects/qcorlib)
 add_subdirectory(projects/humblesrvproc)
 add_subdirectory(projects/qtasync)
-add_subdirectory(projects/qcorlib)
+
+# Projects to build.
+add_subdirectory(projects/libbase)
+add_subdirectory(projects/libmediaprotocol)
 add_subdirectory(projects/libts3)
 add_subdirectory(projects/videolib)
 add_subdirectory(projects/videoserver)

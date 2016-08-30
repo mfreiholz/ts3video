@@ -4,7 +4,7 @@
 #include <vector>
 #include <map>
 
-#include "medlib/include/medprotocol.h"
+#include "libmediaprotocol/include/medprotocol.h"
 #include "videolib/src/opusframe.h"
 
 class AudioUdpDecoder

@@ -15,7 +15,7 @@
 
 #include "libbase/defines.h"
 
-#include "medlib/protocol.h"
+#include "libmediaprotocol/protocol.h"
 
 #include "videolib/networkusageentity.h"
 

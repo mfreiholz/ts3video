@@ -9,7 +9,7 @@
 #include <math.h>
 #include <cstring>
 
-#include "medlib/protocol.h"
+#include "protocol.h"
 
 namespace UDP
 {

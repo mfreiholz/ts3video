@@ -1,24 +1,16 @@
 cmake_minimum_required(VERSION 2.8)
-project(medlib)
+project(libmediaprotocol)
 
 if(CMAKE_COMPILER_IS_GNUCXX)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic")
 endif()
 
 set(headers
-	include/medlib/protocol.h
+	protocol.h
 )
 
 set(sources
-	src/protocol.cpp
-)
-
-add_definitions(
-)
-
-include_directories(
-	include
-	src
+	protocol.cpp
 )
 
 add_library(

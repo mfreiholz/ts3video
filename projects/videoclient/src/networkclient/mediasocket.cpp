@@ -5,7 +5,7 @@
 
 #include "humblelogging/api.h"
 
-#include "medlib/protocol.h"
+#include "libmediaprotocol/protocol.h"
 
 #include "videolib/timeutil.h"
 
