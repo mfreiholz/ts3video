@@ -5,7 +5,7 @@
 #include <QWidget>
 #include <QCamera>
 
-#include "baselib/defines.h"
+#include "libbase/defines.h"
 #include "videolib/yuvframe.h"
 
 class ConferenceVideoWindow;

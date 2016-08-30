@@ -26,7 +26,7 @@ FILE(WRITE projects/project-defines.h
 include_directories(projects)
 
 # Projects to build.
-add_subdirectory(projects/baselib)
+add_subdirectory(projects/libbase)
 add_subdirectory(projects/corlib)
 add_subdirectory(projects/medlib)
 add_subdirectory(projects/humblesrvproc)

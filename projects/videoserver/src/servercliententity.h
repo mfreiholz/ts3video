@@ -3,7 +3,7 @@
 
 #include <QSet>
 
-#include "baselib/defines.h"
+#include "libbase/defines.h"
 
 #include "videolib/cliententity.h"
 

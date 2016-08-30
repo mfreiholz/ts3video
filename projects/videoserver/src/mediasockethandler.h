@@ -13,7 +13,7 @@
 #include <QByteArray>
 #include <QHash>
 
-#include "baselib/defines.h"
+#include "libbase/defines.h"
 
 #include "medlib/protocol.h"
 

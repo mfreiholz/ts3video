@@ -11,7 +11,7 @@
 #include "humblelogging/api.h"
 #include "humblesrvproc/api.h"
 
-#include "baselib/defines.h"
+#include "libbase/defines.h"
 
 #include "videolib/ts3video.h"
 #include "videolib/elws.h"

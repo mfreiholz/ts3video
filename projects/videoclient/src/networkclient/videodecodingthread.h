@@ -9,7 +9,7 @@
 #include <QPair>
 #include <QAtomicInt>
 
-#include "baselib/defines.h"
+#include "libbase/defines.h"
 
 #include "videolib/vp8frame.h"
 #include "videolib/yuvframe.h"

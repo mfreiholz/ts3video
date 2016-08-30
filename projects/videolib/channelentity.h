@@ -5,7 +5,7 @@
 #include <QJsonObject>
 #include <QMetaType>
 
-#include "baselib/defines.h"
+#include "libbase/defines.h"
 
 class ChannelEntity
 {

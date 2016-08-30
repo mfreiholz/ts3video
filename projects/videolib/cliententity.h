@@ -6,7 +6,7 @@
 #include <QMetaType>
 #include <QHostAddress>
 
-#include "baselib/defines.h"
+#include "libbase/defines.h"
 
 /*!
 	This object always needs to be fully copyable.

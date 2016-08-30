@@ -13,7 +13,7 @@
 
 #include "qcorlib/qcorserver.h"
 
-#include "baselib/defines.h"
+#include "libbase/defines.h"
 
 #include "videolib/ts3video.h"
 #include "videolib/networkusageentity.h"

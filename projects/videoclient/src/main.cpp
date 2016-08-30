@@ -6,7 +6,7 @@
 
 #include "humblelogging/api.h"
 
-#include "baselib/defines.h"
+#include "libbase/defines.h"
 
 #include "videolib/ts3video.h"
 #include "videolib/elws.h"

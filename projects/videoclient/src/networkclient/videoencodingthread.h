@@ -9,7 +9,7 @@
 #include <QAtomicInt>
 #include <QImage>
 
-#include "baselib/defines.h"
+#include "libbase/defines.h"
 
 #include "videolib/vp8frame.h"
 

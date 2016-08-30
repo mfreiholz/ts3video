@@ -8,7 +8,7 @@
 #include <QHash>
 #include <QVariant>
 
-#include "baselib/defines.h"
+#include "libbase/defines.h"
 
 #include "videolib/ts3video.h"
 #include "videolib/yuvframe.h"

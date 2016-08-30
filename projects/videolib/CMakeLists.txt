@@ -43,10 +43,6 @@ set(sources
 qt5_wrap_cpp(qheaders_wrap ${qheaders})
 source_group(QtWrap FILES ${qheaders_wrap})
 
-include_directories(
-	../baselib/include
-)
-
 add_library(
   ${PROJECT_NAME}
   STATIC
@@ -61,5 +57,5 @@ target_link_libraries(
   Qt5::Core
   Qt5::Gui
   Qt5::Network
-  baselib
+  libbase
 )

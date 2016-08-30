@@ -64,7 +64,6 @@ include_directories(
 	${humblelogging_INCLUDE_DIRS}
 	../humblesrvproc/include
 	../qtasync/include
-	../baselib/include
 	../medlib/include
 	../qcorlib/include
 )
@@ -96,7 +95,7 @@ target_link_libraries(
 	${humblelogging_LIBRARIES}
 	humblesrvproc
 	qtasync
-	baselib
+	libbase
 	medlib
 	qcorlib
 	libts3

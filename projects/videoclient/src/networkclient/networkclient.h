@@ -11,7 +11,7 @@
 #include "qcorlib/qcorreply.h"
 #include "qcorlib/qcorconnection.h"
 
-#include "baselib/defines.h"
+#include "libbase/defines.h"
 
 #include "videolib/yuvframe.h"
 #include "videolib/pcmframe.h"
