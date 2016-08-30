@@ -25,17 +25,19 @@ FILE(WRITE projects/project-defines.h
 )
 include_directories(projects)
 
-# project independent libs
+# project independend libs (+stl)
 add_subdirectory(projects/libcorprotocol)
-add_subdirectory(projects/qcorlib)
 add_subdirectory(projects/libdaemon)
+
+# project independend libs (+qt)
+add_subdirectory(projects/libqtcorprotocol)
 add_subdirectory(projects/qtasync)
 
-# stl based libs
+# project specific libs (+stl)
 add_subdirectory(projects/libbase)
 add_subdirectory(projects/libmediaprotocol)
 
-# project qt based libs
+# project specific libs (+qt)
 add_subdirectory(projects/libqtteamspeak3)
 
 # binaries

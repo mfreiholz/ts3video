@@ -7,9 +7,9 @@
 #include <QScopedPointer>
 #include <QAbstractSocket>
 
-#include "qcorlib/qcorframe.h"
-#include "qcorlib/qcorreply.h"
-#include "qcorlib/qcorconnection.h"
+#include "libqtcorprotocol/qcorframe.h"
+#include "libqtcorprotocol/qcorreply.h"
+#include "libqtcorprotocol/qcorconnection.h"
 
 #include "libbase/defines.h"
 

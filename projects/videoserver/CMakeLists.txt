@@ -63,7 +63,6 @@ add_definitions(
 include_directories(
 	${humblelogging_INCLUDE_DIRS}
 	../qtasync/include
-	../qcorlib/include
 )
 
 # Target prerequisites.
@@ -95,7 +94,7 @@ target_link_libraries(
 	qtasync
 	libbase
 	libmediaprotocol
-	qcorlib
+	libqtcorprotocol
 	libqtteamspeak3
 	videolib
 )

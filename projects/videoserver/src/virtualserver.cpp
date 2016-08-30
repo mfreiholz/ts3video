@@ -6,7 +6,7 @@
 
 #include "humblelogging/api.h"
 
-#include "qcorlib/qcorconnection.h"
+#include "libqtcorprotocol/qcorconnection.h"
 
 #include "videolib/virtualserverconfigentity.h"
 

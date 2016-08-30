@@ -9,8 +9,8 @@
 #include <QJsonObject>
 #include <QJsonArray>
 
-#include "qcorlib/qcorconnection.h"
-#include "qcorlib/qcorframe.h"
+#include "libqtcorprotocol/qcorconnection.h"
+#include "libqtcorprotocol/qcorframe.h"
 
 #include "videolib/ts3video.h"
 

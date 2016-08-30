@@ -193,7 +193,6 @@ include_directories(
 	${opus_INCLUDE_DIRS}
 	${humblelogging_INCLUDE_DIRS}
 	../qtasync/include
-	../qcorlib/include
 	./src
 )
 
@@ -227,7 +226,7 @@ target_link_libraries(
 	${vpx_LIBRARIES}
 	${humblelogging_LIBRARIES}
 	qtasync
-	qcorlib
+	libqtcorprotocol
 	libbase
 	libmediaprotocol
 	videolib

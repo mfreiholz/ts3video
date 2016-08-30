@@ -10,8 +10,8 @@
 
 #include "humblelogging/api.h"
 
-#include "qcorlib/qcorconnection.h"
-#include "qcorlib/qcorreply.h"
+#include "libqtcorprotocol/qcorconnection.h"
+#include "libqtcorprotocol/qcorreply.h"
 
 #include "libqtteamspeak3/ts3util.h"
 #include "libqtteamspeak3/ts3serverquery.h"

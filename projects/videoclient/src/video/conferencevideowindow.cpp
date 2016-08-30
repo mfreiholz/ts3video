@@ -26,8 +26,8 @@
 
 #include "qtasync/qtasync.h"
 
-#include "qcorlib/qcorreply.h"
-#include "qcorlib/qcorframe.h"
+#include "libqtcorprotocol/qcorreply.h"
+#include "libqtcorprotocol/qcorframe.h"
 
 #include "videolib/elws.h"
 #include "videolib/cliententity.h"

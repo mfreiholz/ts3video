@@ -11,7 +11,7 @@
 #include <QHostAddress>
 #include <QSharedPointer>
 
-#include "qcorlib/qcorserver.h"
+#include "libqtcorprotocol/qcorserver.h"
 
 #include "libbase/defines.h"
 

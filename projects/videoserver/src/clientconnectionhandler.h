@@ -7,7 +7,7 @@
 #include <QTime>
 #include <QTimer>
 
-#include "qcorlib/qcorframe.h"
+#include "libqtcorprotocol/qcorframe.h"
 
 #include "videolib/networkusageentity.h"
 

@@ -6,8 +6,8 @@
 #include <QHash>
 #include <QDateTime>
 #include "libcorprotocol/parser.h"
-#include "qcorlib/qcorconnection.h"
-#include "qcorlib/qcorframe.h"
+#include "qcorconnection.h"
+#include "qcorframe.h"
 class QTcpSocket;
 class QCorConnection;
 class QCorReply;

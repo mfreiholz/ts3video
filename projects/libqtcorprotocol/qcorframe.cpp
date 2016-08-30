@@ -1,4 +1,4 @@
-#include "qcorlib/qcorframe.h"
+#include "qcorframe.h"
 
 QCorFrame::QCorFrame() :
   _state(TransferingState),

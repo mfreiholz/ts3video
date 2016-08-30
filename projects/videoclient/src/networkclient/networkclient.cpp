@@ -12,8 +12,8 @@
 
 #include "humblelogging/api.h"
 
-#include "qcorlib/qcorconnection.h"
-#include "qcorlib/qcorreply.h"
+#include "libqtcorprotocol/qcorconnection.h"
+#include "libqtcorprotocol/qcorreply.h"
 
 #include "videolib/ts3video.h"
 #include "videolib/timeutil.h"
