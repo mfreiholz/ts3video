@@ -49,7 +49,6 @@ add_definitions(
 include_directories(
   include
   src
-  ../corlib/include
 )
 
 # Target
@@ -66,7 +65,7 @@ add_library(
 
 target_link_libraries(
   ${PROJECT_NAME}
-  corlib
   Qt5::Core
   Qt5::Network
+  libcorprotocol
 )

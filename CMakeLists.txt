@@ -26,7 +26,7 @@ FILE(WRITE projects/project-defines.h
 include_directories(projects)
 
 # project independent libs
-add_subdirectory(projects/corlib)
+add_subdirectory(projects/libcorprotocol)
 add_subdirectory(projects/qcorlib)
 add_subdirectory(projects/humblesrvproc)
 add_subdirectory(projects/qtasync)

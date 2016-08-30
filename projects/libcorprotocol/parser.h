@@ -1,7 +1,7 @@
 #ifndef COR_PARSER_H
 #define COR_PARSER_H
 
-#include "corlib/protocol.h"
+#include "protocol.h"
 
 #ifdef __cplusplus
 extern "C" {
