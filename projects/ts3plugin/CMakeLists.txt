@@ -1,30 +1,26 @@
 cmake_minimum_required(VERSION 2.8)
 project(ts3plugin)
+
 cmake_policy(SET CMP0020 NEW)
 
-# Sources
 set(headers
-	src/plugin.h
-	src/impl.h
+	plugin.h
+	impl.h
 )
 
 set(sources
-	src/plugin.c
-	src/impl.cpp
+	plugin.c
+	impl.cpp
 )
 
-# Defines
 add_definitions(
 	-D_CRT_SECURE_NO_WARNINGS
 )
 
-# Includes
 include_directories(
 	${ts3pluginsdk_INCLUDE_DIRS}
-	../videolib/src                # Used for ts3video.h (Version information, ...)
 )
 
-# Target
 add_library(
 	${PROJECT_NAME}
 	SHARED
