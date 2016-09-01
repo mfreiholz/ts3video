@@ -1,4 +1,4 @@
-#include "qtasync/qtasync.h"
+#include "qtasync.h"
 
 #include <QFuture>
 #include <QObject>

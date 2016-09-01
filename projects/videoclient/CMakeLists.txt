@@ -192,7 +192,6 @@ include_directories(
 	${vpx_INCLUDE_DIRS}
 	${opus_INCLUDE_DIRS}
 	${humblelogging_INCLUDE_DIRS}
-	../qtasync/include
 	./src
 )
 
@@ -225,7 +224,7 @@ target_link_libraries(
 	Qt5::Concurrent
 	${vpx_LIBRARIES}
 	${humblelogging_LIBRARIES}
-	qtasync
+	libqtasync
 	libqtcorprotocol
 	libbase
 	libmediaprotocol

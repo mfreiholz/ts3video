@@ -24,7 +24,7 @@
 
 #include "humblelogging/api.h"
 
-#include "qtasync/qtasync.h"
+#include "libqtasync/qtasync.h"
 
 #include "libqtcorprotocol/qcorreply.h"
 #include "libqtcorprotocol/qcorframe.h"

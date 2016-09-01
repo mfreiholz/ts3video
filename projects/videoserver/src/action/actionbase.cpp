@@ -17,7 +17,7 @@
 #include "libqtteamspeak3/ts3serverquery.h"
 #include "libqtteamspeak3/ts3queryconsolesocket.h"
 
-#include "qtasync/qtasync.h"
+#include "libqtasync/qtasync.h"
 
 #include "videolib/ts3video.h"
 #include "videolib/elws.h"

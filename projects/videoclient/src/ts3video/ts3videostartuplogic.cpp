@@ -21,7 +21,7 @@
 
 #include "humblelogging/api.h"
 
-#include "qtasync/qtasync.h"
+#include "libqtasync/qtasync.h"
 
 #include "videolib/ts3video.h"
 #include "videolib/elws.h"

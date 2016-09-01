@@ -62,7 +62,6 @@ add_definitions(
 
 include_directories(
 	${humblelogging_INCLUDE_DIRS}
-	../qtasync/include
 )
 
 # Target prerequisites.
@@ -91,7 +90,7 @@ target_link_libraries(
 #	Qt5::Sql
 	${humblelogging_LIBRARIES}
 	libdaemon
-	qtasync
+	libqtasync
 	libbase
 	libmediaprotocol
 	libqtcorprotocol

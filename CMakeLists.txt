@@ -31,7 +31,7 @@ add_subdirectory(projects/libdaemon)
 
 # project independend libs (+qt)
 add_subdirectory(projects/libqtcorprotocol)
-add_subdirectory(projects/qtasync)
+add_subdirectory(projects/libqtasync)
 
 # project specific libs (+stl)
 add_subdirectory(projects/libbase)
