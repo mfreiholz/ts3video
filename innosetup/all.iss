@@ -9,7 +9,7 @@
 
 ; Application information
 #define MyAppURL "https://mfreiholz.de/ts3video"
-#define MyAppVersion "0.8"
+#define MyAppVersion "0.10"
 
 [Setup]
 AppPublisher={#MyOrgName}
@@ -33,7 +33,7 @@ OutputDir={#OCS_SETUP_DIR_PATH}
 OutputBaseFilename={#MyAppName} {#MyAppVersion} Setup
 
 ; Comsmetics
-AppCopyright=Copyright (C) 2015-2016 {#MyOrgName}
+AppCopyright=Copyright (C) 2015-2017 {#MyOrgName}
 
 ; Basic registry values for all applications.
 [Registry]

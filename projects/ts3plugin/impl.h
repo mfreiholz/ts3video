@@ -1,7 +1,7 @@
 #ifndef IMPL_H
 #define IMPL_H
 
-#include "public_definitions.h"
+#include "teamspeak/public_definitions.h"
 #include "ts3_functions.h"
 
 #ifdef __cplusplus
