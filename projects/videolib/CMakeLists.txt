@@ -20,6 +20,7 @@ set(headers
 	imageutil.h
 	timeutil.h
 	networkusageentity.h
+	license.h
 )
 
 set(qheaders
@@ -38,6 +39,7 @@ set(sources
 	imageutil.cpp
 	timeutil.cpp
 	networkusageentity.cpp
+	license.cpp
 )
 
 qt5_wrap_cpp(qheaders_wrap ${qheaders})
