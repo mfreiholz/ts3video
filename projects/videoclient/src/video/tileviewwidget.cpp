@@ -77,22 +77,8 @@ TileViewWidget::TileViewWidget(ConferenceVideoWindow* window, Qt::WindowFlags f)
 
 		topButtonsLayout->addStretch(1);
 
-		QObject::connect(d->zoomInButton, &QPushButton::clicked, [this]()
-		{
-			auto newSize = d->tilesCurrentSize;
-			newSize += QSize(25, 25);
-			newSize = d->tilesAspectRatio.scaled(newSize, Qt::KeepAspectRatio);
-			setTileSize(newSize);
-			d->tilesLayout->update();
-		});
-
-		QObject::connect(d->zoomOutButton, &QPushButton::clicked, [this]()
-		{
-			auto newSize = d->tilesCurrentSize;
-			newSize -= QSize(25, 25);
-			newSize = d->tilesAspectRatio.scaled(newSize, Qt::KeepAspectRatio);
-			setTileSize(newSize);
-		});
+		QObject::connect(d->zoomInButton, &QPushButton::clicked, this, &TileViewWidget::increaseTileSize);
+		QObject::connect(d->zoomOutButton, &QPushButton::clicked, this, &TileViewWidget::decreaseTileSize);
 	}
 
 	// Video tiles container.
@@ -169,9 +155,36 @@ void TileViewWidget::updateClientVideo(YuvFrameRefPtr frame, ocs::clientid_t sen
 		//addClient(ce, ChannelEntity());
 		//tileWidget = d->tilesMap.value(senderId);
 		//if (!tileWidget)
-			return;
+		return;
 	}
 	tileWidget->_videoWidget->videoWidget()->setFrame(frame);
+}
+
+void TileViewWidget::increaseTileSize()
+{
+	QSettings settings;
+	auto maxSize = settings.value("UI/TileViewWidget-MaxTileSize", QSize(1280, 720)).toSize();
+
+	auto newSize = d->tilesCurrentSize;
+	newSize += QSize(25, 25);
+	if (newSize.width() > maxSize.width() || newSize.height() > maxSize.height())
+	{
+		newSize = maxSize;
+	}
+	setTileSize(newSize);
+	d->tilesLayout->update();
+}
+
+void TileViewWidget::decreaseTileSize()
+{
+	QSettings settings;
+	auto maxSize = settings.value("UI/TileViewWidget-MinTileSize", QSize(120, 72)).toSize();
+
+	auto newSize = d->tilesCurrentSize;
+	newSize -= QSize(25, 25);
+	newSize = d->tilesAspectRatio.scaled(newSize, Qt::KeepAspectRatio);
+	setTileSize(newSize);
+	d->tilesLayout->update();
 }
 
 void TileViewWidget::setTileSize(const QSize& size)
@@ -303,13 +316,13 @@ void TileViewWidget::onCameraStatusChanged(QCamera::Status s)
 {
 	switch (s)
 	{
-	case QCamera::ActiveStatus:
-		d->cameraWidget->setVisible(true);
-		break;
-	default:
-		d->cameraWidget->setVisible(false);
-		d->cameraWidget->_cameraWidget->setFrame(QImage());
-		break;
+		case QCamera::ActiveStatus:
+			d->cameraWidget->setVisible(true);
+			break;
+		default:
+			d->cameraWidget->setVisible(false);
+			d->cameraWidget->_cameraWidget->setFrame(QImage());
+			break;
 	}
 }
 

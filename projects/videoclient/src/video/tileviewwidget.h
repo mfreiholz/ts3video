@@ -30,6 +30,8 @@ public:
 	void updateClientVideo(YuvFrameRefPtr frame, ocs::clientid_t senderId);
 
 public slots:
+	void increaseTileSize();
+	void decreaseTileSize();
 	void setTileSize(const QSize& size);
 
 #if defined(OCS_INCLUDE_AUDIO)

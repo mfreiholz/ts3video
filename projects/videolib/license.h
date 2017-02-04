@@ -10,6 +10,7 @@
 namespace lic
 {
 
+
 class License
 {
 public:
@@ -19,20 +20,18 @@ public:
 	QList<QString> validVersions;
 };
 
+
 class LicenseXmlReader
 {
 public:
 	std::shared_ptr<License> loadFromFile(const QString& filePath) const;
 };
 
+
 class LicenseManager
 {
 public:
 	static bool isValid(const License& lic);
-
-	std::shared_ptr<License> loadFromString(const std::string& data) const;
-	std::shared_ptr<License> loadFromFile(const std::string& filePath) const;
 };
-
 
 }
