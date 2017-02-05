@@ -163,28 +163,27 @@ void TileViewWidget::updateClientVideo(YuvFrameRefPtr frame, ocs::clientid_t sen
 void TileViewWidget::increaseTileSize()
 {
 	QSettings settings;
-	auto maxSize = settings.value("UI/TileViewWidget-MaxTileSize", QSize(1280, 720)).toSize();
+	auto maxSize = this->rect().size() - QSize(30, 30);
 
-	auto newSize = d->tilesCurrentSize;
-	newSize += QSize(25, 25);
+	auto newSize = d->tilesCurrentSize + QSize(25, 25);
 	if (newSize.width() > maxSize.width() || newSize.height() > maxSize.height())
 	{
 		newSize = maxSize;
 	}
 	setTileSize(newSize);
-	d->tilesLayout->update();
 }
 
 void TileViewWidget::decreaseTileSize()
 {
 	QSettings settings;
-	auto maxSize = settings.value("UI/TileViewWidget-MinTileSize", QSize(120, 72)).toSize();
+	auto minSize = d->tilesAspectRatio.scaled(QSize(300, 300), Qt::KeepAspectRatio);
 
-	auto newSize = d->tilesCurrentSize;
-	newSize -= QSize(25, 25);
-	newSize = d->tilesAspectRatio.scaled(newSize, Qt::KeepAspectRatio);
+	auto newSize = d->tilesCurrentSize - QSize(25, 25);
+	if (newSize.width() < minSize.width() || newSize.height() < minSize.height())
+	{
+		newSize = minSize;
+	}
 	setTileSize(newSize);
-	d->tilesLayout->update();
 }
 
 void TileViewWidget::setTileSize(const QSize& size)
@@ -202,6 +201,7 @@ void TileViewWidget::setTileSize(const QSize& size)
 	{
 		w->setFixedSize(newSize);
 	}
+	d->tilesLayout->update();
 }
 
 #if defined(OCS_INCLUDE_AUDIO)
@@ -250,18 +250,11 @@ void TileViewWidget::wheelEvent(QWheelEvent* e)
 	auto delta = e->angleDelta();
 	if (delta.y() > 0)
 	{
-		auto newSize = d->tilesCurrentSize;
-		newSize += QSize(25, 25);
-		newSize = d->tilesAspectRatio.scaled(newSize, Qt::KeepAspectRatio);
-		setTileSize(newSize);
-		d->tilesLayout->update();
+		this->increaseTileSize();
 	}
 	else if (delta.y() < 0)
 	{
-		auto newSize = d->tilesCurrentSize;
-		newSize -= QSize(25, 25);
-		newSize = d->tilesAspectRatio.scaled(newSize, Qt::KeepAspectRatio);
-		setTileSize(newSize);
+		this->decreaseTileSize();
 	}
 }
 
