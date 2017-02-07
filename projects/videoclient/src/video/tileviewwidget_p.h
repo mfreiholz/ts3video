@@ -36,6 +36,8 @@ public:
 
 public:
 	TileViewWidget* owner;
+	ConferenceVideoWindow* window;
+	QSharedPointer<QCamera> _camera;
 
 	QSize tilesAspectRatio;
 	QSize tilesCurrentSize;

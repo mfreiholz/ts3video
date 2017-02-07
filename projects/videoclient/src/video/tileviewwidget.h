@@ -48,10 +48,6 @@ private slots:
 	void onClientDisabledVideo(const ClientEntity& c);
 	void onCameraChanged();
 	void onCameraStatusChanged(QCamera::Status s);
-
-private:
-	ConferenceVideoWindow* _window;
-	QSharedPointer<QCamera> _camera;
 };
 
 #endif

@@ -31,9 +31,9 @@ HUMBLE_LOGGER(HL, "gui.tileview");
 
 TileViewWidget::TileViewWidget(ConferenceVideoWindow* window, Qt::WindowFlags f) :
 	QWidget(window),
-	d(new TileViewWidgetPrivate(this)),
-	_window(window)
+	d(new TileViewWidgetPrivate(this))
 {
+	d->window = window;
 	d->tilesCurrentSize.scale(640, 360, Qt::KeepAspectRatio);
 	const auto iconSize = fontMetrics().height() * 2;
 
@@ -96,26 +96,26 @@ TileViewWidget::TileViewWidget(ConferenceVideoWindow* window, Qt::WindowFlags f)
 	d->tilesLayout->addWidget(d->cameraWidget);
 
 	// Window events
-	QObject::connect(_window, &ConferenceVideoWindow::cameraChanged, this, &TileViewWidget::onCameraChanged);
+	QObject::connect(d->window, &ConferenceVideoWindow::cameraChanged, this, &TileViewWidget::onCameraChanged);
 
 	// Network events
-	auto nc = _window->networkClient();
+	auto nc = d->window->networkClient();
 	QObject::connect(nc.data(), &NetworkClient::clientEnabledVideo, this, &TileViewWidget::onClientEnabledVideo);
 	QObject::connect(nc.data(), &NetworkClient::clientDisabledVideo, this, &TileViewWidget::onClientDisabledVideo);
 }
 
 TileViewWidget::~TileViewWidget()
 {
-	if (_camera)
+	if (d->camera)
 	{
-		_camera->disconnect(this);
-		_camera.clear();
+		d->camera->disconnect(this);
+		d->camera.clear();
 	}
 }
 
 ConferenceVideoWindow* TileViewWidget::window() const
 {
-	return _window;
+	return d->window;
 }
 
 void TileViewWidget::addClient(const ClientEntity& client, const ChannelEntity& channel)
@@ -289,20 +289,20 @@ void TileViewWidget::onClientDisabledVideo(const ClientEntity& c)
 void TileViewWidget::onCameraChanged()
 {
 	// Clear old camera
-	if (_camera)
+	if (d->camera)
 	{
-		_camera->disconnect(this);
+		d->camera->disconnect(this);
 	}
 
 	// Setup new camera
-	_camera = _window->camera();
-	if (_camera)
+	d->camera = d->window->camera();
+	if (d->camera)
 	{
-		QObject::connect(_camera.data(), &QCamera::statusChanged, this, &TileViewWidget::onCameraStatusChanged);
+		QObject::connect(d->camera.data(), &QCamera::statusChanged, this, &TileViewWidget::onCameraStatusChanged);
 	}
 
 	// Update UI
-	//d->cameraWidget->setVisible(!_camera.isNull());
+	//d->cameraWidget->setVisible(!d->camera.isNull());
 }
 
 void TileViewWidget::onCameraStatusChanged(QCamera::Status s)
