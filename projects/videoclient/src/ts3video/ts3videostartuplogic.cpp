@@ -98,6 +98,8 @@ static QString generateConferenceRoomPassword(const QString& uid)
 	# Commands
 
 	--mode ts3video --address teamspeak.insanefactory.com --port 9987 --channelid 1 --clientdbid 6 --username "Manuel"
+	--mode ts3video --address teamspeak.insanefactory.com --port 9987 --channelid 1 --clientdbid 6 --username "Manuel" --skip-update-check --skip-server-lookup
+
 	--mode ts3video --address 127.0.0.1 --port 9987 --channelid 1 --username "Manuel"
 	--mode ts3video --address 127.0.0.1 --port 9987 --channelid 1 --username "Manuel" --skip-update-check --skip-server-lookup
 */
