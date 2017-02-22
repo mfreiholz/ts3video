@@ -222,17 +222,23 @@ ConferenceVideoWindow::ConferenceVideoWindow(const QSharedPointer<NetworkClient>
 #endif
 	}
 
-	// Default geometry.
-	QWidgetUtil::resizeWidgetPerCent(this, 75.0, 75.0);
+	// Set window geometry.
+	{
+		// Default.
+		QWidgetUtil::resizeWidgetPerCent(this, 75.0, 75.0);
 
-	// Latest geometry of user.
-	QSettings settings;
-	const QSize windowSize = settings.value("UI/ConferenceVideoWindow-Size").toSize();
-	if (!windowSize.isNull() && windowSize.width() > 0 && windowSize.height() > 0)
-		resize(windowSize);
-	const QPoint windowPos = settings.value("UI/ConferenceVideoWindow-Pos").toPoint();
-	if (!windowPos.isNull())
-		move(windowPos);
+		// Restore from last session.
+		{
+			QSettings settings;
+			auto savedGeometry = settings.value("UI/ConferenceVideoWindow-Geometry").toByteArray();
+			if (!savedGeometry.isEmpty())
+				restoreGeometry(savedGeometry);
+
+			auto savedState = settings.value("UI/ConferenceVideoWindow-State").toByteArray();
+			if (!savedState.isEmpty())
+				restoreState(savedState);
+		}
+	}
 }
 
 ConferenceVideoWindow::~ConferenceVideoWindow()
@@ -498,8 +504,8 @@ void ConferenceVideoWindow::onReplyFinsihedHandleError()
 void ConferenceVideoWindow::closeEvent(QCloseEvent* e)
 {
 	QSettings settings;
-	settings.setValue("UI/ConferenceVideoWindow-Size", size());
-	settings.setValue("UI/ConferenceVideoWindow-Pos", pos());
+	settings.setValue("UI/ConferenceVideoWindow-Geometry", saveGeometry());
+	settings.setValue("UI/ConferenceVideoWindow-State", saveState());
 
 	auto reply = networkClient()->goodbye();
 	QCORREPLY_AUTODELETE(reply);
