@@ -121,6 +121,7 @@ static QSharedPointer<QAudioInput> createMicrophoneFromOptions(
 
 void ConferenceVideoWindow::addDropShadowEffect(QWidget* widget)
 {
+	return;
 	auto dropShadow = new QGraphicsDropShadowEffect(widget);
 	dropShadow->setOffset(0, 0);
 	dropShadow->setBlurRadius(5);

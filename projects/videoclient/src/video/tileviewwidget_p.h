@@ -44,12 +44,13 @@ public:
 
 	FlowLayout* tilesLayout;
 	FlowLayout* noVideoTilesLayout;
-	TileViewCameraWidget* cameraWidget;
+	TileViewTileFrame* cameraWidget;
 	QPushButton* zoomInButton;
 	QPushButton* zoomOutButton;
 
 	QSharedPointer<QCamera> camera;
-	QHash<ocs::clientid_t, TileViewTileWidget*> tilesMap; // Maps client's ID to it's widget.
+	QHash<ocs::clientid_t, TileViewTileWidget*>
+	tilesMap; // Maps client's ID to it's widget.
 };
 
 ///////////////////////////////////////////////////////////////////////
@@ -79,7 +80,8 @@ class TileViewTileWidget : public QFrame
 	friend class TileViewWidget;
 
 public:
-	TileViewTileWidget(TileViewWidget* tileView, const ClientEntity& client, QWidget* parent = nullptr);
+	TileViewTileWidget(TileViewWidget* tileView, const ClientEntity& client,
+					   QWidget* parent = nullptr);
 
 private:
 	TileViewWidget* _tileView;

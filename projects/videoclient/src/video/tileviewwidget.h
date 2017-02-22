@@ -1,8 +1,8 @@
-#ifndef TILEVIEWWIDGET_H
-#define TILEVIEWWIDGET_H
+#pragma once
 
 #include <QScopedPointer>
 #include <QWidget>
+#include <QFrame>
 #include <QCamera>
 
 #include "libbase/defines.h"
@@ -43,6 +43,10 @@ protected:
 	virtual void showEvent(QShowEvent* e);
 	virtual void hideEvent(QHideEvent* e);
 
+public slots:
+	void onTileMoveBackward();
+	void onTileMoveForward();
+
 private slots:
 	void onClientEnabledVideo(const ClientEntity& c);
 	void onClientDisabledVideo(const ClientEntity& c);
@@ -50,4 +54,25 @@ private slots:
 	void onCameraStatusChanged(QCamera::Status s);
 };
 
-#endif
+
+/*
+	Basic wrapper widget for all visible tiles (camera, remote-video, ...)
+*/
+class TileViewTileFrame :
+	public QFrame
+{
+	Q_OBJECT
+	class Private;
+	QScopedPointer<Private> d;
+
+public:
+	TileViewTileFrame(TileViewWidget* tileView, QWidget* parent = nullptr);
+	virtual ~TileViewTileFrame();
+
+	void setWidget(QWidget* widget);
+	QWidget* widget() const;
+
+signals:
+	void moveBackwardClicked();
+	void moveForwardClicked();
+};

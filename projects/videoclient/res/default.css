@@ -41,6 +41,14 @@ TileViewWidget QScrollArea QWidget {
 	background: rgb(30, 30, 30);
 }
 
+TileViewWidget QLabel#nameLabel {
+  color: rgb(200, 200, 200);
+}
+
+TileViewWidget QFrame#tileBar {
+  background: rgb(18, 19, 20);
+}
+
 TileViewWidget > QScrollBar {
 	background: rgb(30, 30, 30);
 }
