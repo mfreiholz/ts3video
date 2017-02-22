@@ -507,8 +507,7 @@ void Ts3VideoStartupLogic::startVideoGui()
 		opts = w.values();
 
 	// Open conference window
-	_window = new ConferenceVideoWindow(_nc, nullptr, 0);
-	_window->applyOptions(opts);
+	_window = new ConferenceVideoWindow(opts, _nc, nullptr, 0);
 	_window->show();
 
 	// Close startup logic.

@@ -59,7 +59,7 @@ public:
 	};
 
 public:
-	ConferenceVideoWindow(const QSharedPointer<NetworkClient>& nc, QWidget* parent, Qt::WindowFlags flags);
+	ConferenceVideoWindow(const Options& options, const QSharedPointer<NetworkClient>& nc, QWidget* parent, Qt::WindowFlags flags);
 	virtual ~ConferenceVideoWindow();
 
 	const ConferenceVideoWindow::Options& options() const;

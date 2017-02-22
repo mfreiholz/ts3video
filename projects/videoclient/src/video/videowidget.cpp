@@ -6,6 +6,10 @@
 
 #include "videolib/elws.h"
 
+#include "videowidget_cpu.h"
+#include "videowidget_opengl.h"
+#include "videowidget_qglwidget.h"
+
 ///////////////////////////////////////////////////////////////////////
 
 VideoWidget::VideoWidget(Type type, QWidget* parent) :
@@ -16,36 +20,56 @@ VideoWidget::VideoWidget(Type type, QWidget* parent) :
 
 	switch (d->type)
 	{
-	case CPU:
-		d->cpuImageImpl = new VideoFrame_CpuImpl(this);
-		d->frameWidget = d->cpuImageImpl;
-		break;
-	case OpenGL_ImageWidget:
-		d->glImageImpl = new VideoFrame_OpenGL(this);
-		d->frameWidget = d->glImageImpl;
-		break;
-	case OpenGL_RenderThread:
-		d->oglWindow = new OpenGLWindow(nullptr);
-		d->oglWindow->setRenderMode(OpenGLWindow::RM_CROPPED);
-		d->oglWindow->setBackgroundColor(QColor(Qt::black));
-		d->frameWidget = d->oglWindow->widget();
-		break;
-	case OpenGL_WindowSurface:
-		d->yuvWindow = new YuvVideoWindowSub(nullptr);
-		d->frameWidget = QWidget::createWindowContainer(d->yuvWindow, this);
-		break;
-	case OpenGL_YuvWidget:
-		d->glVideoWidget = new GLVideoWidget(this);
-		d->frameWidget = d->glVideoWidget;
-		break;
+		case CPU:
+		{
+			auto w = new CpuVideoWidget(this);
+			d->frameWidget = w;
+			d->frameWidgetImpl = w;
+			break;
+		}
+		case OpenGL:
+		{
+			//auto w = new YuvVideoOpenGLWidget(this);
+			auto w = new VideoWidgetQGLWidget(this);
+			d->frameWidget = w;
+			d->frameWidgetImpl = w;
+			break;
+		}
 	}
 
-	if (!d->frameWidget)
-	{
-		return;
-	}
+	//switch (d->type)
+	//{
+	//	case CPU:
+	//		d->cpuImageImpl = new VideoFrame_CpuImpl(this);
+	//		d->frameWidget = d->cpuImageImpl;
+	//		break;
+	//	case OpenGL_ImageWidget:
+	//		d->glImageImpl = new VideoFrame_OpenGL(this);
+	//		d->frameWidget = d->glImageImpl;
+	//		break;
+	//	case OpenGL_RenderThread:
+	//		d->oglWindow = new OpenGLWindow(nullptr);
+	//		d->oglWindow->setRenderMode(OpenGLWindow::RM_CROPPED);
+	//		d->oglWindow->setBackgroundColor(QColor(Qt::black));
+	//		d->frameWidget = d->oglWindow->widget();
+	//		break;
+	//	case OpenGL_WindowSurface:
+	//		d->yuvWindow = new YuvVideoWindowSub(nullptr);
+	//		d->frameWidget = QWidget::createWindowContainer(d->yuvWindow, this);
+	//		break;
+	//	case OpenGL_YuvWidget:
+	//		d->glVideoWidget = new GLVideoWidget(this);
+	//		d->frameWidget = d->glVideoWidget;
+	//		break;
+	//}
 
-	d->frameWidget->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
+	//if (!d->frameWidget)
+	//{
+	//	return;
+	//}
+
+	d->frameWidget->setSizePolicy(QSizePolicy::MinimumExpanding,
+								  QSizePolicy::MinimumExpanding);
 
 	auto mainLayout = new QBoxLayout(QBoxLayout::TopToBottom);
 	mainLayout->setContentsMargins(0, 0, 0, 0);
@@ -60,113 +84,114 @@ VideoWidget::~VideoWidget()
 	delete d->glImageImpl;
 	delete d->oglWindow;
 	delete d->yuvWindow;
-	delete d->glVideoWidget;
 }
 
 void VideoWidget::setFrame(YuvFrameRefPtr frame)
 {
-	switch (d->type)
-	{
-	case CPU:
-		if (d->cpuImageImpl)
-		{
-			QImage image;
-			if (!frame.isNull())
-				image = frame->toQImage();
-			d->cpuImageImpl->setFrame(image);
-		}
-		break;
-	case OpenGL_ImageWidget:
-		if (d->glImageImpl)
-		{
-			QImage image;
-			if (!frame.isNull())
-				image = frame->toQImage();
-			d->glImageImpl->setFrame(image);
-		}
-		break;
-	case OpenGL_RenderThread:
-		if (d->oglWindow)
-		{
-			d->oglWindow->setData(frame);
-		}
-		break;
-	case OpenGL_WindowSurface:
-		if (d->yuvWindow)
-		{
-			d->yuvWindow->setFrame(frame);
-		}
-		break;
-	case OpenGL_YuvWidget:
-		if (d->glVideoWidget)
-		{
-			d->glVideoWidget->setFrame(frame);
-		}
-		break;
-	}
+	d->frameWidgetImpl->setFrame(frame);
+	//switch (d->type)
+	//{
+	//	case CPU:
+	//		if (d->cpuImageImpl)
+	//		{
+	//			QImage image;
+	//			if (!frame.isNull())
+	//				image = frame->toQImage();
+	//			d->cpuImageImpl->setFrame(image);
+	//		}
+	//		break;
+	//	case OpenGL_ImageWidget:
+	//		if (d->glImageImpl)
+	//		{
+	//			QImage image;
+	//			if (!frame.isNull())
+	//				image = frame->toQImage();
+	//			d->glImageImpl->setFrame(image);
+	//		}
+	//		break;
+	//	case OpenGL_RenderThread:
+	//		if (d->oglWindow)
+	//		{
+	//			d->oglWindow->setData(frame);
+	//		}
+	//		break;
+	//	case OpenGL_WindowSurface:
+	//		if (d->yuvWindow)
+	//		{
+	//			d->yuvWindow->setFrame(frame);
+	//		}
+	//		break;
+	//	case OpenGL_YuvWidget:
+	//		if (d->glVideoWidget)
+	//		{
+	//			d->glVideoWidget->setFrame(frame);
+	//		}
+	//		break;
+	//}
 }
 
 void VideoWidget::setFrame(const QImage& frame)
 {
-	switch (d->type)
-	{
-	case CPU:
-		if (d->cpuImageImpl)
-		{
-			d->cpuImageImpl->setFrame(frame);
-		}
-		break;
-	case OpenGL_ImageWidget:
-		if (d->glImageImpl)
-		{
-			d->glImageImpl->setFrame(frame);
-		}
-		break;
-	case OpenGL_RenderThread:
-		if (d->oglWindow)
-		{
-			d->oglWindow->setData(YuvFrameRefPtr(YuvFrame::fromQImage(frame)));
-		}
-		break;
-	case OpenGL_WindowSurface:
-		if (d->yuvWindow)
-		{
-			d->yuvWindow->setFrame(YuvFrameRefPtr(YuvFrame::fromQImage(frame)));
-		}
-		break;
-	case OpenGL_YuvWidget:
-		if (d->glVideoWidget)
-		{
-			d->glVideoWidget->setFrame(YuvFrameRefPtr(YuvFrame::fromQImage(frame)));
-		}
-		break;
-	}
+	d->frameWidgetImpl->setFrame(frame);
+	//switch (d->type)
+	//{
+	//	case CPU:
+	//		if (d->cpuImageImpl)
+	//		{
+	//			d->cpuImageImpl->setFrame(frame);
+	//		}
+	//		break;
+	//	case OpenGL_ImageWidget:
+	//		if (d->glImageImpl)
+	//		{
+	//			d->glImageImpl->setFrame(frame);
+	//		}
+	//		break;
+	//	case OpenGL_RenderThread:
+	//		if (d->oglWindow)
+	//		{
+	//			d->oglWindow->setData(YuvFrameRefPtr(YuvFrame::fromQImage(frame)));
+	//		}
+	//		break;
+	//	case OpenGL_WindowSurface:
+	//		if (d->yuvWindow)
+	//		{
+	//			d->yuvWindow->setFrame(YuvFrameRefPtr(YuvFrame::fromQImage(frame)));
+	//		}
+	//		break;
+	//	case OpenGL_YuvWidget:
+	//		if (d->glVideoWidget)
+	//		{
+	//			d->glVideoWidget->setFrame(YuvFrameRefPtr(YuvFrame::fromQImage(frame)));
+	//		}
+	//		break;
+	//}
 }
 
 void VideoWidget::setAvatar(const QPixmap& pm)
 {
-	switch (d->type)
-	{
-	case CPU:
-		if (d->cpuImageImpl)
-		{
-			d->cpuImageImpl->setAvatar(pm);
-		}
-		break;
-	}
+	//switch (d->type)
+	//{
+	//	case CPU:
+	//		if (d->cpuImageImpl)
+	//		{
+	//			d->cpuImageImpl->setAvatar(pm);
+	//		}
+	//		break;
+	//}
 }
 
 void VideoWidget::setText(const QString& text)
 {
-	switch (d->type)
-	{
-	case CPU:
-		if (d->cpuImageImpl)
-		{
-			d->cpuImageImpl->setText(text);
-		}
-		break;
-	}
+	//switch (d->type)
+	//{
+	//	case CPU:
+	//		if (d->cpuImageImpl)
+	//		{
+	//			d->cpuImageImpl->setText(text);
+	//		}
+	//		break;
+	//}
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -232,7 +257,8 @@ void VideoFrame_CpuImpl::paintEvent(QPaintEvent*)
 	// Bottom area.
 	const int bottomAreaHeight = 30;
 	const int bottomAvatarWidth = 30;
-	const QRect bottomRect(rect().x(), rect().height() - bottomAreaHeight, rect().width(), bottomAreaHeight);
+	const QRect bottomRect(rect().x(), rect().height() - bottomAreaHeight,
+						   rect().width(), bottomAreaHeight);
 
 	if (!_avatar.isNull() || !_text.isEmpty())
 	{
@@ -242,7 +268,8 @@ void VideoFrame_CpuImpl::paintEvent(QPaintEvent*)
 		p.setOpacity(1.0);
 	}
 
-	const QRect avatarRect(bottomRect.x(), bottomRect.y(), bottomAvatarWidth, bottomAreaHeight);
+	const QRect avatarRect(bottomRect.x(), bottomRect.y(), bottomAvatarWidth,
+						   bottomAreaHeight);
 	if (!_avatar.isNull())
 	{
 		p.setOpacity(0.8);
@@ -255,7 +282,8 @@ void VideoFrame_CpuImpl::paintEvent(QPaintEvent*)
 	{
 		const QFontMetrics fmetrics = fontMetrics();
 		p.setPen(Qt::white);
-		p.drawText(textRect, Qt::AlignLeft | Qt::AlignVCenter, fmetrics.elidedText(_text, Qt::ElideRight, textRect.width()));
+		p.drawText(textRect, Qt::AlignLeft | Qt::AlignVCenter,
+				   fmetrics.elidedText(_text, Qt::ElideRight, textRect.width()));
 	}
 
 	// Painter border around the entire rect.
@@ -268,7 +296,8 @@ void VideoFrame_CpuImpl::paintEvent(QPaintEvent*)
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
 
-VideoFrame_OpenGL::VideoFrame_OpenGL(QWidget* parent, const QGLWidget* shareWidget, Qt::WindowFlags f) :
+VideoFrame_OpenGL::VideoFrame_OpenGL(QWidget* parent,
+									 const QGLWidget* shareWidget, Qt::WindowFlags f) :
 	QGLWidget(parent, shareWidget, f)
 {
 }
@@ -299,7 +328,8 @@ void VideoFrame_OpenGL::paintEvent(QPaintEvent*)
 			auto imageRect = _image.rect();
 			auto offset = QPoint(0, 0);
 			ELWS::calcScaledAndCenterizedImageRect(rect(), imageRect, offset);
-			auto scaledImage = _image.scaled(imageRect.size()); ///< TODO This does cost performance on CPU!
+			auto scaledImage = _image.scaled(
+								   imageRect.size()); ///< TODO This does cost performance on CPU!
 			p.drawImage(QPoint(-offset.x(), -offset.y()), scaledImage, scaledImage.rect());
 		}
 		// Basic scale.

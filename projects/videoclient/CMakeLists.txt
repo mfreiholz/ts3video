@@ -34,6 +34,7 @@ set(qheaders
 	src/video/tileviewwidget_p.h
 	src/video/videowidget.h
 	src/video/videowidget_p.h
+	src/video/videowidget_cpu.h
 	src/video/videosettingswidget.h
 	src/startup/startupwidget.h
 	src/startup/devstartuplogic.h
@@ -75,6 +76,7 @@ set(sources
 	src/video/remoteclientvideowidget.cpp
 	src/video/tileviewwidget.cpp
 	src/video/videowidget.cpp
+	src/video/videowidget_cpu.cpp
 	src/video/videosettingswidget.cpp
 	src/startup/startuplogic.cpp
 	src/startup/startupwidget.cpp
@@ -129,9 +131,11 @@ if(IncludeOpenGLSupport)
 	list(APPEND qheaders src/video/opengl2/yuvvideowindow.h)
 	list(APPEND sources src/video/opengl2/yuvvideowindow.cpp)
 
-	list(APPEND qheaders src/video/opengl3/glvideowidget.h)
-	list(APPEND headers src/video/opengl3/glvideowidget_p.h)
-	list(APPEND sources src/video/opengl3/glvideowidget.cpp)
+	list(APPEND qheaders src/video/videowidget_opengl.h)
+	list(APPEND sources src/video/videowidget_opengl.cpp)
+
+	list(APPEND qheaders src/video/videowidget_qglwidget.h)
+	list(APPEND sources src/video/videowidget_qglwidget.cpp)
 endif()
 
 if(IncludeAudioSupport)

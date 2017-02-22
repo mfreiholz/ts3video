@@ -32,8 +32,7 @@ int DirectConnectStartupLogic::exec()
 			ConferenceVideoWindow::Options opts;
 			opts.cameraDeviceId = QCameraInfo::defaultCamera().deviceName();
 			opts.cameraAutoEnable = true;
-			auto w = new ConferenceVideoWindow(_nc, nullptr, 0);
-			w->applyOptions(opts);
+			auto w = new ConferenceVideoWindow(opts, _nc, nullptr, 0);
 			w->show();
 		});
 		QCorReply::autoDelete(reply);

@@ -6,6 +6,13 @@
 
 #include "videolib/yuvframe.h"
 
+class VideoWidgetI
+{
+public:
+	virtual void setFrame(YuvFrameRefPtr frame) = 0;
+	virtual void setFrame(const QImage& frame) = 0;
+};
+
 class VideoWidgetPrivate;
 class VideoWidget : public QWidget
 {
@@ -13,14 +20,7 @@ class VideoWidget : public QWidget
 	QScopedPointer<VideoWidgetPrivate> d;
 
 public:
-	enum Type
-	{
-		CPU,                      ///< Paints everything on via CPU (Converts YUV->RGB on CPU)
-		OpenGL_ImageWidget,       ///< Paints everything via OpenGL (Converts YUV->RGB on CPU)
-		OpenGL_RenderThread,      ///< Paints everything via OpenGL in a separate thread (Converts YUV->RGB with shader on GPU) (by mstein)
-		OpenGL_WindowSurface,     ///< Paints everything via OpenGL based on QOpenGLSurface (Converts YUV->RGB with shader on GPU)
-		OpenGL_YuvWidget          ///< Paints everything via OpenGL based on QGLWidget (Converts YUV->RGB with shader GPU)
-	};
+	enum Type { CPU, OpenGL };
 
 	explicit VideoWidget(Type type = CPU, QWidget* parent = 0);
 	~VideoWidget();

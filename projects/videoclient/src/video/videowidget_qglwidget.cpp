@@ -1,4 +1,4 @@
-#include "glvideowidget_p.h"
+#include "videowidget_qglwidget.h"
 
 #include <QOpenGLContext>
 #include <QOpenGLShader>
@@ -7,13 +7,25 @@
 
 #include "humblelogging/api.h"
 
-HUMBLE_LOGGER(HL, "client.opengl");
+HUMBLE_LOGGER(HL, "client.videowidget");
 
-///////////////////////////////////////////////////////////////////////
+// VideoWidgetQGLWidget::Private //////////////////////////////////////
 
-GLVideoWidget::GLVideoWidget(QWidget* parent, const QGLWidget* shareWidget, Qt::WindowFlags f) :
+class VideoWidgetQGLWidget::Private
+{
+public:
+	QOpenGLShaderProgram* program;
+	unsigned int textureIds[3];
+
+	YuvFrameRefPtr frame;
+};
+
+// VideoWidgetQGLWidget ///////////////////////////////////////////////
+
+VideoWidgetQGLWidget::VideoWidgetQGLWidget(QWidget* parent,
+		const QGLWidget* shareWidget, Qt::WindowFlags f) :
 	QGLWidget(parent, shareWidget, f),
-	d(new GLVideoWidgetPrivate(this))
+	d(new Private())
 {
 	QSurfaceFormat format;
 	format.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
@@ -22,28 +34,39 @@ GLVideoWidget::GLVideoWidget(QWidget* parent, const QGLWidget* shareWidget, Qt::
 	setFormat(QGLFormat::fromSurfaceFormat(format));
 }
 
-GLVideoWidget::~GLVideoWidget()
+VideoWidgetQGLWidget::~VideoWidgetQGLWidget()
 {
 }
 
-void GLVideoWidget::setFrame(YuvFrameRefPtr frame)
+void
+VideoWidgetQGLWidget::setFrame(YuvFrameRefPtr frame)
 {
 	d->frame = frame;
 	updateGL();
 }
 
-void GLVideoWidget::initializeGL()
+void
+VideoWidgetQGLWidget::setFrame(const QImage& frame)
+{
+}
+
+void
+VideoWidgetQGLWidget::initializeGL()
 {
 	// Init shaders.
 #ifdef _WIN32
 	d->program = new QOpenGLShaderProgram(this);
-	d->program->addShaderFromSourceFile(QOpenGLShader::Vertex, ":/opengl/vertex.vsh");
-	d->program->addShaderFromSourceFile(QOpenGLShader::Fragment, ":/opengl/fragment-win.fsh");
+	d->program->addShaderFromSourceFile(QOpenGLShader::Vertex,
+										":/opengl/vertex.vsh");
+	d->program->addShaderFromSourceFile(QOpenGLShader::Fragment,
+										":/opengl/fragment-win.fsh");
 	d->program->link();
 #else
 	d->program = new QOpenGLShaderProgram(this);
-	d->program->addShaderFromSourceFile(QOpenGLShader::Vertex, ":/opengl/vertex.vsh");
-	d->program->addShaderFromSourceFile(QOpenGLShader::Fragment, ":/opengl/fragment-linux.fsh");
+	d->program->addShaderFromSourceFile(QOpenGLShader::Vertex,
+										":/opengl/vertex.vsh");
+	d->program->addShaderFromSourceFile(QOpenGLShader::Fragment,
+										":/opengl/fragment-linux.fsh");
 	d->program->link();
 #endif
 
@@ -57,7 +80,8 @@ void GLVideoWidget::initializeGL()
 	gl->glGenTextures(3, d->textureIds);
 	for (auto i = 0; i < 3; ++i)
 	{
-		gl->glBindTexture(GL_TEXTURE_RECTANGLE_ARB, d->textureIds[i]); // Sets as current texture.
+		gl->glBindTexture(GL_TEXTURE_RECTANGLE_ARB,
+						  d->textureIds[i]); // Sets as current texture.
 		gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	}
@@ -71,11 +95,16 @@ void GLVideoWidget::initializeGL()
 	auto infoVendor = QString((char*)glGetString(GL_VENDOR));
 	auto infoRenderer = QString((char*)glGetString(GL_RENDERER));
 	auto infoVersion = QString((char*)glGetString(GL_VERSION));
-	auto infoShaderVersion = QString((char*)glGetString(GL_SHADING_LANGUAGE_VERSION));
-	HL_DEBUG(HL, QString("OpenGL Video Window Initialized (vendor=%1; renderer=%2; version=%3; shader-version=%4)").arg(infoVendor).arg(infoRenderer).arg(infoVersion).arg(infoShaderVersion).toStdString());
+	auto infoShaderVersion = QString((char*)glGetString(
+										 GL_SHADING_LANGUAGE_VERSION));
+	HL_DEBUG(HL,
+			 QString("OpenGL Video Window Initialized (vendor=%1; renderer=%2; version=%3; shader-version=%4)").arg(
+				 infoVendor).arg(infoRenderer).arg(infoVersion).arg(
+				 infoShaderVersion).toStdString());
 }
 
-void GLVideoWidget::resizeGL(int w, int h)
+void
+VideoWidgetQGLWidget::resizeGL(int w, int h)
 {
 	glLoadIdentity();
 	glViewport(0, 0, w, h);
@@ -88,19 +117,17 @@ void GLVideoWidget::resizeGL(int w, int h)
 	//glLoadIdentity();
 }
 
-void GLVideoWidget::paintGL()
+void
+VideoWidgetQGLWidget::paintGL()
 {
 	auto gl = QOpenGLContext::currentContext()->functions();
 
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	if (d->frame.isNull())
-	{
-		return;
-	}
-
 	auto frame = d->frame; //YuvFrameRefPtr(_frame->copy());
+	if (!frame)
+		return;
 
 	// Bind shader.
 	glLoadIdentity();
@@ -110,19 +137,22 @@ void GLVideoWidget::paintGL()
 	// Set texture: U plane
 	gl->glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_RECTANGLE_ARB, d->textureIds[1]);
-	glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, GL_LUMINANCE, frame->width >> 1, frame->height >> 1, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, frame->u);
+	glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, GL_LUMINANCE, frame->width >> 1,
+				 frame->height >> 1, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, frame->u);
 	d->program->setUniformValue("texU", 1);
 
 	// Set texture: V plane
 	gl->glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_RECTANGLE_ARB, d->textureIds[2]);
-	glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, GL_LUMINANCE, frame->width >> 1, frame->height >> 1, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, frame->v);
+	glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, GL_LUMINANCE, frame->width >> 1,
+				 frame->height >> 1, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, frame->v);
 	d->program->setUniformValue("texV", 2);
 
 	// Set texture: Y plane
 	gl->glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_RECTANGLE_ARB, d->textureIds[0]);
-	glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, GL_LUMINANCE, frame->width, frame->height, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, frame->y);
+	glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, GL_LUMINANCE, frame->width,
+				 frame->height, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, frame->y);
 	d->program->setUniformValue("texY", 0);
 
 	// Draw canvas.

@@ -4,11 +4,12 @@
 
 ///////////////////////////////////////////////////////////////////////
 
-RemoteClientVideoWidget::RemoteClientVideoWidget(bool hardwareAcceleration, QWidget* parent) :
+RemoteClientVideoWidget::RemoteClientVideoWidget(bool hardwareAcceleration,
+		QWidget* parent) :
 	QFrame(parent)
 {
 	if (hardwareAcceleration)
-		_videoWidget = new VideoWidget(VideoWidget::OpenGL_YuvWidget, this);
+		_videoWidget = new VideoWidget(VideoWidget::OpenGL, this);
 	else
 		_videoWidget = new VideoWidget(VideoWidget::CPU, this);
 

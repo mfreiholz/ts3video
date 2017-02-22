@@ -44,8 +44,7 @@ int DevStartupLogic::exec()
 				opts.audioInputDeviceId = QAudioDeviceInfo::defaultInputDevice().deviceName();
 				opts.audioInputAutoEnable = true;
 #endif
-				auto w = new ConferenceVideoWindow(nc, nullptr, 0);
-				w->applyOptions(opts);
+				auto w = new ConferenceVideoWindow(opts, nc, nullptr, 0);
 				w->show();
 			});
 			QCORREPLY_AUTODELETE(reply);
