@@ -117,6 +117,7 @@ TileViewWidget::TileViewWidget(ConferenceVideoWindow* window,
 										   new TileViewCameraWidget(this, this));
 	d->cameraWidget->setFixedSize(d->tilesCurrentSize);
 	d->cameraWidget->setVisible(false);
+	d->cameraWidget->setClientInfo(window->networkClient()->clientEntity());
 	d->tilesLayout->addWidget(d->cameraWidget);
 
 	// Window events
@@ -153,6 +154,7 @@ void TileViewWidget::addClient(const ClientEntity& client,
 		auto tile = newTileViewTileFrame(this, this, new TileViewTileWidget(this,
 										 client, this));
 		tile->setFixedSize(d->tilesCurrentSize);
+		tile->setClientInfo(client);
 
 		d->tilesLayout->addWidget(tile);
 		d->tilesMap.insert(client.id, static_cast<TileViewTileWidget*>(tile->widget()));
@@ -391,6 +393,7 @@ public:
 	QPushButton* moveForwardButton;
 
 	QLabel* nameLabel;
+	QString nameLabelText;
 
 	QWidget* widget = nullptr;
 };
@@ -439,7 +442,7 @@ TileViewTileFrame::TileViewTileFrame(TileViewWidget* tileView,
 	}
 
 	// Name label.
-	d->nameLabel = new QLabel("DemoName123");
+	d->nameLabel = new QLabel();
 	d->nameLabel->setObjectName("nameLabel");
 	d->nameLabel->setWordWrap(false);
 	d->nameLabel->setAlignment(Qt::AlignCenter | Qt::AlignVCenter);
@@ -463,6 +466,13 @@ QWidget*
 TileViewTileFrame::widget() const
 {
 	return d->widget;
+}
+
+void
+TileViewTileFrame::setClientInfo(const ClientEntity& client)
+{
+	d->nameLabelText = client.name;
+	d->nameLabel->setText(d->nameLabelText);
 }
 
 // TileViewCameraWidget ///////////////////////////////////////////////

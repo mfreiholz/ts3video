@@ -72,6 +72,8 @@ public:
 	void setWidget(QWidget* widget);
 	QWidget* widget() const;
 
+	void setClientInfo(const ClientEntity& client);
+
 signals:
 	void moveBackwardClicked();
 	void moveForwardClicked();
