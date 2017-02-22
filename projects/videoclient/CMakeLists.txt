@@ -33,7 +33,6 @@ set(qheaders
 	src/video/tileviewwidget.h
 	src/video/tileviewwidget_p.h
 	src/video/videowidget.h
-	src/video/videowidget_p.h
 	src/video/videowidget_cpu.h
 	src/video/videosettingswidget.h
 	src/startup/startupwidget.h

@@ -1,10 +1,11 @@
-#ifndef VIDEOWIDGET_H
-#define VIDEOWIDGET_H
+#pragma once
 
 #include <QScopedPointer>
 #include <QWidget>
+class QImage;
 
 #include "videolib/yuvframe.h"
+
 
 class VideoWidgetI
 {
@@ -13,11 +14,13 @@ public:
 	virtual void setFrame(const QImage& frame) = 0;
 };
 
-class VideoWidgetPrivate;
-class VideoWidget : public QWidget
+
+class VideoWidget
+	: public QWidget
 {
 	Q_OBJECT
-	QScopedPointer<VideoWidgetPrivate> d;
+	class Private;
+	QScopedPointer<Private> d;
 
 public:
 	enum Type { CPU, OpenGL };
@@ -32,5 +35,3 @@ public slots:
 	void setAvatar(const QPixmap& pm);
 	void setText(const QString& text);
 };
-
-#endif
