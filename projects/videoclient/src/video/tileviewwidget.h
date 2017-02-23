@@ -106,7 +106,8 @@ private:
 /*
 	Widget to display the video of a remote user.
 */
-class TileViewTileWidget : public QFrame
+class TileViewTileWidget :
+	public QFrame
 {
 	Q_OBJECT
 	friend class TileViewWidget;

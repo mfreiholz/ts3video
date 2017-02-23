@@ -76,8 +76,9 @@ public:
 	QPushButton* zoomOutButton;
 
 	QSharedPointer<QCamera> camera;
-	QHash<ocs::clientid_t, TileViewTileWidget*>
-	tilesMap; // Maps client's ID to it's widget.
+
+	// Impl: TileViewTileWidget
+	QHash<ocs::clientid_t, TileViewTileFrame*> tilesMap;
 };
 
 // TileViewWidget /////////////////////////////////////////////////////
@@ -196,7 +197,7 @@ TileViewWidget::addClient(const ClientEntity& client,
 		tile->setClientInfo(client);
 
 		d->tilesLayout->addWidget(tile);
-		d->tilesMap.insert(client.id, static_cast<TileViewTileWidget*>(tile->widget()));
+		d->tilesMap.insert(client.id, tile);
 	}
 }
 
@@ -232,7 +233,8 @@ TileViewWidget::updateClientVideo(YuvFrameRefPtr frame,
 		//if (!tileWidget)
 		return;
 	}
-	tileWidget->_videoWidget->videoWidget()->setFrame(frame);
+	auto p = static_cast<TileViewTileWidget*>(tileWidget->widget());
+	p->_videoWidget->videoWidget()->setFrame(frame);
 }
 
 void
