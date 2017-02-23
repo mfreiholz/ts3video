@@ -31,7 +31,6 @@ set(qheaders
 	src/video/clientcameravideowidget.h
 	src/video/remoteclientvideowidget.h
 	src/video/tileviewwidget.h
-	src/video/tileviewwidget_p.h
 	src/video/videowidget.h
 	src/video/videowidget_cpu.h
 	src/video/videosettingswidget.h
@@ -41,7 +40,6 @@ set(qheaders
 	src/adminauthwidget.h
 	src/flowlayout.h
 	src/aboutwidget.h
-	src/movablewidgetcontainer.h
 	src/hintoverlaywidget.h
 	src/proxysettingswidget.h
 	src/channellistwidget.h
@@ -84,7 +82,6 @@ set(sources
 	src/adminauthwidget.cpp
 	src/flowlayout.cpp
 	src/aboutwidget.cpp
-	src/movablewidgetcontainer.cpp
 	src/hintoverlaywidget.cpp
 	src/proxysettingswidget.cpp
 	src/channellistwidget.cpp

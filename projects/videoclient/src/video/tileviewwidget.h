@@ -13,6 +13,7 @@ class NetworkClient;
 class ClientEntity;
 class ChannelEntity;
 
+
 class TileViewWidgetPrivate;
 class TileViewWidget : public QWidget
 {
@@ -77,4 +78,44 @@ public:
 signals:
 	void moveBackwardClicked();
 	void moveForwardClicked();
+};
+
+
+/*
+	Widget to manage the local user's camera video.
+*/
+class TileViewCameraWidget :
+	public QFrame
+{
+	Q_OBJECT
+	friend class TileViewWidget;
+
+public:
+	TileViewCameraWidget(TileViewWidget* tileView, QWidget* parent = nullptr);
+
+private slots:
+	void onCameraChanged();
+
+private:
+	TileViewWidget* _tileView;
+	class QBoxLayout* _mainLayout;
+	class ClientCameraVideoWidget* _cameraWidget;
+};
+
+
+/*
+	Widget to display the video of a remote user.
+*/
+class TileViewTileWidget : public QFrame
+{
+	Q_OBJECT
+	friend class TileViewWidget;
+
+public:
+	TileViewTileWidget(TileViewWidget* tileView, const ClientEntity& client,
+					   QWidget* parent = nullptr);
+
+private:
+	TileViewWidget* _tileView;
+	class RemoteClientVideoWidget* _videoWidget;
 };
