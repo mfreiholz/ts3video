@@ -469,7 +469,6 @@ TileViewTileFrame::TileViewTileFrame(TileViewWidget* tileView,
 	d->mainLayout->setSpacing(0);
 	setLayout(d->mainLayout);
 
-	// Frame
 	auto f = new QFrame(this);
 	f->setObjectName("tileBar");
 	d->barLayout = new QBoxLayout(QBoxLayout::LeftToRight);
@@ -478,26 +477,14 @@ TileViewTileFrame::TileViewTileFrame(TileViewWidget* tileView,
 	f->setLayout(d->barLayout);
 	d->mainLayout->addWidget(f);
 
-	// Backward, Forward navigation
-	{
-		d->moveBackButton = new QPushButton();
-		d->moveBackButton->setIcon(QIcon(":/ic_chevron_left_grey600_48dp.png"));
-		d->moveBackButton->setIconSize(QSize(iconSize, iconSize));
-		d->moveBackButton->setToolTip(tr("Move one position backwards."));
-		d->barLayout->addWidget(d->moveBackButton);
-		QObject::connect(d->moveBackButton, &QPushButton::clicked, this,
-						 &TileViewTileFrame::moveBackwardClicked);
+	d->moveBackButton = new QPushButton();
+	d->moveBackButton->setIcon(QIcon(":/ic_chevron_left_grey600_48dp.png"));
+	d->moveBackButton->setIconSize(QSize(iconSize, iconSize));
+	d->moveBackButton->setToolTip(tr("Move one position backwards."));
+	d->barLayout->addWidget(d->moveBackButton);
+	QObject::connect(d->moveBackButton, &QPushButton::clicked, this,
+					 &TileViewTileFrame::moveBackwardClicked);
 
-		d->moveForwardButton = new QPushButton();
-		d->moveForwardButton->setIcon(QIcon(":/ic_chevron_right_grey600_48dp.png"));
-		d->moveForwardButton->setIconSize(QSize(iconSize, iconSize));
-		d->moveForwardButton->setToolTip(tr("Move one position forwards."));
-		d->barLayout->addWidget(d->moveForwardButton);
-		QObject::connect(d->moveForwardButton, &QPushButton::clicked, this,
-						 &TileViewTileFrame::moveForwardClicked);
-	}
-
-	// Name label.
 	d->nameLabel = new QLabel();
 	d->nameLabel->setObjectName("nameLabel");
 	d->nameLabel->setWordWrap(false);
@@ -505,6 +492,14 @@ TileViewTileFrame::TileViewTileFrame(TileViewWidget* tileView,
 	d->nameLabel->setTextInteractionFlags(d->nameLabel->textInteractionFlags() |
 										  Qt::TextSelectableByMouse);
 	d->barLayout->addWidget(d->nameLabel, 1);
+
+	d->moveForwardButton = new QPushButton();
+	d->moveForwardButton->setIcon(QIcon(":/ic_chevron_right_grey600_48dp.png"));
+	d->moveForwardButton->setIconSize(QSize(iconSize, iconSize));
+	d->moveForwardButton->setToolTip(tr("Move one position forwards."));
+	d->barLayout->addWidget(d->moveForwardButton);
+	QObject::connect(d->moveForwardButton, &QPushButton::clicked, this,
+					 &TileViewTileFrame::moveForwardClicked);
 }
 
 TileViewTileFrame::~TileViewTileFrame()
@@ -569,9 +564,7 @@ TileViewCameraWidget::onCameraChanged()
 	}
 }
 
-///////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////
+// TileViewTileWidget /////////////////////////////////////////////////
 
 TileViewTileWidget::TileViewTileWidget(TileViewWidget* tileView,
 									   const ClientEntity& client, QWidget* parent) :
@@ -587,6 +580,5 @@ TileViewTileWidget::TileViewTileWidget(TileViewWidget* tileView,
 
 	_videoWidget = ConferenceVideoWindow::createRemoteVideoWidget(
 					   _tileView->window()->options(), client, this);
-	_videoWidget->setToolTip(client.name);
 	mainLayout->addWidget(_videoWidget);
 }
