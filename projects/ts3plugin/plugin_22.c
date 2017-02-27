@@ -1058,3 +1058,23 @@ void ts3plugin_onClientDisplayNameChanged(uint64 serverConnectionHandlerID,
 		anyID clientID, const char* displayName, const char* uniqueClientIdentifier)
 {
 }
+
+// This function receives your key Identifier you send to notifyKeyEvent and should return
+// the friendly device name of the device this hotkey originates from. Used for display in UI.
+const char* ts3plugin_keyDeviceName(const char* keyIdentifier)
+{
+	return NULL;
+}
+
+// This function translates the given key identifier to a friendly key name for display in the UI
+const char* ts3plugin_displayKeyText(const char* keyIdentifier)
+{
+	return NULL;
+}
+
+// This is used internally as a prefix for hotkeys so we can store them without collisions.
+// Should be unique across plugins.
+const char* ts3plugin_keyPrefix()
+{
+	return NULL;
+}

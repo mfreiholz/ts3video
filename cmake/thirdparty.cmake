@@ -72,5 +72,5 @@ endif(WIN32)
 # ---------------------------------------------------------------------
 
 set(ts3pluginsdk_INCLUDE_DIRS
-  ${PROJECT_SOURCE_DIR}/thirdparty/teamspeak3-clientpluginsdk/pluginsdk-3.1/include
+  ${PROJECT_SOURCE_DIR}/thirdparty/teamspeak3-clientpluginsdk/pluginsdk-3.1.1.1/include
 )
