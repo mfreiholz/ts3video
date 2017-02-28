@@ -478,9 +478,10 @@ TileViewTileFrame::TileViewTileFrame(TileViewWidget* tileView,
 	d->mainLayout->addWidget(f);
 
 	d->moveBackButton = new QPushButton();
+	d->moveBackButton->setFlat(true);
 	d->moveBackButton->setIcon(QIcon(":/ic_chevron_left_grey600_48dp.png"));
 	d->moveBackButton->setIconSize(QSize(iconSize, iconSize));
-	d->moveBackButton->setToolTip(tr("Move one position backwards."));
+	d->moveBackButton->setToolTip(tr("Move one position backward"));
 	d->barLayout->addWidget(d->moveBackButton);
 	QObject::connect(d->moveBackButton, &QPushButton::clicked, this,
 					 &TileViewTileFrame::moveBackwardClicked);
@@ -494,9 +495,10 @@ TileViewTileFrame::TileViewTileFrame(TileViewWidget* tileView,
 	d->barLayout->addWidget(d->nameLabel, 1);
 
 	d->moveForwardButton = new QPushButton();
+	d->moveForwardButton->setFlat(true);
 	d->moveForwardButton->setIcon(QIcon(":/ic_chevron_right_grey600_48dp.png"));
 	d->moveForwardButton->setIconSize(QSize(iconSize, iconSize));
-	d->moveForwardButton->setToolTip(tr("Move one position forwards."));
+	d->moveForwardButton->setToolTip(tr("Move one position forward"));
 	d->barLayout->addWidget(d->moveForwardButton);
 	QObject::connect(d->moveForwardButton, &QPushButton::clicked, this,
 					 &TileViewTileFrame::moveForwardClicked);

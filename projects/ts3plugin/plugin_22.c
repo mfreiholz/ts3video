@@ -19,7 +19,7 @@
 #include "teamspeak/public_rare_definitions.h"
 #include "teamspeak/clientlib_publicdefinitions.h"
 #include "ts3_functions.h"
-#include "plugin_21.h"
+#include "plugin_22.h"
 #include "impl.h"
 #include "videolib/ts3video.h"
 
@@ -32,7 +32,7 @@ static struct TS3Functions ts3Functions;
 #define _strcpy(dest, destSize, src) { strncpy(dest, src, destSize-1); (dest)[destSize-1] = '\0'; }
 #endif
 
-#define PLUGIN_API_VERSION 21
+#define PLUGIN_API_VERSION 22
 
 #define PATH_BUFSIZE 512
 #define COMMAND_BUFSIZE 128
