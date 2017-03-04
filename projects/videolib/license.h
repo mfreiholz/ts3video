@@ -7,9 +7,7 @@
 #include <QDateTime>
 #include <QStringList>
 
-namespace lic
-{
-
+namespace lic {
 
 class License
 {

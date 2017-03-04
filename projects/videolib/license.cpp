@@ -8,8 +8,7 @@
 
 #include "ts3video.h"
 
-namespace lic
-{
+namespace lic {
 
 // LicenseXmlReader ///////////////////////////////////////////////////////////
 
@@ -39,14 +38,30 @@ LicenseXmlReader::loadFromFile(const QString& filePath) const
 			else if (xml.name() == "created-on")
 			{
 				xml.readNext();
-				lic->createdOn = QDateTime::fromString(xml.text().toString(), "yyyy-MM-ddTHH:mm:ss");
+				lic->createdOn = QDateTime::fromString(xml.text().toString(),
+													   "yyyy-MM-ddTHH:mm:ss");
 				lic->createdOn.setTimeSpec(Qt::UTC);
 			}
 			else if (xml.name() == "expires-on")
 			{
 				xml.readNext();
-				lic->expiresOn = QDateTime::fromString(xml.text().toString(), "yyyy-MM-ddTHH:mm:ss");
+				lic->expiresOn = QDateTime::fromString(xml.text().toString(),
+													   "yyyy-MM-ddTHH:mm:ss");
 				lic->expiresOn.setTimeSpec(Qt::UTC);
+			}
+			else if (xml.name() == "valid-verions")
+			{
+				while (!xml.atEnd())
+				{
+					tt = xml.readNext();
+					if (tt == QXmlStreamReader::EndElement && xml.name() == "valid-versions")
+						break;
+					else if (tt == QXmlStreamReader::StartElement && xml.name() == "version")
+					{
+						xml.readNext();
+						lic->validVersions.append(xml.text().toString());
+					}
+				}
 			}
 		}
 	}
