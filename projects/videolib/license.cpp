@@ -63,6 +63,10 @@ LicenseXmlReader::loadFromFile(const QString& filePath) const
 					}
 				}
 			}
+			else if (xml.name() == "requirements")
+			{
+				tt = xml.readNext();
+			}
 		}
 	}
 	f.close();
