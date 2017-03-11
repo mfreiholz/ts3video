@@ -12,10 +12,21 @@ namespace lic {
 class License
 {
 public:
+	QString version;
+
 	QString id;
 	QDateTime createdOn;
 	QDateTime expiresOn;
+
 	QList<QString> validVersions;
+
+	QString requiredHostId;
+	QString requiredMacAddress;
+	QString requiredSerial;
+
+	QString customerId;
+	QString customerName;
+	QString customerEmail;
 };
 
 
