@@ -11,7 +11,8 @@ public:
 
 LookupServiceClient::LookupServiceClient(QObject* parent) :
 	QObject(parent),
-	d(std::make_unique<Private>())
+	//d(std::make_unique<Private>())
+	d(new Private())
 {}
 
 LookupServiceClient::~LookupServiceClient()

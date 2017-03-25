@@ -19,6 +19,13 @@ Build has been tested on
 Install dependencies
 
 - `$> sudo apt-get install mesa-common-dev`
+- `$> sudo apt-get install astyle`
+
+Visual Studio Code Extensions
+
+- Astyle
+- C/C++
+- CMake
 
 ## Checkout steps
 

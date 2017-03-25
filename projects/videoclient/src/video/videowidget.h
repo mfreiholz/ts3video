@@ -26,7 +26,7 @@ public:
 	enum Type { CPU, OpenGL };
 
 	explicit VideoWidget(Type type = CPU, QWidget* parent = 0);
-	~VideoWidget();
+	virtual ~VideoWidget();
 
 public slots:
 	void setFrame(YuvFrameRefPtr frame);

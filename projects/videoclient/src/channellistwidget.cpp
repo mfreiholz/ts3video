@@ -4,7 +4,8 @@
 ChannelListWidget::ChannelListWidget(const QSharedPointer<NetworkClient>& networkClient, QWidget* parent) :
 	QDialog(parent)
 {
-	_model = std::make_unique<ChannelListModel>(nullptr);
+	//_model = std::make_unique<ChannelListModel>(nullptr);
+	_model.reset(new ChannelListModel(nullptr));
 	_model->init(networkClient);
 	_model->refresh();
 

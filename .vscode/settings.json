@@ -1,0 +1,12 @@
+// Place your settings in this file to overwrite default and user settings.
+{
+	"editor.insertSpaces": false,
+	"editor.detectIndentation": false,
+	"C_Cpp.formatting": "Disabled",
+	"astyle.astylerc": "${workspaceRoot}/.astylerc",
+	"explorer.openEditors.visible": 0,
+	"files.associations": {
+		"*.tcc": "cpp",
+		"climits": "cpp"
+	}
+}

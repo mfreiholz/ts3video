@@ -2,9 +2,16 @@
 
 #include <QBoxLayout>
 
+#include "humblelogging/api.h"
+
 #include "videowidget_cpu.h"
+
+#if defined(OCS_INCLUDE_OPENGL)
 #include "videowidget_opengl.h"
 #include "videowidget_qglwidget.h"
+#endif
+
+HUMBLE_LOGGER(HL, "video");
 
 // Private ////////////////////////////////////////////////////////////
 
@@ -33,14 +40,19 @@ VideoWidget::VideoWidget(Type type, QWidget* parent) :
 			d->frameWidgetImpl = w;
 			break;
 		}
+#if defined(OCS_INCLUDE_OPENGL)
 		case OpenGL:
 		{
-			//auto w = new YuvVideoOpenGLWidget(this);
+			// auto w = new YuvVideoOpenGLWidget(this);
 			auto w = new VideoWidgetQGLWidget(this);
 			d->frameWidget = w;
 			d->frameWidgetImpl = w;
 			break;
 		}
+#endif
+		default:
+			HL_FATAL(HL, "Can not create VideoWidget, invalid type.");
+			break;
 	}
 
 	d->frameWidget->setSizePolicy(QSizePolicy::MinimumExpanding,

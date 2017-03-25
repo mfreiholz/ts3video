@@ -1,0 +1,14 @@
+--style=allman
+--indent=force-tab=4
+--align-pointer=type
+--align-reference=type
+--max-code-length=80
+--attach-namespaces
+--attach-extern-c
+--indent-switches
+--pad-oper
+--pad-header
+--unpad-paren
+--remove-comment-prefix
+--mode=c
+

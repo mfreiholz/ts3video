@@ -3,7 +3,7 @@ project(videoclient)
 
 cmake_policy(SET CMP0020 NEW)
 
-option(IncludeOpenGLSupport "IncludeOpenGLSupport" ON)
+option(IncludeOpenGLSupport "IncludeOpenGLSupport" OFF)
 option(IncludeAudioSupport "IncludeAudioSupport" OFF)
 
 # Qt5
@@ -119,6 +119,8 @@ set(qresources
 )
 
 if(IncludeOpenGLSupport)
+	add_definitions(-DOCS_INCLUDE_OPENGL)
+
 	list(APPEND qheaders src/video/opengl/openglrenderthread.h)
 	list(APPEND qheaders src/video/opengl/openglwindow.h)
 	list(APPEND sources src/video/opengl/openglrenderthread.cpp)
@@ -231,14 +233,16 @@ target_link_libraries(
 	videolib
 )
 
-if(IncludeOpenGLSupport)
-	if(WIN32)
+if(WIN32)
+	if(IncludeOpenGLSupport)
 		target_link_libraries(${PROJECT_NAME} opengl32) # TODO This shouldn't be here!
-	else()
-#		target_link_libraries(${PROJECT_NAME} /usr/lib/nvidia-352/libGL.so)
-		target_link_libraries(${PROJECT_NAME} /usr/lib/x86_64-linux-gnu/libGL.so)
-		target_link_libraries(${PROJECT_NAME} pthread)
 	endif()
+else()
+	if(IncludeOpenGLSupport)
+		target_link_libraries(${PROJECT_NAME} /usr/lib/nvidia-375/libGL.so)
+#		target_link_libraries(${PROJECT_NAME} /usr/lib/x86_64-linux-gnu/mesa/libGL.so.1)
+	endif()
+	target_link_libraries(${PROJECT_NAME} pthread)
 endif()
 
 if(IncludeAudioSupport)
