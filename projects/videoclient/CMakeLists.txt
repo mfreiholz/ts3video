@@ -20,6 +20,11 @@ find_package(Qt5Concurrent REQUIRED)
 set(headers
 	src/startup/startuplogic.h
 	src/util/qwidgetutil.h
+	src/networkclient/udpvideoframedecoder.h
+	src/flowlayout.h
+	src/networkclient/vp8encoder.h
+	src/networkclient/vp8decoder.h
+	src/ts3video/ts3videoentities.h
 )
 
 set(qheaders
@@ -38,7 +43,6 @@ set(qheaders
 	src/startup/devstartuplogic.h
 	src/startup/defaultstartuplogic.h
 	src/adminauthwidget.h
-	src/flowlayout.h
 	src/aboutwidget.h
 	src/hintoverlaywidget.h
 	src/proxysettingswidget.h
@@ -50,13 +54,9 @@ set(qheaders
 	src/networkclient/mediasocket_p.h
 	src/networkclient/videoencodingthread.h
 	src/networkclient/videodecodingthread.h
-	src/networkclient/udpvideoframedecoder.h
-	src/networkclient/vp8encoder.h
-	src/networkclient/vp8decoder.h
 	src/networkclient/clientlistmodel.h
 	src/networkclient/clientlistmodel_p.h
 	src/ts3video/ts3videostartuplogic.h
-	src/ts3video/ts3videoentities.h
 	src/ts3video/ts3videoupdatedialog.h
 	src/test/connectionteststartuplogic.h
 	src/test/directconnectstartuplogic.h

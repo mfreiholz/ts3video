@@ -15,7 +15,7 @@
 				"--mode",
 				"ts3video",
 				"--address",
-				"teamspeak.insanefactory.com",
+				"192.168.0.13",
 				"--port",
 				"9987",
 				"--channelid",
