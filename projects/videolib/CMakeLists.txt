@@ -5,6 +5,7 @@ cmake_policy(SET CMP0020 NEW)
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Gui REQUIRED)
 find_package(Qt5Network REQUIRED)
+find_package(Qt5Test REQUIRED)
 
 set(headers
 	ts3video.h

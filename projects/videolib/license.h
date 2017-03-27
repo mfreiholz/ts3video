@@ -13,10 +13,11 @@ class License
 {
 public:
 	QString version;
-
 	QString id;
 	QDateTime createdOn;
+
 	QDateTime expiresOn;
+	bool expiresOnNever = false;
 
 	QList<QString> validVersions;
 

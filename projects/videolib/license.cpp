@@ -5,6 +5,7 @@
 #include <QFile>
 #include <QRegExp>
 #include <QXmlStreamReader>
+#include <QNetworkInterface>
 
 #include "ts3video.h"
 
@@ -49,9 +50,16 @@ LicenseXmlReader::loadFromFile(const QString& filePath) const
 			else if (xml.name() == "expires-on")
 			{
 				xml.readNext();
-				lic->expiresOn = QDateTime::fromString(xml.text().toString(),
-													   "yyyy-MM-ddTHH:mm:ss");
-				lic->expiresOn.setTimeSpec(Qt::UTC);
+				auto s = xml.text().toString();
+				if (s.compare("*") == 0)
+				{
+					lic->expiresOnNever = true;
+				}
+				else
+				{
+					lic->expiresOn = QDateTime::fromString(s, "yyyy-MM-ddTHH:mm:ss");
+					lic->expiresOn.setTimeSpec(Qt::UTC);
+				}
 			}
 			else if (xml.name() == "valid-verions")
 			{
@@ -153,7 +161,12 @@ static bool isVersionValid(const QString& version)
 bool
 LicenseManager::isValid(const License& lic)
 {
-	if (lic.expiresOn.isValid())
+	// Check expiration date.
+	if (!lic.expiresOn.isValid() && !lic.expiresOnNever)
+	{
+		return false;
+	}
+	else if (lic.expiresOn.isValid() && !lic.expiresOnNever)
 	{
 		auto now = QDateTime::currentDateTimeUtc();
 		if (lic.expiresOn < now)
@@ -162,6 +175,7 @@ LicenseManager::isValid(const License& lic)
 		}
 	}
 
+	// Check version.
 	bool validVersion = false;
 	foreach (const QString& version, lic.validVersions)
 	{
@@ -172,7 +186,36 @@ LicenseManager::isValid(const License& lic)
 		}
 	}
 
-	return true;
+	// Check host-id.
+	// TODO...
+
+	// Check MAC address.
+	bool validMacAddress = true;
+	if (!lic.requiredMacAddress.isEmpty())
+	{
+		validMacAddress = false;
+		auto interfaces = QNetworkInterface::allInterfaces();
+		for (const auto& iface : interfaces)
+		{
+			auto mac = iface.hardwareAddress();
+			if (mac.compare(lic.requiredMacAddress, Qt::CaseInsensitive) == 0)
+			{
+				validMacAddress = true;
+				break;
+			}
+		}
+	}
+
+	// Check serial.
+	bool validSerial = true;
+	if (!lic.requiredSerial.isEmpty())
+	{
+		validSerial = false;
+		if (lic.requiredSerial.compare("READ SERIAL FROM FILE?") == 0)
+			validSerial = true;
+	}
+
+	return validVersion && validMacAddress && validSerial;
 }
 
 }
