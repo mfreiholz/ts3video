@@ -1,0 +1,42 @@
+{
+	// See https://go.microsoft.com/fwlink/?LinkId=733558
+	// for the documentation about the tasks.json format
+	"version": "0.1.0",
+	"command": "echo",
+	"isShellCommand": true,
+	"showOutput": "always",
+	"echoCommand": true,
+	"suppressTaskName": true,
+	"tasks": [
+		{
+			"taskName": "run-client",
+			"command": "${workspaceRoot}/build/projects/videoclient/videoclient",
+			"args": [
+				"--mode",
+				"ts3video",
+				"--address",
+				"192.168.0.13",
+				"--port",
+				"9987",
+				"--channelid",
+				"1",
+				"--clientdbid",
+				"6",
+				"--username",
+				"Manuel-Desktop-Linux",
+				"--skip-update-check",
+				"--skip-server-lookup",
+				"--config",
+				"/home/manuel/Sources/ocs/projects/videoclient/res/default.ini"
+			]
+		},
+		{
+			"taskName": "run-server",
+			"command": "${workspaceRoot}/build/projects/videoserver/videoserver",
+			"args": [
+				"--config",
+				"/home/manuel/Sources/ocs/projects/videoserver/res/default.ini"
+			]
+		}
+	]
+}

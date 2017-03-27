@@ -11,7 +11,8 @@ class CoreException :
 	public std::exception
 {
 public:
-	explicit CoreException(std::string message, std::string messageDetail = std::string());
+	explicit CoreException(std::string message,
+						   std::string messageDetail = std::string());
 	virtual ~CoreException();
 	const std::string& getMessage() const;
 	const std::string& getMessageDetail() const;

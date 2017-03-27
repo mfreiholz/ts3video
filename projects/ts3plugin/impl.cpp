@@ -1,6 +1,13 @@
+#ifdef _WIN32
+#include <Windows.h>
+#endif
+
+#include <cstring> // memset
 #include <string>
 #include <stdio.h>
-#include <Windows.h>
+#include <stdint.h>
+#include <inttypes.h>
+
 #include "videolib/ts3video.h"
 #include "ts3_functions.h"
 #include "impl.h"
@@ -143,21 +150,24 @@ int runClient(TS3Data* ts3data, int runOpts)
 	strcat(params, ts3data->serverAddress);
 
 	char serverPortString[64];
-	itoa(ts3data->serverPort, serverPortString, 10);
+	snprintf(serverPortString, 64, "%" PRIu64, ts3data->serverPort);
+	// itoa(ts3data->serverPort, serverPortString, 10);
 	strcat(params, " --port ");
 	strcat(params, " ");
 	strcat(params, serverPortString);
 	strcat(params, " ");
 
 	char channelIdString[64];
-	itoa(ts3data->channelId, channelIdString, 10);
+	snprintf(channelIdString, 64, "%" PRIu64, ts3data->channelId);
+	// itoa(ts3data->channelId, channelIdString, 10);
 	strcat(params, " --channelid ");
 	strcat(params, " ");
 	strcat(params, channelIdString);
 	strcat(params, " ");
 
 	char clientDatabaseIdString[64];
-	ltoa(ts3data->clientDatabaseId, clientDatabaseIdString, 10);
+	// ltoa(ts3data->clientDatabaseId, clientDatabaseIdString, 10);
+	snprintf(clientDatabaseIdString, 64, "%" PRIu64, ts3data->clientDatabaseId);
 	strcat(params, " --clientdbid ");
 	strcat(params, " ");
 	strcat(params, clientDatabaseIdString);

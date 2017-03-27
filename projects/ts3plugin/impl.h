@@ -4,6 +4,10 @@
 #include "teamspeak/public_definitions.h"
 #include "ts3_functions.h"
 
+#ifndef MAX_PATH
+#define MAX_PATH 4096
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif

@@ -3,7 +3,7 @@ project(videoclient)
 
 cmake_policy(SET CMP0020 NEW)
 
-option(IncludeOpenGLSupport "IncludeOpenGLSupport" ON)
+option(IncludeOpenGLSupport "IncludeOpenGLSupport" OFF)
 option(IncludeAudioSupport "IncludeAudioSupport" OFF)
 
 # Qt5
@@ -20,6 +20,11 @@ find_package(Qt5Concurrent REQUIRED)
 set(headers
 	src/startup/startuplogic.h
 	src/util/qwidgetutil.h
+	src/networkclient/udpvideoframedecoder.h
+	src/flowlayout.h
+	src/networkclient/vp8encoder.h
+	src/networkclient/vp8decoder.h
+	src/ts3video/ts3videoentities.h
 )
 
 set(qheaders
@@ -38,7 +43,6 @@ set(qheaders
 	src/startup/devstartuplogic.h
 	src/startup/defaultstartuplogic.h
 	src/adminauthwidget.h
-	src/flowlayout.h
 	src/aboutwidget.h
 	src/hintoverlaywidget.h
 	src/proxysettingswidget.h
@@ -50,13 +54,9 @@ set(qheaders
 	src/networkclient/mediasocket_p.h
 	src/networkclient/videoencodingthread.h
 	src/networkclient/videodecodingthread.h
-	src/networkclient/udpvideoframedecoder.h
-	src/networkclient/vp8encoder.h
-	src/networkclient/vp8decoder.h
 	src/networkclient/clientlistmodel.h
 	src/networkclient/clientlistmodel_p.h
 	src/ts3video/ts3videostartuplogic.h
-	src/ts3video/ts3videoentities.h
 	src/ts3video/ts3videoupdatedialog.h
 	src/test/connectionteststartuplogic.h
 	src/test/directconnectstartuplogic.h
@@ -119,6 +119,8 @@ set(qresources
 )
 
 if(IncludeOpenGLSupport)
+	add_definitions(-DOCS_INCLUDE_OPENGL)
+
 	list(APPEND qheaders src/video/opengl/openglrenderthread.h)
 	list(APPEND qheaders src/video/opengl/openglwindow.h)
 	list(APPEND sources src/video/opengl/openglrenderthread.cpp)
@@ -231,14 +233,16 @@ target_link_libraries(
 	videolib
 )
 
-if(IncludeOpenGLSupport)
-	if(WIN32)
+if(WIN32)
+	if(IncludeOpenGLSupport)
 		target_link_libraries(${PROJECT_NAME} opengl32) # TODO This shouldn't be here!
-	else()
-#		target_link_libraries(${PROJECT_NAME} /usr/lib/nvidia-352/libGL.so)
-		target_link_libraries(${PROJECT_NAME} /usr/lib/x86_64-linux-gnu/libGL.so)
-		target_link_libraries(${PROJECT_NAME} pthread)
 	endif()
+else()
+	if(IncludeOpenGLSupport)
+		target_link_libraries(${PROJECT_NAME} /usr/lib/nvidia-375/libGL.so)
+#		target_link_libraries(${PROJECT_NAME} /usr/lib/x86_64-linux-gnu/mesa/libGL.so.1)
+	endif()
+	target_link_libraries(${PROJECT_NAME} pthread)
 endif()
 
 if(IncludeAudioSupport)

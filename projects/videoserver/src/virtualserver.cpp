@@ -86,7 +86,8 @@ bool VirtualServer::init()
 	HL_INFO(HL, QString("Listening for client connections (protocol=TCP; address=%1; port=%2)").arg(_opts.address.toString()).arg(_opts.port).toStdString());
 
 	// Init media socket.
-	_mediaSocketHandler = std::make_unique<MediaSocketHandler>(_opts.address, _opts.port, this);
+	//_mediaSocketHandler = std::make_unique<MediaSocketHandler>(_opts.address, _opts.port, this);
+	_mediaSocketHandler.reset(new MediaSocketHandler(_opts.address, _opts.port, this));
 	if (!_mediaSocketHandler->init())
 	{
 		return false;
@@ -99,7 +100,8 @@ bool VirtualServer::init()
 	WebSocketStatusServer::Options wsopts;
 	wsopts.address = _opts.wsStatusAddress;
 	wsopts.port = _opts.wsStatusPort;
-	_wsStatusServer = std::make_unique<WebSocketStatusServer>(wsopts, this);
+	//_wsStatusServer = std::make_unique<WebSocketStatusServer>(wsopts, this);
+	_wsStatusServer.reset(new WebSocketStatusServer(wsopts, this));
 	if (!_wsStatusServer->init())
 	{
 		HL_ERROR(HL, QString("Can not bind to TCP port (port=%1)").arg(wsopts.port).toStdString());
