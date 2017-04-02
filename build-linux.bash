@@ -1,17 +1,10 @@
 #!/bin/bash
 source build-linux-env.bash
 
-read -rsp $'Press any key to run "make"'
-make -j
-
-read -rsp $'Press any key to run "make install"'
-make install
-
 # Deploy
 # Copy dependencies
 read -rsp $'Press any key to run "deployment"'
-ARCH=$(uname -m)
-if [ $ARCH = "i686" ]; then 
+if [ $ARCH = "i686" ]; then
 	echo "no logic yet..."
 #	cp /usr/lib/i386-linux-gnu/libstdc++.so.6 $OCS_DEPLOY_DIR_PATH/server/
 #	cp /lib/i386-linux-gnu/libgcc_s.so.1 $OCS_DEPLOY_DIR_PATH/server/
