@@ -1,41 +1,10 @@
 #!/bin/bash
-
-# Ugly way to get absolute path of this directory
-pushd `dirname $0` > /dev/null
-SCRIPTPATH=`pwd`
-popd > /dev/null
-
-# List of paths
-BASEDIR=$SCRIPTPATH2
-export OCS_BUILD_DIR_PATH=$BASEDIR/build
-export OCS_DEPLOY_DIR_PATH=$OCS_BUILD_DIR_PATH/deploy
-
-# Print used environment
-echo
-echo OCS Build Environment
-echo ---------------------
-echo OCS_BUILD_DIR_PATH  : $OCS_BUILD_DIR_PATH
-echo OCS_DEPLOY_DIR_PATH : $OCS_DEPLOY_DIR_PATH
-echo ---------------------
-echo 
-
-# Run CMake
-cd $BASEDIR
-mkdir $OCS_BUILD_DIR_PATH
-cd $OCS_BUILD_DIR_PATH
-cmake -DCMAKE_INSTALL_PREFIX="$OCS_DEPLOY_DIR_PATH" -DCMAKE_BUILD_TYPE=Release -DIncludeOpenGLSupport=OFF -DIncludeAudioSupport=OFF ..
-
-read -rsp $'Press any key to run "make"'
-make -j
-
-read -rsp $'Press any key to run "make install"'
-make install
+source build-linux-env.bash
 
 # Deploy
 # Copy dependencies
 read -rsp $'Press any key to run "deployment"'
-ARCH=$(uname -m)
-if [ $ARCH = "i686" ]; then 
+if [ $ARCH = "i686" ]; then
 	echo "no logic yet..."
 #	cp /usr/lib/i386-linux-gnu/libstdc++.so.6 $OCS_DEPLOY_DIR_PATH/server/
 #	cp /lib/i386-linux-gnu/libgcc_s.so.1 $OCS_DEPLOY_DIR_PATH/server/

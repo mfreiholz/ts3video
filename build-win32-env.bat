@@ -9,4 +9,4 @@ set QTDIR=%OCS_QTDIR_X86_32%
 set QT_QPA_PLATFORM_PLUGIN_PATH=%QTDIR%\plugins
 set PATH=%QTDIR%\bin;%PATH%
 
-call "env-win-all.bat"
+call "build-win-env.bat"
