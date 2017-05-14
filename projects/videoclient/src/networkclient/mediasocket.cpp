@@ -316,6 +316,10 @@ void MediaSocket::sendVideoFrame(const QByteArray& frame_, quint64 frameId_,
 			d->networkUsage.bytesWritten += written;
 	}
 	UDP::VideoFrameDatagram::freeData(datagrams, datagramsLength);
+
+	// Cache video.
+	if (d->videoFrameCache.maxCost() > 0)
+		d->videoFrameCache.insert(frameId_, new QByteArray(frame_), frame_.size());
 }
 
 void MediaSocket::sendVideoFrameRecoveryDatagram(quint64 frameId_,
@@ -486,9 +490,7 @@ void MediaSocket::onReadyRead()
 		in >> datagram.type;
 		switch (datagram.type)
 		{
-			//
-			// VIDEO
-			//
+			// Iconming video frame part from somebody else.
 			case UDP::VideoFrameDatagram::TYPE:
 			{
 				auto dg = new UDP::VideoFrameDatagram();
@@ -549,9 +551,21 @@ void MediaSocket::onReadyRead()
 				in >> dg.sender;
 				in >> dg.frameId;
 				in >> dg.index;
-				d->videoEncodingThread->enqueueRecovery();
+
+				//QByteArray* frameBytes = nullptr;
+				//if (d->videoFrameCache.maxCost()
+				//		&& (frameBytes = d->videoFrameCache.object(dg.frameId)) != nullptr)
+				//{
+				//	sendVideoFrame(*frameBytes, dg.frameId,
+				//				   dg.sender); //TODO "dg.sender" should not be used here!
+				//}
+				//else
+				{
+					d->videoEncodingThread->enqueueRecovery();
+				}
 				break;
 			}
+
 #if defined(OCS_INCLUDE_AUDIO)
 			//
 			// AUDIO

@@ -40,14 +40,14 @@ void map_remove_last_element(M& map)
 // VideoFrameUdpDecoder
 ///////////////////////////////////////////////////////////////////////////////
 
-VideoFrameUdpDecoder::VideoFrameUdpDecoder()
-	: _last_error(VideoFrameUdpDecoder::NoError),
-	  _maximum_distinct_frames(16),
-	  _frame_buffers(),
-	  _complete_frames_queue(),
-	  _last_completed_frame_id(0),
-	  _wait_for_frame_type(VP8Frame::NORMAL),
-	  _received_key_frame_count(0)
+VideoFrameUdpDecoder::VideoFrameUdpDecoder() :
+	_last_error(VideoFrameUdpDecoder::NoError),
+	_maximum_distinct_frames(16),
+	_frame_buffers(),
+	_complete_frames_queue(),
+	_last_completed_frame_id(0),
+	_wait_for_frame_type(VP8Frame::NORMAL),
+	_received_key_frame_count(0)
 {
 }
 
@@ -65,14 +65,15 @@ int VideoFrameUdpDecoder::add(UDP::VideoFrameDatagram* dpart)
 		return _last_error;
 	}
 
-	// Skip datagrams of frames, which has already been processed.
-	if (dpart->frameId <= _last_completed_frame_id)
-	{
-		delete dpart;
-		dpart = nullptr;
-		_last_error = VideoFrameUdpDecoder::AlreadyProcessed;
-		return _last_error;
-	}
+	// Comment out for (ts3video/#54)
+	// Skip datagrams of frames, which has already been completed.
+	//if (dpart->frameId <= _last_completed_frame_id)
+	//{
+	//	delete dpart;
+	//	dpart = nullptr;
+	//	_last_error = VideoFrameUdpDecoder::AlreadyProcessed;
+	//	return _last_error;
+	//}
 
 	// Get existing frame buffer or create one.
 	auto found_i = _frame_buffers.find(dpart->frameId);
@@ -85,7 +86,8 @@ int VideoFrameUdpDecoder::add(UDP::VideoFrameDatagram* dpart)
 	}
 	auto& buffer = (*found_i).second->datagrams;
 
-	// Due to FEC (forward error correction) it is possible that the same datagram occurs multiple times.
+	// Due to FEC (forward error correction) or recovery,
+	// it is possible that the same datagram occurs multiple times.
 	if (buffer[dpart->index] != nullptr)
 	{
 		delete dpart;
@@ -105,6 +107,7 @@ int VideoFrameUdpDecoder::add(UDP::VideoFrameDatagram* dpart)
 		return _last_error;
 	}
 
+	// At this point the "buffer" is complete and contains an entire video-frame.
 	// Create VideoFrame object from buffer.
 	auto frame = createFrame(buffer);
 	_complete_frames_queue[frame->time] = frame;
@@ -134,7 +137,8 @@ VP8Frame* VideoFrameUdpDecoder::next()
 
 	if (_received_key_frame_count == 0 && frame->type != VP8Frame::KEY)
 	{
-		// As long as no key-frame has been received, all received frames are useless.
+		// As long as no key-frame has been received,
+		// all other received frames are useless.
 		_complete_frames_queue.erase(i_begin);
 		_wait_for_frame_type = VP8Frame::KEY;
 		delete frame;
@@ -268,69 +272,3 @@ void VideoFrameUdpDecoder::removeFromFrameBuffer(unsigned long long ts)
 	delete found_i->second;
 	_frame_buffers.erase(found_i);
 }
-
-///////////////////////////////////////////////////////////////////////////////
-// ...
-///////////////////////////////////////////////////////////////////////////////
-/*
-    #ifdef WIN32
-    #include <Windows.h>
-    #endif
-    #include "QtCore/QTime"
-    #include "udp_video_frame_encoder.h"
-
-    void test_encode_decode()
-    {
-    VideoFrameUdpEncoder encoder(500, 3);
-    VideoFrameUdpDecoder decoder;
-
-    QTime t1;
-    t1.start();
-
-    unsigned long long frame_time = 1;
-    for (;;) {
-    // Create VideoFrame.
-    UdpVideoFrame frame;
-    frame._id = frame_time++;
-    frame._data.reserve(4535);
-    for (int i = 0; i < 4535; ++i) {
-      frame._data.append("A");
-    }
-
-    // Encode
-    std::vector<UdpVideoFrameDatagram*> parts;
-    encoder.encode(frame, parts);
-
-    // Decode.
-    int x = 0;
-    for (auto i = parts.begin(); i != parts.end(); ++i) {
-      if (x++ % 3 == 0) {
-        delete (*i);
-        (*i) = nullptr;
-        continue;
-      }
-      decoder.add(*i);
-    }
-
-    // Insert frames with a rate of 100fps/100ms
-    #ifdef WIN32
-    Sleep(10);
-    #endif
-
-    // Read next frame with 15fps/66ms from decoder.
-    if (t1.elapsed() < 66) {
-      continue;
-    }
-
-    UdpVideoFrame *vf = nullptr;
-    if ((vf = decoder.next()) == nullptr) {
-      fprintf(stderr, "no frame available!\n");
-      continue;
-    }
-
-    fprintf(stdout, "done frame (time_ns=%d; data.size=%d)\n", vf->_id, vf->_data.size());
-    delete vf;
-
-    t1.restart();
-    }
-    }*/

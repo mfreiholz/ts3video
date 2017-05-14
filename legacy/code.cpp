@@ -136,3 +136,71 @@ void VideoFrame_CpuImpl::paintEvent(QPaintEvent*)
 	//p.setPen(Qt::darkGray);
 	//p.drawRect(borderRect);
 }
+
+///////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////////
+// ...
+///////////////////////////////////////////////////////////////////////////////
+/*
+    #ifdef WIN32
+    #include <Windows.h>
+    #endif
+    #include "QtCore/QTime"
+    #include "udp_video_frame_encoder.h"
+
+    void test_encode_decode()
+    {
+    VideoFrameUdpEncoder encoder(500, 3);
+    VideoFrameUdpDecoder decoder;
+
+    QTime t1;
+    t1.start();
+
+    unsigned long long frame_time = 1;
+    for (;;) {
+    // Create VideoFrame.
+    UdpVideoFrame frame;
+    frame._id = frame_time++;
+    frame._data.reserve(4535);
+    for (int i = 0; i < 4535; ++i) {
+      frame._data.append("A");
+    }
+
+    // Encode
+    std::vector<UdpVideoFrameDatagram*> parts;
+    encoder.encode(frame, parts);
+
+    // Decode.
+    int x = 0;
+    for (auto i = parts.begin(); i != parts.end(); ++i) {
+      if (x++ % 3 == 0) {
+        delete (*i);
+        (*i) = nullptr;
+        continue;
+      }
+      decoder.add(*i);
+    }
+
+    // Insert frames with a rate of 100fps/100ms
+    #ifdef WIN32
+    Sleep(10);
+    #endif
+
+    // Read next frame with 15fps/66ms from decoder.
+    if (t1.elapsed() < 66) {
+      continue;
+    }
+
+    UdpVideoFrame *vf = nullptr;
+    if ((vf = decoder.next()) == nullptr) {
+      fprintf(stderr, "no frame available!\n");
+      continue;
+    }
+
+    fprintf(stdout, "done frame (time_ns=%d; data.size=%d)\n", vf->_id, vf->_data.size());
+    delete vf;
+
+    t1.restart();
+    }
+    }*/
