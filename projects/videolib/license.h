@@ -6,6 +6,7 @@
 #include <QList>
 #include <QDateTime>
 #include <QStringList>
+#include <QFuture>
 
 namespace lic {
 
@@ -42,6 +43,7 @@ class LicenseManager
 {
 public:
 	static bool isValid(const License& lic);
+	static QFuture<std::shared_ptr<License> > loadLicenseFromServer();
 };
 
 }

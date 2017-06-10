@@ -218,4 +218,11 @@ LicenseManager::isValid(const License& lic)
 	return validVersion && validMacAddress && validSerial;
 }
 
+QFuture<std::shared_ptr<License> >
+LicenseManager::loadLicenseFromServer()
+{
+	QFuture<std::shared_ptr<License> > f;
+	return f;
+}
+
 }
