@@ -30,7 +30,7 @@ public:
 		videoEncodingThread(new VideoEncodingThread(this)),
 		lastFrameRequestTimestamp(0),
 		videoDecodingThread(new VideoDecodingThread(this)),
-		videoFrameCache(1024 * 32),
+		videoFrameCache(0/*1024 * 32*/),
 #if defined(OCS_INCLUDE_AUDIO)
 		audioEncodingThread(new AudioEncodingThread(this)),
 		audioDecodingThread(new AudioDecodingThread(this)),
