@@ -12,8 +12,7 @@
 // Windows = LE, Mac = BE, Network = BE
 //#define UDP_USE_HOSTBYTEORDER
 
-namespace UDP
-{
+namespace UDP {
 
 typedef uint16_t dg_size_t;
 typedef uint8_t dg_byte_t;
@@ -121,23 +120,29 @@ public:
 	typedef uint16_t dg_data_count_t;
 
 	const static dg_type_t TYPE = 0x02;
-	const static dg_size_t MAXSIZE = Datagram::MAXSIZE - (sizeof(dg_flags_t) + sizeof(dg_sender_t) + sizeof(dg_frame_id_t) + sizeof(dg_data_index_t) + sizeof(dg_data_count_t) + sizeof(dg_size_t));
+	const static dg_size_t MAXSIZE = Datagram::MAXSIZE - (sizeof(
+										 dg_flags_t) + sizeof(dg_sender_t) + sizeof(dg_frame_id_t) + sizeof(
+										 dg_data_index_t) + sizeof(dg_data_count_t) + sizeof(dg_size_t));
 
 	enum Flags { None = 0, Encrypted = 1, Redundant = 2, Flag3 = 4, Flag4 = 8, Flag5 = 16, Flag6 = 32, Flag7 = 64, Flag8 = 128 };
 
-	VideoFrameDatagram() : Datagram(TYPE), flags(0), sender(0), frameId(0), index(0), count(0), size(0), data(0) {}
+	VideoFrameDatagram() : Datagram(TYPE), flags(0), sender(0), frameId(0),
+		index(0), count(0), size(0), data(0) {}
 	~VideoFrameDatagram()
 	{
 		delete[] data;
 	}
 	bool write(FILE* f) const;
 	bool read(FILE* f);
-	static int split(const dg_byte_t* data, size_t dataLength, dg_frame_id_t frameId, dg_sender_t senderId, VideoFrameDatagram** *datagrams_, VideoFrameDatagram::dg_data_count_t& datagramsLength_);
+	static int split(const dg_byte_t* data, size_t dataLength,
+					 dg_frame_id_t frameId, dg_sender_t senderId, VideoFrameDatagram** *datagrams_,
+					 VideoFrameDatagram::dg_data_count_t& datagramsLength_);
 	static void freeData(VideoFrameDatagram** datagrams, dg_data_count_t length);
 
 	dg_flags_t flags; ///< Custom flags for the frame.
 	dg_sender_t sender; ///< ID of the sender. The server will override this value.
-	dg_frame_id_t frameId; ///< Used to associated multiple datagrams to a single frame. It is common to use the timestamp of the frame.
+	dg_frame_id_t
+	frameId; ///< Used to associated multiple datagrams to a single frame. It is common to use the timestamp of the frame.
 	dg_data_index_t index; ///< Part-index of the entire frame.
 	dg_data_count_t count; ///< Number of parts for the entire frame.
 	dg_size_t size; ///< Size of the "data".
@@ -145,20 +150,33 @@ public:
 };
 
 /*!
+	Send from client to request another client for a resend of
+	a part/complete video frame.
 */
-class VideoFrameRecoveryDatagram : public Datagram
+class VideoFrameRequestRecoveryDatagram : public Datagram
 {
 public:
 	const static dg_type_t TYPE = 0x03;
-	const static dg_size_t MAXSIZE = Datagram::MAXSIZE - (sizeof(VideoFrameDatagram::dg_sender_t) + sizeof(VideoFrameDatagram::dg_frame_id_t) + sizeof(VideoFrameDatagram::dg_data_index_t));
+	const static dg_size_t MAXSIZE = Datagram::MAXSIZE - (sizeof(
+										 VideoFrameDatagram::dg_sender_t) + sizeof(VideoFrameDatagram::dg_frame_id_t) +
+									 sizeof(VideoFrameDatagram::dg_data_index_t));
 
-	VideoFrameRecoveryDatagram() : Datagram(TYPE), sender(0), frameId(0), index(0) {}
+	VideoFrameRequestRecoveryDatagram() :
+		Datagram(TYPE),
+		sender(0),
+		frameId(0),
+		index(0)
+	{}
+
 	bool write(FILE* f) const;
 	bool read(FILE* f);
 
-	VideoFrameDatagram::dg_sender_t sender; ///< ID of the source sender of the frame.
-	VideoFrameDatagram::dg_frame_id_t frameId; ///< If greater than 0 and "index==0", the complete frame will be resend.
-	VideoFrameDatagram::dg_data_index_t index; ///< If greater than 0, only a single datagram of the frame will be resend.
+	VideoFrameDatagram::dg_sender_t
+	sender; ///< ID of the source sender of the frame.
+	VideoFrameDatagram::dg_frame_id_t
+	frameId; ///< If greater than 0 and "index==0", the complete frame will be resend.
+	VideoFrameDatagram::dg_data_index_t
+	index; ///< If greater than 0, only a single datagram of the frame will be resend.
 };
 
 ///////////////////////////////////////////////////////////////////////
@@ -176,13 +194,17 @@ public:
 	typedef uint16_t dg_data_count_t;
 
 	const static dg_type_t TYPE = 0xA0;
-	const static dg_size_t MAXSIZE = Datagram::MAXSIZE - (sizeof(dg_sender_t) + sizeof(dg_frame_id_t) + sizeof(dg_data_index_t) + sizeof(dg_data_count_t) + sizeof(dg_size_t));
+	const static dg_size_t MAXSIZE = Datagram::MAXSIZE - (sizeof(
+										 dg_sender_t) + sizeof(dg_frame_id_t) + sizeof(dg_data_index_t) + sizeof(
+										 dg_data_count_t) + sizeof(dg_size_t));
 
 	AudioFrameDatagram() : Datagram(TYPE) {}
 	bool write(FILE* f) const;
 	bool read(FILE* f);
 
-	static int split(const dg_byte_t* data, size_t dataLength, dg_frame_id_t frameId, dg_sender_t senderId, AudioFrameDatagram** *datagrams_, AudioFrameDatagram::dg_data_count_t& datagramsLength_);
+	static int split(const dg_byte_t* data, size_t dataLength,
+					 dg_frame_id_t frameId, dg_sender_t senderId, AudioFrameDatagram** *datagrams_,
+					 AudioFrameDatagram::dg_data_count_t& datagramsLength_);
 	static void freeData(AudioFrameDatagram** datagrams, dg_data_count_t length);
 
 	dg_sender_t sender;

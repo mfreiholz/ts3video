@@ -11,8 +11,7 @@
 
 #include "protocol.h"
 
-namespace UDP
-{
+namespace UDP {
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -149,7 +148,9 @@ bool VideoFrameDatagram::read(FILE* f)
 	return true;
 }
 
-int VideoFrameDatagram::split(const dg_byte_t* data, size_t dataLength, dg_frame_id_t frameId, dg_sender_t senderId, VideoFrameDatagram** *datagrams_, VideoFrameDatagram::dg_data_count_t& datagramsLength_)
+int VideoFrameDatagram::split(const dg_byte_t* data, size_t dataLength,
+							  dg_frame_id_t frameId, dg_sender_t senderId, VideoFrameDatagram** *datagrams_,
+							  VideoFrameDatagram::dg_data_count_t& datagramsLength_)
 {
 	const dg_byte_t* pdata = data;
 	if (!data || dataLength <= 0)
@@ -158,7 +159,8 @@ int VideoFrameDatagram::split(const dg_byte_t* data, size_t dataLength, dg_frame
 	}
 
 	// Calculate and create buffer.
-	datagramsLength_ = (dg_data_count_t) ceil((double) dataLength / VideoFrameDatagram::MAXSIZE);
+	datagramsLength_ = (dg_data_count_t) ceil((double) dataLength /
+					   VideoFrameDatagram::MAXSIZE);
 	*datagrams_ = new VideoFrameDatagram*[datagramsLength_];
 
 	// Fill buffer.
@@ -188,7 +190,8 @@ int VideoFrameDatagram::split(const dg_byte_t* data, size_t dataLength, dg_frame
 	return 0;
 }
 
-void VideoFrameDatagram::freeData(VideoFrameDatagram** datagrams, dg_data_count_t length)
+void VideoFrameDatagram::freeData(VideoFrameDatagram** datagrams,
+								  dg_data_count_t length)
 {
 	for (dg_data_count_t i = 0; i < length; ++i)
 	{
@@ -199,7 +202,7 @@ void VideoFrameDatagram::freeData(VideoFrameDatagram** datagrams, dg_data_count_
 
 ///////////////////////////////////////////////////////////////////////
 
-bool VideoFrameRecoveryDatagram::write(FILE* f) const
+bool VideoFrameRequestRecoveryDatagram::write(FILE* f) const
 {
 	Datagram::write(f);
 
@@ -221,7 +224,7 @@ bool VideoFrameRecoveryDatagram::write(FILE* f) const
 	return true;
 }
 
-bool VideoFrameRecoveryDatagram::read(FILE* f)
+bool VideoFrameRequestRecoveryDatagram::read(FILE* f)
 {
 	Datagram::read(f);
 
@@ -276,7 +279,10 @@ bool AudioFrameDatagram::read(FILE* f)
 	return true;
 }
 
-int AudioFrameDatagram::split(const dg_byte_t* data, size_t dataLength, AudioFrameDatagram::dg_frame_id_t frameId, AudioFrameDatagram::dg_sender_t senderId, AudioFrameDatagram** *datagrams_, AudioFrameDatagram::dg_data_count_t& datagramsLength_)
+int AudioFrameDatagram::split(const dg_byte_t* data, size_t dataLength,
+							  AudioFrameDatagram::dg_frame_id_t frameId,
+							  AudioFrameDatagram::dg_sender_t senderId, AudioFrameDatagram** *datagrams_,
+							  AudioFrameDatagram::dg_data_count_t& datagramsLength_)
 {
 	const dg_byte_t* pdata = data;
 	if (!data || dataLength <= 0)
@@ -285,7 +291,8 @@ int AudioFrameDatagram::split(const dg_byte_t* data, size_t dataLength, AudioFra
 	}
 
 	// Calculate and create buffer.
-	datagramsLength_ = (dg_data_count_t)ceil((double)dataLength / AudioFrameDatagram::MAXSIZE);
+	datagramsLength_ = (dg_data_count_t)ceil((double)dataLength /
+					   AudioFrameDatagram::MAXSIZE);
 	*datagrams_ = new AudioFrameDatagram*[datagramsLength_];
 
 	// Fill buffer.
@@ -314,7 +321,8 @@ int AudioFrameDatagram::split(const dg_byte_t* data, size_t dataLength, AudioFra
 	return 0;
 }
 
-void AudioFrameDatagram::freeData(AudioFrameDatagram** datagrams, AudioFrameDatagram::dg_data_count_t length)
+void AudioFrameDatagram::freeData(AudioFrameDatagram** datagrams,
+								  AudioFrameDatagram::dg_data_count_t length)
 {
 	for (dg_data_count_t i = 0; i < length; ++i)
 	{

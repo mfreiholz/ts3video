@@ -39,11 +39,15 @@ MediaSocket::MediaSocket(const QString& token, QObject* parent) :
 	QUdpSocket(parent),
 	d(new MediaSocketPrivate(this))
 {
-	connect(this, &MediaSocket::stateChanged, this,
-			&MediaSocket::onSocketStateChanged);
+	connect(this, &MediaSocket::stateChanged,
+			this, &MediaSocket::onSocketStateChanged);
+
 	connect(this, static_cast<void(MediaSocket::*)(QAbstractSocket::SocketError)>
-			(&MediaSocket::error), this, &MediaSocket::onSocketError);
-	connect(this, &MediaSocket::readyRead, this, &MediaSocket::onReadyRead);
+			(&MediaSocket::error),
+			this, &MediaSocket::onSocketError);
+
+	connect(this, &MediaSocket::readyRead,
+			this, &MediaSocket::onReadyRead);
 
 	d->token = token;
 
@@ -336,7 +340,7 @@ void MediaSocket::sendVideoFrameRecoveryDatagram(quint64 frameId_,
 		return;
 	}
 
-	UDP::VideoFrameRecoveryDatagram dg;
+	UDP::VideoFrameRequestRecoveryDatagram dg;
 	dg.sender = fromSenderId_;
 	dg.frameId = frameId_;
 	dg.index = 0;
@@ -545,21 +549,21 @@ void MediaSocket::onReadyRead()
 				break;
 			}
 
-			case UDP::VideoFrameRecoveryDatagram::TYPE:
+			case UDP::VideoFrameRequestRecoveryDatagram::TYPE:
 			{
-				UDP::VideoFrameRecoveryDatagram dg;
+				UDP::VideoFrameRequestRecoveryDatagram dg;
 				in >> dg.sender;
 				in >> dg.frameId;
 				in >> dg.index;
 
-				//QByteArray* frameBytes = nullptr;
-				//if (d->videoFrameCache.maxCost()
-				//		&& (frameBytes = d->videoFrameCache.object(dg.frameId)) != nullptr)
-				//{
-				//	sendVideoFrame(*frameBytes, dg.frameId,
-				//				   dg.sender); //TODO "dg.sender" should not be used here!
-				//}
-				//else
+				QByteArray* frameBytes = nullptr;
+				if (dg.frameId > 0 && d->videoFrameCache.maxCost() &&
+						(frameBytes = d->videoFrameCache.object(dg.frameId)) != nullptr)
+				{
+					//TODO "dg.sender" should not be used here!
+					sendVideoFrame(*frameBytes, dg.frameId, dg.sender);
+				}
+				else
 				{
 					d->videoEncodingThread->enqueueRecovery();
 				}
