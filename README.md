@@ -48,8 +48,8 @@ And then simply run:
 
 ### Windows
 
-- `$> cmake-win-<platform>.bat`
-- `$> start-vs2015-<platform>.bat`
+- `$> build-win<platform>-cmake.bat`
+- `$> build-win<platform>-vs2015.bat`
 
 ### Linux
 
