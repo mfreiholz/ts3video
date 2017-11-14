@@ -27,7 +27,8 @@ HUMBLE_LOGGER(HL, "server.mediasocket");
 
 ///////////////////////////////////////////////////////////////////////
 
-MediaSocketHandler::MediaSocketHandler(const QHostAddress& address, quint16 port, QObject* parent) :
+MediaSocketHandler::MediaSocketHandler(const QHostAddress& address,
+									   quint16 port, QObject* parent) :
 	QObject(parent),
 	_address(address),
 	_port(port),
@@ -35,8 +36,11 @@ MediaSocketHandler::MediaSocketHandler(const QHostAddress& address, quint16 port
 	_networkUsage(),
 	_networkUsageHelper(_networkUsage)
 {
-	connect(&_socket, &QUdpSocket::readyRead, this, &MediaSocketHandler::onReadyRead);
-	connect(&_socket, static_cast<void(QUdpSocket::*)(QAbstractSocket::SocketError)>(&QUdpSocket::error), this, &MediaSocketHandler::onError);
+	connect(&_socket, &QUdpSocket::readyRead, this,
+			&MediaSocketHandler::onReadyRead);
+	connect(&_socket,
+			static_cast<void(QUdpSocket::*)(QAbstractSocket::SocketError)>
+			(&QUdpSocket::error), this, &MediaSocketHandler::onError);
 
 	_in.setByteOrder(QDataStream::BigEndian);
 
@@ -60,7 +64,8 @@ bool MediaSocketHandler::init()
 {
 	if (!_socket.bind(_address, _port, QAbstractSocket::DontShareAddress))
 	{
-		HL_ERROR(HL, QString("Can not bind to UDP port (port=%1)").arg(_port).toStdString());
+		HL_ERROR(HL, QString("Can not bind to UDP port (port=%1)").arg(
+					 _port).toStdString());
 		return false;
 	}
 	return true;
@@ -105,7 +110,8 @@ void MediaSocketHandler::onReadyRead()
 		_in >> _baseDatagram.magic;
 		if (_baseDatagram.magic != UDP::Datagram::MAGIC)
 		{
-			HL_WARN(HL, QString("Received invalid datagram (size=%1; data=%2)").arg(_data.size()).arg(QString(_data)).toStdString());
+			HL_WARN(HL, QString("Received invalid datagram (size=%1; data=%2)").arg(
+						_data.size()).arg(QString(_data)).toStdString());
 			continue;
 		}
 
@@ -135,22 +141,24 @@ void MediaSocketHandler::onReadyRead()
 				for (auto i = 0, end = senderEntity.receivers.size(); i < end; ++i)
 				{
 					const auto& receiverEntity = senderEntity.receivers[i];
-					_socket.writeDatagram(_buffer, _bufferLen, receiverEntity.address, receiverEntity.port);
+					_socket.writeDatagram(_buffer, _bufferLen, receiverEntity.address,
+										  receiverEntity.port);
 					_networkUsage.bytesWritten += _bufferLen;
 				}
 				break;
 			}
 
-			case UDP::VideoFrameRecoveryDatagram::TYPE:
+			case UDP::VideoFrameRequestRecoveryDatagram::TYPE:
 			{
-				UDP::VideoFrameRecoveryDatagram dgrec;
+				UDP::VideoFrameRequestRecoveryDatagram dgrec;
 				_in >> dgrec.sender;
 
 				// Send to specific receiver only.
 				const auto& receiver = _recipients.clientid2receiver[dgrec.sender];
 				if (receiver.address.isNull() || receiver.port == 0)
 				{
-					HL_WARN(HL, QString("Unknown receiver for recovery frame (client-id=%1)").arg(dgrec.sender).toStdString());
+					HL_WARN(HL, QString("Unknown receiver for recovery frame (client-id=%1)").arg(
+								dgrec.sender).toStdString());
 					continue;
 				}
 				_socket.writeDatagram(_data, receiver.address, receiver.port);
@@ -177,5 +185,6 @@ void MediaSocketHandler::onReadyRead()
 
 void MediaSocketHandler::onError(QAbstractSocket::SocketError socketError)
 {
-	HL_ERROR(HL, QString("socket error (err=%1; message=%2)").arg(socketError).arg(_socket.errorString()).toStdString());
+	HL_ERROR(HL, QString("socket error (err=%1; message=%2)").arg(socketError).arg(
+				 _socket.errorString()).toStdString());
 }

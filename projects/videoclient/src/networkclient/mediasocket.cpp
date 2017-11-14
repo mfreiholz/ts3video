@@ -39,11 +39,15 @@ MediaSocket::MediaSocket(const QString& token, QObject* parent) :
 	QUdpSocket(parent),
 	d(new MediaSocketPrivate(this))
 {
-	connect(this, &MediaSocket::stateChanged, this,
-			&MediaSocket::onSocketStateChanged);
+	connect(this, &MediaSocket::stateChanged,
+			this, &MediaSocket::onSocketStateChanged);
+
 	connect(this, static_cast<void(MediaSocket::*)(QAbstractSocket::SocketError)>
-			(&MediaSocket::error), this, &MediaSocket::onSocketError);
-	connect(this, &MediaSocket::readyRead, this, &MediaSocket::onReadyRead);
+			(&MediaSocket::error),
+			this, &MediaSocket::onSocketError);
+
+	connect(this, &MediaSocket::readyRead,
+			this, &MediaSocket::onReadyRead);
 
 	d->token = token;
 
@@ -316,6 +320,10 @@ void MediaSocket::sendVideoFrame(const QByteArray& frame_, quint64 frameId_,
 			d->networkUsage.bytesWritten += written;
 	}
 	UDP::VideoFrameDatagram::freeData(datagrams, datagramsLength);
+
+	// Cache video.
+	if (d->videoFrameCache.maxCost() > 0)
+		d->videoFrameCache.insert(frameId_, new QByteArray(frame_), frame_.size());
 }
 
 void MediaSocket::sendVideoFrameRecoveryDatagram(quint64 frameId_,
@@ -332,7 +340,7 @@ void MediaSocket::sendVideoFrameRecoveryDatagram(quint64 frameId_,
 		return;
 	}
 
-	UDP::VideoFrameRecoveryDatagram dg;
+	UDP::VideoFrameRequestRecoveryDatagram dg;
 	dg.sender = fromSenderId_;
 	dg.frameId = frameId_;
 	dg.index = 0;
@@ -486,9 +494,7 @@ void MediaSocket::onReadyRead()
 		in >> datagram.type;
 		switch (datagram.type)
 		{
-			//
-			// VIDEO
-			//
+			// Iconming video frame part from somebody else.
 			case UDP::VideoFrameDatagram::TYPE:
 			{
 				auto dg = new UDP::VideoFrameDatagram();
@@ -543,15 +549,27 @@ void MediaSocket::onReadyRead()
 				break;
 			}
 
-			case UDP::VideoFrameRecoveryDatagram::TYPE:
+			case UDP::VideoFrameRequestRecoveryDatagram::TYPE:
 			{
-				UDP::VideoFrameRecoveryDatagram dg;
+				UDP::VideoFrameRequestRecoveryDatagram dg;
 				in >> dg.sender;
 				in >> dg.frameId;
 				in >> dg.index;
-				d->videoEncodingThread->enqueueRecovery();
+
+				QByteArray* frameBytes = nullptr;
+				if (dg.frameId > 0 && d->videoFrameCache.maxCost() &&
+						(frameBytes = d->videoFrameCache.object(dg.frameId)) != nullptr)
+				{
+					//TODO "dg.sender" should not be used here!
+					sendVideoFrame(*frameBytes, dg.frameId, dg.sender);
+				}
+				else
+				{
+					d->videoEncodingThread->enqueueRecovery();
+				}
 				break;
 			}
+
 #if defined(OCS_INCLUDE_AUDIO)
 			//
 			// AUDIO

@@ -15,6 +15,8 @@
 #include "audioudpdecoder.h"
 #endif
 
+#include <QCache>
+
 class MediaSocketPrivate : public QObject
 {
 	Q_OBJECT
@@ -28,6 +30,7 @@ public:
 		videoEncodingThread(new VideoEncodingThread(this)),
 		lastFrameRequestTimestamp(0),
 		videoDecodingThread(new VideoDecodingThread(this)),
+		videoFrameCache(0/*1024 * 32*/),
 #if defined(OCS_INCLUDE_AUDIO)
 		audioEncodingThread(new AudioEncodingThread(this)),
 		audioDecodingThread(new AudioDecodingThread(this)),
@@ -45,14 +48,18 @@ public:
 	int keepAliveTimerId;
 
 	// VIDEO
-	
+
 	// Encoding
 	VideoEncodingThread* videoEncodingThread;
 	unsigned long long lastFrameRequestTimestamp;
-	
+
 	// Decoding
-	QHash<ocs::clientid_t, VideoFrameUdpDecoder*> videoFrameDatagramDecoders;  ///< Maps client-id to it's decoder.
+	QHash<ocs::clientid_t, VideoFrameUdpDecoder*>
+	videoFrameDatagramDecoders;  ///< Maps client-id to it's decoder.
 	VideoDecodingThread* videoDecodingThread;
+
+	QCache<UDP::VideoFrameDatagram::dg_frame_id_t, QByteArray>
+	videoFrameCache;
 
 #if defined(OCS_INCLUDE_AUDIO)
 	// AUDIO
