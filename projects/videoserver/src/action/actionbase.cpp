@@ -391,7 +391,7 @@ void KickClientAction::run(const ActionData& req)
 	// Update ban-list.
 	if (ban)
 	{
-		req.server->ban(QHostAddress(req.session->_clientEntity->mediaAddress));
+		req.server->ban(QHostAddress(sess->_clientEntity->mediaAddress));
 	}
 
 	sendDefaultOkResponse(req);
