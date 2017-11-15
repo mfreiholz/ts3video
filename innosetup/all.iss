@@ -1,6 +1,5 @@
 ; Environment variables as constants
 #define OCS_RELEASE_DIR_PATH GetEnv('OCS_RELEASE_DIR_PATH')
-#define OCS_SETUP_DIR_PATH GetEnv('OCS_SETUP_DIR_PATH')
 
 ; Publisher information
 #define MyOrgName "M. Freiholz Software Development"
@@ -29,7 +28,7 @@ SetupLogging=yes
 Compression=lzma
 SolidCompression=yes
 
-OutputDir={#OCS_SETUP_DIR_PATH}
+OutputDir={#OCS_RELEASE_DIR_PATH}
 OutputBaseFilename={#MyAppName} {#MyAppVersion} Setup
 
 ; Comsmetics
