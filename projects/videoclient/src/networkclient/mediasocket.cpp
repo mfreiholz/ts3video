@@ -270,14 +270,12 @@ void MediaSocket::sendAuthTokenDatagram(const QString& token)
 void MediaSocket::sendVideoFrame(const QByteArray& frame_, quint64 frameId_,
 								 ocs::clientid_t senderId_)
 {
-	HL_TRACE(HL,
-			 QString("Send video frame datagram (frame-size=%1; frame-id=%2; sender-id=%3)").arg(
-				 frame_.size()).arg(frameId_).arg(senderId_).toStdString());
+	HL_TRACE(HL, QString("Send video frame datagram (frame-size=%1; frame-id=%2; sender-id=%3)")
+			 .arg(frame_.size()).arg(frameId_).arg(senderId_).toStdString());
 	if (frame_.isEmpty() || frameId_ == 0)
 	{
-		HL_ERROR(HL,
-				 QString("Missing data to send video frame (frame-size=%1; frame-id=%2; sender-id=%3)").arg(
-					 frame_.size()).arg(frameId_).arg(senderId_).toStdString());
+		HL_ERROR(HL, QString("Missing data to send video frame (frame-size=%1; frame-id=%2; sender-id=%3)")
+				 .arg(frame_.size()).arg(frameId_).arg(senderId_).toStdString());
 		return;
 	}
 
@@ -314,10 +312,15 @@ void MediaSocket::sendVideoFrame(const QByteArray& frame_, quint64 frameId_,
 
 		auto written = writeDatagram(datagram, peerAddress(), peerPort());
 		if (written < 0)
-			HL_ERROR(HL, QString("Can not write datagram (error=%1; msg=%2)").arg(
-						 error()).arg(errorString()).toStdString());
+		{
+			HL_ERROR(HL, QString("Can not write datagram (error=%1; msg=%2)")
+					 .arg(error())
+					 .arg(errorString()).toStdString());
+		}
 		else
+		{
 			d->networkUsage.bytesWritten += written;
+		}
 	}
 	UDP::VideoFrameDatagram::freeData(datagrams, datagramsLength);
 

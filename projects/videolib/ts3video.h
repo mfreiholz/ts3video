@@ -21,7 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 /* Comma separated list of client versions, which the current server build supports. */
-#define IFVS_SERVER_SUPPORTED_CLIENT_VERSIONS "0.6,0.7,0.8,0.9,0.10,0.11"
+#define IFVS_SERVER_SUPPORTED_CLIENT_VERSIONS "0.6,0.7,0.8,0.9,0.10,0.11,0.12"
 
 #define IFVS_SERVER_ADDRESS "mfreiholz.de"                             ///< The default server address. Good for testing.
 #define IFVS_SERVER_CONNECTION_PORT 13370                              ///< The default server port to accept connections from clients.
@@ -33,7 +33,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 /* Comma separated list of server versions, which the current client build supports. */
-#define IFVS_CLIENT_SUPPORTED_SERVER_VERSIONS "0.6,0.7,0.8,0.9,0.10,0.11"
+#define IFVS_CLIENT_SUPPORTED_SERVER_VERSIONS "0.6,0.7,0.8,0.9,0.10,0.11,0.12"
 
 ///////////////////////////////////////////////////////////////////////
 // Status Codes
