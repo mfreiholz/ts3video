@@ -13,10 +13,13 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: ServiceInstall; Description: "Install the Conference Server as Windows Service to automatically run with Windows startup."
 
 [Files]
-Source: "{#OCS_DEPLOY_DIR_PATH}\server\*"; DestDir: "{app}"; Flags: recursesubdirs ignoreversion
+Source: "{#OCS_RELEASE_DIR_PATH}\server\*"; DestDir: "{app}"; Flags: recursesubdirs ignoreversion
+Source: "{#OCS_RELEASE_DIR_PATH}\server\default.ini.orig"; DestDir: "{app}"; DestName: "default.ini"; Flags: onlyifdoesntexist
+Source: "{#OCS_RELEASE_DIR_PATH}\server\logging.conf.orig"; DestDir: "{app}"; DestName: "logging.conf"; Flags: onlyifdoesntexist
 
 [Run]
-Filename: "{app}\vcredist_x86.exe"; Parameters: "/install /quiet"; Flags: skipifdoesntexist; StatusMsg: "Installing VC Redistributable (32-bit)... This may take a while";
+Filename: "{app}\runtimes\vcredist_x86_2013.exe"; Parameters: "/install /quiet"; Flags: skipifdoesntexist; StatusMsg: "Installing VC Redistributable 2013 (32-bit)... This may take a while";
+Filename: "{app}\runtimes\vcredist_x86_2015u3.exe"; Parameters: "/install /quiet"; Flags: skipifdoesntexist; StatusMsg: "Installing VC Redistributable 2015 Update 3 (32-bit)... This may take a while";
 Filename: "{sys}\sc.exe"; Parameters: "create ""{#MyAppName}"" binPath= ""{app}\videoserver.exe --service"" start= auto"; Flags: runhidden; StatusMsg: "Installing as service..."; Tasks: ServiceInstall;
 Filename: "{sys}\sc.exe"; Parameters: "start ""{#MyAppName}"""; Flags: runhidden; StatusMsg: "Starting {#MyAppName} service..."; Tasks: ServiceInstall;
 

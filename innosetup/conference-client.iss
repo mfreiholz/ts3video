@@ -11,10 +11,14 @@ InfoAfterFile=conference-client_infoafterfile_english.rtf
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Files]
-Source: "{#OCS_DEPLOY_DIR_PATH}\client\*"; DestDir: "{app}"; Flags: recursesubdirs ignoreversion
-Source: "{#OCS_DEPLOY_DIR_PATH}\ts3plugin\*.ts3_plugin"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#OCS_RELEASE_DIR_PATH}\client\*"; DestDir: "{app}"; Flags: recursesubdirs ignoreversion
+Source: "{#OCS_RELEASE_DIR_PATH}\client\default.ini.orig"; DestDir: "{app}"; DestName: "default.ini"; Flags: onlyifdoesntexist
+Source: "{#OCS_RELEASE_DIR_PATH}\client\logging.conf.orig"; DestDir: "{app}"; DestName: "logging.conf"; Flags: onlyifdoesntexist
+Source: "{#OCS_RELEASE_DIR_PATH}\ts3video\ts3video.ts3_plugin"; DestDir: "{app}"; Flags: ignoreversion
 
 [Run]
-Filename: "{app}\vcredist_x86.exe"; Parameters: "/install /quiet"; Flags: skipifdoesntexist; StatusMsg: "Installing VC Redistributable (32-bit)... This may take a while";
-Filename: "{app}\vcredist_x64.exe"; Parameters: "/install /quiet"; Flags: skipifdoesntexist; StatusMsg: "Installing VC Redistributable (64-bit)... This may take a while"; Check: IsWin64;
+Filename: "{app}\runtimes\vcredist_x86_2013.exe"; Parameters: "/install /quiet"; Flags: skipifdoesntexist; StatusMsg: "Installing VC Redistributable 2013 (32-bit)... This may take a while";
+Filename: "{app}\runtimes\vcredist_x86_2015u3.exe"; Parameters: "/install /quiet"; Flags: skipifdoesntexist; StatusMsg: "Installing VC Redistributable 2015 Update 3 (32-bit)... This may take a while";
+Filename: "{app}\runtimes\vcredist_x64_2013.exe"; Parameters: "/install /quiet"; Flags: skipifdoesntexist; StatusMsg: "Installing VC Redistributable (64-bit)... This may take a while"; Check: IsWin64;
+Filename: "{app}\runtimes\vcredist_x64_2015u3.exe"; Parameters: "/install /quiet"; Flags: skipifdoesntexist; StatusMsg: "Installing VC Redistributable (64-bit)... This may take a while"; Check: IsWin64;
 Filename: "{app}\ts3video.ts3_plugin"; StatusMsg: "Installing TeamSpeak 3 Plugin..."; Flags: shellexec waituntilterminated

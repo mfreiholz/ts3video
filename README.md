@@ -30,6 +30,8 @@ Visual Studio Code Extensions
 ## Checkout steps
 
 ```bash
+$> cd $SOURCES
+$> git clone https://github.com/mfreiholz/ocs-vendor-runtimes.git
 $> git clone https://github.com/mfreiholz/ocs.git
 $> cd ocs
 $> git submodule init

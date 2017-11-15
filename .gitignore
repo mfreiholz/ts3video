@@ -5,6 +5,7 @@
 build/
 build-*/
 install/
+RELEASE_DIR/
 projects/build-*
 projects/Debug
 projects/Release
