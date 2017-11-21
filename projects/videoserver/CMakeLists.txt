@@ -115,8 +115,8 @@ add_custom_command(
 
 if(WIN32)
 	install(TARGETS ${PROJECT_NAME} DESTINATION $ENV{OCS_DEPLOY_DIR_PATH}/server)
-	install(FILES ${PROJECT_SOURCE_DIR}/res/default.ini DESTINATION $ENV{OCS_DEPLOY_DIR_PATH}/server)
-	install(FILES ${PROJECT_SOURCE_DIR}/res/logging.conf DESTINATION $ENV{OCS_DEPLOY_DIR_PATH}/server)
+	install(FILES ${PROJECT_SOURCE_DIR}/res/default.ini DESTINATION $ENV{OCS_DEPLOY_DIR_PATH}/server/default.ini.orig)
+	install(FILES ${PROJECT_SOURCE_DIR}/res/logging.conf DESTINATION $ENV{OCS_DEPLOY_DIR_PATH}/server/logging.conf.orig)
 
 	set(DEPLOY_DIR_PATH $ENV{OCS_DEPLOY_DIR_PATH}/server)
 	string(REPLACE "\\" "/" DEPLOY_DIR_PATH ${DEPLOY_DIR_PATH})
