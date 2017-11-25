@@ -113,20 +113,16 @@ add_custom_command(
 # Install
 #######################################################################
 
-if(WIN32)
-	install(TARGETS ${PROJECT_NAME} DESTINATION $ENV{OCS_DEPLOY_DIR_PATH}/server)
-	install(FILES ${PROJECT_SOURCE_DIR}/res/default.ini DESTINATION $ENV{OCS_DEPLOY_DIR_PATH}/server/default.ini.orig)
-	install(FILES ${PROJECT_SOURCE_DIR}/res/logging.conf DESTINATION $ENV{OCS_DEPLOY_DIR_PATH}/server/logging.conf.orig)
+install(TARGETS ${PROJECT_NAME} DESTINATION $ENV{OCS_INSTALL_DIR_PATH}/server)
+install(FILES ${PROJECT_SOURCE_DIR}/res/default.ini DESTINATION $ENV{OCS_INSTALL_DIR_PATH}/server RENAME default.ini.orig)
+install(FILES ${PROJECT_SOURCE_DIR}/res/logging.conf DESTINATION $ENV{OCS_INSTALL_DIR_PATH}/server RENAME logging.conf.orig)
 
-	set(DEPLOY_DIR_PATH $ENV{OCS_DEPLOY_DIR_PATH}/server)
-	string(REPLACE "\\" "/" DEPLOY_DIR_PATH ${DEPLOY_DIR_PATH})
+#if(WIN32)
+#	set(DEPLOY_DIR_PATH $ENV{OCS_INSTALL_DIR_PATH}/server)
+#	string(REPLACE "\\" "/" DEPLOY_DIR_PATH ${DEPLOY_DIR_PATH})
 
-	set(QT_DIR_PATH $ENV{QTDIR})
-	string(REPLACE "\\" "/" QT_DIR_PATH ${QT_DIR_PATH})
+#	set(QT_DIR_PATH $ENV{QTDIR})
+#	string(REPLACE "\\" "/" QT_DIR_PATH ${QT_DIR_PATH})
 
-	install(CODE "execute_process(COMMAND \"${CMAKE_COMMAND}\" -DBINARY_PATH=${DEPLOY_DIR_PATH} -DQT_DIR_PATH=${QT_DIR_PATH} -P \"${CMAKE_SOURCE_DIR}/cmake/windeployqt.cmake\")")
-else(WIN32)
-	install(TARGETS ${PROJECT_NAME} DESTINATION $ENV{OCS_DEPLOY_DIR_PATH}/server)
-	install(FILES ${PROJECT_SOURCE_DIR}/res/default.ini DESTINATION $ENV{OCS_DEPLOY_DIR_PATH}/server)
-	install(FILES ${PROJECT_SOURCE_DIR}/res/logging.conf DESTINATION $ENV{OCS_DEPLOY_DIR_PATH}/server)
-endif(WIN32)
+#	install(CODE "execute_process(COMMAND \"${CMAKE_COMMAND}\" -DBINARY_PATH=${DEPLOY_DIR_PATH}/videoserver.exe -DQT_DIR_PATH=${QT_DIR_PATH} -P \"${CMAKE_SOURCE_DIR}/cmake/windeployqt.cmake\")")
+#endif(WIN32)

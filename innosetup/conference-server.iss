@@ -20,6 +20,10 @@ Source: "{#OCS_RELEASE_DIR_PATH}\server\logging.conf.orig"; DestDir: "{app}"; De
 [Run]
 Filename: "{app}\runtimes\vcredist_x86_2013.exe"; Parameters: "/install /quiet"; Flags: skipifdoesntexist; StatusMsg: "Installing VC Redistributable 2013 (32-bit)... This may take a while";
 Filename: "{app}\runtimes\vcredist_x86_2015u3.exe"; Parameters: "/install /quiet"; Flags: skipifdoesntexist; StatusMsg: "Installing VC Redistributable 2015 Update 3 (32-bit)... This may take a while";
+Filename: "{app}\runtimes\vcredist_x64_2013.exe"; Parameters: "/install /quiet"; Flags: skipifdoesntexist; StatusMsg: "Installing VC Redistributable (64-bit)... This may take a while"; Check: IsWin64;
+Filename: "{app}\runtimes\vcredist_x64_2015u3.exe"; Parameters: "/install /quiet"; Flags: skipifdoesntexist; StatusMsg: "Installing VC Redistributable (64-bit)... This may take a while"; Check: IsWin64;
+
+; ServerInstall task (Registers the videoserver.exe process as Windows service).
 Filename: "{sys}\sc.exe"; Parameters: "create ""{#MyAppName}"" binPath= ""{app}\videoserver.exe --service"" start= auto"; Flags: runhidden; StatusMsg: "Installing as service..."; Tasks: ServiceInstall;
 Filename: "{sys}\sc.exe"; Parameters: "start ""{#MyAppName}"""; Flags: runhidden; StatusMsg: "Starting {#MyAppName} service..."; Tasks: ServiceInstall;
 

@@ -38,7 +38,7 @@ endif(WIN32)
 # Install
 #######################################################################
 
-set(DEPLOY_DIR_PATH $ENV{OCS_DEPLOY_DIR_PATH}/${PROJECT_NAME})
+set(DEPLOY_DIR_PATH $ENV{OCS_INSTALL_DIR_PATH}/${PROJECT_NAME})
 string(REPLACE "\\" "/" DEPLOY_DIR_PATH ${DEPLOY_DIR_PATH})
 
 if(WIN32)

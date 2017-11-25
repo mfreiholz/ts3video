@@ -18,6 +18,6 @@ message("Executing WINDEPLOYQT
 ")
 
 execute_process(
-	COMMAND windeployqt.exe ${BINARY_PATH}
+	COMMAND windeployqt.exe --release ${BINARY_PATH}
 	WORKING_DIRECTORY ${QT_DIR_PATH}/bin
 )
