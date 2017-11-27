@@ -15,15 +15,13 @@ HUMBLE_LOGGER(HL, "networkclient.mediasocket");
 
 #if __linux__
 #if __x86_64__ || __ppc64__
-QDataStream& operator<<(QDataStream& out,
-						const UDP::VideoFrameDatagram::dg_frame_id_t& val)
+QDataStream& operator<<(QDataStream& out, const UDP::VideoFrameDatagram::dg_frame_id_t& val)
 {
 	out << (quint64)val;
 	return out;
 }
 
-QDataStream& operator>>(QDataStream& in,
-						UDP::VideoFrameDatagram::dg_frame_id_t& val)
+QDataStream& operator>>(QDataStream& in, UDP::VideoFrameDatagram::dg_frame_id_t& val)
 {
 	quint64 i;
 	in >> i;
@@ -39,15 +37,9 @@ MediaSocket::MediaSocket(const QString& token, QObject* parent) :
 	QUdpSocket(parent),
 	d(new MediaSocketPrivate(this))
 {
-	connect(this, &MediaSocket::stateChanged,
-			this, &MediaSocket::onSocketStateChanged);
-
-	connect(this, static_cast<void(MediaSocket::*)(QAbstractSocket::SocketError)>
-			(&MediaSocket::error),
-			this, &MediaSocket::onSocketError);
-
-	connect(this, &MediaSocket::readyRead,
-			this, &MediaSocket::onReadyRead);
+	connect(this, &MediaSocket::stateChanged, this, &MediaSocket::onSocketStateChanged);
+	connect(this, static_cast<void(MediaSocket::*)(QAbstractSocket::SocketError)>(&MediaSocket::error), this, &MediaSocket::onSocketError);
+	connect(this, &MediaSocket::readyRead, this, &MediaSocket::onReadyRead);
 
 	d->token = token;
 
@@ -55,13 +47,11 @@ MediaSocket::MediaSocket(const QString& token, QObject* parent) :
 	if (true)
 	{
 		// Encoding (Delayed start, when the user enables his video)
-		connect(d->videoEncodingThread, &VideoEncodingThread::encoded, this,
-				&MediaSocket::onVideoFrameEncoded);
+		connect(d->videoEncodingThread, &VideoEncodingThread::encoded, this, &MediaSocket::onVideoFrameEncoded);
 
 		// Decoding
 		d->videoDecodingThread->start();
-		connect(d->videoDecodingThread, &VideoDecodingThread::decoded, this,
-				&MediaSocket::onVideoFrameDecoded);
+		connect(d->videoDecodingThread, &VideoDecodingThread::decoded, this, &MediaSocket::onVideoFrameDecoded);
 	}
 
 #if defined(OCS_INCLUDE_AUDIO)
@@ -108,8 +98,7 @@ MediaSocket::~MediaSocket()
 
 	while (!d->videoFrameDatagramDecoders.isEmpty())
 	{
-		auto obj = d->videoFrameDatagramDecoders.take(
-					   d->videoFrameDatagramDecoders.begin().key());
+		auto obj = d->videoFrameDatagramDecoders.take(d->videoFrameDatagramDecoders.begin().key());
 		delete obj;
 	}
 
@@ -167,8 +156,7 @@ void MediaSocket::sendVideoFrame(const QImage& image, ocs::clientid_t senderId)
 {
 	if (!d->videoEncodingThread || !d->videoEncodingThread->isRunning())
 	{
-		HL_WARN(HL,
-				QString("Can not send video. Encoding thread not yet running.").toStdString());
+		HL_WARN(HL, QString("Can not send video. Encoding thread not yet running.").toStdString());
 		return;
 	}
 	d->videoEncodingThread->enqueue(image, senderId);
@@ -202,13 +190,11 @@ void MediaSocket::resetVideoDecoderOfClient(ocs::clientid_t senderId)
 }
 
 #if defined(OCS_INCLUDE_AUDIO)
-void MediaSocket::sendAudioFrame(const PcmFrameRefPtr& f,
-								 ocs::clientid_t senderId)
+void MediaSocket::sendAudioFrame(const PcmFrameRefPtr& f, ocs::clientid_t senderId)
 {
 	if (!d->audioEncodingThread || !d->audioEncodingThread->isRunning())
 	{
-		HL_WARN(HL,
-				QString("Can not send audio. Encoding thread not yet running.").toStdString());
+		HL_WARN(HL, QString("Can not send audio. Encoding thread not yet running.").toStdString());
 		return;
 	}
 	d->audioEncodingThread->enqueue(f, senderId);
@@ -237,9 +223,8 @@ void MediaSocket::sendKeepAliveDatagram()
 
 void MediaSocket::sendAuthTokenDatagram(const QString& token)
 {
-	HL_TRACE(HL,
-			 QString("Send media auth token (token=%1; address=%2; port=%3)").arg(token).arg(
-				 peerAddress().toString()).arg(peerPort()).toStdString());
+	HL_TRACE(HL, QString("Send media auth token (token=%1; address=%2; port=%3)")
+			 .arg(token).arg(peerAddress().toString()).arg(peerPort()).toStdString());
 	if (token.isEmpty())
 	{
 		HL_ERROR(HL, QString("Media auth token is empty").toStdString());
@@ -261,8 +246,8 @@ void MediaSocket::sendAuthTokenDatagram(const QString& token)
 
 	auto written = writeDatagram(datagram, peerAddress(), peerPort());
 	if (written < 0)
-		HL_ERROR(HL, QString("Can not write datagram (error=%1; msg=%2)").arg(
-					 error()).arg(errorString()).toStdString());
+		HL_ERROR(HL, QString("Can not write datagram (error=%1; msg=%2)")
+				 .arg(error()).arg(errorString()).toStdString());
 	else
 		d->networkUsage.bytesWritten += written;
 }
@@ -285,11 +270,9 @@ void MediaSocket::sendVideoFrame(const QByteArray& frame_, quint64 frameId_,
 	// Split frame into datagrams.
 	UDP::VideoFrameDatagram** datagrams = 0;
 	UDP::VideoFrameDatagram::dg_data_count_t datagramsLength;
-	if (UDP::VideoFrameDatagram::split((UDP::dg_byte_t*)frame_.data(),
-									   frame_.size(), frameId, senderId, &datagrams, datagramsLength) != 0)
+	if (UDP::VideoFrameDatagram::split((UDP::dg_byte_t*)frame_.data(), frame_.size(), frameId, senderId, &datagrams, datagramsLength) != 0)
 	{
-		HL_ERROR(HL,
-				 QString("Can not split frame data into multiple parts").toStdString());
+		HL_ERROR(HL, QString("Can not split frame data into multiple parts").toStdString());
 		return;
 	}
 
@@ -332,13 +315,11 @@ void MediaSocket::sendVideoFrame(const QByteArray& frame_, quint64 frameId_,
 void MediaSocket::sendVideoFrameRecoveryDatagram(quint64 frameId_,
 		ocs::clientid_t fromSenderId_)
 {
-	HL_TRACE(HL,
-			 QString("Send video frame recovery datagram (frame-id=%1; from-sender-id=%2)").arg(
-				 frameId_).arg(fromSenderId_).toStdString());
+	HL_TRACE(HL, QString("Send video frame recovery datagram (frame-id=%1; from-sender-id=%2)")
+			 .arg(frameId_).arg(fromSenderId_).toStdString());
 	if (frameId_ == 0 || fromSenderId_ == 0)
 	{
-		HL_ERROR(HL,
-				 QString("Missing data to send video recovery frame request (frame-id=%1; from-sender-id=%2)")
+		HL_ERROR(HL, QString("Missing data to send video recovery frame request (frame-id=%1; from-sender-id=%2)")
 				 .arg(frameId_).arg(fromSenderId_).toStdString());
 		return;
 	}
@@ -359,8 +340,8 @@ void MediaSocket::sendVideoFrameRecoveryDatagram(quint64 frameId_,
 
 	auto written = writeDatagram(datagram, peerAddress(), peerPort());
 	if (written < 0)
-		HL_ERROR(HL, QString("Can not write datagram (error=%1; msg=%2)").arg(
-					 error()).arg(errorString()).toStdString());
+		HL_ERROR(HL, QString("Can not write datagram (error=%1; msg=%2)")
+				 .arg(error()).arg(errorString()).toStdString());
 	else
 		d->networkUsage.bytesWritten += written;
 }
@@ -435,8 +416,8 @@ void MediaSocket::timerEvent(QTimerEvent* ev)
 
 void MediaSocket::onSocketStateChanged(QAbstractSocket::SocketState state)
 {
-	HL_TRACE(HL, QString("Socket state changed (state=%1)").arg(
-				 state).toStdString());
+	HL_TRACE(HL, QString("Socket state changed (state=%1)")
+			 .arg(state).toStdString());
 	switch (state)
 	{
 		case QAbstractSocket::ConnectedState:
@@ -462,8 +443,9 @@ void MediaSocket::onSocketStateChanged(QAbstractSocket::SocketState state)
 
 void MediaSocket::onSocketError(QAbstractSocket::SocketError error)
 {
-	HL_ERROR(HL, QString("Socket error (error=%1; message=%2)").arg(error).arg(
-				 errorString()).toStdString());
+	HL_ERROR(HL, QString("Socket error (error=%1; message=%2)")
+			 .arg(error)
+			 .arg(errorString()).toStdString());
 }
 
 void MediaSocket::onReadyRead()
@@ -488,8 +470,8 @@ void MediaSocket::onReadyRead()
 		in >> datagram.magic;
 		if (datagram.magic != UDP::Datagram::MAGIC)
 		{
-			HL_WARN(HL, QString("Received invalid datagram (size=%1; data=%2)").arg(
-						data.size()).arg(QString(data)).toStdString());
+			HL_WARN(HL, QString("Received invalid datagram (size=%1; data=%2)")
+					.arg(data.size()).arg(QString(data)).toStdString());
 			continue;
 		}
 
@@ -558,18 +540,20 @@ void MediaSocket::onReadyRead()
 				in >> dg.sender;
 				in >> dg.frameId;
 				in >> dg.index;
+				d->videoEncodingThread->enqueueRecovery();
 
-				QByteArray* frameBytes = nullptr;
-				if (dg.frameId > 0 && d->videoFrameCache.maxCost() &&
-						(frameBytes = d->videoFrameCache.object(dg.frameId)) != nullptr)
-				{
-					//TODO "dg.sender" should not be used here!
-					sendVideoFrame(*frameBytes, dg.frameId, dg.sender);
-				}
-				else
-				{
-					d->videoEncodingThread->enqueueRecovery();
-				}
+				// Note: This is not tested enough.
+				//QByteArray* frameBytes = nullptr;
+				//if (dg.frameId > 0 && d->videoFrameCache.maxCost() &&
+				//		(frameBytes = d->videoFrameCache.object(dg.frameId)) != nullptr)
+				//{
+				//	//TODO "dg.sender" should not be used here!
+				//	sendVideoFrame(*frameBytes, dg.frameId, dg.sender);
+				//}
+				//else
+				//{
+				//	d->videoEncodingThread->enqueueRecovery();
+				//}
 				break;
 			}
 
@@ -637,15 +621,13 @@ void MediaSocket::onReadyRead()
 	}
 }
 
-void MediaSocket::onVideoFrameEncoded(QByteArray frame,
-									  ocs::clientid_t senderId)
+void MediaSocket::onVideoFrameEncoded(QByteArray frame, ocs::clientid_t senderId)
 {
 	static quint64 __nextVideoFrameId = 1;
 	sendVideoFrame(frame, __nextVideoFrameId++, senderId);
 }
 
-void MediaSocket::onVideoFrameDecoded(YuvFrameRefPtr frame,
-									  ocs::clientid_t senderId)
+void MediaSocket::onVideoFrameDecoded(YuvFrameRefPtr frame, ocs::clientid_t senderId)
 {
 	emit newVideoFrame(frame, senderId);
 }

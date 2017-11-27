@@ -7,6 +7,6 @@ if not exist %OCS_BUILD_DIR_PATH% mkdir %OCS_BUILD_DIR_PATH%
 cd %OCS_BUILD_DIR_PATH%
 
 rem Configure with CMake.
-cmake -G "Visual Studio 14 2015" -DCMAKE_INSTALL_PREFIX="%OCS_INSTALL_DIR_PATH%" ..
+cmake -G "Visual Studio 14 2015" -DCMAKE_INSTALL_PREFIX="%OCS_INSTALL_DIR_PATH%" -DIncludeOpenGLSupport=ON ..
 
 pause

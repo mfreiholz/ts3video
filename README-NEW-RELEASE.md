@@ -2,7 +2,7 @@
 
 ## All platforms
 
-- Check version configuration in primary *CMakeLists.txt*
+- Check version configuration in primary *CMakeLists.txt* and *projects/videolib/ts3video.h*
 
 ## Windows
 

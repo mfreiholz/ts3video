@@ -65,15 +65,15 @@ int VideoFrameUdpDecoder::add(UDP::VideoFrameDatagram* dpart)
 		return _last_error;
 	}
 
-	// Comment out for (ts3video/#54)
+	// Comment out for (ts3video/#54) - NOT YET TESTED ENOUGH!
 	// Skip datagrams of frames, which has already been completed.
-	//if (dpart->frameId <= _last_completed_frame_id)
-	//{
-	//	delete dpart;
-	//	dpart = nullptr;
-	//	_last_error = VideoFrameUdpDecoder::AlreadyProcessed;
-	//	return _last_error;
-	//}
+	if (dpart->frameId <= _last_completed_frame_id)
+	{
+		delete dpart;
+		dpart = nullptr;
+		_last_error = VideoFrameUdpDecoder::AlreadyProcessed;
+		return _last_error;
+	}
 
 	// Get existing frame buffer or create one.
 	auto found_i = _frame_buffers.find(dpart->frameId);
