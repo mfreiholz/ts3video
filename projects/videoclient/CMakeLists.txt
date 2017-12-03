@@ -13,8 +13,11 @@ find_package(Qt5Widgets REQUIRED)
 find_package(Qt5Network REQUIRED)
 find_package(Qt5Multimedia REQUIRED)
 find_package(Qt5MultimediaWidgets REQUIRED)
-find_package(Qt5OpenGL REQUIRED)
 find_package(Qt5Concurrent REQUIRED)
+
+if(IncludeOpenGLSupport)
+	find_package(Qt5OpenGL REQUIRED)
+endif(IncludeOpenGLSupport)
 
 # Sources
 set(headers
@@ -222,7 +225,6 @@ target_link_libraries(
 	Qt5::Network
 	Qt5::Multimedia
 	Qt5::MultimediaWidgets
-	Qt5::OpenGL
 	Qt5::Concurrent
 	${vpx_LIBRARIES}
 	${humblelogging_LIBRARIES}
@@ -232,6 +234,10 @@ target_link_libraries(
 	libmediaprotocol
 	videolib
 )
+
+if(IncludeOpenGLSupport)
+	target_link_libraries(${PROJECT_NAME} Qt5::OpenGL)
+endif()
 
 if(WIN32)
 	if(IncludeOpenGLSupport)

@@ -7,7 +7,7 @@ include(ExternalProject)
 ExternalProject_Add(
   humblelogging
   SOURCE_DIR "${CMAKE_SOURCE_DIR}/thirdparty/humblelogging"
-  CMAKE_ARGS -DBuildShared=OFF -DBuildExamples=OFF -DBuildSystemNative=ON
+  CMAKE_ARGS -DBuildShared=OFF -DBuildExamples=OFF -DBuildSystemNative=OFF
   INSTALL_COMMAND ""
 )
 
@@ -20,11 +20,9 @@ if(WIN32)
     optimized "${CMAKE_BINARY_DIR}/humblelogging-prefix/src/humblelogging-build/Release/humblelogging.lib"
     debug "${CMAKE_BINARY_DIR}/humblelogging-prefix/src/humblelogging-build/Debug/humblelogging.lib"
   )
-endif(WIN32)
-
-if(CMAKE_COMPILER_IS_GNUCC)
+else(WIN32)
   set(humblelogging_LIBRARIES
     "${CMAKE_BINARY_DIR}/humblelogging-prefix/src/humblelogging-build/libhumblelogging.a"
   )
-endif(CMAKE_COMPILER_IS_GNUCC)
+endif(WIN32)
 

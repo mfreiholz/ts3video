@@ -5,6 +5,10 @@
 #include <Lmcons.h>
 #endif
 
+#ifdef Q_OS_UNIX
+#include <unistd.h>
+#endif
+
 #include <QCoreApplication>
 #include <QDir>
 #include <QRect>
@@ -39,9 +43,10 @@ QString ELWS::getUserName()
 	}
 	return QString();
 #elif defined(Q_OS_UNIX)
-
-#else
-	return QString();
+    char username[512];
+    if (getlogin_r(username, sizeof(username)) != 0)
+        return QString();
+    return QString::fromLocal8Bit(username);
 #endif
 }
 

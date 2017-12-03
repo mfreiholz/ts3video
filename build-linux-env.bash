@@ -12,28 +12,30 @@ popd > /dev/null
 # List of paths
 BASEDIR=$SCRIPTPATH
 ARCH=$(uname -m)
+
+export OCS_SOURCE_DIR_PATH=$BASEDIR
 export OCS_BUILD_DIR_PATH=$BASEDIR/build
-export OCS_DEPLOY_DIR_PATH=$OCS_BUILD_DIR_PATH/deploy
+export OCS_INSTALL_DIR_PATH=$OCS_BUILD_DIR_PATH/install
 
 # Print used environment
 echo
 echo OCS Build Environment
 echo ---------------------
-echo BASEDIR             : $BASEDIR
-echo OCS_BUILD_DIR_PATH  : $OCS_BUILD_DIR_PATH
-echo OCS_DEPLOY_DIR_PATH : $OCS_DEPLOY_DIR_PATH
-echo ARCH                : $ARCH
+echo OCS_SOURCE_DIR_PATH  : $OCS_SOURCE_DIR_PATH
+echo OCS_BUILD_DIR_PATH   : $OCS_BUILD_DIR_PATH
+echo OCS_INSTALL_DIR_PATH : $OCS_INSTALL_DIR_PATH
+echo ARCH                 : $ARCH
 echo ---------------------
 echo
 
-cd $BASEDIR
+cd $OCS_SOURCE_DIR_PATH
 
 # Prepare build directory
 if [ ! -d "$OCS_BUILD_DIR_PATH" ]; then
 	mkdir $OCS_BUILD_DIR_PATH
 fi
 
-# Prepare deploy directory
-if [ ! -d "$OCS_DEPLOY_DIR_PATH" ]; then
-	mkdir $OCS_DEPLOY_DIR_PATH
+# Prepare install directory
+if [ ! -d "$OCS_INSTALL_DIR_PATH" ]; then
+	mkdir $OCS_INSTALL_DIR_PATH
 fi

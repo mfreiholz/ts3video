@@ -1,14 +1,6 @@
-#if defined(_WIN32)
-#include <WinSock2.h>
-#elif defined(__linux__)
-#include <netinet/in.h>
-#define htonll(x) x
-#define ntohll(x) x
-#endif
-
 #include <math.h>
 #include <cstring>
-
+#include "libbase/network.h"
 #include "protocol.h"
 
 namespace UDP {

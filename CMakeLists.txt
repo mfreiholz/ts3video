@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.0)
 project(source)
 
+option(IncludeServerPrograms "IncludeServerPrograms" ON)
+option(IncludeClientPrograms "IncludeClientPrograms" ON)
+
 cmake_policy(SET CMP0020 NEW)
 
 include(cmake/compiler.cmake)
@@ -40,8 +43,13 @@ add_subdirectory(projects/libmediaprotocol)
 # project specific libs (+qt)
 add_subdirectory(projects/libqtteamspeak3)
 
-# binaries
-add_subdirectory(projects/videolib)
-add_subdirectory(projects/videoserver)
-add_subdirectory(projects/videoclient)
-add_subdirectory(projects/ts3plugin)
+# programs
+if(IncludeServerPrograms)
+	add_subdirectory(projects/videolib)
+	add_subdirectory(projects/videoserver)
+endif(IncludeServerPrograms)
+
+if(IncludeClientPrograms)
+	add_subdirectory(projects/videoclient)
+	add_subdirectory(projects/ts3plugin)
+endif(IncludeClientPrograms)

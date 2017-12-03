@@ -8,7 +8,7 @@ CoreException::CoreException(std::string message, std::string messageDetail) :
 	_messageDetail(std::move(messageDetail))
 {}
 
-CoreException::~CoreException()
+CoreException::~CoreException() _NOEXCEPT
 {}
 
 const std::string& CoreException::getMessage() const
