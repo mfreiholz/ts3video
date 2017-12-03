@@ -24,9 +24,9 @@ public:
 		const auto& serverConfig = _nc->serverConfig();
 		QCamera cam(cameraInfo);
 		cam.load();
-#if QT_VERSION >= QT_VERSION_CHECK(5, 5, 0) && _WIN32
-		_resolutions = cam.supportedViewfinderResolutions();
-#else
+//#if QT_VERSION >= QT_VERSION_CHECK(5, 5, 0) && _WIN32
+//		_resolutions = cam.supportedViewfinderResolutions();
+//#else
 		_resolutions = QList<QSize>()
 					   << QSize(160, 120)
 					   << QSize(176, 144)
@@ -49,7 +49,7 @@ public:
 					   << QSize(1280, 960)
 					   << QSize(1920, 1080)
 					   ;
-#endif
+//#endif
 	}
 
 	virtual int rowCount(const QModelIndex& parent = QModelIndex()) const
