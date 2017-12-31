@@ -1,13 +1,1 @@
---style=allman
---indent=force-tab=4
---align-pointer=type
---align-reference=type
---attach-namespaces
---attach-extern-c
---indent-switches
---pad-oper
---pad-header
---unpad-paren
---remove-comment-prefix
---mode=c
-
+--style=allman --indent=force-tab=4 --align-pointer=type --align-reference=type --attach-namespaces --attach-extern-c --indent-switches --pad-oper --pad-header --unpad-paren --remove-comment-prefix --mode=c

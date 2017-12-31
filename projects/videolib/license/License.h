@@ -1,12 +1,8 @@
 #pragma once
 
-#include <memory>
-
 #include <QString>
-#include <QList>
 #include <QDateTime>
-#include <QStringList>
-#include <QFuture>
+#include <QList>
 
 namespace lic {
 
@@ -29,21 +25,6 @@ public:
 	QString customerId;
 	QString customerName;
 	QString customerEmail;
-};
-
-
-class LicenseXmlReader
-{
-public:
-	std::shared_ptr<License> loadFromFile(const QString& filePath) const;
-};
-
-
-class LicenseManager
-{
-public:
-	static bool isValid(const License& lic);
-	static QFuture<std::shared_ptr<License> > loadLicenseFromServer();
 };
 
 }
