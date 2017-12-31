@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <inttypes.h>
+#include <cstdio>
 
 #include "videolib/ts3video.h"
 #include "ts3_functions.h"
@@ -150,7 +151,7 @@ int runClient(TS3Data* ts3data, int runOpts)
 	strcat(params, ts3data->serverAddress);
 
 	char serverPortString[64];
-	snprintf(serverPortString, 64, "%" PRIu64, ts3data->serverPort);
+	sprintf(serverPortString, "%" PRIu64, ts3data->serverPort);
 	// itoa(ts3data->serverPort, serverPortString, 10);
 	strcat(params, " --port ");
 	strcat(params, " ");
@@ -158,7 +159,7 @@ int runClient(TS3Data* ts3data, int runOpts)
 	strcat(params, " ");
 
 	char channelIdString[64];
-	snprintf(channelIdString, 64, "%" PRIu64, ts3data->channelId);
+	sprintf(channelIdString, "%" PRIu64, ts3data->channelId);
 	// itoa(ts3data->channelId, channelIdString, 10);
 	strcat(params, " --channelid ");
 	strcat(params, " ");
@@ -167,7 +168,7 @@ int runClient(TS3Data* ts3data, int runOpts)
 
 	char clientDatabaseIdString[64];
 	// ltoa(ts3data->clientDatabaseId, clientDatabaseIdString, 10);
-	snprintf(clientDatabaseIdString, 64, "%" PRIu64, ts3data->clientDatabaseId);
+	sprintf(clientDatabaseIdString, "%" PRIu64, ts3data->clientDatabaseId);
 	strcat(params, " --clientdbid ");
 	strcat(params, " ");
 	strcat(params, clientDatabaseIdString);
