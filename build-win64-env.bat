@@ -1,5 +1,5 @@
 @echo off
-call "%VS140COMNTOOLS%\..\..\Vc\vcvarsall.bat" x64
+call "%VS120COMNTOOLS%\..\..\Vc\vcvarsall.bat" x64
 
 rem Build specific settings
 set OCS_BUILD_DIR_NAME=build-win-x86-64
