@@ -63,6 +63,7 @@ set(qheaders
 	src/ts3video/ts3videoupdatedialog.h
 	src/test/connectionteststartuplogic.h
 	src/test/directconnectstartuplogic.h
+	src/account/NewAccountDialog.h
 )
 
 set(sources
@@ -103,6 +104,7 @@ set(sources
 	src/util/qwidgetutil.cpp
 	src/test/connectionteststartuplogic.cpp
 	src/test/directconnectstartuplogic.cpp
+	src/account/NewAccountDialog.cpp
 )
 
 set(qforms
@@ -115,6 +117,7 @@ set(qforms
 	src/ts3video/ts3videostartuplogic.ui
 	src/ts3video/ts3videoupdatedialog.ui
 	src/video/videosettingswidget.ui
+	src/account/NewAccountWidgetForm.ui
 )
 
 set(qresources

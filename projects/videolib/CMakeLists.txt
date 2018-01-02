@@ -28,45 +28,6 @@ source_group(
 	FILES ${headers} ${sources}
 )
 
-# set(headers
-	# ts3video.h
-	# cliententity.h
-	# channelentity.h
-	# virtualserverconfigentity.h
-	# jsonprotocolhelper.h
-	# elws.h
-	# yuvframe.h
-	# vp8frame.h
-	# pcmframe.h
-	# opusframe.h
-	# imageutil.h
-	# timeutil.h
-	# networkusageentity.h
-	# license.h
-# )
-
-# set(qheaders
-# )
-
-# set(sources
-	# cliententity.cpp
-	# channelentity.cpp
-	# virtualserverconfigentity.cpp
-	# jsonprotocolhelper.cpp
-	# elws.cpp
-	# pcmframe.cpp
-	# opusframe.cpp
-	# yuvframe.cpp
-	# vp8frame.cpp
-	# imageutil.cpp
-	# timeutil.cpp
-	# networkusageentity.cpp
-	# license.cpp
-# )
-
-# qt5_wrap_cpp(qheaders_wrap ${qheaders})
-# source_group(QtWrap FILES ${qheaders_wrap})
-
 ### Binaries
 
 add_library(
