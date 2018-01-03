@@ -1,3 +1,4 @@
+#if defined(OCS_INCLUDE_OPENGL)
 #include "openglwindow.h"
 
 #include "QtCore/QCoreApplication"
@@ -169,3 +170,4 @@ void OpenGLWindow::setBackgroundColor(const QColor &color)
 {
 	d->backgroundColor = color;
 }
+#endif

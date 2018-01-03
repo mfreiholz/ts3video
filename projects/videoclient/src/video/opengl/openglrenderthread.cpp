@@ -1,3 +1,4 @@
+#if defined(OCS_INCLUDE_OPENGL)
 #include "openglrenderthread.h"
 
 #include "QtCore/QCoreApplication"
@@ -743,3 +744,4 @@ void OpenGLRenderThread::removeSubFrame( int id, int frameId )
 
 	update( id );
 }
+#endif

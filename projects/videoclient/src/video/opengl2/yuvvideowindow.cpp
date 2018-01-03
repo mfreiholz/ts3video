@@ -1,3 +1,4 @@
+#if defined(OCS_INCLUDE_OPENGL)
 #include "yuvvideowindow.h"
 
 #include <QCoreApplication>
@@ -237,3 +238,4 @@ void YuvVideoWindowSub::resizeEvent(QResizeEvent *ev)
 {
   _resize = true;
 }
+#endif

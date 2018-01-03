@@ -1,3 +1,4 @@
+#if defined(OCS_INCLUDE_AUDIO)
 #ifndef AUDIOFRAMEPLAYER_H
 #define AUDIOFRAMEPLAYER_H
 
@@ -36,4 +37,5 @@ private:
 	QAudioFormat _format;
 };
 
+#endif
 #endif

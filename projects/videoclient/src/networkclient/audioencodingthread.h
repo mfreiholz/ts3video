@@ -1,3 +1,4 @@
+#if defined(OCS_INCLUDE_AUDIO)
 #ifndef AUDIOENCODINGTHREAD_H
 #define AUDIOENCODINGTHREAD_H
 
@@ -36,4 +37,5 @@ private:
 	QAtomicInt _recoveryFlag;
 };
 
+#endif
 #endif

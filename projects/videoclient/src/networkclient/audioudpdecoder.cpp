@@ -1,3 +1,4 @@
+#if defined(OCS_INCLUDE_AUDIO)
 #include "audioudpdecoder.h"
 #include "humblelogging/api.h"
 #include <QDataStream>
@@ -142,3 +143,5 @@ void AudioUdpDecoder::checkCompletedFramesQueue(unsigned int maxSize)
 		_completedFramesQueue.erase(_completedFramesQueue.begin());
 	}
 }
+
+#endif

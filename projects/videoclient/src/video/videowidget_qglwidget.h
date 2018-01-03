@@ -1,3 +1,4 @@
+#if defined(OCS_INCLUDE_OPENGL)
 #pragma once
 
 #include <QScopedPointer>
@@ -25,3 +26,5 @@ protected:
 	void resizeGL(int w, int h);
 	void paintGL();
 };
+
+#endif

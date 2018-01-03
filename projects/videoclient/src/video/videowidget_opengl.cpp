@@ -1,3 +1,4 @@
+#if defined(OCS_INCLUDE_OPENGL)
 #include "videowidget_opengl.h"
 
 #include <QGLFormat>
@@ -177,3 +178,5 @@ YuvVideoOpenGLWidget::paintGL()
 	glFinish();
 	d->program->release();
 }
+
+#endif

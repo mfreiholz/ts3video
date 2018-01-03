@@ -13,9 +13,9 @@
 
 #include "startup/devstartuplogic.h"
 #include "startup/defaultstartuplogic.h"
+#include "startup/connectionteststartuplogic.h"
+#include "startup/directconnectstartuplogic.h"
 #include "ts3video/ts3videostartuplogic.h"
-#include "test/connectionteststartuplogic.h"
-#include "test/directconnectstartuplogic.h"
 
 HUMBLE_LOGGER(HL, "client");
 

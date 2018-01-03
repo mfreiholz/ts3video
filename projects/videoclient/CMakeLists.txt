@@ -6,10 +6,17 @@ cmake_policy(SET CMP0020 NEW)
 option(IncludeOpenGLSupport "IncludeOpenGLSupport" OFF)
 option(IncludeAudioSupport "IncludeAudioSupport" OFF)
 
-# Qt5
+### Qt
+
+cmake_policy(SET CMP0020 NEW)
+
+set(CMAKE_INCLUDE_CURRENT_DIR OFF)
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTORCC ON)
+
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Gui REQUIRED)
-find_package(Qt5Widgets REQUIRED)
 find_package(Qt5Network REQUIRED)
 find_package(Qt5Multimedia REQUIRED)
 find_package(Qt5MultimediaWidgets REQUIRED)
@@ -19,243 +26,96 @@ if(IncludeOpenGLSupport)
 	find_package(Qt5OpenGL REQUIRED)
 endif(IncludeOpenGLSupport)
 
-# Sources
-set(headers
-	src/startup/startuplogic.h
-	src/util/qwidgetutil.h
-	src/networkclient/udpvideoframedecoder.h
-	src/flowlayout.h
-	src/networkclient/vp8encoder.h
-	src/networkclient/vp8decoder.h
-	src/ts3video/ts3videoentities.h
-)
+### Sources
 
-set(qheaders
-	src/admin/adminwidget.h
-	src/video/conferencevideowindow.h
-	src/video/conferencevideowindowsidebar.h
-	src/video/userlistwidget.h
-	src/video/cameraframegrabber.h
-	src/video/clientcameravideowidget.h
-	src/video/remoteclientvideowidget.h
-	src/video/tileviewwidget.h
-	src/video/videowidget.h
-	src/video/videowidget_cpu.h
-	src/video/videosettingswidget.h
-	src/startup/startupwidget.h
-	src/startup/devstartuplogic.h
-	src/startup/defaultstartuplogic.h
-	src/adminauthwidget.h
-	src/aboutwidget.h
-	src/hintoverlaywidget.h
-	src/proxysettingswidget.h
-	src/channellistwidget.h
-	src/channellistmodel.h
-	src/networkclient/networkclient.h
-	src/networkclient/networkclient_p.h
-	src/networkclient/mediasocket.h
-	src/networkclient/mediasocket_p.h
-	src/networkclient/videoencodingthread.h
-	src/networkclient/videodecodingthread.h
-	src/networkclient/clientlistmodel.h
-	src/networkclient/clientlistmodel_p.h
-	src/ts3video/ts3videostartuplogic.h
-	src/ts3video/ts3videoupdatedialog.h
-	src/test/connectionteststartuplogic.h
-	src/test/directconnectstartuplogic.h
-	src/account/NewAccountDialog.h
-)
-
-set(sources
-	src/main.cpp
-	src/admin/adminwidget.cpp
-	src/video/conferencevideowindow.cpp
-	src/video/conferencevideowindowsidebar.cpp
-	src/video/userlistwidget.cpp
-	src/video/cameraframegrabber.cpp
-	src/video/clientcameravideowidget.cpp
-	src/video/remoteclientvideowidget.cpp
-	src/video/tileviewwidget.cpp
-	src/video/videowidget.cpp
-	src/video/videowidget_cpu.cpp
-	src/video/videosettingswidget.cpp
-	src/startup/startuplogic.cpp
-	src/startup/startupwidget.cpp
-	src/startup/devstartuplogic.cpp
-	src/startup/defaultstartuplogic.cpp
-	src/adminauthwidget.cpp
-	src/flowlayout.cpp
-	src/aboutwidget.cpp
-	src/hintoverlaywidget.cpp
-	src/proxysettingswidget.cpp
-	src/channellistwidget.cpp
-	src/channellistmodel.cpp
-	src/networkclient/networkclient.cpp
-	src/networkclient/mediasocket.cpp
-	src/networkclient/videoencodingthread.cpp
-	src/networkclient/videodecodingthread.cpp
-	src/networkclient/udpvideoframedecoder.cpp
-	src/networkclient/vp8encoder.cpp
-	src/networkclient/vp8decoder.cpp
-	src/networkclient/clientlistmodel.cpp
-	src/ts3video/ts3videostartuplogic.cpp
-	src/ts3video/ts3videoentities.cpp
-	src/ts3video/ts3videoupdatedialog.cpp
-	src/util/qwidgetutil.cpp
-	src/test/connectionteststartuplogic.cpp
-	src/test/directconnectstartuplogic.cpp
-	src/account/NewAccountDialog.cpp
-)
-
-set(qforms
-	src/admin/adminwidget.ui
-	src/adminauthwidget.ui
-	src/startup/startupwidget.ui
-	src/aboutwidget.ui
-	src/proxysettingswidget.ui
-	src/channellistwidget.ui
-	src/ts3video/ts3videostartuplogic.ui
-	src/ts3video/ts3videoupdatedialog.ui
-	src/video/videosettingswidget.ui
-	src/account/NewAccountWidgetForm.ui
-)
-
-set(qresources
-	res/res.qrc
-)
-
-if(IncludeOpenGLSupport)
-	add_definitions(-DOCS_INCLUDE_OPENGL)
-
-	list(APPEND qheaders src/video/opengl/openglrenderthread.h)
-	list(APPEND qheaders src/video/opengl/openglwindow.h)
-	list(APPEND sources src/video/opengl/openglrenderthread.cpp)
-	list(APPEND sources src/video/opengl/openglwindow.cpp)
-
-	list(APPEND qheaders src/video/opengl2/yuvvideowindow.h)
-	list(APPEND sources src/video/opengl2/yuvvideowindow.cpp)
-
-	list(APPEND qheaders src/video/videowidget_opengl.h)
-	list(APPEND sources src/video/videowidget_opengl.cpp)
-
-	list(APPEND qheaders src/video/videowidget_qglwidget.h)
-	list(APPEND sources src/video/videowidget_qglwidget.cpp)
-endif()
-
-if(IncludeAudioSupport)
-	add_definitions(-DOCS_INCLUDE_AUDIO)
-
-	list(APPEND qheaders src/audio/audioframegrabber.h)
-	list(APPEND qheaders src/audio/audioframeplayer.h)
-	list(APPEND qheaders src/networkclient/audioencodingthread.h)
-	list(APPEND qheaders src/networkclient/audiodecodingthread.h)
-	list(APPEND qheaders src/networkclient/audioudpdecoder.h)
-	list(APPEND qheaders src/networkclient/opusencoder.h)
-	list(APPEND qheaders src/networkclient/opusdecoder.h)
-
-	list(APPEND sources src/audio/audioframegrabber.cpp)
-	list(APPEND sources src/audio/audioframeplayer.cpp)
-	list(APPEND sources src/networkclient/audioencodingthread.cpp)
-	list(APPEND sources src/networkclient/audiodecodingthread.cpp)
-	list(APPEND sources src/networkclient/audioudpdecoder.cpp)
-	list(APPEND sources src/networkclient/opusencoder.cpp)
-	list(APPEND sources src/networkclient/opusdecoder.cpp)
-endif()
+file(GLOB_RECURSE headers ./src/*.h)
+file(GLOB_RECURSE sources ./src/*.cpp)
+file(GLOB_RECURSE qtforms ./src/*.ui)
+set(qtres res/res.qrc)
 
 if(WIN32)
 	list(APPEND sources res/app.rc)
 endif(WIN32)
 
-# lookup
-if(1)
-	set(lookup_headers
-	)
-	list(APPEND headers ${lookup_headers})
+source_group(
+	TREE ${CMAKE_CURRENT_SOURCE_DIR}
+	FILES ${headers} ${sources}
+)
 
-	set(lookup_qheaders
-		src/lookup/lookup_client.h
-	)
-	list(APPEND qheaders ${lookup_qheaders})
+### Binaries
 
-	set(lookup_sources
-		src/lookup/lookup_client.cpp
-	)
-	list(APPEND sources ${lookup_sources})
-
-	source_group(lookup FILES ${lookup_headers} ${lookup_qheaders} ${lookup_sources})
+set(GUI_TYPE "")
+if (WIN32)
+	set(GUI_TYPE WIN32)
 endif()
 
-qt5_wrap_cpp(qheaders_wrap ${qheaders})
-qt5_wrap_ui(qforms_wrap ${qforms})
-qt5_add_resources(qresources_wrap ${qresources})
-source_group(QtWrap FILES ${qheaders_wrap} ${qforms_wrap} ${qresources_wrap})
-
-# Defines
-add_definitions(
-)
-
-# Includes
-include_directories(
-	${CMAKE_CURRENT_BINARY_DIR}
-	${vpx_INCLUDE_DIRS}
-	${opus_INCLUDE_DIRS}
-	${humblelogging_INCLUDE_DIRS}
-	./src
-)
-
-# Target prerequisites.
-if(WIN32)
-	set(win32_gui_type WIN32)
-endif(WIN32)
-
-# Target
 add_executable(
 	${PROJECT_NAME}
-	${win32_gui_type}
+	${GUI_TYPE}
 	${headers}
 	${sources}
-	${qheaders}
-	${qheaders_wrap}
-	${qforms_wrap}
-	${qresources_wrap}
+	${qtforms}
+	${qtres}
+)
+
+if(IncludeOpenGLSupport)
+	target_compile_definitions(
+		${PROJECT_NAME}
+		PRIVATE -DOCS_INCLUDE_OPENGL
+	)
+endif(IncludeOpenGLSupport)
+
+if(IncludeAudioSupport)
+	target_compile_definitions(
+		${PROJECT_NAME}
+		PRIVATE -DOCS_INCLUDE_AUDIO
+	)
+endif(IncludeAudioSupport)
+
+target_include_directories(
+	${PROJECT_NAME}
+	PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
+	PRIVATE ${vpx_INCLUDE_DIRS}
+	PRIVATE ${opus_INCLUDE_DIRS}
+	PRIVATE ${humblelogging_INCLUDE_DIRS}
 )
 
 target_link_libraries(
 	${PROJECT_NAME}
-	Qt5::Core
-	Qt5::Gui
-	Qt5::Widgets
-	Qt5::Network
-	Qt5::Multimedia
-	Qt5::MultimediaWidgets
-	Qt5::Concurrent
-	${vpx_LIBRARIES}
-	${humblelogging_LIBRARIES}
-	libqtasync
-	libqtcorprotocol
-	libbase
-	libmediaprotocol
-	videolib
+	PRIVATE ${vpx_LIBRARIES}
+	PRIVATE ${humblelogging_LIBRARIES}
+	PRIVATE Qt5::Core
+	PRIVATE Qt5::Gui
+	PRIVATE Qt5::Widgets
+	PRIVATE Qt5::Network
+	PRIVATE Qt5::Multimedia
+	PRIVATE Qt5::MultimediaWidgets
+	PRIVATE Qt5::Concurrent
+	PRIVATE libqtasync
+	PRIVATE libqtcorprotocol
+	PRIVATE libbase
+	PRIVATE libmediaprotocol
+	PRIVATE videolib
 )
 
 if(IncludeOpenGLSupport)
-	target_link_libraries(${PROJECT_NAME} Qt5::OpenGL)
+	target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::OpenGL)
 endif()
 
 if(WIN32)
 	if(IncludeOpenGLSupport)
-		target_link_libraries(${PROJECT_NAME} opengl32) # TODO This shouldn't be here!
+		target_link_libraries(${PROJECT_NAME} PRIVATE opengl32) # TODO This shouldn't be here!
 	endif()
 else()
 	if(IncludeOpenGLSupport)
-		target_link_libraries(${PROJECT_NAME} /usr/lib/nvidia-375/libGL.so)
-#		target_link_libraries(${PROJECT_NAME} /usr/lib/x86_64-linux-gnu/mesa/libGL.so.1)
+		target_link_libraries(${PROJECT_NAME} PRIVATE /usr/lib/nvidia-375/libGL.so)
+#		target_link_libraries(${PROJECT_NAME} PRIVATE /usr/lib/x86_64-linux-gnu/mesa/libGL.so.1)
 	endif()
-	target_link_libraries(${PROJECT_NAME} pthread)
+	target_link_libraries(${PROJECT_NAME} PRIVATE pthread)
 endif()
 
 if(IncludeAudioSupport)
-	target_link_libraries(${PROJECT_NAME} ${opus_LIBRARIES})
+	target_link_libraries(${PROJECT_NAME} PRIVATE ${opus_LIBRARIES})
 endif()
 
 set_target_properties(${PROJECT_NAME}

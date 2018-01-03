@@ -1,3 +1,4 @@
+#if defined(OCS_INCLUDE_AUDIO)
 #include "audioframeplayer.h"
 
 AudioFramePlayer::AudioFramePlayer(QObject* parent) :
@@ -26,3 +27,5 @@ void AudioFramePlayer::add(const PcmFrameRefPtr& f, int senderId)
 	}
 	out->device->write(f->data, f->dataLength());
 }
+
+#endif

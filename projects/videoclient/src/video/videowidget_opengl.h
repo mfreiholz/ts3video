@@ -1,3 +1,4 @@
+#if defined(OCS_INCLUDE_OPENGL)
 #pragma once
 
 #include <QOpenGLWidget>
@@ -24,3 +25,5 @@ protected:
 	virtual void resizeGL(int w, int h);
 	virtual void paintGL();
 };
+
+#endif

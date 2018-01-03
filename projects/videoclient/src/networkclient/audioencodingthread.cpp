@@ -1,3 +1,4 @@
+#if defined(OCS_INCLUDE_AUDIO)
 #include "audioencodingthread.h"
 
 #include <QMutexLocker>
@@ -90,3 +91,5 @@ void AudioEncodingThread::run()
 	qDeleteAll(encoders);
 	encoders.clear();
 }
+
+#endif

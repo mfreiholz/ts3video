@@ -1,3 +1,4 @@
+#if defined(OCS_INCLUDE_OPENGL)
 #ifndef _OPENGLRENDERTHREAD_HEADER_
 #define _OPENGLRENDERTHREAD_HEADER_
 
@@ -62,3 +63,4 @@ private slots:
 };
 
 #endif // _OPENGLRENDERTHREAD_HEADER_
+#endif

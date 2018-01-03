@@ -1,3 +1,4 @@
+#if defined(OCS_INCLUDE_AUDIO)
 #ifndef AUDIODECODINGTHREAD_H
 #define AUDIODECODINGTHREAD_H
 
@@ -33,4 +34,5 @@ private:
 	QQueue<QPair<OpusFrameRefPtr, int> > _queue;
 };
 
+#endif
 #endif

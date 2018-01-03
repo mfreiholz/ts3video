@@ -1,3 +1,4 @@
+#if defined(OCS_INCLUDE_OPENGL)
 #include "videowidget_qglwidget.h"
 
 #include <QOpenGLContext>
@@ -181,3 +182,5 @@ VideoWidgetQGLWidget::paintGL()
 	// Cleanup.
 	d->program->release();
 }
+
+#endif

@@ -1,3 +1,4 @@
+#if defined(OCS_INCLUDE_OPENGL)
 #ifndef YUVVIDEOWINDOW_H
 #define YUVVIDEOWINDOW_H
 
@@ -58,4 +59,5 @@ private:
   bool _resize;
 };
 
+#endif
 #endif

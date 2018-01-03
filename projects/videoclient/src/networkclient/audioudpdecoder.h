@@ -1,3 +1,4 @@
+#if defined(OCS_INCLUDE_AUDIO)
 #ifndef AUDIOUDPDECODER_H
 #define AUDIOUDPDECODER_H
 
@@ -41,4 +42,5 @@ private:
 	unsigned long long _lastCompletedFrameId;
 };
 
+#endif
 #endif

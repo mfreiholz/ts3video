@@ -1,3 +1,4 @@
+#if defined(OCS_INCLUDE_AUDIO)
 #ifndef AUDIOFRAMEGRABBER_H
 #define AUDIOFRAMEGRABBER_H
 
@@ -84,4 +85,5 @@ private:
 	QByteArray _buff;
 };
 
+#endif
 #endif

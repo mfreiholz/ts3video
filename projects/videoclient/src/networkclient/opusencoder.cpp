@@ -1,3 +1,4 @@
+#if defined(OCS_INCLUDE_AUDIO)
 #include "opusencoder.h"
 #include "opus.h"
 #include "opus_multistream.h"
@@ -52,3 +53,5 @@ OpusFrame* OpusAudioEncoder::encode(const PcmFrame& f)
 	opusFrame->data = encodedData;
 	return opusFrame;
 }
+
+#endif

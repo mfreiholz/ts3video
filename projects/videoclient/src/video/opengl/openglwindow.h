@@ -1,3 +1,4 @@
+#if defined(OCS_INCLUDE_OPENGL)
 #ifndef _OPENGLWINDOW_HEADER_
 #define _OPENGLWINDOW_HEADER_
 
@@ -50,3 +51,4 @@ signals:
 };
 
 #endif // _OPENGLWINDOW_HEADER_
+#endif
