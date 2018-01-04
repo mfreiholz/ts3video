@@ -5,8 +5,6 @@
 
 #include "humblelogging/api.h"
 
-#include "libmediaprotocol/protocol.h"
-
 #include "videolib/timeutil.h"
 
 HUMBLE_LOGGER(HL, "networkclient.mediasocket");
@@ -252,11 +250,11 @@ void MediaSocket::sendAuthTokenDatagram(const QString& token)
 		d->networkUsage.bytesWritten += written;
 }
 
-void MediaSocket::sendVideoFrame(const QByteArray& frame_, quint64 frameId_,
-								 ocs::clientid_t senderId_)
+void MediaSocket::sendVideoFrame(const QByteArray& frame_, quint64 frameId_, ocs::clientid_t senderId_)
 {
 	HL_TRACE(HL, QString("Send video frame datagram (frame-size=%1; frame-id=%2; sender-id=%3)")
 			 .arg(frame_.size()).arg(frameId_).arg(senderId_).toStdString());
+
 	if (frame_.isEmpty() || frameId_ == 0)
 	{
 		HL_ERROR(HL, QString("Missing data to send video frame (frame-size=%1; frame-id=%2; sender-id=%3)")

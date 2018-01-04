@@ -70,8 +70,6 @@ public:
 		Trys to get the next completed <em>VP8Frame</em> object from internal
 		<em>_complete_frames_queue</em> queue.
 
-		If no complete frame is in queue,
-
 		\note The decoder releases the ownership of the object to the caller.
 
 		\return An VP8Frame object or NULL if no frame is available.

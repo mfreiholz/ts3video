@@ -6,6 +6,7 @@
 #include <QTimer>
 
 #include "libbase/defines.h"
+#include "libmediaprotocol/protocol.h"
 
 #include "videolib/yuvframe.h"
 #include "videolib/pcmframe.h"
@@ -29,7 +30,7 @@ public:
 	void initVideoEncoder(int width, int height, int bitrate, int fps);
 	void resetVideoEncoder();
 	void sendVideoFrame(const QImage& image, ocs::clientid_t senderId);
-	
+
 	void resetVideoDecoderOfClient(ocs::clientid_t senderId);
 
 #if defined(OCS_INCLUDE_AUDIO)

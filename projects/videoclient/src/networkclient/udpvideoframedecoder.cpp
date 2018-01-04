@@ -67,7 +67,7 @@ int VideoFrameUdpDecoder::add(UDP::VideoFrameDatagram* dpart)
 
 	// Comment out for (ts3video/#54) - NOT YET TESTED ENOUGH!
 	// Skip datagrams of frames, which has already been completed.
-	if (dpart->frameId <= _last_completed_frame_id)
+	if (dpart->frameId <= _last_completed_frame_id && (_last_completed_frame_id - dpart->frameId) < 256)
 	{
 		delete dpart;
 		dpart = nullptr;
@@ -144,7 +144,7 @@ VP8Frame* VideoFrameUdpDecoder::next()
 		delete frame;
 		return nullptr;
 	}
-	else if (frame_id <= _last_completed_frame_id)
+	else if (frame_id <= _last_completed_frame_id && (_last_completed_frame_id - frame_id) < 256)
 	{
 		_complete_frames_queue.erase(i_begin);
 		delete frame;
