@@ -9,7 +9,7 @@
 
 #include "libqtcorprotocol/qcorframe.h"
 
-#include "videolib/networkusageentity.h"
+#include "libapp/networkusageentity.h"
 
 class QCorConnection;
 class VirtualServer;

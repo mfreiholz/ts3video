@@ -3,7 +3,7 @@
 
 #include "mediasocket.h"
 
-#include "videolib/networkusageentity.h"
+#include "libapp/networkusageentity.h"
 
 #include "udpvideoframedecoder.h"
 #include "videoencodingthread.h"

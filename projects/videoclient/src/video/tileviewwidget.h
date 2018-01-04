@@ -6,7 +6,7 @@
 #include <QCamera>
 
 #include "libbase/defines.h"
-#include "videolib/yuvframe.h"
+#include "libapp/yuvframe.h"
 
 class ConferenceVideoWindow;
 class NetworkClient;

@@ -10,7 +10,7 @@
 #include "QtGui/QWindow"
 #include "QtGui/QOpenGLFunctions"
 
-#include "videolib/yuvframe.h"
+#include "libapp/yuvframe.h"
 
 #include "openglwindow.h"
 
@@ -20,7 +20,7 @@ class OpenGLRenderThread : public QThread
 {
 	Q_OBJECT
 	class Private;
-  QScopedPointer<Private> d;
+	QScopedPointer<Private> d;
 
 private:
 	explicit OpenGLRenderThread();
@@ -36,29 +36,29 @@ public:
 	virtual void run();
 	void stop();
 
-	int registerSurface( OpenGLWindow *surface );
-	bool removeSurface( int id );
+	int registerSurface(OpenGLWindow* surface);
+	bool removeSurface(int id);
 
-	int subframeId( int id, int posx, int posy );
+	int subframeId(int id, int posx, int posy);
 
 	static QSharedPointer<OpenGLRenderThread> instance();
 
 public slots:
-	void resize( int id, const QSize &size );
-	void update( int id );
+	void resize(int id, const QSize& size);
+	void update(int id);
 
-	void setData( int id, QSharedPointer<YuvFrame> data, int frameId = 0 );
-	void setActive( int id, int frameId = 0 );
-	void removeSubFrame( int id, int frameId = 0 );
-	
-	void setRenderMode( int id, OpenGLWindow::RenderMode renderMode );
-	void setMirrorEnabled( int id, bool enabled, int frameId = 0 );
-	void setDarkEdgeEnabled( int id, bool enabled );
-	void setSubframesEnabled( int id, bool enabled );
+	void setData(int id, QSharedPointer<YuvFrame> data, int frameId = 0);
+	void setActive(int id, int frameId = 0);
+	void removeSubFrame(int id, int frameId = 0);
+
+	void setRenderMode(int id, OpenGLWindow::RenderMode renderMode);
+	void setMirrorEnabled(int id, bool enabled, int frameId = 0);
+	void setDarkEdgeEnabled(int id, bool enabled);
+	void setSubframesEnabled(int id, bool enabled);
 
 private slots:
-	bool initialize( int id );
-	void render( RenderClient *rc );
+	bool initialize(int id);
+	void render(RenderClient* rc);
 
 };
 

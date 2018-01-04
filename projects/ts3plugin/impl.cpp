@@ -9,7 +9,7 @@
 #include <inttypes.h>
 #include <cstdio>
 
-#include "videolib/ts3video.h"
+#include "../libapp/libapp/ts3video.h"
 #include "ts3_functions.h"
 #include "impl.h"
 

@@ -11,8 +11,8 @@
 
 #include "libbase/defines.h"
 
-#include "videolib/vp8frame.h"
-#include "videolib/yuvframe.h"
+#include "libapp/vp8frame.h"
+#include "libapp/yuvframe.h"
 
 class VideoDecodingThread : public QThread
 {

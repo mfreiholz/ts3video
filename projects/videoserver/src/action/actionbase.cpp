@@ -19,10 +19,10 @@
 
 #include "libqtasync/qtasync.h"
 
-#include "videolib/ts3video.h"
-#include "videolib/elws.h"
-#include "videolib/jsonprotocolhelper.h"
-#include "videolib/virtualserverconfigentity.h"
+#include "libapp/ts3video.h"
+#include "libapp/elws.h"
+#include "libapp/jsonprotocolhelper.h"
+#include "libapp/virtualserverconfigentity.h"
 
 #include "../virtualserver.h"
 #include "../clientconnectionhandler.h"

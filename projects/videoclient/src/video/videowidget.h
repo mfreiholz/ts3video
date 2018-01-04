@@ -4,7 +4,7 @@
 #include <QWidget>
 class QImage;
 
-#include "videolib/yuvframe.h"
+#include "libapp/yuvframe.h"
 
 
 class VideoWidgetI

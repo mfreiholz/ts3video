@@ -9,13 +9,14 @@ cmake_policy(SET CMP0020 NEW)
 include(cmake/compiler.cmake)
 include(cmake/thirdparty.cmake)
 include(cmake/thirdparty-external.cmake)
+include(cmake/project-macro.cmake)
 
 # Generate global version header file.
 set(VERSION_MAJOR "0" CACHE INTERNAL "Major software version" FORCE)
 set(VERSION_MINOR "13" CACHE INTERNAL "Minor software version" FORCE)
 set(VERSION_PATCH "0" CACHE INTERNAL "Patch software version" FORCE)
 set(VERSION_EXTRA "" CACHE INTERNAL "Additional software version information, e.g.: release, beta, alpha, dev" FORCE)
-FILE(WRITE projects/project-defines.h
+FILE(WRITE $ENV{OCS_BUILD_DIR_PATH}/project-defines.h
   "// Generated project version header.
 \#ifndef VERSION_H_IN
 \#define VERSION_H_IN
@@ -26,29 +27,28 @@ FILE(WRITE projects/project-defines.h
 \#endif
   "
 )
-include_directories(projects)
+include_directories($ENV{OCS_BUILD_DIR_PATH})
 
-# project independend libs (+stl)
+# Libraries with STL dependency.
+add_subdirectory(projects/libbase)
 add_subdirectory(projects/libcorprotocol)
 add_subdirectory(projects/libdaemon)
-
-# project independend libs (+qt)
-add_subdirectory(projects/libqtcorprotocol)
-add_subdirectory(projects/libqtasync)
-
-# project specific libs (+stl)
-add_subdirectory(projects/libbase)
 add_subdirectory(projects/libmediaprotocol)
 
-# project specific libs (+qt)
+# Libraries with Qt dependency.
+add_subdirectory(projects/libqtcorprotocol)
+add_subdirectory(projects/libqtasync)
 add_subdirectory(projects/libqtteamspeak3)
 
-# programs
+# Library for all apps.
+add_subdirectory(projects/libapp)
+
+# Server binaries.
 if(IncludeServerPrograms)
-	add_subdirectory(projects/videolib)
 	add_subdirectory(projects/videoserver)
 endif(IncludeServerPrograms)
 
+# Client binaries.
 if(IncludeClientPrograms)
 	add_subdirectory(projects/videoclient)
 	add_subdirectory(projects/ts3plugin)

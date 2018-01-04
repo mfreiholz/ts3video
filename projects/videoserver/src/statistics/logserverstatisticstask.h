@@ -3,7 +3,7 @@
 
 #include <QRunnable>
 
-#include "videolib/networkusageentity.h"
+#include "libapp/networkusageentity.h"
 
 class LogVirtualServerStatisticsTask : public QRunnable
 {

@@ -14,8 +14,8 @@
 
 #include "libbase/defines.h"
 
-#include "videolib/ts3video.h"
-#include "videolib/elws.h"
+#include "libapp/ts3video.h"
+#include "libapp/elws.h"
 
 #include "virtualserver.h"
 

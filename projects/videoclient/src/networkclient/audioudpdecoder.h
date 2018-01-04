@@ -6,7 +6,7 @@
 #include <map>
 
 #include "libmediaprotocol/include/medprotocol.h"
-#include "videolib/src/opusframe.h"
+#include "libapp/src/opusframe.h"
 
 class AudioUdpDecoder
 {

@@ -2,7 +2,7 @@
 
 #include <exception>
 
-#include "videolib/jsonprotocolhelper.h"
+#include "libapp/jsonprotocolhelper.h"
 
 #include "networkclient/networkclient.h"
 
@@ -60,8 +60,8 @@ QVariant ChannelListModel::data(const QModelIndex& index, int role) const
 		{
 			switch (role)
 			{
-			case Qt::DisplayRole:
-				return channel.name;
+				case Qt::DisplayRole:
+					return channel.name;
 			}
 			break;
 		}
@@ -69,8 +69,8 @@ QVariant ChannelListModel::data(const QModelIndex& index, int role) const
 		{
 			switch (role)
 			{
-			case Qt::DisplayRole:
-				return channel.isPasswordProtected;
+				case Qt::DisplayRole:
+					return channel.isPasswordProtected;
 			}
 			break;
 		}

@@ -1,7 +1,7 @@
 #include "udpvideoframedecoder.h"
 
-#include "videolib/vp8frame.h"
-#include "videolib/timeutil.h"
+#include "libapp/vp8frame.h"
+#include "libapp/timeutil.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Helper

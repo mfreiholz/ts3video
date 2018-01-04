@@ -17,7 +17,7 @@
 
 #include "libmediaprotocol/protocol.h"
 
-#include "videolib/networkusageentity.h"
+#include "libapp/networkusageentity.h"
 
 class MediaSenderEntity;
 class MediaReceiverEntity;
@@ -91,7 +91,7 @@ private:
 
 	char _buffer[4096];
 	int _bufferLen = 0;
-	
+
 	QByteArray _data;
 	QBuffer _dataBuffer;
 	QDataStream _in;

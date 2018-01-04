@@ -13,8 +13,8 @@
 
 #include "libbase/defines.h"
 
-#include "videolib/yuvframe.h"
-#include "videolib/pcmframe.h"
+#include "libapp/yuvframe.h"
+#include "libapp/pcmframe.h"
 
 class QHostAddress;
 class ClientEntity;

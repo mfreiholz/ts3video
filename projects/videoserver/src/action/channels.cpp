@@ -1,5 +1,5 @@
 #include "channels.h"
-#include "videolib/jsonprotocolhelper.h"
+#include "libapp/jsonprotocolhelper.h"
 
 /*
 	Retrieves a list of all existing channels.

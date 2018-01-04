@@ -7,7 +7,7 @@
 #include <QAudioOutput>
 #include <QAudioDeviceInfo>
 #include <QAudioFormat>
-#include "videolib/src/pcmframe.h"
+#include "libapp/src/pcmframe.h"
 class QIODevice;
 
 class AudioFramePlayer : public QObject
@@ -18,11 +18,23 @@ public:
 	AudioFramePlayer(QObject* parent = 0);
 	virtual ~AudioFramePlayer();
 
-	QAudioDeviceInfo deviceInfo() const { return _deviceInfo; }
-	void setDeviceInfo(const QAudioDeviceInfo& info) { _deviceInfo = info; }
+	QAudioDeviceInfo deviceInfo() const
+	{
+		return _deviceInfo;
+	}
+	void setDeviceInfo(const QAudioDeviceInfo& info)
+	{
+		_deviceInfo = info;
+	}
 
-	QAudioFormat format() const { return _format; }
-	void setFormat(const QAudioFormat& format) { _format = format; }
+	QAudioFormat format() const
+	{
+		return _format;
+	}
+	void setFormat(const QAudioFormat& format)
+	{
+		_format = format;
+	}
 
 	void add(const PcmFrameRefPtr& f, int senderId);
 

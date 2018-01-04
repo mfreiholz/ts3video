@@ -1,7 +1,7 @@
 #ifndef SERVERCHANNELENTITY_H
 #define SERVERCHANNELENTITY_H
 
-#include "videolib/channelentity.h"
+#include "libapp/channelentity.h"
 
 class ServerChannelEntity : public ChannelEntity
 {

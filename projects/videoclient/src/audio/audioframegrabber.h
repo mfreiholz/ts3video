@@ -7,7 +7,7 @@
 #include <QAudioInput>
 #include <QIODevice>
 #include <QByteArray>
-#include "videolib/src/pcmframe.h"
+#include "libapp/src/pcmframe.h"
 
 class AudioFrameGrabber : public QObject
 {

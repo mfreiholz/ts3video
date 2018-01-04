@@ -3,8 +3,8 @@
 #include "opus.h"
 #include "opus_multistream.h"
 #include "humblelogging/api.h"
-#include "videolib/src/pcmframe.h"
-#include "videolib/src/opusframe.h"
+#include "libapp/src/pcmframe.h"
+#include "libapp/src/opusframe.h"
 #include <QString>
 
 HUMBLE_LOGGER(HL, "opus");

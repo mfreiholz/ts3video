@@ -1,13 +1,10 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.8)
 project(videoserver)
-
-cmake_policy(SET CMP0020 NEW)
 
 ### Qt
 
 cmake_policy(SET CMP0020 NEW)
 
-set(CMAKE_INCLUDE_CURRENT_DIR OFF)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
@@ -33,38 +30,6 @@ source_group(
 	TREE ${CMAKE_CURRENT_SOURCE_DIR}
 	FILES ${headers} ${sources}
 )
-
-# set(headers
-	# src/servercliententity.h
-	# src/serverchannelentity.h
-	# src/virtualserveroptions.h
-	# src/action/actionbase.h
-	# src/action/channels.h
-	# src/action/media.h
-	# src/statistics/logserverstatisticstask.h
-# )
-
-# set(qheaders
-	# src/virtualserver.h
-	# src/clientconnectionhandler.h
-	# src/mediasockethandler.h
-	# src/websocketstatusserver.h
-# )
-
-# set(sources
-	# src/main.cpp
-	# src/virtualserveroptions.cpp
-	# src/virtualserver.cpp
-	# src/clientconnectionhandler.cpp
-	# src/mediasockethandler.cpp
-	# src/websocketstatusserver.cpp
-	# src/servercliententity.cpp
-	# src/serverchannelentity.cpp
-	# src/action/actionbase.cpp
-	# src/action/channels.cpp
-	# src/action/media.cpp
-	# src/statistics/logserverstatisticstask.cpp
-# )
 
 ### Binaries
 
@@ -106,7 +71,7 @@ target_link_libraries(
 	PRIVATE libmediaprotocol
 	PRIVATE libqtcorprotocol
 	PRIVATE libqtteamspeak3
-	PRIVATE videolib
+	PRIVATE libapp
 )
 
 set_target_properties(${PROJECT_NAME}

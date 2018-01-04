@@ -2,7 +2,7 @@
 
 #include <QPainter>
 
-#include "videolib/elws.h"
+#include "libapp/elws.h"
 
 class CpuVideoWidget::Private
 {

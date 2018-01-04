@@ -2,7 +2,7 @@
 
 #include "humblelogging/api.h"
 
-#include "videolib/virtualserverconfigentity.h"
+#include "libapp/virtualserverconfigentity.h"
 
 HUMBLE_LOGGER(HL, "server.clientconnection.action");
 

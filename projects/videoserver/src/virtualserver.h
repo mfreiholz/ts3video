@@ -15,8 +15,8 @@
 
 #include "libbase/defines.h"
 
-#include "videolib/ts3video.h"
-#include "videolib/networkusageentity.h"
+#include "libapp/ts3video.h"
+#include "libapp/networkusageentity.h"
 
 #include "virtualserveroptions.h"
 

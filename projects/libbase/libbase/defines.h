@@ -3,7 +3,7 @@
 #include <stdint.h>
 
 // Defines from build system
-#include "project-defines.h"
+//#include "project-defines.h"
 
 // Namespaces
 #define OCS_NAMESPACE_BEGIN namespace ocs {

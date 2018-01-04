@@ -6,7 +6,7 @@
 
 #include "libqtasync/qtasync.h"
 
-#include "videolib/virtualserverconfigentity.h"
+#include "libapp/virtualserverconfigentity.h"
 
 #include "util/qwidgetutil.h"
 

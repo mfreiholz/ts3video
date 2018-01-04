@@ -8,7 +8,7 @@
 
 #include "libqtcorprotocol/qcorconnection.h"
 
-#include "videolib/virtualserverconfigentity.h"
+#include "libapp/virtualserverconfigentity.h"
 
 #include "action/channels.h"
 #include "action/media.h"

@@ -5,7 +5,7 @@
 
 #include "libbase/defines.h"
 
-#include "videolib/cliententity.h"
+#include "libapp/cliententity.h"
 
 class ServerClientEntity : public ClientEntity
 {

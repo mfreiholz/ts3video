@@ -2,7 +2,7 @@
 
 #include "humblelogging/api.h"
 
-#include "videolib/elws.h"
+#include "libapp/elws.h"
 
 HUMBLE_LOGGER(HL, "client.camera");
 

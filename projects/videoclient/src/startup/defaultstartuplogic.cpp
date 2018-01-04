@@ -4,20 +4,20 @@
 #include <QEventLoop>
 #include <QHostAddress>
 
-#include "videolib/elws.h"
+#include "libapp/elws.h"
 
 #include "networkclient/networkclient.h"
 #include "channellistwidget.h"
 
 /*
-- check if there is a dedicated server
+    - check if there is a dedicated server
 	- by connecting to the same IP as given by "--address"
 	- by looking up on ROUTE-MASTER and connecting to the result
-- if connection to a deciated server has been established,
-  show a dialog with public servers and the possibility to enter
-  custom server information (address, port, password?)
+    - if connection to a deciated server has been established,
+    show a dialog with public servers and the possibility to enter
+    custom server information (address, port, password?)
 
-Example arguments
+    Example arguments
 	--mode default --server-address 127.0.0.1 --server-port 13370
 */
 

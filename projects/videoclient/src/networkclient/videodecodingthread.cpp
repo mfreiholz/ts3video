@@ -2,7 +2,7 @@
 
 #include "humblelogging/api.h"
 
-#include "videolib/ts3video.h"
+#include "libapp/ts3video.h"
 
 #include "vp8decoder.h"
 

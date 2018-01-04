@@ -21,7 +21,7 @@
 #include "ts3_functions.h"
 #include "plugin_22.h"
 #include "impl.h"
-#include "videolib/ts3video.h"
+#include "../libapp/libapp/ts3video.h"
 
 static struct TS3Functions ts3Functions;
 

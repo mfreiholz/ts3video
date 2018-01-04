@@ -3,7 +3,7 @@
 
 #include <QFrame>
 
-#include "videolib/cliententity.h"
+#include "libapp/cliententity.h"
 
 #include "videowidget.h"
 

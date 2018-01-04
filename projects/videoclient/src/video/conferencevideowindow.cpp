@@ -29,11 +29,11 @@
 #include "libqtcorprotocol/qcorreply.h"
 #include "libqtcorprotocol/qcorframe.h"
 
-#include "videolib/elws.h"
-#include "videolib/cliententity.h"
-#include "videolib/channelentity.h"
-#include "videolib/networkusageentity.h"
-#include "videolib/jsonprotocolhelper.h"
+#include "libapp/elws.h"
+#include "libapp/cliententity.h"
+#include "libapp/channelentity.h"
+#include "libapp/networkusageentity.h"
+#include "libapp/jsonprotocolhelper.h"
 
 #include "networkclient/clientlistmodel.h"
 #include "util/qwidgetutil.h"

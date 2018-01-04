@@ -5,7 +5,7 @@
 
 #include "humblelogging/api.h"
 
-#include "videolib/timeutil.h"
+#include "libapp/timeutil.h"
 
 HUMBLE_LOGGER(HL, "networkclient.mediasocket");
 

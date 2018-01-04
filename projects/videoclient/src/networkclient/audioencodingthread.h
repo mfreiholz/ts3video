@@ -8,8 +8,8 @@
 #include <QAtomicInt>
 #include <QQueue>
 #include <QPair>
-#include "videolib/src/pcmframe.h"
-#include "videolib/src/opusframe.h"
+#include "libapp/src/pcmframe.h"
+#include "libapp/src/opusframe.h"
 
 class AudioEncodingThread : public QThread
 {

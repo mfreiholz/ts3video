@@ -8,7 +8,7 @@
 
 #include "humblelogging/api.h"
 
-#include "videolib/elws.h"
+#include "libapp/elws.h"
 
 #include "networkclient/networkclient.h"
 #include "video/conferencevideowindow.h"

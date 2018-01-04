@@ -1,6 +1,6 @@
 #include "devstartuplogic.h"
 
-#include "videolib/elws.h"
+#include "libapp/elws.h"
 
 #include "../networkclient/networkclient.h"
 

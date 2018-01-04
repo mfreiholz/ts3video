@@ -16,10 +16,10 @@
 
 #include "humblelogging/api.h"
 
-#include "videolib/elws.h"
-#include "videolib/cliententity.h"
-#include "videolib/channelentity.h"
-#include "videolib/networkusageentity.h"
+#include "libapp/elws.h"
+#include "libapp/cliententity.h"
+#include "libapp/channelentity.h"
+#include "libapp/networkusageentity.h"
 
 #include "conferencevideowindow.h"
 #include "clientcameravideowidget.h"

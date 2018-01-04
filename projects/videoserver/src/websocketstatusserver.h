@@ -6,7 +6,7 @@
 #include <QTime>
 #include <QHostAddress>
 
-#include "videolib/ts3video.h"
+#include "libapp/ts3video.h"
 
 class QWebSocketServer;
 class QWebSocket;

@@ -7,7 +7,7 @@
 #include <QOpenGLFunctions>
 #include <QOpenGLShaderProgram>
 
-#include "videolib/elws.h"
+#include "libapp/elws.h"
 
 class YuvVideoOpenGLWidget::Private
 {

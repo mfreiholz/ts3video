@@ -15,8 +15,8 @@
 
 #include "humblelogging/api.h"
 
-#include "videolib/ts3video.h"
-#include "videolib/elws.h"
+#include "libapp/ts3video.h"
+#include "libapp/elws.h"
 
 ///////////////////////////////////////////////////////////////////////
 
