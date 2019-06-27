@@ -17,7 +17,7 @@ void GetChannelListAction::run(const ActionData& req)
 
 	QJsonArray jchannels;
 	auto channels = req.server->_id2channel.values();
-	qSort(channels.begin(), channels.end(), [](const ServerChannelEntity * a, const ServerChannelEntity * b)
+	qSort(channels.begin(), channels.end(), [](const QSharedPointer<ServerChannelEntity>& a, const QSharedPointer<ServerChannelEntity>& b)
 	{
 		return a->id < b->id;
 	});

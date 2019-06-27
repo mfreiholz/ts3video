@@ -51,10 +51,16 @@ add_executable(
 	# -DNOMINMAX
 # )
 
+target_compile_definitions(
+	${PROJECT_NAME}
+	PRIVATE ${QTWEBAPP_DEFINITIONS}
+)
+
 target_include_directories(
 	${PROJECT_NAME}
 	PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
 	PRIVATE ${humblelogging_INCLUDE_DIRS}
+	PRIVATE ${QTWEBAPP_INCLUDE_DIRS}
 )
 
 target_link_libraries(
@@ -72,6 +78,12 @@ target_link_libraries(
 	PRIVATE libqtcorprotocol
 	PRIVATE libqtteamspeak3
 	PRIVATE libapp
+	PRIVATE ${QTWEBAPP_LIBS}
+)
+
+add_dependencies(
+	${PROJECT_NAME}
+	QtWebApp
 )
 
 set_target_properties(${PROJECT_NAME}
@@ -84,6 +96,8 @@ add_custom_command(
 	COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/res/default.ini ${PROJECT_BINARY_DIR}/$<CONFIGURATION>
 	COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/res/logging.conf ${PROJECT_BINARY_DIR}/$<CONFIGURATION>
 )
+
+QTWEBAPP_POSTBUILD(${PROJECT_NAME})
 
 #######################################################################
 # Install

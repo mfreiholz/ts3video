@@ -10,6 +10,7 @@ include(cmake/compiler.cmake)
 include(cmake/thirdparty.cmake)
 include(cmake/thirdparty-external.cmake)
 include(cmake/project-macro.cmake)
+include(cmake/QtWebApp.cmake)
 
 # Generate global version header file.
 set(VERSION_MAJOR "0" CACHE INTERNAL "Major software version" FORCE)

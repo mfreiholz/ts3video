@@ -18,6 +18,9 @@
 #include "serverchannelentity.h"
 #include "clientconnectionhandler.h"
 
+#include "httpserver/httplistener.h"
+#include "http/HttpRouteHandler.h"
+
 HUMBLE_LOGGER(HL, "server");
 
 ///////////////////////////////////////////////////////////////////////
@@ -26,6 +29,7 @@ VirtualServer::VirtualServer(const VirtualServerOptions& opts, QObject* parent) 
 	QObject(parent),
 	_opts(opts),
 	_corServer(this),
+	_mutex(QMutex::Recursive),
 	_connections(),
 	_nextClientId(0),
 	_clients(),
@@ -74,7 +78,8 @@ VirtualServer::~VirtualServer()
 	stop();
 }
 
-bool VirtualServer::init()
+bool
+VirtualServer::init()
 {
 	// Init QCorServer listening for new client connections.
 	if (!_corServer.listen(_opts.address, _opts.port))
@@ -109,10 +114,18 @@ bool VirtualServer::init()
 	}
 	HL_INFO(HL, QString("Listening for web-socket status connections (protocol=TCP; address=%1; port=%2)").arg(wsopts.address.toString()).arg(wsopts.port).toStdString());
 
+	// Startup HTTP server.
+	auto httpSettings = new QSettings(this);
+	httpSettings->setValue("port", 80);
+	auto httpHandler = new HttpRouteHandler(this);
+	auto httpListener = new stefanfrings::HttpListener(httpSettings, httpHandler, this);
+
+
 	return true;
 }
 
-void VirtualServer::stop()
+void
+VirtualServer::stop()
 {
 	// Main
 	_corServer.close();
@@ -127,13 +140,16 @@ void VirtualServer::stop()
 	_wsStatusServer.reset();
 }
 
-const VirtualServerOptions& VirtualServer::options() const
+const VirtualServerOptions&
+VirtualServer::options() const
 {
 	return _opts;
 }
 
-void VirtualServer::updateMediaRecipients()
+void
+VirtualServer::updateMediaRecipients()
 {
+	QMutexLocker l(&_mutex);
 	auto sendBackOwnVideo = false;
 
 	MediaRecipients recips;
@@ -205,21 +221,26 @@ void VirtualServer::updateMediaRecipients()
 	_mediaSocketHandler->setRecipients(std::move(recips));
 }
 
-std::shared_ptr<ActionBase> VirtualServer::findHandlerByName(const QString& name) const
+std::shared_ptr<ActionBase>
+VirtualServer::findHandlerByName(const QString& name) const
 {
 	return _actions.value(name);
 }
 
-ServerChannelEntity* VirtualServer::createChannel(const QString& ident)
+QSharedPointer<ServerChannelEntity>
+VirtualServer::createChannel(const QString& ident)
 {
-	auto c = new ServerChannelEntity();
+	QMutexLocker l(&_mutex);
+
+	QSharedPointer<ServerChannelEntity> c(new ServerChannelEntity());
 	c->id = ++_nextChannelId;
 	c->ident = ident;
 
 	_id2channel.insert(c->id, c);
 	if (!c->ident.isEmpty())
+	{
 		_ident2channel.insert(c->ident, c->id);
-
+	}
 	return c;
 }
 
@@ -257,21 +278,26 @@ ServerChannelEntity* VirtualServer::createChannel(const QString& ident)
 
     }*/
 
-ServerChannelEntity* VirtualServer::addClientToChannel(ocs::clientid_t clientId, ocs::channelid_t channelId)
+QSharedPointer<ServerChannelEntity>
+VirtualServer::addClientToChannel(ocs::clientid_t clientId, ocs::channelid_t channelId)
 {
+	QMutexLocker l(&_mutex);
 	auto channelEntity = _id2channel.value(channelId);
 	if (!channelEntity)
 	{
 		HL_ERROR(HL, QString("Channel does not exist (channelId=%1)").arg(channelId).toStdString());
-		return nullptr;
+		return QSharedPointer<ServerChannelEntity>();
 	}
 	_participants[channelEntity->id].insert(clientId);
 	_client2channels[clientId].insert(channelEntity->id);
 	return channelEntity;
 }
 
-void VirtualServer::removeClientFromChannel(ocs::clientid_t clientId, ocs::channelid_t channelId)
+void
+VirtualServer::removeClientFromChannel(ocs::clientid_t clientId, ocs::channelid_t channelId)
 {
+	QMutexLocker l(&_mutex);
+
 	// Remove from channel.
 	_participants[channelId].remove(clientId);
 	_client2channels[clientId].remove(channelId);
@@ -282,7 +308,7 @@ void VirtualServer::removeClientFromChannel(ocs::clientid_t clientId, ocs::chann
 		_participants.remove(channelId);
 		auto c = _id2channel.take(channelId);
 		_ident2channel.remove(c->ident);
-		delete c;
+		//delete c;
 	}
 	if (_client2channels[clientId].isEmpty())
 	{
@@ -290,8 +316,11 @@ void VirtualServer::removeClientFromChannel(ocs::clientid_t clientId, ocs::chann
 	}
 }
 
-void VirtualServer::removeClientFromChannels(ocs::clientid_t clientId)
+void
+VirtualServer::removeClientFromChannels(ocs::clientid_t clientId)
 {
+	QMutexLocker l(&_mutex);
+
 	// Find all channels of the client.
 	QList<ocs::channelid_t> channelIds;
 	if (_client2channels.contains(clientId))
@@ -305,8 +334,10 @@ void VirtualServer::removeClientFromChannels(ocs::clientid_t clientId)
 	}
 }
 
-QList<ocs::clientid_t> VirtualServer::getSiblingClientIds(ocs::clientid_t clientId, bool filterByVisibilityLevel) const
+QList<ocs::clientid_t>
+VirtualServer::getSiblingClientIds(ocs::clientid_t clientId, bool filterByVisibilityLevel) const
 {
+	QMutexLocker l(&_mutex);
 	QSet<ocs::clientid_t> clientIds;
 	foreach (auto channelId, _client2channels.value(clientId).toList())
 	{
@@ -325,8 +356,11 @@ QList<ocs::clientid_t> VirtualServer::getSiblingClientIds(ocs::clientid_t client
 	return clientIds.toList();
 }
 
-void VirtualServer::ban(const QHostAddress& address)
+void
+VirtualServer::ban(const QHostAddress& address)
 {
+	QMutexLocker l(&_mutex);
+
 	QDir dir(QCoreApplication::applicationDirPath());
 	const auto filePath = dir.filePath("bans.ini");
 	QSettings ini(filePath, QSettings::IniFormat);
@@ -336,8 +370,11 @@ void VirtualServer::ban(const QHostAddress& address)
 	ini.endGroup();
 }
 
-void VirtualServer::unban(const QHostAddress& address)
+void
+VirtualServer::unban(const QHostAddress& address)
 {
+	QMutexLocker l(&_mutex);
+
 	QDir dir(QCoreApplication::applicationDirPath());
 	const auto filePath = dir.filePath("bans.ini");
 	QSettings ini(filePath, QSettings::IniFormat);
@@ -347,8 +384,11 @@ void VirtualServer::unban(const QHostAddress& address)
 	ini.endGroup();
 }
 
-bool VirtualServer::isBanned(const QHostAddress& address)
+bool
+VirtualServer::isBanned(const QHostAddress& address)
 {
+	QMutexLocker l(&_mutex);
+
 	QDir dir(QCoreApplication::applicationDirPath());
 	const auto filePath = dir.filePath("bans.ini");
 	QSettings ini(filePath, QSettings::IniFormat);
@@ -358,14 +398,18 @@ bool VirtualServer::isBanned(const QHostAddress& address)
 
 // Private Slots
 
-void VirtualServer::onNewConnection(QCorConnection* c)
+void
+VirtualServer::onNewConnection(QCorConnection* c)
 {
 	auto sc = QSharedPointer<QCorConnection>(c);
 	new ClientConnectionHandler(this, sc);
 }
 
-void VirtualServer::onMediaSocketTokenAuthentication(const QString& token, const QHostAddress& address, quint16 port)
+void
+VirtualServer::onMediaSocketTokenAuthentication(const QString& token, const QHostAddress& address, quint16 port)
 {
+	QMutexLocker l(&_mutex);
+
 	if (!_tokens.contains(token))
 	{
 		HL_WARN(HL, QString("Received invalid media auth token (token=%1; address=%2; port=%3)").arg(token).arg(address.toString()).arg(port).toStdString());
@@ -394,12 +438,14 @@ void VirtualServer::onMediaSocketTokenAuthentication(const QString& token, const
 	this->updateMediaRecipients();
 }
 
-void VirtualServer::onMediaSocketNetworkUsageUpdated(const NetworkUsageEntity& networkUsage)
+void
+VirtualServer::onMediaSocketNetworkUsageUpdated(const NetworkUsageEntity& networkUsage)
 {
 	_networkUsageMediaSocket = networkUsage;
 }
 
-void VirtualServer::registerAction(std::shared_ptr<ActionBase> action)
+void
+VirtualServer::registerAction(std::shared_ptr<ActionBase> action)
 {
 	if (_actions.contains(action->name()))
 	{

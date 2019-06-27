@@ -10,6 +10,8 @@
 #include <QSet>
 #include <QHostAddress>
 #include <QSharedPointer>
+#include <QMutex>
+#include <QMutexLocker>
 
 #include "libqtcorprotocol/qcorserver.h"
 
@@ -45,9 +47,8 @@ public:
 
 	std::shared_ptr<ActionBase> findHandlerByName(const QString& name) const;
 
-	ServerChannelEntity* createChannel(const QString& ident = QString());
-	//void deleteChannel(ocs::channelid_t channelId);
-	ServerChannelEntity* addClientToChannel(ocs::clientid_t clientId, ocs::channelid_t channelId);
+	QSharedPointer<ServerChannelEntity> createChannel(const QString& ident = QString());
+	QSharedPointer<ServerChannelEntity> addClientToChannel(ocs::clientid_t clientId, ocs::channelid_t channelId);
 	void removeClientFromChannel(ocs::clientid_t clientId, ocs::channelid_t channelId);
 	void removeClientFromChannels(ocs::clientid_t clientId);
 	QList<ocs::clientid_t> getSiblingClientIds(ocs::clientid_t clientId, bool filterByVisibilityLevel) const;
@@ -72,6 +73,8 @@ public:
 	QCorServer _corServer;
 	QHash<QString, std::shared_ptr<ActionBase> > _actions;
 
+	mutable QMutex _mutex; //< Mutex for all data access below.
+
 	// Information about connected clients.
 	ocs::clientid_t _nextClientId;
 	QHash<ocs::clientid_t, ServerClientEntity*> _clients;               // Maps client-ids to their info object.
@@ -79,10 +82,10 @@ public:
 
 	// Information about existing conferences.
 	ocs::channelid_t _nextChannelId;
-	QHash<ocs::channelid_t, ServerChannelEntity*> _id2channel;          // Maps channel-ids to their info object.
-	QHash<QString, ocs::channelid_t> _ident2channel;                    // Maps and identifier to it's matching channel-id. Optional: Only TS3VIDEO channels use this by now.
-	QHash<ocs::channelid_t, QSet<ocs::clientid_t> > _participants;      // Maps channel-ids to client-ids.
-	QHash<ocs::clientid_t, QSet<ocs::channelid_t> > _client2channels;   // Maps client-ids to channel-ids.
+	QHash<ocs::channelid_t, QSharedPointer<ServerChannelEntity> > _id2channel; // Maps channel-ids to their info object.
+	QHash<QString, ocs::channelid_t> _ident2channel;                           // Maps and identifier to it's matching channel-id. Optional: Only TS3VIDEO channels use this by now.
+	QHash<ocs::channelid_t, QSet<ocs::clientid_t> > _participants;             // Maps channel-ids to client-ids.
+	QHash<ocs::clientid_t, QSet<ocs::channelid_t> > _client2channels;          // Maps client-ids to channel-ids.
 
 	// Additional mappings related to streaming.
 	QHash<ocs::clientid_t, QSet<ocs::clientid_t> > _sender2receiver;    // Maps sender-ids to receiver-ids (In addition to conference based mappings!)
