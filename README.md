@@ -12,6 +12,8 @@ Build has been tested on
 
 - CMake >= 3.0.0
 - Qt 5.4.1 build with OpenGL
+	- https://download.qt.io/archive/qt/5.5/5.5.1/qt-opensource-windows-x86-msvc2013-5.5.1.exe
+	- https://download.qt.io/archive/qt/5.5/5.5.1/qt-opensource-windows-x86-msvc2013_64-5.5.1.exe
 - VC12 (Visual Studio 2013)
 
 ### Linux only

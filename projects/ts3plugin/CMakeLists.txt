@@ -4,12 +4,12 @@ project(ts3plugin)
 cmake_policy(SET CMP0020 NEW)
 
 set(headers
-	plugin_22.h
+	plugin_23.h
 	impl.h
 )
 
 set(sources
-	plugin_22.c
+	plugin_23.c
 	impl.cpp
 )
 

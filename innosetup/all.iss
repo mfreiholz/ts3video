@@ -8,7 +8,7 @@
 
 ; Application information
 #define MyAppURL "https://mfreiholz.de/ts3video"
-#define MyAppVersion "0.13"
+#define MyAppVersion "0.14"
 
 [Setup]
 AppPublisher={#MyOrgName}
@@ -20,7 +20,7 @@ AppVersion={#MyAppVersion}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
 
-DefaultDirName={pf}\{#MyOrgDomain}\{#MyAppName}
+DefaultDirName={commonpf}\{#MyOrgDomain}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 DisableProgramGroupPage=yes
 
@@ -32,7 +32,7 @@ OutputDir={#OCS_RELEASE_DIR_PATH}
 OutputBaseFilename={#MyAppName} {#MyAppVersion} Setup
 
 ; Comsmetics
-AppCopyright=Copyright (C) 2015-2017 {#MyOrgName}
+AppCopyright=Copyright (C) 2015-2019 {#MyOrgName}
 
 ; Basic registry values for all applications.
 [Registry]
