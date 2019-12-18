@@ -13,7 +13,7 @@ class CoreException :
 public:
 	explicit CoreException(std::string message,
 						   std::string messageDetail = std::string());
-	virtual ~CoreException() _NOEXCEPT;
+	virtual ~CoreException() noexcept;
 	const std::string& getMessage() const;
 	const std::string& getMessageDetail() const;
 

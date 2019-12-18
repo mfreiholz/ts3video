@@ -1,8 +1,8 @@
 @echo off
-call "%VS120COMNTOOLS%\..\..\Vc\vcvarsall.bat" x64
+call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\Tools\VsDevCmd.bat"
 
 rem Build specific settings
-set OCS_BUILD_DIR_NAME=build-win-x86-64
+set OCS_BUILD_DIR_NAME=build-win-x86-64-vc15
 
 rem Setup Qt
 set QTDIR=%OCS_QTDIR_X86_64%
