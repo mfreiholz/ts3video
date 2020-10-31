@@ -26,7 +26,7 @@ int DevStartupLogic::exec()
 {
 	// Init network.
 	auto nc = QSharedPointer<NetworkClient>(new NetworkClient());
-	nc->connectToHost(QHostAddress("192.168.178.37"), 13370);
+	nc->connectToHost(QHostAddress("127.0.0.1"), 13370);
 
 	QObject::connect(nc.data(), &NetworkClient::connected, [this, nc]()
 	{
