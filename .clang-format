@@ -19,6 +19,7 @@ BinPackArguments: true
 BinPackParameters: true
 
 BraceWrapping:
+    AfterCaseLabel: true
     AfterClass: true
     AfterControlStatement: true
     AfterEnum: true
@@ -30,6 +31,8 @@ BraceWrapping:
     #AfterExternBlock: true
     BeforeCatch: true
     BeforeElse: true
+    #BeforeLambdaBody: false
+    #BeforeWhile: true
     #IndentBraces: false
     SplitEmptyFunction: false
     SplitEmptyRecord: true

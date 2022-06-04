@@ -3,7 +3,7 @@
 	url = https://github.com/mfreiholz/humblelogging.git
 [submodule "thirdparty/teamspeak3-clientpluginsdk"]
 	path = thirdparty/teamspeak3-clientpluginsdk
-	url = https://github.com/mfreiholz/ocs-vendor-ts3clientpluginsdk.git
+	url = https://github.com/mfreiholz/ts3video-ts3clientpluginsdk.git
 [submodule "thirdparty/vendor-libvpx"]
 	path = thirdparty/vendor-libvpx
-	url = https://github.com/mfreiholz/ocs-vendor-libvpx.git
+	url = https://github.com/mfreiholz/ts3video-libvpx.git

@@ -25,7 +25,6 @@ Install dependencies
 
 Visual Studio Code Extensions
 
-- Astyle
 - C/C++
 - CMake
 
@@ -33,9 +32,9 @@ Visual Studio Code Extensions
 
 ```bash
 $> cd $SOURCES
-$> git clone https://github.com/mfreiholz/ocs-vendor-runtimes.git
-$> git clone https://github.com/mfreiholz/ocs.git
-$> cd ocs
+$> git clone https://github.com/mfreiholz/ts3video-runtimes.git
+$> git clone https://github.com/mfreiholz/ts3video.git
+$> cd ts3video
 $> git submodule init
 $> git submodule update
 ```
@@ -53,13 +52,8 @@ And then simply run:
 ### Windows
 
 - `$> build-win<platform>-cmake.bat`
-- `$> build-win<platform>-vs2015.bat`
+- `$> start-visual-studio-<platform>.bat`
 
 ### Linux
 
 - `./build-linux.bash`
-
-## Code style
-
-I began to use AStyle to strictly format source code based on
-*astyle-cpp-code-style.cfg* configuration.
