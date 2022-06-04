@@ -3,8 +3,8 @@
 
 #include <QtWidgets/QDialog>
 
+#include "libclient/networkclient/networkclient.h"
 #include "video/conferencevideowindow.h"
-#include "networkclient/networkclient.h"
 
 #include "ui_videosettingswidget.h"
 

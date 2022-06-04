@@ -6,24 +6,24 @@
 
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QBoxLayout>
-#include <QtWidgets/QPushButton>
 #include <QtWidgets/QLabel>
+#include <QtWidgets/QPushButton>
 
+#include "hintoverlaywidget.h"
+#include "libclient/networkclient/clientlistmodel.h"
+#include "libclient/networkclient/networkclient.h"
 #include "video/conferencevideowindow.h"
 #include "video/userlistwidget.h"
-#include "networkclient/networkclient.h"
-#include "networkclient/clientlistmodel.h"
-#include "hintoverlaywidget.h"
 
 #include "util/qwidgetutil.h"
 
 ///////////////////////////////////////////////////////////////////////
 
-ConferenceVideoWindowSidebar::ConferenceVideoWindowSidebar(ConferenceVideoWindow* parent) :
-	QFrame(parent),
-	_window(parent),
-	_camera(_window->camera()),
-	_panelVisible(true)
+ConferenceVideoWindowSidebar::ConferenceVideoWindowSidebar(ConferenceVideoWindow* parent)
+	: QFrame(parent)
+	, _window(parent)
+	, _camera(_window->camera())
+	, _panelVisible(true)
 {
 	auto nc = _window->networkClient();
 	const auto iconSize = fontMetrics().height() * 4;
@@ -84,18 +84,15 @@ ConferenceVideoWindowSidebar::ConferenceVideoWindowSidebar(ConferenceVideoWindow
 		userCountLabel->setText(QString::number(nc->clientModel()->rowCount()));
 		_userListButton->stackUnder(userCountLabel);
 
-		QObject::connect(nc->clientModel(), &ClientListModel::rowsInserted, [this, userCountLabel](const QModelIndex & parent, int first, int last)
-		{
+		QObject::connect(nc->clientModel(), &ClientListModel::rowsInserted, [this, userCountLabel](const QModelIndex& parent, int first, int last) {
 			userCountLabel->setText(QString::number(_window->networkClient()->clientModel()->rowCount()));
 		});
 
-		QObject::connect(nc->clientModel(), &ClientListModel::rowsRemoved, [this, userCountLabel](const QModelIndex & parent, int first, int last)
-		{
+		QObject::connect(nc->clientModel(), &ClientListModel::rowsRemoved, [this, userCountLabel](const QModelIndex& parent, int first, int last) {
 			userCountLabel->setText(QString::number(_window->networkClient()->clientModel()->rowCount()));
 		});
 
-		QObject::connect(_userListButton, &QPushButton::clicked, [this]()
-		{
+		QObject::connect(_userListButton, &QPushButton::clicked, [this]() {
 			auto w = new UserListWidget(_window, nullptr);
 			auto hint = HintOverlayWidget::showHint(w, _userListButton);
 			hint->resize(this->geometry().width() * 4, this->geometry().height() / 2);
@@ -172,35 +169,35 @@ void ConferenceVideoWindowSidebar::onCameraStatusChanged(QCamera::Status s)
 	{
 		switch (s)
 		{
-		case QCamera::ActiveStatus:
-			_enableVideoToggleButton->setEnabled(true);
-			break;
-		case QCamera::StartingStatus:
-			_enableVideoToggleButton->setEnabled(false);
-			break;
-		case QCamera::StoppingStatus:
-			_enableVideoToggleButton->setEnabled(false);
-			break;
-		case QCamera::StandbyStatus:
-			_enableVideoToggleButton->setEnabled(true);
-			break;
-		case QCamera::LoadedStatus:
-			_enableVideoToggleButton->setEnabled(true);
-			break;
-		case QCamera::LoadingStatus:
-			_enableVideoToggleButton->setEnabled(false);
-			break;
-		case QCamera::UnloadingStatus:
-			_enableVideoToggleButton->setEnabled(false);
-			break;
-		case QCamera::UnloadedStatus:
-			_enableVideoToggleButton->setEnabled(true);
-			_enableVideoToggleButton->setChecked(false);
-			break;
-		case QCamera::UnavailableStatus:
-			_enableVideoToggleButton->setEnabled(false);
-			_enableVideoToggleButton->setChecked(false);
-			break;
+			case QCamera::ActiveStatus:
+				_enableVideoToggleButton->setEnabled(true);
+				break;
+			case QCamera::StartingStatus:
+				_enableVideoToggleButton->setEnabled(false);
+				break;
+			case QCamera::StoppingStatus:
+				_enableVideoToggleButton->setEnabled(false);
+				break;
+			case QCamera::StandbyStatus:
+				_enableVideoToggleButton->setEnabled(true);
+				break;
+			case QCamera::LoadedStatus:
+				_enableVideoToggleButton->setEnabled(true);
+				break;
+			case QCamera::LoadingStatus:
+				_enableVideoToggleButton->setEnabled(false);
+				break;
+			case QCamera::UnloadingStatus:
+				_enableVideoToggleButton->setEnabled(false);
+				break;
+			case QCamera::UnloadedStatus:
+				_enableVideoToggleButton->setEnabled(true);
+				_enableVideoToggleButton->setChecked(false);
+				break;
+			case QCamera::UnavailableStatus:
+				_enableVideoToggleButton->setEnabled(false);
+				_enableVideoToggleButton->setChecked(false);
+				break;
 		}
 	}
 }

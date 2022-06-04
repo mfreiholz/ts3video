@@ -12,15 +12,15 @@
 
 #include "libapp/cliententity.h"
 
-#include "networkclient/clientlistmodel.h"
-#include "networkclient/networkclient.h"
+#include "libclient/networkclient/clientlistmodel.h"
+#include "libclient/networkclient/networkclient.h"
 
 #include "video/conferencevideowindow.h"
 
-UserListWidget::UserListWidget(ConferenceVideoWindow* window, QWidget* parent) :
-	QFrame(parent),
-	_window(window),
-	_listView(nullptr)
+UserListWidget::UserListWidget(ConferenceVideoWindow* window, QWidget* parent)
+	: QFrame(parent)
+	, _window(window)
+	, _listView(nullptr)
 {
 	setWindowTitle(tr("Participants"));
 
@@ -78,15 +78,13 @@ void UserListWidget::onCustomContextMenuRequested(const QPoint& point)
 	{
 		// Kick client.
 		auto kickAction = menu.addAction(QIcon(), tr("Kick client"));
-		QObject::connect(kickAction, &QAction::triggered, [this, ci, nc]()
-		{
+		QObject::connect(kickAction, &QAction::triggered, [this, ci, nc]() {
 			const auto reply = nc->kickClient(ci.id, false);
 			QCORREPLY_AUTODELETE(reply);
 		});
 		// Ban client.
 		auto banAction = menu.addAction(QIcon(), tr("Ban client"));
-		QObject::connect(banAction, &QAction::triggered, [this, ci, nc]()
-		{
+		QObject::connect(banAction, &QAction::triggered, [this, ci, nc]() {
 			const auto reply = nc->kickClient(ci.id, true);
 			QCORREPLY_AUTODELETE(reply);
 		});

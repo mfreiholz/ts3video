@@ -1,0 +1,12 @@
+<RCC>
+    <qresource prefix="/">
+        <file>qtquickcontrols2.conf</file>
+    </qresource>
+    <qresource prefix="/qml">
+        <file>App.qml</file>
+        <file>AppSettings.qml</file>
+        <file>CameraVideo.qml</file>
+        <file>Conference.qml</file>
+        <file>RemoteVideo.qml</file>
+    </qresource>
+</RCC>

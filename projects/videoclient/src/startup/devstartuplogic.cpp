@@ -2,7 +2,7 @@
 
 #include "libapp/elws.h"
 
-#include "../networkclient/networkclient.h"
+#include "libclient/networkclient/networkclient.h"
 
 #include <QCameraInfo>
 #include <QHostAddress>
@@ -11,15 +11,13 @@
 #include <QAudioDevicieInfo>
 #endif
 
-DevStartupLogic::DevStartupLogic(QApplication* a) :
-	AbstractStartupLogic(a)
+DevStartupLogic::DevStartupLogic(QApplication* a)
+	: AbstractStartupLogic(a)
 {
-
 }
 
 DevStartupLogic::~DevStartupLogic()
 {
-
 }
 
 int DevStartupLogic::exec()
@@ -28,14 +26,11 @@ int DevStartupLogic::exec()
 	auto nc = QSharedPointer<NetworkClient>(new NetworkClient());
 	nc->connectToHost(QHostAddress("127.0.0.1"), 13370);
 
-	QObject::connect(nc.data(), &NetworkClient::connected, [this, nc]()
-	{
+	QObject::connect(nc.data(), &NetworkClient::connected, [this, nc]() {
 		auto reply = nc->auth(ELWS::getUserName(), QString());
-		QObject::connect(reply, &QCorReply::finished, [this, nc]()
-		{
+		QObject::connect(reply, &QCorReply::finished, [this, nc]() {
 			auto reply = nc->joinChannelByIdentifier("default", QString());
-			QObject::connect(reply, &QCorReply::finished, [this, nc]()
-			{
+			QObject::connect(reply, &QCorReply::finished, [this, nc]() {
 				// Open conference video-chat UI.
 				ConferenceVideoWindow::Options opts;
 				opts.cameraDeviceId = QCameraInfo::defaultCamera().deviceName();

@@ -1,10 +1,10 @@
 #include "adminauthwidget.h"
+#include "libclient/networkclient/networkclient.h"
 #include <QMessageBox>
-#include "networkclient/networkclient.h"
 
-AdminAuthWidget::AdminAuthWidget(const QSharedPointer<NetworkClient>& networkClient, QWidget* parent) :
-	QDialog(parent),
-	_networkClient(networkClient)
+AdminAuthWidget::AdminAuthWidget(const QSharedPointer<NetworkClient>& networkClient, QWidget* parent)
+	: QDialog(parent)
+	, _networkClient(networkClient)
 {
 	_ui.setupUi(this);
 	QObject::connect(_ui.loginButton, &QPushButton::clicked, this, &AdminAuthWidget::onLogin);
@@ -15,8 +15,7 @@ void AdminAuthWidget::onLogin()
 	_ui.loginButton->setEnabled(false);
 
 	auto reply = _networkClient->authAsAdmin(_ui.passwordLineEdit->text());
-	QObject::connect(reply, &QCorReply::finished, [this, reply]()
-	{
+	QObject::connect(reply, &QCorReply::finished, [this, reply]() {
 		_ui.loginButton->setEnabled(true);
 		if (!_networkClient->isAdmin())
 		{

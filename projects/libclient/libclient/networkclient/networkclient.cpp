@@ -1,22 +1,22 @@
 #include "networkclient_p.h"
 
+#include <QDataStream>
+#include <QHostAddress>
+#include <QImage>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QTimerEvent>
-#include <QDataStream>
-#include <QImage>
-#include <QUdpSocket>
 #include <QTcpSocket>
-#include <QHostAddress>
 #include <QTimer>
+#include <QTimerEvent>
+#include <QUdpSocket>
 
 #include "humblelogging/api.h"
 
 #include "libqtcorprotocol/qcorconnection.h"
 #include "libqtcorprotocol/qcorreply.h"
 
-#include "libapp/ts3video.h"
 #include "libapp/timeutil.h"
+#include "libapp/ts3video.h"
 
 #include "mediasocket.h"
 
@@ -24,17 +24,19 @@ HUMBLE_LOGGER(HL, "networkclient");
 
 ///////////////////////////////////////////////////////////////////////
 
-#define REQUEST_PRECHECK \
-  if (!d->corSocket->socket() || d->corSocket->socket()->state() != QAbstractSocket::ConnectedState) { \
-    HL_ERROR(HL, QString("Connection is not established.").toStdString()); \
-    return nullptr; \
-  }
+#define REQUEST_PRECHECK                                                                               \
+	if (!d->corSocket->socket() || d->corSocket->socket()->state() != QAbstractSocket::ConnectedState) \
+	{                                                                                                  \
+		HL_ERROR(HL, QString("Connection is not established.").toStdString());                         \
+		return nullptr;                                                                                \
+	}
 
-#define REQUEST_PRECHECK_VOID \
-  if (!d->corSocket->socket() || d->corSocket->socket()->state() != QAbstractSocket::ConnectedState) { \
-    HL_ERROR(HL, QString("Connection is not established.").toStdString()); \
-    return; \
-  }
+#define REQUEST_PRECHECK_VOID                                                                          \
+	if (!d->corSocket->socket() || d->corSocket->socket()->state() != QAbstractSocket::ConnectedState) \
+	{                                                                                                  \
+		HL_ERROR(HL, QString("Connection is not established.").toStdString());                         \
+		return;                                                                                        \
+	}
 
 ///////////////////////////////////////////////////////////////////////
 // Private Implementation
@@ -91,7 +93,7 @@ void NetworkClientPrivate::onJoinChannelFinished()
 	d->clientModel->setChannel(channel);
 
 	// Extract participants and create widgets.
-	foreach (auto v, params["participants"].toArray())
+	foreach(auto v, params["participants"].toArray())
 	{
 		ClientEntity client;
 		client.fromQJsonObject(v.toObject());
@@ -103,9 +105,9 @@ void NetworkClientPrivate::onJoinChannelFinished()
 // NetworkClient
 ///////////////////////////////////////////////////////////////////////
 
-NetworkClient::NetworkClient(QObject* parent) :
-	QObject(parent),
-	d(new NetworkClientPrivate(this))
+NetworkClient::NetworkClient(QObject* parent)
+	: QObject(parent)
+	, d(new NetworkClientPrivate(this))
 {
 	qRegisterMetaType<YuvFrameRefPtr>("YuvFrameRefPtr");
 	qRegisterMetaType<PcmFrameRefPtr>("PcmFrameRefPtr");
@@ -148,9 +150,7 @@ const VirtualServerConfigEntity& NetworkClient::serverConfig() const
 
 bool NetworkClient::isReadyForStreaming() const
 {
-	if (!d->mediaSocket
-			|| d->mediaSocket->state() != QAbstractSocket::ConnectedState
-			|| !d->mediaSocket->isAuthenticated())
+	if (!d->mediaSocket || d->mediaSocket->state() != QAbstractSocket::ConnectedState || !d->mediaSocket->isAuthenticated())
 		return false;
 	return true;
 }
@@ -181,7 +181,10 @@ QCorReply* NetworkClient::auth(const QString& name, const QString& password, con
 	REQUEST_PRECHECK
 
 	HL_DEBUG(HL, QString("Authenticate with server (version=%1; supportedversions=%2; username=%3; password=<HIDDEN>)")
-			 .arg(IFVS_SOFTWARE_VERSION).arg(IFVS_CLIENT_SUPPORTED_SERVER_VERSIONS).arg(name).toStdString());
+					 .arg(IFVS_SOFTWARE_VERSION)
+					 .arg(IFVS_CLIENT_SUPPORTED_SERVER_VERSIONS)
+					 .arg(name)
+					 .toStdString());
 
 	if (name.isEmpty())
 	{
@@ -350,8 +353,8 @@ void NetworkClient::sendVideoFrame(const QImage& image)
 		return;
 	if (!d->clientEntity.videoEnabled)
 		return;
-	if (d->clientModel->rowCount() <= 1)
-		return;
+	//if (d->clientModel->rowCount() <= 1)
+	//	return;
 	d->mediaSocket->sendVideoFrame(image, d->clientEntity.id);
 }
 
@@ -405,8 +408,7 @@ QCorReply* NetworkClient::authAsAdmin(const QString& password)
 	req.setData(JsonProtocolHelper::createJsonRequest("adminauth", params));
 	auto reply = d->corSocket->sendRequest(req);
 
-	connect(reply, &QCorReply::finished, [this, reply]()
-	{
+	connect(reply, &QCorReply::finished, [this, reply]() {
 		int status = 0;
 		QString error;
 		QJsonObject params;

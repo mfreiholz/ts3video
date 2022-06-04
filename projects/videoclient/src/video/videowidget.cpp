@@ -43,8 +43,8 @@ VideoWidget::VideoWidget(Type type, QWidget* parent) :
 #if defined(OCS_INCLUDE_OPENGL)
 		case OpenGL:
 		{
-			// auto w = new YuvVideoOpenGLWidget(this);
-			auto w = new VideoWidgetQGLWidget(this);
+			auto w = new YuvVideoOpenGLWidget(this);
+			//auto w = new VideoWidgetQGLWidget(this);
 			d->frameWidget = w;
 			d->frameWidgetImpl = w;
 			break;

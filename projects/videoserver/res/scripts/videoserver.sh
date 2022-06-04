@@ -1,7 +1,7 @@
 #!/bin/sh
 # Copyright (c) 2015 Manuel Freiholz
 # All rights reserved
-
+export LC_ALL=C
 current_dir=`dirname "$0"`
 binary_name=`basename $0 | sed s,\.sh$,,`
 cd "${current_dir}"

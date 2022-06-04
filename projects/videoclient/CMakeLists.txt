@@ -94,6 +94,7 @@ target_link_libraries(
 	PRIVATE libbase
 	PRIVATE libmediaprotocol
 	PRIVATE libapp
+	PRIVATE libclient
 )
 
 if(IncludeOpenGLSupport)

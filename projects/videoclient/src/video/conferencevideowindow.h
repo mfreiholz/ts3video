@@ -1,11 +1,11 @@
 #ifndef CONFERENCEVIDEOWINDOW_H
 #define CONFERENCEVIDEOWINDOW_H
 
+#include <QHash>
 #include <QMainWindow>
 #include <QScopedPointer>
 #include <QSharedPointer>
 #include <QString>
-#include <QHash>
 #include <QVariant>
 
 #include "libbase/defines.h"
@@ -13,12 +13,12 @@
 #include "libapp/ts3video.h"
 #include "libapp/yuvframe.h"
 
-#include "networkclient/networkclient.h"
+#include "libclient/networkclient/networkclient.h"
 
 #if defined(OCS_INCLUDE_AUDIO)
+#include <QAudioFormat>
 #include <QAudioInput>
 #include <QAudioOutput>
-#include <QAudioFormat>
 #endif
 
 class QWidget;
@@ -113,11 +113,11 @@ signals:
 	void cameraChanged();
 
 private:
-	ConferenceVideoWindow::Options _opts;                ///< Basic options for video conferencing.
-	QSharedPointer<NetworkClient> _networkClient;        ///< Client for network communication.
+	ConferenceVideoWindow::Options _opts; ///< Basic options for video conferencing.
+	QSharedPointer<NetworkClient> _networkClient; ///< Client for network communication.
 
 	// Video stuff.
-	QSharedPointer<QCamera> _camera;                     ///< The used camera for this conference.
+	QSharedPointer<QCamera> _camera; ///< The used camera for this conference.
 
 #if defined(OCS_INCLUDE_AUDIO)
 	// Audio stuff.
@@ -128,8 +128,8 @@ private:
 
 	// GUI stuff.
 	QBoxLayout* _layout;
-	ConferenceVideoWindowSidebar* _sidebar;              ///< Sidebar with controls.
-	TileViewWidget* _view;                               ///< Central view to display all video streams.
+	ConferenceVideoWindowSidebar* _sidebar; ///< Sidebar with controls.
+	TileViewWidget* _view; ///< Central view to display all video streams.
 	QStatusBar* _statusbar;
 };
 

@@ -1,10 +1,10 @@
 #ifndef DIRECTCONNECTSTARTUPLOGIC_H
 #define DIRECTCONNECTSTARTUPLOGIC_H
 
+#include "../startup/startuplogic.h"
+#include "libclient/networkclient/networkclient.h"
 #include <QObject>
 #include <QSharedPointer>
-#include "../startup/startuplogic.h"
-#include "../networkclient/networkclient.h"
 
 class DirectConnectStartupLogic : public QObject, public AbstractStartupLogic
 {

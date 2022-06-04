@@ -1,13 +1,13 @@
 #include "defaultstartuplogic.h"
 
-#include <QMetaObject>
 #include <QEventLoop>
 #include <QHostAddress>
+#include <QMetaObject>
 
 #include "libapp/elws.h"
 
-#include "networkclient/networkclient.h"
 #include "channellistwidget.h"
+#include "libclient/networkclient/networkclient.h"
 
 /*
     - check if there is a dedicated server
@@ -27,8 +27,8 @@ public:
 	//QHostAddress serverIp; /* resolved server IP (no dns!) */
 };
 
-DefaultStartupLogic::DefaultStartupLogic(QApplication* a) :
-	AbstractStartupLogic(a)
+DefaultStartupLogic::DefaultStartupLogic(QApplication* a)
+	: AbstractStartupLogic(a)
 {
 }
 

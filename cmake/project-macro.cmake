@@ -47,7 +47,7 @@ MACRO(CREATE_PROJECT_STATIC_QT_LIBRARY name_)
 
 	### Sources
 
-	file(GLOB_RECURSE headers ${PROJECT_NAME}/*.h)
+	file(GLOB_RECURSE headers ${PROJECT_NAME}/*.h ${PROJECT_NAME}/*.hpp)
 	file(GLOB_RECURSE sources_cpp ${PROJECT_NAME}/*.cpp)
 	file(GLOB_RECURSE sources_c ${PROJECT_NAME}/*.c)
 	file(GLOB_RECURSE qtforms ${PROJECT_NAME}/*.ui)

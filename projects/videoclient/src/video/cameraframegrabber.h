@@ -21,6 +21,8 @@ signals:
 	void newQImage(const QImage& image);
 
 private:
+	QList<QVideoFrame::PixelFormat> _pixelFormats;
+
 	bool _firstFrame;
 	QSize _targetSize;
 

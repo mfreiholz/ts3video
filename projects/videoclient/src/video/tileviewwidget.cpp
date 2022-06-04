@@ -1,33 +1,33 @@
 #include "tileviewwidget.h"
 
-#include <QSettings>
 #include <QBoxLayout>
-#include <QWheelEvent>
+#include <QFrame>
+#include <QHash>
+#include <QLineEdit>
+#include <QListView>
+#include <QMenu>
+#include <QObject>
 #include <QPushButton>
 #include <QScrollArea>
-#include <QListView>
-#include <QLineEdit>
-#include <QMenu>
-#include <QToolBar>
+#include <QSettings>
 #include <QSize>
-#include <QHash>
-#include <QObject>
-#include <QFrame>
+#include <QToolBar>
+#include <QWheelEvent>
 
 #include "humblelogging/api.h"
 
-#include "libapp/elws.h"
-#include "libapp/cliententity.h"
 #include "libapp/channelentity.h"
+#include "libapp/cliententity.h"
+#include "libapp/elws.h"
 #include "libapp/networkusageentity.h"
 
-#include "conferencevideowindow.h"
-#include "clientcameravideowidget.h"
-#include "flowlayout.h"
-#include "remoteclientvideowidget.h"
 #include "aboutwidget.h"
 #include "adminauthwidget.h"
-#include "networkclient/clientlistmodel.h"
+#include "clientcameravideowidget.h"
+#include "conferencevideowindow.h"
+#include "flowlayout.h"
+#include "libclient/networkclient/clientlistmodel.h"
+#include "remoteclientvideowidget.h"
 
 HUMBLE_LOGGER(HL, "gui.tileview");
 
@@ -35,14 +35,14 @@ HUMBLE_LOGGER(HL, "gui.tileview");
 
 TileViewTileFrame*
 newTileViewTileFrame(TileViewWidget* tileView, QWidget* parent,
-					 QWidget* widget)
+	QWidget* widget)
 {
 	auto tile = new TileViewTileFrame(tileView, parent);
 	tile->setWidget(widget);
 	QObject::connect(tile, &TileViewTileFrame::moveBackwardClicked, tileView,
-					 &TileViewWidget::onTileMoveBackward);
+		&TileViewWidget::onTileMoveBackward);
 	QObject::connect(tile, &TileViewTileFrame::moveForwardClicked, tileView,
-					 &TileViewWidget::onTileMoveForward);
+		&TileViewWidget::onTileMoveForward);
 	return tile;
 }
 
@@ -51,14 +51,14 @@ newTileViewTileFrame(TileViewWidget* tileView, QWidget* parent,
 class TileViewWidgetPrivate
 {
 public:
-	TileViewWidgetPrivate(TileViewWidget* o) :
-		owner(o),
-		tilesAspectRatio(16, 9),
-		tilesCurrentSize(tilesAspectRatio),
-		tilesLayout(nullptr),
-		cameraWidget(nullptr),
-		zoomInButton(nullptr),
-		zoomOutButton(nullptr)
+	TileViewWidgetPrivate(TileViewWidget* o)
+		: owner(o)
+		, tilesAspectRatio(16, 9)
+		, tilesCurrentSize(tilesAspectRatio)
+		, tilesLayout(nullptr)
+		, cameraWidget(nullptr)
+		, zoomInButton(nullptr)
+		, zoomOutButton(nullptr)
 	{}
 
 public:
@@ -84,9 +84,9 @@ public:
 // TileViewWidget /////////////////////////////////////////////////////
 
 TileViewWidget::TileViewWidget(ConferenceVideoWindow* window,
-							   Qt::WindowFlags f) :
-	QWidget(window),
-	d(new TileViewWidgetPrivate(this))
+	Qt::WindowFlags f)
+	: QWidget(window)
+	, d(new TileViewWidgetPrivate(this))
 {
 	d->window = window;
 	d->tilesCurrentSize.scale(640, 360, Qt::KeepAspectRatio);
@@ -137,9 +137,9 @@ TileViewWidget::TileViewWidget(ConferenceVideoWindow* window,
 		topButtonsLayout->addStretch(1);
 
 		QObject::connect(d->zoomInButton, &QPushButton::clicked, this,
-						 &TileViewWidget::increaseTileSize);
+			&TileViewWidget::increaseTileSize);
 		QObject::connect(d->zoomOutButton, &QPushButton::clicked, this,
-						 &TileViewWidget::decreaseTileSize);
+			&TileViewWidget::decreaseTileSize);
 	}
 
 	// Video tiles container.
@@ -152,7 +152,7 @@ TileViewWidget::TileViewWidget(ConferenceVideoWindow* window,
 
 	// Camera
 	d->cameraWidget = newTileViewTileFrame(this, this,
-										   new TileViewCameraWidget(this, this));
+		new TileViewCameraWidget(this, this));
 	d->cameraWidget->setFixedSize(d->tilesCurrentSize);
 	d->cameraWidget->setVisible(false);
 	d->cameraWidget->setClientInfo(window->networkClient()->clientEntity());
@@ -160,14 +160,14 @@ TileViewWidget::TileViewWidget(ConferenceVideoWindow* window,
 
 	// Window events
 	QObject::connect(d->window, &ConferenceVideoWindow::cameraChanged, this,
-					 &TileViewWidget::onCameraChanged);
+		&TileViewWidget::onCameraChanged);
 
 	// Network events
 	auto nc = d->window->networkClient();
 	QObject::connect(nc.data(), &NetworkClient::clientEnabledVideo, this,
-					 &TileViewWidget::onClientEnabledVideo);
+		&TileViewWidget::onClientEnabledVideo);
 	QObject::connect(nc.data(), &NetworkClient::clientDisabledVideo, this,
-					 &TileViewWidget::onClientDisabledVideo);
+		&TileViewWidget::onClientDisabledVideo);
 }
 
 TileViewWidget::~TileViewWidget()
@@ -185,14 +185,12 @@ TileViewWidget::window() const
 	return d->window;
 }
 
-void
-TileViewWidget::addClient(const ClientEntity& client,
-						  const ChannelEntity& channel)
+void TileViewWidget::addClient(const ClientEntity& client,
+	const ChannelEntity& channel)
 {
 	if (client.videoEnabled && !d->tilesMap.contains(client.id))
 	{
-		auto tile = newTileViewTileFrame(this, this, new TileViewTileWidget(this,
-										 client, this));
+		auto tile = newTileViewTileFrame(this, this, new TileViewTileWidget(this, client, this));
 		tile->setFixedSize(d->tilesCurrentSize);
 		tile->setClientInfo(client);
 
@@ -201,9 +199,8 @@ TileViewWidget::addClient(const ClientEntity& client,
 	}
 }
 
-void
-TileViewWidget::removeClient(const ClientEntity& client,
-							 const ChannelEntity& channel)
+void TileViewWidget::removeClient(const ClientEntity& client,
+	const ChannelEntity& channel)
 {
 	auto tileWidget = d->tilesMap.value(client.id);
 	if (!tileWidget)
@@ -218,9 +215,8 @@ TileViewWidget::removeClient(const ClientEntity& client,
 	delete tileWidget;
 }
 
-void
-TileViewWidget::updateClientVideo(YuvFrameRefPtr frame,
-								  ocs::clientid_t senderId)
+void TileViewWidget::updateClientVideo(YuvFrameRefPtr frame,
+	ocs::clientid_t senderId)
 {
 	auto tileWidget = d->tilesMap.value(senderId);
 	if (!tileWidget)
@@ -237,8 +233,7 @@ TileViewWidget::updateClientVideo(YuvFrameRefPtr frame,
 	p->_videoWidget->videoWidget()->setFrame(frame);
 }
 
-void
-TileViewWidget::increaseTileSize()
+void TileViewWidget::increaseTileSize()
 {
 	QSettings settings;
 	auto maxSize = this->rect().size() - QSize(30, 30);
@@ -251,8 +246,7 @@ TileViewWidget::increaseTileSize()
 	setTileSize(newSize);
 }
 
-void
-TileViewWidget::decreaseTileSize()
+void TileViewWidget::decreaseTileSize()
 {
 	QSettings settings;
 	auto minSize = d->tilesAspectRatio.scaled(QSize(300, 300), Qt::KeepAspectRatio);
@@ -265,8 +259,7 @@ TileViewWidget::decreaseTileSize()
 	setTileSize(newSize);
 }
 
-void
-TileViewWidget::setTileSize(const QSize& size)
+void TileViewWidget::setTileSize(const QSize& size)
 {
 	auto newSize = d->tilesAspectRatio.scaled(size, Qt::KeepAspectRatio);
 	d->tilesCurrentSize = newSize;
@@ -278,7 +271,7 @@ TileViewWidget::setTileSize(const QSize& size)
 		if (li && li->widget())
 			widgets.append(li->widget());
 	}
-	foreach (auto w, widgets)
+	foreach(auto w, widgets)
 	{
 		w->setFixedSize(newSize);
 	}
@@ -286,8 +279,7 @@ TileViewWidget::setTileSize(const QSize& size)
 }
 
 #if defined(OCS_INCLUDE_AUDIO)
-void
-TileViewWidget::setAudioInputEnabled(bool b)
+void TileViewWidget::setAudioInputEnabled(bool b)
 {
 	auto nc = ConferenceVideoWindow::instance()->networkClient();
 	auto dev = ConferenceVideoWindow::instance()->audioInput();
@@ -322,8 +314,7 @@ TileViewWidget::setAudioInputEnabled(bool b)
 }
 #endif
 
-void
-TileViewWidget::wheelEvent(QWheelEvent* e)
+void TileViewWidget::wheelEvent(QWheelEvent* e)
 {
 	if (e->modifiers() != Qt::ControlModifier)
 	{
@@ -341,23 +332,21 @@ TileViewWidget::wheelEvent(QWheelEvent* e)
 	}
 }
 
-void
-TileViewWidget::showEvent(QShowEvent* e)
+void TileViewWidget::showEvent(QShowEvent* e)
 {
 	QSettings settings;
 	setTileSize(settings.value("UI/TileViewWidget-TileSize",
-							   d->tilesCurrentSize).toSize());
+							d->tilesCurrentSize)
+					.toSize());
 }
 
-void
-TileViewWidget::hideEvent(QHideEvent* e)
+void TileViewWidget::hideEvent(QHideEvent* e)
 {
 	QSettings settings;
 	settings.setValue("UI/TileViewWidget-TileSize", d->tilesCurrentSize);
 }
 
-void
-TileViewWidget::onTileMoveBackward()
+void TileViewWidget::onTileMoveBackward()
 {
 	auto tile = static_cast<TileViewTileFrame*>(sender());
 	auto index = d->tilesLayout->indexOf(tile);
@@ -368,8 +357,7 @@ TileViewWidget::onTileMoveBackward()
 	}
 }
 
-void
-TileViewWidget::onTileMoveForward()
+void TileViewWidget::onTileMoveForward()
 {
 	auto tile = static_cast<TileViewTileFrame*>(sender());
 	auto index = d->tilesLayout->indexOf(tile);
@@ -380,14 +368,12 @@ TileViewWidget::onTileMoveForward()
 	}
 }
 
-void
-TileViewWidget::onClientEnabledVideo(const ClientEntity& c)
+void TileViewWidget::onClientEnabledVideo(const ClientEntity& c)
 {
 	addClient(c, ChannelEntity());
 }
 
-void
-TileViewWidget::onClientDisabledVideo(const ClientEntity& c)
+void TileViewWidget::onClientDisabledVideo(const ClientEntity& c)
 {
 	//auto w = d->tilesMap.value(c.id);
 	//if (w)
@@ -398,8 +384,7 @@ TileViewWidget::onClientDisabledVideo(const ClientEntity& c)
 	removeClient(c, ChannelEntity());
 }
 
-void
-TileViewWidget::onCameraChanged()
+void TileViewWidget::onCameraChanged()
 {
 	// Clear old camera
 	if (d->camera)
@@ -412,15 +397,14 @@ TileViewWidget::onCameraChanged()
 	if (d->camera)
 	{
 		QObject::connect(d->camera.data(), &QCamera::statusChanged, this,
-						 &TileViewWidget::onCameraStatusChanged);
+			&TileViewWidget::onCameraStatusChanged);
 	}
 
 	// Update UI
 	//d->cameraWidget->setVisible(!d->camera.isNull());
 }
 
-void
-TileViewWidget::onCameraStatusChanged(QCamera::Status s)
+void TileViewWidget::onCameraStatusChanged(QCamera::Status s)
 {
 	switch (s)
 	{
@@ -429,8 +413,7 @@ TileViewWidget::onCameraStatusChanged(QCamera::Status s)
 			break;
 		default:
 			d->cameraWidget->setVisible(false);
-			static_cast<TileViewCameraWidget*>
-			(d->cameraWidget->widget())->_cameraWidget->setFrame(QImage());
+			static_cast<TileViewCameraWidget*>(d->cameraWidget->widget())->_cameraWidget->setFrame(QImage());
 			break;
 	}
 }
@@ -455,9 +438,9 @@ public:
 };
 
 TileViewTileFrame::TileViewTileFrame(TileViewWidget* tileView,
-									 QWidget* parent) :
-	QFrame(parent),
-	d(new Private())
+	QWidget* parent)
+	: QFrame(parent)
+	, d(new Private())
 {
 	ConferenceVideoWindow::addDropShadowEffect(this);
 	const auto iconSize = fontMetrics().height() * 1.5;
@@ -484,7 +467,7 @@ TileViewTileFrame::TileViewTileFrame(TileViewWidget* tileView,
 	d->moveBackButton->setToolTip(tr("Move one position backward"));
 	d->barLayout->addWidget(d->moveBackButton);
 	QObject::connect(d->moveBackButton, &QPushButton::clicked, this,
-					 &TileViewTileFrame::moveBackwardClicked);
+		&TileViewTileFrame::moveBackwardClicked);
 
 	d->nameLabel = new QLabel();
 	d->nameLabel->setObjectName("nameLabel");
@@ -501,15 +484,14 @@ TileViewTileFrame::TileViewTileFrame(TileViewWidget* tileView,
 	d->moveForwardButton->setToolTip(tr("Move one position forward"));
 	d->barLayout->addWidget(d->moveForwardButton);
 	QObject::connect(d->moveForwardButton, &QPushButton::clicked, this,
-					 &TileViewTileFrame::moveForwardClicked);
+		&TileViewTileFrame::moveForwardClicked);
 }
 
 TileViewTileFrame::~TileViewTileFrame()
 {
 }
 
-void
-TileViewTileFrame::setWidget(QWidget* widget)
+void TileViewTileFrame::setWidget(QWidget* widget)
 {
 	d->widget = widget;
 	d->mainLayout->insertWidget(0, d->widget);
@@ -521,8 +503,7 @@ TileViewTileFrame::widget() const
 	return d->widget;
 }
 
-void
-TileViewTileFrame::setClientInfo(const ClientEntity& client)
+void TileViewTileFrame::setClientInfo(const ClientEntity& client)
 {
 	d->nameLabelText = client.name;
 	d->nameLabel->setText(d->nameLabelText);
@@ -531,11 +512,11 @@ TileViewTileFrame::setClientInfo(const ClientEntity& client)
 // TileViewCameraWidget ///////////////////////////////////////////////
 
 TileViewCameraWidget::TileViewCameraWidget(TileViewWidget* tileView,
-		QWidget* parent) :
-	QFrame(parent),
-	_tileView(tileView),
-	_mainLayout(nullptr),
-	_cameraWidget(nullptr)
+	QWidget* parent)
+	: QFrame(parent)
+	, _tileView(tileView)
+	, _mainLayout(nullptr)
+	, _cameraWidget(nullptr)
 {
 	_mainLayout = new QBoxLayout(QBoxLayout::TopToBottom);
 	_mainLayout->setContentsMargins(0, 0, 0, 0);
@@ -545,11 +526,10 @@ TileViewCameraWidget::TileViewCameraWidget(TileViewWidget* tileView,
 	// Events from ConferenceVideoWindow
 	auto win = _tileView->window();
 	QObject::connect(win, &ConferenceVideoWindow::cameraChanged, this,
-					 &TileViewCameraWidget::onCameraChanged);
+		&TileViewCameraWidget::onCameraChanged);
 }
 
-void
-TileViewCameraWidget::onCameraChanged()
+void TileViewCameraWidget::onCameraChanged()
 {
 	if (_cameraWidget)
 	{
@@ -569,9 +549,9 @@ TileViewCameraWidget::onCameraChanged()
 // TileViewTileWidget /////////////////////////////////////////////////
 
 TileViewTileWidget::TileViewTileWidget(TileViewWidget* tileView,
-									   const ClientEntity& client, QWidget* parent) :
-	QFrame(parent),
-	_tileView(tileView)
+	const ClientEntity& client, QWidget* parent)
+	: QFrame(parent)
+	, _tileView(tileView)
 {
 	ConferenceVideoWindow::addDropShadowEffect(this);
 
@@ -581,6 +561,6 @@ TileViewTileWidget::TileViewTileWidget(TileViewWidget* tileView,
 	setLayout(mainLayout);
 
 	_videoWidget = ConferenceVideoWindow::createRemoteVideoWidget(
-					   _tileView->window()->options(), client, this);
+		_tileView->window()->options(), client, this);
 	mainLayout->addWidget(_videoWidget);
 }

@@ -50,6 +50,9 @@ endif(IncludeServerPrograms)
 
 # Client binaries.
 if(IncludeClientPrograms)
+	add_subdirectory(projects/libclient)
 	add_subdirectory(projects/videoclient)
 	add_subdirectory(projects/ts3plugin)
+	add_subdirectory(projects/app-qml-client)
 endif(IncludeClientPrograms)
+add_subdirectory(projects/testapp)

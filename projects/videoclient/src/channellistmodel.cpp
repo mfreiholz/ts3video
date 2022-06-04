@@ -1,13 +1,10 @@
 #include "channellistmodel.h"
-
+#include "libapp/jsonprotocolhelper.h"
+#include "libclient/networkclient/networkclient.h"
 #include <exception>
 
-#include "libapp/jsonprotocolhelper.h"
-
-#include "networkclient/networkclient.h"
-
-ChannelListModel::ChannelListModel(QObject* parent) :
-	QAbstractTableModel(parent)
+ChannelListModel::ChannelListModel(QObject* parent)
+	: QAbstractTableModel(parent)
 {
 	_headers.insert(IdColumn, tr("ID"));
 	_headers.insert(NameColumn, tr("Name"));
@@ -47,8 +44,7 @@ QVariant ChannelListModel::data(const QModelIndex& index, int role) const
 	const auto& channel = _channels.at(index.row());
 	switch (index.column())
 	{
-		case IdColumn:
-		{
+		case IdColumn: {
 			switch (role)
 			{
 				case Qt::DisplayRole:
@@ -56,8 +52,7 @@ QVariant ChannelListModel::data(const QModelIndex& index, int role) const
 			}
 			break;
 		}
-		case NameColumn:
-		{
+		case NameColumn: {
 			switch (role)
 			{
 				case Qt::DisplayRole:
@@ -65,8 +60,7 @@ QVariant ChannelListModel::data(const QModelIndex& index, int role) const
 			}
 			break;
 		}
-		case HasPasswordColumn:
-		{
+		case HasPasswordColumn: {
 			switch (role)
 			{
 				case Qt::DisplayRole:

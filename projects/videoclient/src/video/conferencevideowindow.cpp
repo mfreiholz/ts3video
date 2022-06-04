@@ -1,24 +1,24 @@
 #include "conferencevideowindow.h"
 
-#include <QSettings>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QJsonArray>
 #include <QApplication>
-#include <QMessageBox>
-#include <QProgressDialog>
+#include <QBoxLayout>
 #include <QCameraInfo>
-#include <QHostInfo>
-#include <QtConcurrent>
 #include <QFuture>
 #include <QFutureWatcher>
-#include <QWeakPointer>
+#include <QGraphicsDropShadowEffect>
 #include <QHostAddress>
-#include <QBoxLayout>
-#include <QStatusBar>
+#include <QHostInfo>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QLabel>
 #include <QMenuBar>
-#include <QGraphicsDropShadowEffect>
+#include <QMessageBox>
+#include <QProgressDialog>
+#include <QSettings>
+#include <QStatusBar>
+#include <QWeakPointer>
+#include <QtConcurrent>
 
 #include <QtMultimedia/QCamera>
 
@@ -26,30 +26,30 @@
 
 #include "libqtasync/qtasync.h"
 
-#include "libqtcorprotocol/qcorreply.h"
 #include "libqtcorprotocol/qcorframe.h"
+#include "libqtcorprotocol/qcorreply.h"
 
-#include "libapp/elws.h"
-#include "libapp/cliententity.h"
 #include "libapp/channelentity.h"
-#include "libapp/networkusageentity.h"
+#include "libapp/cliententity.h"
+#include "libapp/elws.h"
 #include "libapp/jsonprotocolhelper.h"
+#include "libapp/networkusageentity.h"
 
-#include "networkclient/clientlistmodel.h"
-#include "util/qwidgetutil.h"
+#include "aboutwidget.h"
+#include "adminauthwidget.h"
 #include "clientcameravideowidget.h"
+#include "libclient/networkclient/clientlistmodel.h"
 #include "remoteclientvideowidget.h"
 #include "tileviewwidget.h"
-#include "adminauthwidget.h"
-#include "aboutwidget.h"
+#include "util/qwidgetutil.h"
 
 #include "video/conferencevideowindowsidebar.h"
 #include "video/videosettingswidget.h"
 
 #if defined(OCS_INCLUDE_AUDIO)
-#include <QAudioDeviceInfo>
 #include "audio/audioframegrabber.h"
 #include "audio/audioframeplayer.h"
+#include <QAudioDeviceInfo>
 #endif
 
 HUMBLE_LOGGER(HL, "client.logic");
@@ -58,11 +58,10 @@ HUMBLE_LOGGER(HL, "client.logic");
 // Local Helpers
 ///////////////////////////////////////////////////////////////////////
 
-static QSharedPointer<QCamera> createCameraFromOptions(const
-		ConferenceVideoWindow::Options& opts)
+static QSharedPointer<QCamera> createCameraFromOptions(const ConferenceVideoWindow::Options& opts)
 {
 	QCameraInfo cameraInfo;
-	foreach (auto ci, QCameraInfo::availableCameras())
+	foreach(auto ci, QCameraInfo::availableCameras())
 	{
 		if (ci.deviceName() == opts.cameraDeviceId)
 		{
@@ -71,13 +70,13 @@ static QSharedPointer<QCamera> createCameraFromOptions(const
 		}
 	}
 	auto cam = cameraInfo.isNull() ? QSharedPointer<QCamera>() :
-			   QSharedPointer<QCamera>(new QCamera(cameraInfo));
+									   QSharedPointer<QCamera>(new QCamera(cameraInfo));
 #if QT_VERSION >= QT_VERSION_CHECK(5, 5, 0)
 	if (cam)
 	{
-		auto sett = cam->viewfinderSettings();
-		sett.setResolution(opts.cameraResolution);
-		cam->setViewfinderSettings(sett);
+		//auto sett = cam->viewfinderSettings();
+		//sett.setResolution(opts.cameraResolution);
+		//cam->setViewfinderSettings(sett);
 	}
 #endif
 	return cam;
@@ -100,7 +99,7 @@ static QSharedPointer<QAudioInput> createMicrophoneFromOptions(
 	const ConferenceVideoWindow::Options& opts)
 {
 	auto info = QAudioDeviceInfo::defaultInputDevice();
-	foreach (auto item, QAudioDeviceInfo::availableDevices(QAudio::AudioInput))
+	foreach(auto item, QAudioDeviceInfo::availableDevices(QAudio::AudioInput))
 	{
 		if (item.deviceName() == opts.audioInputDeviceId)
 		{
@@ -134,7 +133,7 @@ RemoteClientVideoWidget* ConferenceVideoWindow::createRemoteVideoWidget(
 	QWidget* parent)
 {
 	auto w = new RemoteClientVideoWidget(opts.uiVideoHardwareAccelerationEnabled,
-										 parent);
+		parent);
 	if (client.id > 0)
 	{
 		w->setClient(client);
@@ -145,15 +144,15 @@ RemoteClientVideoWidget* ConferenceVideoWindow::createRemoteVideoWidget(
 ///////////////////////////////////////////////////////////////////////
 
 ConferenceVideoWindow::ConferenceVideoWindow(const Options& options,
-		const QSharedPointer<NetworkClient>& nc, QWidget* parent,
-		Qt::WindowFlags flags) :
-	QMainWindow(parent, flags),
-	_opts(options),
-	_networkClient(nc),
-	_layout(nullptr),
-	_sidebar(nullptr),
-	_view(nullptr),
-	_statusbar(nullptr)
+	const QSharedPointer<NetworkClient>& nc, QWidget* parent,
+	Qt::WindowFlags flags)
+	: QMainWindow(parent, flags)
+	, _opts(options)
+	, _networkClient(nc)
+	, _layout(nullptr)
+	, _sidebar(nullptr)
+	, _view(nullptr)
+	, _statusbar(nullptr)
 {
 	// Prepare central view (Sidebar + Video view).
 	if (true)
@@ -181,24 +180,25 @@ ConferenceVideoWindow::ConferenceVideoWindow(const Options& options,
 	if (true)
 	{
 		connect(_networkClient.data(), &NetworkClient::error, this,
-				&ConferenceVideoWindow::onError);
+			&ConferenceVideoWindow::onError);
 		connect(_networkClient.data(), &NetworkClient::serverError, this,
-				&ConferenceVideoWindow::onServerError);
+			&ConferenceVideoWindow::onServerError);
 		connect(_networkClient.data(), &NetworkClient::clientJoinedChannel, this,
-				&ConferenceVideoWindow::onClientJoinedChannel);
+			&ConferenceVideoWindow::onClientJoinedChannel);
 		connect(_networkClient.data(), &NetworkClient::clientLeftChannel, this,
-				&ConferenceVideoWindow::onClientLeftChannel);
+			&ConferenceVideoWindow::onClientLeftChannel);
 		connect(_networkClient.data(), &NetworkClient::clientDisconnected, this,
-				&ConferenceVideoWindow::onClientDisconnected);
+			&ConferenceVideoWindow::onClientDisconnected);
 		connect(_networkClient.data(), &NetworkClient::newVideoFrame, this,
-				&ConferenceVideoWindow::onNewVideoFrame);
+			&ConferenceVideoWindow::onNewVideoFrame);
 
 		// Create initial tiles.
 		auto m = _networkClient->clientModel();
 		for (auto i = 0; i < m->rowCount(); ++i)
 		{
 			auto c = m->data(m->index(i),
-							 ClientListModel::ClientEntityRole).value<ClientEntity>();
+						  ClientListModel::ClientEntityRole)
+						 .value<ClientEntity>();
 			onClientJoinedChannel(c, ChannelEntity());
 		}
 
@@ -210,10 +210,9 @@ ConferenceVideoWindow::ConferenceVideoWindow(const Options& options,
 
 			auto grabber = new AudioFrameGrabber(_audioInput, this);
 			QObject::connect(grabber,
-							 &AudioFrameGrabber::newFrame, [this](const PcmFrameRefPtr & f)
-			{
-				_networkClient->sendAudioFrame(f);
-			});
+				&AudioFrameGrabber::newFrame, [this](const PcmFrameRefPtr& f) {
+					_networkClient->sendAudioFrame(f);
+				});
 		}
 
 		// Create QAudioOutput (headphones).
@@ -223,11 +222,9 @@ ConferenceVideoWindow::ConferenceVideoWindow(const Options& options,
 			_audioPlayer->setDeviceInfo(QAudioDeviceInfo::defaultOutputDevice());
 			_audioPlayer->setFormat(createAudioFormat());
 			QObject::connect(_networkClient.data(),
-							 &NetworkClient::newAudioFrame, [this](PcmFrameRefPtr f,
-									 ocs::clientid_t senderId)
-			{
-				_audioPlayer->add(f, senderId);
-			});
+				&NetworkClient::newAudioFrame, [this](PcmFrameRefPtr f, ocs::clientid_t senderId) {
+					_audioPlayer->add(f, senderId);
+				});
 		}
 
 		// Auto turn ON microphone.
@@ -322,16 +319,21 @@ void ConferenceVideoWindow::loadOptionsFromConfig(Options& opts)
 {
 	QSettings s;
 	opts.cameraDeviceId = s.value("Video/InputDeviceId",
-								  opts.cameraDeviceId).toString();
+							   opts.cameraDeviceId)
+							  .toString();
 	opts.cameraResolution = s.value("Video/InputDeviceResolution",
-									opts.cameraResolution).toSize();
+								 opts.cameraResolution)
+								.toSize();
 	opts.cameraBitrate = s.value("Video/InputDeviceBitrate",
-								 opts.cameraBitrate).toInt();
+							  opts.cameraBitrate)
+							 .toInt();
 	opts.cameraAutoEnable = s.value("Video/InputDeviceAutoEnable",
-									opts.cameraAutoEnable).toBool();
+								 opts.cameraAutoEnable)
+								.toBool();
 	opts.uiVideoHardwareAccelerationEnabled =
 		s.value("UI/VideoHardwareAccelerationEnabled",
-				opts.uiVideoHardwareAccelerationEnabled).toBool();
+			 opts.uiVideoHardwareAccelerationEnabled)
+			.toBool();
 }
 
 void ConferenceVideoWindow::saveOptionsToConfig(const Options& opts)
@@ -342,7 +344,7 @@ void ConferenceVideoWindow::saveOptionsToConfig(const Options& opts)
 	s.setValue("Video/InputDeviceBitrate", opts.cameraBitrate);
 	s.setValue("Video/InputDeviceAutoEnable", opts.cameraAutoEnable);
 	s.setValue("UI/VideoHardwareAccelerationEnabled",
-			   opts.uiVideoHardwareAccelerationEnabled);
+		opts.uiVideoHardwareAccelerationEnabled);
 }
 
 QSharedPointer<NetworkClient> ConferenceVideoWindow::networkClient() const
@@ -384,22 +386,22 @@ void ConferenceVideoWindow::setupMenu()
 		auto confMenu = menuBar->addMenu(QIcon(), tr("Conference"));
 
 		auto adminAuthAction = confMenu->addAction(QIcon(":/ic_lock_grey600_48dp.png"),
-							   tr("Login as admin..."));
+			tr("Login as admin..."));
 		QObject::connect(adminAuthAction, &QAction::triggered, this,
-						 &ConferenceVideoWindow::onActionLoginAsAdminTriggered);
+			&ConferenceVideoWindow::onActionLoginAsAdminTriggered);
 
 		confMenu->addSeparator();
 
 		auto aboutAction = confMenu->addAction(
-							   QIcon(":/ic_info_outline_grey600_48dp.png"), tr("About"));
+			QIcon(":/ic_info_outline_grey600_48dp.png"), tr("About"));
 		QObject::connect(aboutAction, &QAction::triggered, this,
-						 &ConferenceVideoWindow::onActionAboutTriggered);
+			&ConferenceVideoWindow::onActionAboutTriggered);
 
 		confMenu->addSeparator();
 
 		auto exitAction = confMenu->addAction(QIcon(), tr("Exit"));
 		QObject::connect(exitAction, &QAction::triggered, this,
-						 &ConferenceVideoWindow::onActionExitTriggered);
+			&ConferenceVideoWindow::onActionExitTriggered);
 	}
 
 	if (true)
@@ -407,9 +409,9 @@ void ConferenceVideoWindow::setupMenu()
 		auto videoMenu = menuBar->addMenu(QIcon(), tr("Video"));
 
 		auto videoSettingsAction = videoMenu->addAction(QIcon(),
-								   tr("Video settings..."));
+			tr("Video settings..."));
 		QObject::connect(videoSettingsAction, &QAction::triggered, this,
-						 &ConferenceVideoWindow::onActionVideoSettingsTriggered);
+			&ConferenceVideoWindow::onActionVideoSettingsTriggered);
 	}
 }
 
@@ -429,25 +431,22 @@ void ConferenceVideoWindow::setupStatusBar()
 
 		auto bandwidthWrite = new QLabel("U: 0.0 KB/s");
 		bandwidthWrite->setObjectName("bandwidthWrite");
-		bandwidthWrite->setMinimumWidth(bandwidthWrite->fontMetrics().averageCharWidth()
-										* 35);
+		bandwidthWrite->setMinimumWidth(bandwidthWrite->fontMetrics().averageCharWidth() * 35);
 		_statusbar->addPermanentWidget(bandwidthWrite);
 
 		QObject::connect(_networkClient.data(),
-						 &NetworkClient::networkUsageUpdated, [this, bandwidthRead,
-									   bandwidthWrite](const NetworkUsageEntity & networkUsage)
-		{
-			bandwidthRead->setText(QString("D: %1")
-								   .arg(ELWS::humanReadableBandwidth(networkUsage.bandwidthRead)));
-			bandwidthWrite->setText(QString("U: %1")
-									.arg(ELWS::humanReadableBandwidth(networkUsage.bandwidthWrite)));
+			&NetworkClient::networkUsageUpdated, [this, bandwidthRead, bandwidthWrite](const NetworkUsageEntity& networkUsage) {
+				bandwidthRead->setText(QString("D: %1")
+										   .arg(ELWS::humanReadableBandwidth(networkUsage.bandwidthRead)));
+				bandwidthWrite->setText(QString("U: %1")
+											.arg(ELWS::humanReadableBandwidth(networkUsage.bandwidthWrite)));
 
-			const auto sumText = tr("Received: %1\nSent: %2")
-								 .arg(ELWS::humanReadableSize(networkUsage.bytesRead))
-								 .arg(ELWS::humanReadableSize(networkUsage.bytesWritten));
-			bandwidthRead->setToolTip(sumText);
-			bandwidthWrite->setToolTip(sumText);
-		});
+				const auto sumText = tr("Received: %1\nSent: %2")
+										 .arg(ELWS::humanReadableSize(networkUsage.bytesRead))
+										 .arg(ELWS::humanReadableSize(networkUsage.bytesWritten));
+				bandwidthRead->setToolTip(sumText);
+				bandwidthWrite->setToolTip(sumText);
+			});
 	}
 }
 
@@ -485,23 +484,20 @@ void ConferenceVideoWindow::onActionExitTriggered()
 
 void ConferenceVideoWindow::onError(QAbstractSocket::SocketError socketError)
 {
-	HL_INFO(HL, QString("Socket error (error=%1; message=%2)").arg(socketError).arg(
-				_networkClient->socket()->errorString()).toStdString());
+	HL_INFO(HL, QString("Socket error (error=%1; message=%2)").arg(socketError).arg(_networkClient->socket()->errorString()).toStdString());
 	showError(tr("Network socket error."), _networkClient->socket()->errorString());
 }
 
 void ConferenceVideoWindow::onServerError(int code, const QString& message)
 {
-	HL_INFO(HL, QString("Server error (error=%1; message=%2)").arg(code).arg(
-				message).toStdString());
-	showError(tr("Server error."),  QString("%1: %2").arg(code).arg(message));
+	HL_INFO(HL, QString("Server error (error=%1; message=%2)").arg(code).arg(message).toStdString());
+	showError(tr("Server error."), QString("%1: %2").arg(code).arg(message));
 }
 
 void ConferenceVideoWindow::onClientJoinedChannel(const ClientEntity& client,
-		const ChannelEntity& channel)
+	const ChannelEntity& channel)
 {
-	HL_INFO(HL, QString("Client joined channel (client-id=%1; channel-id=%2)").arg(
-				client.id).arg(channel.id).toStdString());
+	HL_INFO(HL, QString("Client joined channel (client-id=%1; channel-id=%2)").arg(client.id).arg(channel.id).toStdString());
 	if (client.id != _networkClient->clientEntity().id)
 	{
 		_view->addClient(client, channel);
@@ -509,22 +505,20 @@ void ConferenceVideoWindow::onClientJoinedChannel(const ClientEntity& client,
 }
 
 void ConferenceVideoWindow::onClientLeftChannel(const ClientEntity& client,
-		const ChannelEntity& channel)
+	const ChannelEntity& channel)
 {
-	HL_INFO(HL, QString("Client left channel (client-id=%1; channel-id=%2)").arg(
-				client.id).arg(channel.id).toStdString());
+	HL_INFO(HL, QString("Client left channel (client-id=%1; channel-id=%2)").arg(client.id).arg(channel.id).toStdString());
 	_view->removeClient(client, channel);
 }
 
 void ConferenceVideoWindow::onClientDisconnected(const ClientEntity& client)
 {
-	HL_INFO(HL, QString("Client disconnected (client-id=%1)").arg(
-				client.id).toStdString());
+	HL_INFO(HL, QString("Client disconnected (client-id=%1)").arg(client.id).toStdString());
 	_view->removeClient(client, ChannelEntity());
 }
 
 void ConferenceVideoWindow::onNewVideoFrame(YuvFrameRefPtr frame,
-		ocs::clientid_t senderId)
+	ocs::clientid_t senderId)
 {
 	_view->updateClientVideo(frame, senderId);
 }
@@ -540,15 +534,15 @@ void ConferenceVideoWindow::onReplyFinsihedHandleError()
 			params, error))
 	{
 		QMessageBox::critical(this,
-							  tr("Network protocol error"),
-							  QString("Can not parse response:\n%1").arg(QString(reply->frame()->data())));
+			tr("Network protocol error"),
+			QString("Can not parse response:\n%1").arg(QString(reply->frame()->data())));
 		return;
 	}
 	else if (status != 0)
 	{
 		QMessageBox::warning(this,
-							 tr("Error from server"),
-							 QString("%1: %2").arg(status).arg(error));
+			tr("Error from server"),
+			QString("%1: %2").arg(status).arg(error));
 		return;
 	}
 }
@@ -564,10 +558,9 @@ void ConferenceVideoWindow::closeEvent(QCloseEvent* e)
 }
 
 void ConferenceVideoWindow::showResponseError(int status,
-		const QString& errorMessage, const QString& details)
+	const QString& errorMessage, const QString& details)
 {
-	HL_ERROR(HL, QString("Network response error (status=%1; message=%2)").arg(
-				 status).arg(errorMessage).toStdString());
+	HL_ERROR(HL, QString("Network response error (status=%1; message=%2)").arg(status).arg(errorMessage).toStdString());
 	QMessageBox box(this);
 	box.setWindowTitle(tr("Warning"));
 	box.setIcon(QMessageBox::Warning);
@@ -580,7 +573,7 @@ void ConferenceVideoWindow::showResponseError(int status,
 }
 
 void ConferenceVideoWindow::showError(const QString& shortText,
-									  const QString& longText)
+	const QString& longText)
 {
 	HL_ERROR(HL, QString("%1: %2").arg(shortText).arg(longText).toStdString());
 	QMessageBox box(this);

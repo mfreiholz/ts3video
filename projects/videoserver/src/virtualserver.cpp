@@ -12,28 +12,28 @@
 
 #include "action/channels.h"
 #include "action/media.h"
-#include "mediasockethandler.h"
-#include "websocketstatusserver.h"
-#include "servercliententity.h"
-#include "serverchannelentity.h"
 #include "clientconnectionhandler.h"
+#include "mediasockethandler.h"
+#include "serverchannelentity.h"
+#include "servercliententity.h"
+#include "websocketstatusserver.h"
 
 HUMBLE_LOGGER(HL, "server");
 
 ///////////////////////////////////////////////////////////////////////
 
-VirtualServer::VirtualServer(const VirtualServerOptions& opts, QObject* parent) :
-	QObject(parent),
-	_opts(opts),
-	_corServer(this),
-	_connections(),
-	_nextClientId(0),
-	_clients(),
-	_nextChannelId(0),
-	_participants(),
-	_mediaSocketHandler(nullptr),
-	_tokens(),
-	_wsStatusServer(nullptr)
+VirtualServer::VirtualServer(const VirtualServerOptions& opts, QObject* parent)
+	: QObject(parent)
+	, _opts(opts)
+	, _corServer(this)
+	, _connections()
+	, _nextClientId(0)
+	, _clients()
+	, _nextChannelId(0)
+	, _participants()
+	, _mediaSocketHandler(nullptr)
+	, _tokens()
+	, _wsStatusServer(nullptr)
 {
 	// Basic actions.
 	registerAction(std::make_shared<HeartbeatAction>());
@@ -299,7 +299,7 @@ void VirtualServer::removeClientFromChannels(ocs::clientid_t clientId)
 		channelIds = _client2channels[clientId].toList();
 	}
 	// Remove from all channels.
-	foreach (auto channelId, channelIds)
+	foreach(auto channelId, channelIds)
 	{
 		removeClientFromChannel(clientId, channelId);
 	}
@@ -308,9 +308,9 @@ void VirtualServer::removeClientFromChannels(ocs::clientid_t clientId)
 QList<ocs::clientid_t> VirtualServer::getSiblingClientIds(ocs::clientid_t clientId, bool filterByVisibilityLevel) const
 {
 	QSet<ocs::clientid_t> clientIds;
-	foreach (auto channelId, _client2channels.value(clientId).toList())
+	foreach(auto channelId, _client2channels.value(clientId).toList())
 	{
-		foreach (auto participantId, _participants.value(channelId))
+		foreach(auto participantId, _participants.value(channelId))
 		{
 			if (filterByVisibilityLevel)
 			{

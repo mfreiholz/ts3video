@@ -8,9 +8,9 @@
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
 
-ClientListModel::ClientListModel(QObject* parent) :
-	QAbstractListModel(parent),
-	d(new ClientListModelPrivate(this))
+ClientListModel::ClientListModel(QObject* parent)
+	: QAbstractListModel(parent)
+	, d(new ClientListModelPrivate(this))
 {
 }
 
@@ -78,27 +78,27 @@ int ClientListModel::rowCount(const QModelIndex& parent) const
 
 QVariant ClientListModel::data(const QModelIndex& index, int role) const
 {
-	if (index.row() > d->clients.size() - 1)
+	if (!index.isValid() || index.row() > d->clients.size() - 1)
 		return QVariant();
 
 	auto& client = d->clients[index.row()];
 
 	switch (role)
 	{
-	case Qt::DisplayRole:
-		return client.name;
+		case Qt::DisplayRole:
+			return client.name;
 
-	case Qt::DecorationRole:
-		if (client.videoEnabled)
-			return QIcon(":/ic_videocam_grey600_48dp.png");
-		else
-			return QIcon(":/ic_videocam_off_grey600_48dp.png");
+		case Qt::DecorationRole:
+			if (client.videoEnabled)
+				return QIcon(":/ic_videocam_grey600_48dp.png");
+			else
+				return QIcon(":/ic_videocam_off_grey600_48dp.png");
 
-	case VideoEnabledRole:
-		return client.videoEnabled;
+		case VideoEnabledRole:
+			return client.videoEnabled;
 
-	case ClientEntityRole:
-		return QVariant::fromValue(client);
+		case ClientEntityRole:
+			return QVariant::fromValue(client);
 	}
 
 	return QVariant();
@@ -106,10 +106,10 @@ QVariant ClientListModel::data(const QModelIndex& index, int role) const
 
 ///////////////////////////////////////////////////////////////////////
 
-ClientListModelPrivate::ClientListModelPrivate(ClientListModel* o) :
-	QObject(o),
-	owner(o),
-	networkClient(nullptr)
+ClientListModelPrivate::ClientListModelPrivate(ClientListModel* o)
+	: QObject(o)
+	, owner(o)
+	, networkClient(nullptr)
 {
 }
 
@@ -158,8 +158,8 @@ void ClientListModelPrivate::onClientDisabledVideo(const ClientEntity& client)
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
 
-SortFilterClientListProxyModel::SortFilterClientListProxyModel(QObject* parent) :
-	QSortFilterProxyModel(parent)
+SortFilterClientListProxyModel::SortFilterClientListProxyModel(QObject* parent)
+	: QSortFilterProxyModel(parent)
 {
 }
 
