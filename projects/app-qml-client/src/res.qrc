@@ -8,5 +8,7 @@
         <file>CameraVideo.qml</file>
         <file>Conference.qml</file>
         <file>RemoteVideo.qml</file>
+        <file>ConnectionInfo.qml</file>
+        <file>HomePage.qml</file>
     </qresource>
 </RCC>

@@ -22,7 +22,8 @@ void RemoteVideoAdapter::setVideoSurface(QAbstractVideoSurface* surface)
 		qCDebug(logCore, "IsActive=%d", surface->isActive() ? 1 : 0);
 		if (!surface->isActive())
 		{
-			QVideoSurfaceFormat fmt(QSize(1920, 1080), QVideoFrame::Format_YV12);
+			//QVideoSurfaceFormat fmt(QSize(1920, 1080), QVideoFrame::Format_YV12);
+			QVideoSurfaceFormat fmt(QSize(1920, 1080), QVideoFrame::Format_YUV420P);
 			//fmt.setScanLineDirection(QVideoSurfaceFormat::TopToBottom);
 			//fmt.setYCbCrColorSpace(QVideoSurfaceFormat::YCbCr_xvYCC709);
 			//QVideoSurfaceFormat fmt(QSize(1920, 1080), QVideoFrame::Format_RGB24);
@@ -82,5 +83,5 @@ void RemoteVideoAdapter::setVideoFrame(YuvFrameRefPtr frame)
 		//	qCDebug(logCore, "Can't present frame");
 		//}
 	}
-	qCDebug(logCore, "Leave RemoteVideoAdapter::setVideoFrame(frame)");
+	//qCDebug(logCore, "Leave RemoteVideoAdapter::setVideoFrame(frame)");
 }

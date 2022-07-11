@@ -31,7 +31,7 @@ App::App(QObject* parent)
 
 App::~App() = default;
 
-void App::connectToServer()
+void App::connectToServer(const QString& remoteAddress, int remotePort)
 {
 	qCDebug(logCore) << "connectToServer";
 
@@ -39,7 +39,7 @@ void App::connectToServer()
 	if (sock && sock->state() != QAbstractSocket::UnconnectedState)
 		return;
 
-	m_networkClient.connectToHost(QHostAddress("81.169.137.183"), 13370);
+	m_networkClient.connectToHost(QHostAddress(remoteAddress), remotePort);
 }
 
 void App::registerRemoteVideoAdapter(RemoteVideoAdapter* adapter)

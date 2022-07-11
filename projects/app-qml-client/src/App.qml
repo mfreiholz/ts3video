@@ -10,7 +10,6 @@ ApplicationWindow {
 	width: 1280
 
 	Component.onCompleted: {
-		app.connectToServer()
 	}
 
 	Drawer {
@@ -24,8 +23,9 @@ ApplicationWindow {
 	}
 
 	Loader {
+		id: loader
 		anchors.fill: parent
-		sourceComponent: conferenceComponent
+		sourceComponent: connectionInfoComponent
 	}
 
 	Component {
@@ -34,6 +34,24 @@ ApplicationWindow {
 			width: 50
 			height: 60
 			color: "red"
+		}
+	}
+
+	Component {
+		id: connectionInfoComponent
+		Page {
+			ConnectionInfo {
+				anchors.centerIn: parent
+				remoteAddress: "127.0.0.1"
+				remotePort: "13370"
+				onCancelClicked: function() {
+					console.log("onCancelClicked()");
+				}
+				onConnectClicked: function(remoteAddress, remotePort) {
+					loader.sourceComponent = conferenceComponent
+					app.connectToServer(remoteAddress, remotePort)
+				}
+			}
 		}
 	}
 

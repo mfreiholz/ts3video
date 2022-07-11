@@ -30,6 +30,8 @@ set(PROJECT_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Conference.qml
 	${CMAKE_CURRENT_SOURCE_DIR}/src/CameraVideo.qml
 	${CMAKE_CURRENT_SOURCE_DIR}/src/RemoteVideo.qml
+	${CMAKE_CURRENT_SOURCE_DIR}/src/ConnectionInfo.qml
+	${CMAKE_CURRENT_SOURCE_DIR}/src/HomePage.qml
 
 	${CMAKE_CURRENT_SOURCE_DIR}/src/qmldir
 	${CMAKE_CURRENT_SOURCE_DIR}/src/qtquickcontrols2.conf

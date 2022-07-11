@@ -20,7 +20,7 @@ public:
 	App& operator=(const App&) = delete;
 	~App() override;
 
-	Q_INVOKABLE void connectToServer();
+	Q_INVOKABLE void connectToServer(const QString& remoteAddress, int remotePort);
 
 	NetworkClient* getNetworkClient() { return &m_networkClient; }
 	UserInfoListModel* getUserInfoListModel() { return &m_userInfoListModel; }
